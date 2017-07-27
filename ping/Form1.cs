@@ -25,10 +25,6 @@ namespace ping
         int recordidx;
         int taskbar_support;
 
-        private void wndMain_Activated(Object sender, EventArgs e)
-        {
-            taskbar_dll_detect_safe();
-        }
         private void taskbar_dll_detect_safe()
         {
             try
@@ -127,12 +123,11 @@ namespace ping
         }
         private void ping_process()
         {
-            output.Items.Clear();
-            parse_params();
             Ping pingSender = new Ping();
             PingReply reply;
             txcnt = rxcnt = losscnt = 0;
             mintm = maxtm = totaltm = 0;
+            parse_params();
             if (addr == "")
             {
                 state = 0;
@@ -193,6 +188,8 @@ namespace ping
         }
         private void button1_Click(object sender, EventArgs e)
         {
+            output.Items.Clear(); // clear old logs
+            taskbar_dll_detect_safe();
             if (state == 0)
             {
                 recordidx = 0;
