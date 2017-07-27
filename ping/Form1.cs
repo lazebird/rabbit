@@ -14,6 +14,7 @@ namespace ping
         {
             InitializeComponent();
             records = new int[5];
+            this.AcceptButton = button1;
         }
         StreamWriter file;
         string addr;
@@ -88,9 +89,9 @@ namespace ping
         {
             try
             {
-                timeout = int.Parse(textBox1.Text);
-                times = int.Parse(textBox2.Text);
-                addr = textBox4.Text;
+                addr = textBox1.Text;
+                timeout = int.Parse(textBox2.Text);
+                times = int.Parse(textBox3.Text);
             }
             catch (Exception e)
             {
@@ -220,14 +221,14 @@ namespace ping
             filename.OverwritePrompt = true;
             if (filename.ShowDialog() == DialogResult.OK)
             {
-                textBox3.Text = filename.FileName;
+                textBox4.Text = filename.FileName;
             }
         }
         private void logprint(string msg)
         {
-            if (textBox3.Text != "")
+            if (textBox4.Text != "")
             {
-                file = new StreamWriter(textBox3.Text, true);
+                file = new StreamWriter(textBox4.Text, true);
                 file.WriteLine(msg);
                 file.Close();
             }
