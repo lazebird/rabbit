@@ -75,12 +75,13 @@ namespace ping
             if (count != recordidx)
             {
                 TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Error);
+                TaskbarManager.Instance.SetProgressValue(recordidx - count, 5);
             }
             else
             {
                 TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Normal);
+                TaskbarManager.Instance.SetProgressValue(count, 5);
             }
-            TaskbarManager.Instance.SetProgressValue(count, 5);
         }
 
         private void parse_params()
@@ -188,10 +189,10 @@ namespace ping
         }
         private void button1_Click(object sender, EventArgs e)
         {
-            output.Items.Clear(); // clear old logs
-            taskbar_dll_detect_safe();
             if (state == 0)
             {
+                output.Items.Clear(); // clear old logs
+                taskbar_dll_detect_safe();
                 recordidx = 0;
                 state = 1;
                 button1.Text = "停止";
@@ -204,9 +205,6 @@ namespace ping
             }
             else
             {
-                state = 0;
-                button1.Text = "开始";
-                button1.Refresh();
                 // stop
                 times = 0;
             }
