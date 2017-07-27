@@ -5,6 +5,7 @@ using Microsoft.WindowsAPICodePack.Taskbar;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.IO;
+using System.Configuration;
 
 namespace ping
 {
@@ -15,6 +16,7 @@ namespace ping
             InitializeComponent();
             records = new int[5];
             this.AcceptButton = button1;
+            init_params();
         }
         StreamWriter file;
         string addr;
@@ -84,7 +86,36 @@ namespace ping
                 TaskbarManager.Instance.SetProgressValue(count, 5);
             }
         }
-
+        private void init_params()
+        {
+            if (ConfigurationManager.AppSettings["addr"] == null)
+            {
+                return;
+            }
+            textBox1.Text = ConfigurationManager.AppSettings["addr"];
+            textBox1.Refresh();
+            textBox2.Text = ConfigurationManager.AppSettings["timeout"];
+            textBox2.Refresh();
+            textBox3.Text = ConfigurationManager.AppSettings["times"];
+            textBox3.Refresh();
+            textBox4.Text = ConfigurationManager.AppSettings["logfile"];
+            textBox4.Refresh();
+        }
+        private void saveconf(string key, string value)
+        {
+            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = configFile.AppSettings.Settings;
+            if (settings[key] == null)
+            {
+                settings.Add(key, value);
+            }
+            else
+            {
+                settings[key].Value = value;
+            }
+            configFile.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+        }
         private void parse_params()
         {
             try
@@ -92,6 +123,10 @@ namespace ping
                 addr = textBox1.Text;
                 timeout = int.Parse(textBox2.Text);
                 times = int.Parse(textBox3.Text);
+                saveconf("addr", textBox1.Text);
+                saveconf("timeout", textBox2.Text);
+                saveconf("times", textBox3.Text);
+                saveconf("logfile", textBox4.Text);
             }
             catch (Exception e)
             {
@@ -133,7 +168,7 @@ namespace ping
             if (addr == "")
             {
                 state = 0;
-                button1.Text = "停止";
+                button1.Text = "开始";
                 button1.Refresh();
                 logprint("地址错误。");
                 return;
