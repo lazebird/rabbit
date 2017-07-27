@@ -14,9 +14,6 @@ namespace ping
         {
             InitializeComponent();
             records = new int[5];
-            Thread taskbar_th = new Thread(taskbar_dll_detect_safe);
-            taskbar_th.IsBackground = true;
-            taskbar_th.Start();
         }
         StreamWriter file;
         string addr;
@@ -28,6 +25,10 @@ namespace ping
         int recordidx;
         int taskbar_support;
 
+        private void wndMain_Activated(Object sender, EventArgs e)
+        {
+            taskbar_dll_detect_safe();
+        }
         private void taskbar_dll_detect_safe()
         {
             try
@@ -35,9 +36,9 @@ namespace ping
                 taskbar_dll_detect();
                 taskbar_support = 1;
             }
-            catch (FileNotFoundException e)
+            catch (Exception e)
             {
-                logprint("TaskbarManager DLL missed: " + e.FileName);
+                logprint("Error: " + e.Message);
                 taskbar_support = 0;
             }
         }
@@ -96,7 +97,7 @@ namespace ping
             }
             catch (Exception e)
             {
-                logprint("param error: " + e.Message);
+                logprint("Error: " + e.Message);
             }
         }
         private void display_statistics()
@@ -182,9 +183,9 @@ namespace ping
                         display_taskbar_safe(0);
                     }
                 }
-                catch (PingException e)
+                catch (Exception e)
                 {
-                    logprint("错误: " + e.Message);
+                    logprint("Error: " + e.Message);
                     return;
                 }
             }
