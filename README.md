@@ -13,4 +13,4 @@ auto-save configurations?
 improve performance?
 add version management and auto update function?
 
-WELCOME ALL FRIENDS TO JOIN&OPTIMIZE THIS PROJECT.
+WELCOME ALL FRIENDS TO JOIN THIS PROJECT AND MAKE IT MORE INTERESTING.
