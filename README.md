@@ -1,5 +1,6 @@
 # ping
-ping with state shown in Windows taskbar
+ping with state shown in Windows taskbar.
+
 DESCRIPTION:
 a simple ping app on windows.
 it can show last 5 reply state on taskbar.
