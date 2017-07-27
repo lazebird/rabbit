@@ -85,6 +85,20 @@ namespace ping
             }
             TaskbarManager.Instance.SetProgressValue(count, 5);
         }
+
+        private void parse_params()
+        {
+            try
+            {
+                timeout = int.Parse(textBox1.Text);
+                times = int.Parse(textBox2.Text);
+                addr = textBox4.Text;
+            }
+            catch (Exception e)
+            {
+                logprint("param error: " + e.Message);
+            }
+        }
         private void display_statistics()
         {
             state = 0;
@@ -112,12 +126,10 @@ namespace ping
         }
         private void ping_process()
         {
-            timeout = int.Parse(textBox1.Text);
-            times = int.Parse(textBox2.Text);
-            addr = textBox4.Text;
+            output.Items.Clear();
+            parse_params();
             Ping pingSender = new Ping();
             PingReply reply;
-            output.Items.Clear();
             txcnt = rxcnt = losscnt = 0;
             mintm = maxtm = totaltm = 0;
             if (addr == "")
