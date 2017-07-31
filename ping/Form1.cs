@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using Microsoft.WindowsAPICodePack.Shell;
-using Microsoft.WindowsAPICodePack.Taskbar;
-using System.Net.NetworkInformation;
-using System.Threading;
-using System.IO;
-using System.Configuration;
 
 namespace ping
 {

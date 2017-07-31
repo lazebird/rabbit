@@ -1,5 +1,4 @@
-﻿using Microsoft.WindowsAPICodePack.Taskbar;
-using System;
+﻿using System;
 using System.Net.NetworkInformation;
 using System.Threading;
 
