@@ -112,11 +112,11 @@ namespace ping
         int timeout, times;
         private void env_setup()
         {
+            saveconf(); // save empty config to restore default config
             addr = textBox1.Text;
             timeout = int.Parse(textBox2.Text);
             times = int.Parse(textBox3.Text);
             mylog.setfile(textBox4.Text);
-            saveconf();
             setvalue("btn", "停止");
             screen_clear();
         }
