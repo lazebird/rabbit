@@ -74,7 +74,7 @@
             this.textBox1.Margin = new System.Windows.Forms.Padding(2);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(205, 25);
-            this.textBox1.TabIndex = 2;
+            this.textBox1.TabIndex = 1;
             this.textBox1.Text = "www.mozilla.com";
             // 
             // textBox2
@@ -85,7 +85,7 @@
             this.textBox2.Margin = new System.Windows.Forms.Padding(2);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(205, 25);
-            this.textBox2.TabIndex = 3;
+            this.textBox2.TabIndex = 2;
             this.textBox2.Text = "1000";
             // 
             // listbox1
@@ -100,7 +100,7 @@
             this.listbox1.Margin = new System.Windows.Forms.Padding(2);
             this.listbox1.Name = "listbox1";
             this.listbox1.Size = new System.Drawing.Size(283, 99);
-            this.listbox1.TabIndex = 5;
+            this.listbox1.TabIndex = 7;
             // 
             // toolStripContainer1
             // 
@@ -142,7 +142,7 @@
             this.textBox4.Margin = new System.Windows.Forms.Padding(2);
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(205, 25);
-            this.textBox4.TabIndex = 13;
+            this.textBox4.TabIndex = 5;
             // 
             // label3
             // 
@@ -171,7 +171,7 @@
             this.button2.Margin = new System.Windows.Forms.Padding(2);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(52, 32);
-            this.button2.TabIndex = 11;
+            this.button2.TabIndex = 4;
             this.button2.Text = "日志";
             this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
@@ -184,7 +184,7 @@
             this.textBox3.Margin = new System.Windows.Forms.Padding(2);
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(205, 25);
-            this.textBox3.TabIndex = 10;
+            this.textBox3.TabIndex = 3;
             this.textBox3.Text = "-1";
             // 
             // button1
@@ -202,7 +202,7 @@
             this.button1.Margin = new System.Windows.Forms.Padding(2);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(73, 37);
-            this.button1.TabIndex = 9;
+            this.button1.TabIndex = 6;
             this.button1.Text = "开始";
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
