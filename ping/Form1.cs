@@ -14,238 +14,132 @@ namespace ping
         public Form1()
         {
             InitializeComponent();
-            records = new int[5];
-            this.AcceptButton = button1;
+            AcceptButton = button1;
+            //CancelButton = Application.Exit(0);
+            CheckForIllegalCrossThreadCalls = false;
             init_params();
         }
-        StreamWriter file;
-        string addr;
-        int state, timeout, times;
-        Thread ping_thread;
-        int txcnt, rxcnt, losscnt;
-        int mintm, maxtm, totaltm;
-        int[] records;
-        int recordidx;
-        int taskbar_support;
-
-        private void taskbar_dll_detect_safe()
+        protected override bool ProcessDialogKey(Keys keyData)
         {
-            try
+            if (keyData == Keys.Escape)
             {
-                taskbar_dll_detect();
-                taskbar_support = 1;
+                this.Close();
+                return true;
             }
-            catch (Exception e)
-            {
-                logprint("Error: " + e.Message);
-                taskbar_support = 0;
-            }
-        }
-        private void taskbar_dll_detect()
-        {
-            TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.NoProgress);
-        }
-        private void display_taskbar_safe(int rx)
-        {
-            if (taskbar_support == 1)
-            {
-                display_taskbar(rx);
-            }
-        }
-        private void display_taskbar(int rx)
-        {
-            if (!TaskbarManager.IsPlatformSupported)
-            {
-                return;
-            }
-            if (recordidx < 5)
-            {
-                records[recordidx++] = rx;
-            }
-            else
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    records[i] = records[i + 1];
-                }
-                records[4] = rx;
-            }
-            int count = 0;
-            for (int i = 0; i < recordidx; i++)
-            {
-                count += records[i];
-            }
-            if (count != recordidx)
-            {
-                TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Error);
-                TaskbarManager.Instance.SetProgressValue(recordidx - count, 5);
-            }
-            else
-            {
-                TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Normal);
-                TaskbarManager.Instance.SetProgressValue(count, 5);
-            }
+            return base.ProcessDialogKey(keyData);
         }
         private void init_params()
         {
-            if (ConfigurationManager.AppSettings["addr"] == null)
+            setvalue("addr", myconf.read("addr"));
+            setvalue("timeout", myconf.read("timeout"));
+            setvalue("times", myconf.read("times"));
+            setvalue("logfile", myconf.read("logfile"));
+        }
+        private void saveconf()
+        {
+            myconf.write("addr", getvalue("addr"));
+            myconf.write("timeout", getvalue("timeout"));
+            myconf.write("times", getvalue("times"));
+            myconf.write("logfile", getvalue("logfile"));
+        }
+        public string getvalue(string name)
+        {
+            if (name == "addr")
+            {
+                return textBox1.Text;
+            }
+            if (name == "timeout")
+            {
+                return textBox2.Text;
+            }
+            if (name == "times")
+            {
+                return textBox3.Text;
+            }
+            if (name == "logfile")
+            {
+                return textBox4.Text;
+            }
+            if (name == "btn")
+            {
+                return button1.Text;
+            }
+            return "";
+        }
+        public void setvalue(string name, string value)
+        {
+            if (value == "")
             {
                 return;
             }
-            textBox1.Text = ConfigurationManager.AppSettings["addr"];
-            textBox1.Refresh();
-            textBox2.Text = ConfigurationManager.AppSettings["timeout"];
-            textBox2.Refresh();
-            textBox3.Text = ConfigurationManager.AppSettings["times"];
-            textBox3.Refresh();
-            textBox4.Text = ConfigurationManager.AppSettings["logfile"];
-            textBox4.Refresh();
-        }
-        private void saveconf(string key, string value)
-        {
-            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var settings = configFile.AppSettings.Settings;
-            if (settings[key] == null)
+            if (name == "addr")
             {
-                settings.Add(key, value);
+                textBox1.Text = value;
+                textBox1.Refresh();
             }
-            else
+            if (name == "timeout")
             {
-                settings[key].Value = value;
+                textBox2.Text = value;
+                textBox2.Refresh();
             }
-            configFile.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-        }
-        private void parse_params()
-        {
-            try
+            if (name == "times")
             {
-                addr = textBox1.Text;
-                timeout = int.Parse(textBox2.Text);
-                times = int.Parse(textBox3.Text);
-                saveconf("addr", textBox1.Text);
-                saveconf("timeout", textBox2.Text);
-                saveconf("times", textBox3.Text);
-                saveconf("logfile", textBox4.Text);
+                textBox3.Text = value;
+                textBox3.Refresh();
             }
-            catch (Exception e)
+            if (name == "logfile")
             {
-                logprint("Error: " + e.Message);
+                textBox4.Text = value;
+                textBox4.Refresh();
             }
-        }
-        private void display_statistics()
-        {
-            state = 0;
-            button1.Text = "开始";
-            button1.Refresh();
-            float lossper, avgtm;
-            if (txcnt != 0)
+            if (name == "btn")
             {
-                lossper = (float)losscnt / txcnt * 100;
-            }
-            else
-            {
-                lossper = 0;
-            }
-            if (rxcnt != 0)
-            {
-                avgtm = (float)totaltm / rxcnt;
-            }
-            else
-            {
-                avgtm = 0;
-            }
-            logprint("发送 = " + txcnt + "，接收 = " + rxcnt + "，丢失 = " + losscnt + " (" + lossper.ToString() + " % 丢失)");
-            logprint("最短 = " + mintm + "毫秒，最长 = " + maxtm + "毫秒，平均 = " + avgtm.ToString() + "毫秒");
-        }
-        private void ping_process()
-        {
-            Ping pingSender = new Ping();
-            PingReply reply;
-            txcnt = rxcnt = losscnt = 0;
-            mintm = maxtm = totaltm = 0;
-            parse_params();
-            if (addr == "")
-            {
-                state = 0;
-                button1.Text = "开始";
+                button1.Text = value;
                 button1.Refresh();
-                logprint("地址错误。");
-                return;
             }
-            while (times < 0 || times-- > 0)
+        }
+        public void screen_print(string msg)
+        {
+            listbox1.Items.Add(msg);
+            listbox1.TopIndex = listbox1.Items.Count - (int)(listbox1.Height / listbox1.ItemHeight);
+            listbox1.Refresh();
+        }
+        public void screen_clear()
+        {
+            listbox1.Items.Clear();
+        }
+        string addr;
+        int timeout, times;
+        private void env_setup()
+        {
+            addr = textBox1.Text;
+            timeout = int.Parse(textBox2.Text);
+            times = int.Parse(textBox3.Text);
+            mylog.setfile(textBox4.Text);
+            saveconf();
+            setvalue("btn", "停止");
+            screen_clear();
+        }
+        private void button1_Click(object sender, EventArgs evt)
+        {
+            if (getvalue("btn") == "开始")
             {
                 try
                 {
-
-                    reply = pingSender.Send(addr, timeout);
-                    txcnt++;
-                    if (reply.Status == IPStatus.Success)
-                    {
-                        rxcnt++;
-                        logprint("来自 " + reply.Address + " 的回复: 字节=" + reply.Buffer.Length + " 毫秒=" + reply.RoundtripTime + " TTL=" + reply.Options.Ttl);
-                        display_taskbar_safe(1);
-                        if (timeout > (int)reply.RoundtripTime)
-                        {
-                            Thread.Sleep(timeout - (int)reply.RoundtripTime);
-                        }
-
-                        if (mintm == 0)
-                        {
-                            mintm = (int)reply.RoundtripTime;
-                        }
-                        else
-                        {
-                            mintm = Math.Min(mintm, (int)reply.RoundtripTime);
-                        }
-                        if (maxtm == 0)
-                        {
-                            maxtm = (int)reply.RoundtripTime;
-                        }
-                        else
-                        {
-                            maxtm = Math.Max(maxtm, (int)reply.RoundtripTime);
-                        }
-                        totaltm += (int)reply.RoundtripTime;
-                    }
-                    else
-                    {
-                        losscnt++;
-                        logprint("请求超时。");
-                        display_taskbar_safe(0);
-                    }
+                    env_setup();
+                    myping.getinstance().start(addr, timeout, times);
                 }
                 catch (Exception e)
                 {
-                    logprint("Error: " + e.Message);
-                    return;
+                    mylog.log("Error: " + e.Message);
                 }
-            }
-            display_statistics();
-        }
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (state == 0)
-            {
-                output.Items.Clear(); // clear old logs
-                taskbar_dll_detect_safe();
-                recordidx = 0;
-                state = 1;
-                button1.Text = "停止";
-                button1.Refresh();
-                // start
-                CheckForIllegalCrossThreadCalls = false;
-                ping_thread = new Thread(ping_process);
-                ping_thread.IsBackground = true;
-                ping_thread.Start();
             }
             else
             {
                 // stop
-                times = 0;
+                myping.getinstance().stop();
             }
         }
-
         private void button2_Click(object sender, EventArgs e)
         {
             SaveFileDialog filename = new SaveFileDialog();
@@ -256,20 +150,8 @@ namespace ping
             filename.OverwritePrompt = true;
             if (filename.ShowDialog() == DialogResult.OK)
             {
-                textBox4.Text = filename.FileName;
+                setvalue("logfile", filename.FileName);
             }
-        }
-        private void logprint(string msg)
-        {
-            if (textBox4.Text != "")
-            {
-                file = new StreamWriter(textBox4.Text, true);
-                file.WriteLine(msg);
-                file.Close();
-            }
-            output.Items.Add(msg);
-            output.TopIndex = output.Items.Count - (int)(output.Height / output.ItemHeight);
-            output.Refresh();
         }
     }
 }

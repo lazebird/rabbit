@@ -33,7 +33,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.textBox2 = new System.Windows.Forms.TextBox();
-            this.output = new System.Windows.Forms.ListBox();
+            this.listbox1 = new System.Windows.Forms.ListBox();
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -51,7 +51,7 @@
             this.label1.Location = new System.Drawing.Point(27, 69);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(53, 16);
+            this.label1.Size = new System.Drawing.Size(66, 20);
             this.label1.TabIndex = 0;
             this.label1.Text = "间隔(ms)";
             // 
@@ -62,7 +62,7 @@
             this.label2.Location = new System.Drawing.Point(27, 113);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(30, 16);
+            this.label2.Size = new System.Drawing.Size(37, 20);
             this.label2.TabIndex = 1;
             this.label2.Text = "次数";
             // 
@@ -73,7 +73,7 @@
             this.textBox1.Location = new System.Drawing.Point(105, 23);
             this.textBox1.Margin = new System.Windows.Forms.Padding(2);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(205, 21);
+            this.textBox1.Size = new System.Drawing.Size(205, 25);
             this.textBox1.TabIndex = 2;
             this.textBox1.Text = "www.mozilla.com";
             // 
@@ -84,23 +84,23 @@
             this.textBox2.Location = new System.Drawing.Point(105, 69);
             this.textBox2.Margin = new System.Windows.Forms.Padding(2);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(205, 21);
+            this.textBox2.Size = new System.Drawing.Size(205, 25);
             this.textBox2.TabIndex = 3;
             this.textBox2.Text = "1000";
             // 
-            // output
+            // listbox1
             // 
-            this.output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.listbox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.output.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.output.FormattingEnabled = true;
-            this.output.ItemHeight = 16;
-            this.output.Location = new System.Drawing.Point(27, 249);
-            this.output.Margin = new System.Windows.Forms.Padding(2);
-            this.output.Name = "output";
-            this.output.Size = new System.Drawing.Size(283, 116);
-            this.output.TabIndex = 5;
+            this.listbox1.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listbox1.FormattingEnabled = true;
+            this.listbox1.ItemHeight = 19;
+            this.listbox1.Location = new System.Drawing.Point(27, 249);
+            this.listbox1.Margin = new System.Windows.Forms.Padding(2);
+            this.listbox1.Name = "listbox1";
+            this.listbox1.Size = new System.Drawing.Size(283, 99);
+            this.listbox1.TabIndex = 5;
             // 
             // toolStripContainer1
             // 
@@ -116,7 +116,7 @@
             this.toolStripContainer1.ContentPanel.Controls.Add(this.button2);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.textBox3);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.button1);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.output);
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.listbox1);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.textBox2);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.textBox1);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.label2);
@@ -141,7 +141,7 @@
             this.textBox4.Location = new System.Drawing.Point(105, 159);
             this.textBox4.Margin = new System.Windows.Forms.Padding(2);
             this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(205, 21);
+            this.textBox4.Size = new System.Drawing.Size(205, 25);
             this.textBox4.TabIndex = 13;
             // 
             // label3
@@ -151,7 +151,7 @@
             this.label3.Location = new System.Drawing.Point(27, 23);
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(30, 16);
+            this.label3.Size = new System.Drawing.Size(37, 20);
             this.label3.TabIndex = 12;
             this.label3.Text = "地址";
             // 
@@ -159,16 +159,20 @@
             // 
             this.button2.BackColor = System.Drawing.Color.YellowGreen;
             this.button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.button2.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.button2.FlatAppearance.BorderSize = 0;
+            this.button2.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.button2.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button2.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button2.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.button2.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
             this.button2.Location = new System.Drawing.Point(27, 154);
             this.button2.Margin = new System.Windows.Forms.Padding(2);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(73, 32);
+            this.button2.Size = new System.Drawing.Size(52, 32);
             this.button2.TabIndex = 11;
-            this.button2.Text = "日志文件";
+            this.button2.Text = "日志";
             this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -179,7 +183,7 @@
             this.textBox3.Location = new System.Drawing.Point(105, 113);
             this.textBox3.Margin = new System.Windows.Forms.Padding(2);
             this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(205, 21);
+            this.textBox3.Size = new System.Drawing.Size(205, 25);
             this.textBox3.TabIndex = 10;
             this.textBox3.Text = "-1";
             // 
@@ -187,7 +191,10 @@
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button1.BackColor = System.Drawing.Color.YellowGreen;
+            this.button1.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.button1.FlatAppearance.BorderSize = 0;
+            this.button1.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.button1.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button1.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -202,7 +209,7 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
@@ -228,7 +235,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.ListBox output;
+        private System.Windows.Forms.ListBox listbox1;
         private System.Windows.Forms.ToolStripContainer toolStripContainer1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
