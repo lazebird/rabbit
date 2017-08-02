@@ -57,6 +57,7 @@ namespace ping
                 catch (Exception e)
                 {
                     mylog.log("Error: " + e.Message);
+                    form.setvalue("form", "ping");
                     form.setvalue("btn", "开始");
                     return;
                 }
@@ -97,6 +98,7 @@ namespace ping
                 }
             }
             display_statistics();
+            form.setvalue("form", "ping");
             form.setvalue("btn", "开始");
         }
         private void display_taskbar(int rx)

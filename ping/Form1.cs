@@ -91,6 +91,11 @@ namespace ping
                 button1.Text = value;
                 button1.Refresh();
             }
+            if (name == "form")
+            {
+                this.Text = value;
+                this.Refresh();
+            }
         }
         public void screen_print(string msg)
         {
@@ -111,6 +116,7 @@ namespace ping
             timeout = int.Parse(textBox2.Text);
             times = int.Parse(textBox3.Text);
             mylog.setfile(textBox4.Text);
+            setvalue("form", addr);
             setvalue("btn", "停止");
             screen_clear();
         }
