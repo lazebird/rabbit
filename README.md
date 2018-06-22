@@ -14,9 +14,8 @@ SCREENSHOTS:
 1. ![Alt ?](./Screenshots.PNG)  
 
 TODO:
-1. auto-save configurations?
-2. improve performance?
-3. add version management and auto update function?
+1. add version management and auto update function?
+2. more other small functions/tools, like httpd/tftpd/ftpd
 
 WELCOME ALL FRIENDS TO JOIN THIS PROJECT AND MAKE IT MORE INTERESTING.
 
