@@ -36,20 +36,26 @@
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
             this.tabs = new System.Windows.Forms.TabControl();
             this.Ping = new System.Windows.Forms.TabPage();
-            this.output = new System.Windows.Forms.ListBox();
-            this.btn_ping = new System.Windows.Forms.Button();
-            this.btn_log = new System.Windows.Forms.Button();
-            this.text_logpath = new System.Windows.Forms.TextBox();
             this.label_addr = new System.Windows.Forms.Label();
             this.text_count = new System.Windows.Forms.TextBox();
+            this.btn_log = new System.Windows.Forms.Button();
+            this.text_logpath = new System.Windows.Forms.TextBox();
+            this.btn_ping = new System.Windows.Forms.Button();
+            this.output = new System.Windows.Forms.ListBox();
             this.HTTPD = new System.Windows.Forms.TabPage();
-            this.Setting = new System.Windows.Forms.TabPage();
-            this.FTPD = new System.Windows.Forms.TabPage();
+            this.label_port = new System.Windows.Forms.Label();
+            this.text_port = new System.Windows.Forms.TextBox();
+            this.label_dir = new System.Windows.Forms.Label();
+            this.text_dir = new System.Windows.Forms.TextBox();
+            this.btn_httpd = new System.Windows.Forms.Button();
             this.TFTPD = new System.Windows.Forms.TabPage();
+            this.FTPD = new System.Windows.Forms.TabPage();
+            this.Setting = new System.Windows.Forms.TabPage();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
             this.Ping.SuspendLayout();
+            this.HTTPD.SuspendLayout();
             this.SuspendLayout();
             // 
             // label_interval
@@ -152,39 +158,27 @@
             this.Ping.Text = "Ping";
             this.Ping.UseVisualStyleBackColor = true;
             // 
-            // output
+            // label_addr
             // 
-            this.output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.label_addr.AutoSize = true;
+            this.label_addr.BackColor = System.Drawing.Color.Transparent;
+            this.label_addr.Location = new System.Drawing.Point(5, 19);
+            this.label_addr.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label_addr.Name = "label_addr";
+            this.label_addr.Size = new System.Drawing.Size(37, 20);
+            this.label_addr.TabIndex = 12;
+            this.label_addr.Text = "地址";
+            // 
+            // text_count
+            // 
+            this.text_count.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.output.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.output.FormattingEnabled = true;
-            this.output.ItemHeight = 19;
-            this.output.Location = new System.Drawing.Point(9, 253);
-            this.output.Margin = new System.Windows.Forms.Padding(2);
-            this.output.Name = "output";
-            this.output.Size = new System.Drawing.Size(740, 175);
-            this.output.TabIndex = 7;
-            // 
-            // btn_ping
-            // 
-            this.btn_ping.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_ping.BackColor = System.Drawing.Color.YellowGreen;
-            this.btn_ping.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.btn_ping.FlatAppearance.BorderSize = 0;
-            this.btn_ping.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
-            this.btn_ping.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
-            this.btn_ping.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_ping.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_ping.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btn_ping.Location = new System.Drawing.Point(676, 190);
-            this.btn_ping.Margin = new System.Windows.Forms.Padding(2);
-            this.btn_ping.Name = "btn_ping";
-            this.btn_ping.Size = new System.Drawing.Size(73, 37);
-            this.btn_ping.TabIndex = 6;
-            this.btn_ping.Text = "开始";
-            this.btn_ping.UseVisualStyleBackColor = false;
-            this.btn_ping.Click += new System.EventHandler(this.button1_Click);
+            this.text_count.Location = new System.Drawing.Point(72, 96);
+            this.text_count.Margin = new System.Windows.Forms.Padding(2);
+            this.text_count.Name = "text_count";
+            this.text_count.Size = new System.Drawing.Size(677, 25);
+            this.text_count.TabIndex = 3;
+            this.text_count.Text = "-1";
             // 
             // btn_log
             // 
@@ -217,30 +211,47 @@
             this.text_logpath.Size = new System.Drawing.Size(677, 25);
             this.text_logpath.TabIndex = 5;
             // 
-            // label_addr
+            // btn_ping
             // 
-            this.label_addr.AutoSize = true;
-            this.label_addr.BackColor = System.Drawing.Color.Transparent;
-            this.label_addr.Location = new System.Drawing.Point(5, 19);
-            this.label_addr.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label_addr.Name = "label_addr";
-            this.label_addr.Size = new System.Drawing.Size(37, 20);
-            this.label_addr.TabIndex = 12;
-            this.label_addr.Text = "地址";
+            this.btn_ping.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_ping.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_ping.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.btn_ping.FlatAppearance.BorderSize = 0;
+            this.btn_ping.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btn_ping.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btn_ping.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_ping.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_ping.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btn_ping.Location = new System.Drawing.Point(676, 190);
+            this.btn_ping.Margin = new System.Windows.Forms.Padding(2);
+            this.btn_ping.Name = "btn_ping";
+            this.btn_ping.Size = new System.Drawing.Size(73, 37);
+            this.btn_ping.TabIndex = 6;
+            this.btn_ping.Text = "开始";
+            this.btn_ping.UseVisualStyleBackColor = false;
+            this.btn_ping.Click += new System.EventHandler(this.button1_Click);
             // 
-            // text_count
+            // output
             // 
-            this.text_count.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.text_count.Location = new System.Drawing.Point(72, 96);
-            this.text_count.Margin = new System.Windows.Forms.Padding(2);
-            this.text_count.Name = "text_count";
-            this.text_count.Size = new System.Drawing.Size(677, 25);
-            this.text_count.TabIndex = 3;
-            this.text_count.Text = "-1";
+            this.output.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.output.FormattingEnabled = true;
+            this.output.ItemHeight = 19;
+            this.output.Location = new System.Drawing.Point(9, 253);
+            this.output.Margin = new System.Windows.Forms.Padding(2);
+            this.output.Name = "output";
+            this.output.Size = new System.Drawing.Size(740, 175);
+            this.output.TabIndex = 7;
             // 
             // HTTPD
             // 
+            this.HTTPD.Controls.Add(this.label_port);
+            this.HTTPD.Controls.Add(this.text_port);
+            this.HTTPD.Controls.Add(this.label_dir);
+            this.HTTPD.Controls.Add(this.text_dir);
+            this.HTTPD.Controls.Add(this.btn_httpd);
             this.HTTPD.Location = new System.Drawing.Point(4, 29);
             this.HTTPD.Name = "HTTPD";
             this.HTTPD.Padding = new System.Windows.Forms.Padding(3);
@@ -249,35 +260,76 @@
             this.HTTPD.Text = "HTTPD";
             this.HTTPD.UseVisualStyleBackColor = true;
             // 
-            // Setting
+            // label_port
             // 
-            this.Setting.Location = new System.Drawing.Point(4, 29);
-            this.Setting.Name = "Setting";
-            this.Setting.Padding = new System.Windows.Forms.Padding(3);
-            this.Setting.Size = new System.Drawing.Size(757, 442);
-            this.Setting.TabIndex = 2;
-            this.Setting.Text = "Setting";
-            this.Setting.UseVisualStyleBackColor = true;
+            this.label_port.AutoSize = true;
+            this.label_port.Location = new System.Drawing.Point(32, 35);
+            this.label_port.Name = "label_port";
+            this.label_port.Size = new System.Drawing.Size(37, 20);
+            this.label_port.TabIndex = 0;
+            this.label_port.Text = "Port";
+            // 
+            // text_port
+            // 
+            this.text_port.Location = new System.Drawing.Point(114, 30);
+            this.text_port.Name = "text_port";
+            this.text_port.Size = new System.Drawing.Size(596, 25);
+            this.text_port.TabIndex = 1;
+            // 
+            // label_dir
+            // 
+            this.label_dir.AutoSize = true;
+            this.label_dir.Location = new System.Drawing.Point(32, 85);
+            this.label_dir.Name = "label_dir";
+            this.label_dir.Size = new System.Drawing.Size(70, 20);
+            this.label_dir.TabIndex = 2;
+            this.label_dir.Text = "Directory";
+            // 
+            // text_dir
+            // 
+            this.text_dir.Location = new System.Drawing.Point(114, 80);
+            this.text_dir.Name = "text_dir";
+            this.text_dir.Size = new System.Drawing.Size(596, 25);
+            this.text_dir.TabIndex = 3;
+            // 
+            // btn_httpd
+            // 
+            this.btn_httpd.Location = new System.Drawing.Point(635, 133);
+            this.btn_httpd.Name = "btn_httpd";
+            this.btn_httpd.Size = new System.Drawing.Size(75, 27);
+            this.btn_httpd.TabIndex = 4;
+            this.btn_httpd.Text = "Start";
+            this.btn_httpd.UseVisualStyleBackColor = true;
+            // 
+            // TFTPD
+            // 
+            this.TFTPD.Location = new System.Drawing.Point(4, 25);
+            this.TFTPD.Name = "TFTPD";
+            this.TFTPD.Padding = new System.Windows.Forms.Padding(3);
+            this.TFTPD.Size = new System.Drawing.Size(757, 446);
+            this.TFTPD.TabIndex = 4;
+            this.TFTPD.Text = "TFTPD";
+            this.TFTPD.UseVisualStyleBackColor = true;
             // 
             // FTPD
             // 
-            this.FTPD.Location = new System.Drawing.Point(4, 29);
+            this.FTPD.Location = new System.Drawing.Point(4, 25);
             this.FTPD.Name = "FTPD";
             this.FTPD.Padding = new System.Windows.Forms.Padding(3);
-            this.FTPD.Size = new System.Drawing.Size(757, 442);
+            this.FTPD.Size = new System.Drawing.Size(757, 446);
             this.FTPD.TabIndex = 3;
             this.FTPD.Text = "FTPD";
             this.FTPD.UseVisualStyleBackColor = true;
             // 
-            // TFTPD
+            // Setting
             // 
-            this.TFTPD.Location = new System.Drawing.Point(4, 29);
-            this.TFTPD.Name = "TFTPD";
-            this.TFTPD.Padding = new System.Windows.Forms.Padding(3);
-            this.TFTPD.Size = new System.Drawing.Size(757, 442);
-            this.TFTPD.TabIndex = 4;
-            this.TFTPD.Text = "TFTPD";
-            this.TFTPD.UseVisualStyleBackColor = true;
+            this.Setting.Location = new System.Drawing.Point(4, 25);
+            this.Setting.Name = "Setting";
+            this.Setting.Padding = new System.Windows.Forms.Padding(3);
+            this.Setting.Size = new System.Drawing.Size(757, 446);
+            this.Setting.TabIndex = 2;
+            this.Setting.Text = "Setting";
+            this.Setting.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -299,6 +351,8 @@
             this.tabs.ResumeLayout(false);
             this.Ping.ResumeLayout(false);
             this.Ping.PerformLayout();
+            this.HTTPD.ResumeLayout(false);
+            this.HTTPD.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -322,6 +376,11 @@
         private System.Windows.Forms.TabPage TFTPD;
         private System.Windows.Forms.TabPage FTPD;
         private System.Windows.Forms.TabPage Setting;
+        private System.Windows.Forms.Label label_port;
+        private System.Windows.Forms.TextBox text_port;
+        private System.Windows.Forms.Label label_dir;
+        private System.Windows.Forms.TextBox text_dir;
+        private System.Windows.Forms.Button btn_httpd;
     }
 }
 
