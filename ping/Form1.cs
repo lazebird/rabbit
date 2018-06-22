@@ -8,7 +8,7 @@ namespace ping
         public Form1()
         {
             InitializeComponent();
-            AcceptButton = button1;
+            AcceptButton = btn_ping;
             //CancelButton = Application.Exit(0);
             CheckForIllegalCrossThreadCalls = false;
             init_params();
@@ -40,23 +40,23 @@ namespace ping
         {
             if (name == "addr")
             {
-                return textBox1.Text;
+                return text_addr.Text;
             }
             if (name == "timeout")
             {
-                return textBox2.Text;
+                return text_interval.Text;
             }
             if (name == "times")
             {
-                return textBox3.Text;
+                return text_count.Text;
             }
             if (name == "logfile")
             {
-                return textBox4.Text;
+                return text_logpath.Text;
             }
             if (name == "btn")
             {
-                return button1.Text;
+                return btn_ping.Text;
             }
             return "";
         }
@@ -68,28 +68,28 @@ namespace ping
             }
             if (name == "addr")
             {
-                textBox1.Text = value;
-                textBox1.Refresh();
+                text_addr.Text = value;
+                text_addr.Refresh();
             }
             if (name == "timeout")
             {
-                textBox2.Text = value;
-                textBox2.Refresh();
+                text_interval.Text = value;
+                text_interval.Refresh();
             }
             if (name == "times")
             {
-                textBox3.Text = value;
-                textBox3.Refresh();
+                text_count.Text = value;
+                text_count.Refresh();
             }
             if (name == "logfile")
             {
-                textBox4.Text = value;
-                textBox4.Refresh();
+                text_logpath.Text = value;
+                text_logpath.Refresh();
             }
             if (name == "btn")
             {
-                button1.Text = value;
-                button1.Refresh();
+                btn_ping.Text = value;
+                btn_ping.Refresh();
             }
             if (name == "form")
             {
@@ -99,23 +99,23 @@ namespace ping
         }
         public void screen_print(string msg)
         {
-            listbox1.Items.Add(msg);
-            listbox1.TopIndex = listbox1.Items.Count - (int)(listbox1.Height / listbox1.ItemHeight);
-            listbox1.Refresh();
+            output.Items.Add(msg);
+            output.TopIndex = output.Items.Count - (int)(output.Height / output.ItemHeight);
+            output.Refresh();
         }
         public void screen_clear()
         {
-            listbox1.Items.Clear();
+            output.Items.Clear();
         }
         string addr;
         int timeout, times;
         private void env_setup()
         {
             saveconf(); // save empty config to restore default config
-            addr = textBox1.Text;
-            timeout = int.Parse(textBox2.Text);
-            times = int.Parse(textBox3.Text);
-            mylog.setfile(textBox4.Text);
+            addr = text_addr.Text;
+            timeout = int.Parse(text_interval.Text);
+            times = int.Parse(text_count.Text);
+            mylog.setfile(text_logpath.Text);
             setvalue("form", addr);
             setvalue("btn", "停止");
             screen_clear();
