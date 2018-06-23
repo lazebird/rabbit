@@ -7,7 +7,9 @@ namespace rabbit
     public partial class Form1 : Form
     {
         myping ping;
+        httpd httpd;
         mylog pinglog;
+        mylog httpdlog;
         Hashtable texthash;
         Hashtable btnhash;
         Hashtable formhash;
@@ -17,8 +19,10 @@ namespace rabbit
             AcceptButton = btn_ping;
             //CancelButton = Application.Exit(0);
             CheckForIllegalCrossThreadCalls = false;
-            pinglog = new mylog(output);
+            pinglog = new mylog(ping_output);
+            httpdlog = new mylog(httpd_output);
             ping = new myping(pinglog, ping_stop_cb);
+            httpd = new httpd(httpdlog);
             init_elements();
             readconf();
         }
@@ -34,7 +38,7 @@ namespace rabbit
         public void ping_stop_cb()
         {
             ((Form)formhash["form"]).Text = "Rabbit";
-            ((Button)btnhash["btn"]).Text = "开始";
+            ((Button)btnhash["ping_btn"]).Text = "开始";
         }
         private void init_elements()
         {
@@ -47,7 +51,8 @@ namespace rabbit
             texthash.Add("ping_logfile", text_logpath);
             texthash.Add("http_port", text_port);
             texthash.Add("http_dir", text_dir);
-            btnhash.Add("btn", btn_ping);
+            btnhash.Add("ping_btn", btn_ping);
+            btnhash.Add("httpd_btn", btn_httpd);
             formhash.Add("form", this);
         }
         private void readconf()
@@ -66,13 +71,13 @@ namespace rabbit
         }
         private void button1_Click(object sender, EventArgs evt)
         {
-            if (((Button)btnhash["btn"]).Text == "开始")
+            if (((Button)btnhash["ping_btn"]).Text == "开始")
             {
                 try
                 {
                     saveconf(); // save empty config to restore default config
                     ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
-                    ((Button)btnhash["btn"]).Text = "停止";
+                    ((Button)btnhash["ping_btn"]).Text = "停止";
                     pinglog.setfile(text_logpath.Text);
                     pinglog.clear();
                     ping.start(((TextBox)texthash["ping_addr"]).Text, int.Parse(((TextBox)texthash["ping_timeout"]).Text), int.Parse(((TextBox)texthash["ping_times"]).Text));
@@ -99,6 +104,28 @@ namespace rabbit
             if (filename.ShowDialog() == DialogResult.OK)
             {
                 ((TextBox)texthash["ping_logfile"]).Text = filename.FileName;
+            }
+        }
+        private void httpd_click(object sender, EventArgs evt)
+        {
+            try
+            {
+                if (((Button)btnhash["httpd_btn"]).Text == "开始")
+                {
+                    saveconf(); // save empty config to restore default config
+                    ((Button)btnhash["httpd_btn"]).Text = "停止";
+                    httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
+                }
+                else
+                {
+                    ((Button)btnhash["httpd_btn"]).Text = "开始";
+                    httpd.stop();
+                }
+            }
+            catch (Exception e)
+            {
+                ((Button)btnhash["httpd_btn"]).Text = "开始";
+                httpdlog.write("Error: " + e.Message);
             }
         }
     }

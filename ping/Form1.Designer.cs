@@ -41,7 +41,7 @@
             this.btn_log = new System.Windows.Forms.Button();
             this.text_logpath = new System.Windows.Forms.TextBox();
             this.btn_ping = new System.Windows.Forms.Button();
-            this.output = new System.Windows.Forms.ListBox();
+            this.ping_output = new System.Windows.Forms.ListBox();
             this.HTTPD = new System.Windows.Forms.TabPage();
             this.label_port = new System.Windows.Forms.Label();
             this.text_port = new System.Windows.Forms.TextBox();
@@ -75,6 +75,7 @@
             this.Setting = new System.Windows.Forms.TabPage();
             this.lang = new System.Windows.Forms.Label();
             this.lang_opt = new System.Windows.Forms.ComboBox();
+            this.httpd_output = new System.Windows.Forms.ListBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -175,7 +176,7 @@
             this.Ping.Controls.Add(this.btn_log);
             this.Ping.Controls.Add(this.text_logpath);
             this.Ping.Controls.Add(this.btn_ping);
-            this.Ping.Controls.Add(this.output);
+            this.Ping.Controls.Add(this.ping_output);
             this.Ping.Location = new System.Drawing.Point(4, 29);
             this.Ping.Name = "Ping";
             this.Ping.Padding = new System.Windows.Forms.Padding(3);
@@ -255,19 +256,19 @@
             this.btn_ping.UseVisualStyleBackColor = false;
             this.btn_ping.Click += new System.EventHandler(this.button1_Click);
             // 
-            // output
+            // ping_output
             // 
-            this.output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.ping_output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.output.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.output.FormattingEnabled = true;
-            this.output.ItemHeight = 19;
-            this.output.Location = new System.Drawing.Point(9, 253);
-            this.output.Margin = new System.Windows.Forms.Padding(2);
-            this.output.Name = "output";
-            this.output.Size = new System.Drawing.Size(742, 175);
-            this.output.TabIndex = 7;
+            this.ping_output.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ping_output.FormattingEnabled = true;
+            this.ping_output.ItemHeight = 19;
+            this.ping_output.Location = new System.Drawing.Point(9, 253);
+            this.ping_output.Margin = new System.Windows.Forms.Padding(2);
+            this.ping_output.Name = "ping_output";
+            this.ping_output.Size = new System.Drawing.Size(742, 175);
+            this.ping_output.TabIndex = 7;
             // 
             // HTTPD
             // 
@@ -276,6 +277,7 @@
             this.HTTPD.Controls.Add(this.label_dir);
             this.HTTPD.Controls.Add(this.text_dir);
             this.HTTPD.Controls.Add(this.btn_httpd);
+            this.HTTPD.Controls.Add(this.httpd_output);
             this.HTTPD.Location = new System.Drawing.Point(4, 29);
             this.HTTPD.Name = "HTTPD";
             this.HTTPD.Padding = new System.Windows.Forms.Padding(3);
@@ -327,8 +329,9 @@
             this.btn_httpd.Name = "btn_httpd";
             this.btn_httpd.Size = new System.Drawing.Size(75, 27);
             this.btn_httpd.TabIndex = 4;
-            this.btn_httpd.Text = "Start";
+            this.btn_httpd.Text = "开始";
             this.btn_httpd.UseVisualStyleBackColor = true;
+            this.btn_httpd.Click += new System.EventHandler(this.httpd_click);
             // 
             // TFTPD
             // 
@@ -343,10 +346,10 @@
             this.TFTPD.Controls.Add(this.tftp_dirtext5);
             this.TFTPD.Controls.Add(this.tftp_dirbtn5);
             this.TFTPD.Controls.Add(this.btn_tftp);
-            this.TFTPD.Location = new System.Drawing.Point(4, 29);
+            this.TFTPD.Location = new System.Drawing.Point(4, 25);
             this.TFTPD.Name = "TFTPD";
             this.TFTPD.Padding = new System.Windows.Forms.Padding(3);
-            this.TFTPD.Size = new System.Drawing.Size(759, 444);
+            this.TFTPD.Size = new System.Drawing.Size(759, 448);
             this.TFTPD.TabIndex = 5;
             this.TFTPD.Text = "TFTPD";
             this.TFTPD.UseVisualStyleBackColor = true;
@@ -464,10 +467,10 @@
             this.FTPD.Controls.Add(this.ftp_dirtext5);
             this.FTPD.Controls.Add(this.ftp_dirbtn5);
             this.FTPD.Controls.Add(this.btn_ftp);
-            this.FTPD.Location = new System.Drawing.Point(4, 29);
+            this.FTPD.Location = new System.Drawing.Point(4, 25);
             this.FTPD.Name = "FTPD";
             this.FTPD.Padding = new System.Windows.Forms.Padding(3);
-            this.FTPD.Size = new System.Drawing.Size(759, 444);
+            this.FTPD.Size = new System.Drawing.Size(759, 448);
             this.FTPD.TabIndex = 3;
             this.FTPD.Text = "FTPD";
             this.FTPD.UseVisualStyleBackColor = true;
@@ -576,10 +579,10 @@
             // 
             this.Setting.Controls.Add(this.lang);
             this.Setting.Controls.Add(this.lang_opt);
-            this.Setting.Location = new System.Drawing.Point(4, 29);
+            this.Setting.Location = new System.Drawing.Point(4, 25);
             this.Setting.Name = "Setting";
             this.Setting.Padding = new System.Windows.Forms.Padding(3);
-            this.Setting.Size = new System.Drawing.Size(759, 444);
+            this.Setting.Size = new System.Drawing.Size(759, 448);
             this.Setting.TabIndex = 2;
             this.Setting.Text = "Setting";
             this.Setting.UseVisualStyleBackColor = true;
@@ -600,6 +603,18 @@
             this.lang_opt.Name = "lang_opt";
             this.lang_opt.Size = new System.Drawing.Size(121, 28);
             this.lang_opt.TabIndex = 1;
+            // 
+            // httpd_output
+            // 
+            this.httpd_output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.httpd_output.FormattingEnabled = true;
+            this.httpd_output.ItemHeight = 20;
+            this.httpd_output.Location = new System.Drawing.Point(36, 198);
+            this.httpd_output.Name = "httpd_output";
+            this.httpd_output.Size = new System.Drawing.Size(674, 244);
+            this.httpd_output.TabIndex = 5;
             // 
             // Form1
             // 
@@ -648,7 +663,7 @@
         private System.Windows.Forms.TabControl tabs;
         private System.Windows.Forms.TabPage Ping;
         private System.Windows.Forms.TabPage HTTPD;
-        private System.Windows.Forms.ListBox output;
+        private System.Windows.Forms.ListBox ping_output;
         private System.Windows.Forms.TabPage FTPD;
         private System.Windows.Forms.TabPage Setting;
         private System.Windows.Forms.Label label_port;
@@ -681,6 +696,7 @@
         private System.Windows.Forms.Button btn_tftp;
         private System.Windows.Forms.Label lang;
         private System.Windows.Forms.ComboBox lang_opt;
+        private System.Windows.Forms.ListBox httpd_output;
     }
 }
 
