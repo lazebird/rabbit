@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace ping
+namespace rabbit
 {
     static class Program
     {

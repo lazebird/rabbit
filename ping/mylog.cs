@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace ping
+namespace rabbit
 {
     class mylog
     {

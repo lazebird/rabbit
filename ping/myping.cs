@@ -2,7 +2,7 @@
 using System.Net.NetworkInformation;
 using System.Threading;
 
-namespace ping
+namespace rabbit
 {
     class myping
     {

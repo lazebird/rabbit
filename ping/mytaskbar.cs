@@ -1,7 +1,7 @@
 ﻿using Microsoft.WindowsAPICodePack.Taskbar;
 using System;
 
-namespace ping
+namespace rabbit
 {
     class mytaskbar
     {

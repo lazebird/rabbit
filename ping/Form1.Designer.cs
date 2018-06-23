@@ -1,4 +1,4 @@
-﻿namespace ping
+﻿namespace rabbit
 {
     partial class Form1
     {
@@ -116,7 +116,6 @@
             this.text_addr.Name = "text_addr";
             this.text_addr.Size = new System.Drawing.Size(679, 25);
             this.text_addr.TabIndex = 1;
-            this.text_addr.Text = "www.mozilla.com";
             // 
             // text_interval
             // 
@@ -127,7 +126,6 @@
             this.text_interval.Name = "text_interval";
             this.text_interval.Size = new System.Drawing.Size(679, 25);
             this.text_interval.TabIndex = 2;
-            this.text_interval.Text = "1000";
             // 
             // toolStripContainer1
             // 
@@ -205,7 +203,6 @@
             this.text_count.Name = "text_count";
             this.text_count.Size = new System.Drawing.Size(679, 25);
             this.text_count.TabIndex = 3;
-            this.text_count.Text = "-1";
             // 
             // btn_log
             // 

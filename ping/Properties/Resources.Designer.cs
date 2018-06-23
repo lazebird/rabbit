@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ping.Properties
+namespace rabbit.Properties
 {
 
 
