@@ -13,10 +13,7 @@ namespace rabbit
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Form1 f = new Form1();
-            mylog.setform(f);
-            myping.getinstance().setform(f);
-            Application.Run(f);
+            Application.Run(new Form1());
         }
     }
 }

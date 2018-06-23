@@ -1,30 +1,49 @@
 ﻿using System.IO;
+using System.Windows.Forms;
 
 namespace rabbit
 {
     class mylog
     {
-        static Form1 f;
-        public static void setform(Form1 form)
+        string logfile = null;
+        ListBox logview = null;
+
+        public mylog(ListBox logview)
         {
-            f = form;
+            this.logview = logview;
         }
-        static string logfile;
-        public static void setfile(string name)
+
+        public void setfile(string name)
         {
-            logfile = name;
+            if (name != "")
+            {
+                logfile = name;
+            }
+            else
+            {
+                logfile = null;
+            }
         }
-        public static void log(string msg)
+        public void log(string msg)
         {
-            if (logfile != null && logfile != "")
+            if (logfile != null)
             {
                 StreamWriter file = new StreamWriter(logfile, true);
                 file.WriteLine(msg);
                 file.Close();
             }
-            if (f != null)
+            if (logview != null)
             {
-                f.screen_print(msg);
+                logview.Items.Add(msg);
+                logview.TopIndex = logview.Items.Count - (int)(logview.Height / logview.ItemHeight);
+                logview.Refresh();
+            }
+        }
+        public void clear()
+        {
+            if (logview != null)
+            {
+                logview.Items.Clear();
             }
         }
     }

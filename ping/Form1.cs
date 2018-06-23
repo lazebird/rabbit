@@ -5,12 +5,16 @@ namespace rabbit
 {
     public partial class Form1 : Form
     {
+        myping ping;
+        mylog l;
         public Form1()
         {
             InitializeComponent();
             AcceptButton = btn_ping;
             //CancelButton = Application.Exit(0);
             CheckForIllegalCrossThreadCalls = false;
+            l = new mylog(output);
+            ping = new myping(l, ping_stop_cb);
             init_params();
         }
         protected override bool ProcessDialogKey(Keys keyData)
@@ -21,6 +25,11 @@ namespace rabbit
                 return true;
             }
             return base.ProcessDialogKey(keyData);
+        }
+        public void ping_stop_cb()
+        {
+            setvalue("form", "ping");
+            setvalue("btn", "开始");
         }
         private void init_params()
         {
@@ -97,16 +106,6 @@ namespace rabbit
                 this.Refresh();
             }
         }
-        public void screen_print(string msg)
-        {
-            output.Items.Add(msg);
-            output.TopIndex = output.Items.Count - (int)(output.Height / output.ItemHeight);
-            output.Refresh();
-        }
-        public void screen_clear()
-        {
-            output.Items.Clear();
-        }
         string addr;
         int timeout, times;
         private void env_setup()
@@ -115,10 +114,10 @@ namespace rabbit
             addr = text_addr.Text;
             timeout = int.Parse(text_interval.Text);
             times = int.Parse(text_count.Text);
-            mylog.setfile(text_logpath.Text);
+            l.setfile(text_logpath.Text);
             setvalue("form", addr);
             setvalue("btn", "停止");
-            screen_clear();
+            l.clear();
         }
         private void button1_Click(object sender, EventArgs evt)
         {
@@ -127,17 +126,17 @@ namespace rabbit
                 try
                 {
                     env_setup();
-                    myping.getinstance().start(addr, timeout, times);
+                    ping.start(addr, timeout, times);
                 }
                 catch (Exception e)
                 {
-                    mylog.log("Error: " + e.Message);
+                    l.log("Error: " + e.Message);
                 }
             }
             else
             {
                 // stop
-                myping.getinstance().stop();
+                ping.stop();
             }
         }
         private void button2_Click(object sender, EventArgs e)

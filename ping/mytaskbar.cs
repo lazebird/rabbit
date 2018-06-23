@@ -5,8 +5,10 @@ namespace rabbit
 {
     class mytaskbar
     {
-        static bool taskbar_support = true;
-        public static void set(int state, int cur, int total)
+        bool taskbar_support = true;
+        string errmsg;
+
+        public bool set(int state, int cur, int total)
         {
             if (taskbar_support)
             {
@@ -16,12 +18,17 @@ namespace rabbit
                 }
                 catch (Exception e)
                 {
-                    mylog.log("Error: " + e.Message);
+                    errmsg = e.Message;
                     taskbar_support = false;
                 }
             }
+            return taskbar_support;
         }
-        private static void set_internal(int state, int cur, int total)
+        public string strerr()
+        {
+            return errmsg;
+        }
+        private void set_internal(int state, int cur, int total)
         {
             if (!TaskbarManager.IsPlatformSupported)
             {
