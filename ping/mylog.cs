@@ -24,7 +24,7 @@ namespace rabbit
                 logfile = null;
             }
         }
-        public void log(string msg)
+        public void write(string msg)
         {
             if (logfile != null)
             {

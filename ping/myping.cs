@@ -33,7 +33,7 @@ namespace rabbit
             Thread.Sleep(200);
             if (!bar.set(0, 0, 0))
             {
-                l.log("Error: " + bar.strerr());
+                l.write("Error: " + bar.strerr());
             }
         }
         public void start(string addr1, int timeout1, int times1)
@@ -65,7 +65,7 @@ namespace rabbit
                 }
                 catch (Exception e)
                 {
-                    l.log("Error: " + e.Message);
+                    l.write("Error: " + e.Message);
                     break;
                 }
                 txcnt++;
@@ -73,7 +73,7 @@ namespace rabbit
                 {
                     rxcnt++;
                     display_taskbar(1);
-                    l.log("来自 " + reply.Address + " 的回复: 字节=" + reply.Buffer.Length + " 毫秒=" + reply.RoundtripTime + " TTL=" + reply.Options.Ttl);
+                    l.write("来自 " + reply.Address + " 的回复: 字节=" + reply.Buffer.Length + " 毫秒=" + reply.RoundtripTime + " TTL=" + reply.Options.Ttl);
                     if (timeout > (int)reply.RoundtripTime)
                     {
                         Thread.Sleep(timeout - (int)reply.RoundtripTime);
@@ -86,7 +86,7 @@ namespace rabbit
                 {
                     losscnt++;
                     display_taskbar(0);
-                    l.log("请求超时。");
+                    l.write("请求超时。");
                 }
             }
             display_statistics();
@@ -139,8 +139,8 @@ namespace rabbit
             {
                 avgtm = 0;
             }
-            l.log("发送 = " + txcnt + "，接收 = " + rxcnt + "，丢失 = " + losscnt + " (" + lossper.ToString() + " % 丢失)");
-            l.log("最短 = " + mintm + "毫秒，最长 = " + maxtm + "毫秒，平均 = " + avgtm.ToString() + "毫秒");
+            l.write("发送 = " + txcnt + "，接收 = " + rxcnt + "，丢失 = " + losscnt + " (" + lossper.ToString() + " % 丢失)");
+            l.write("最短 = " + mintm + "毫秒，最长 = " + maxtm + "毫秒，平均 = " + avgtm.ToString() + "毫秒");
         }
     }
 }

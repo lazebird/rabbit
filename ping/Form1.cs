@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Windows.Forms;
 
 namespace rabbit
@@ -6,16 +7,20 @@ namespace rabbit
     public partial class Form1 : Form
     {
         myping ping;
-        mylog l;
+        mylog pinglog;
+        Hashtable texthash;
+        Hashtable btnhash;
+        Hashtable formhash;
         public Form1()
         {
             InitializeComponent();
             AcceptButton = btn_ping;
             //CancelButton = Application.Exit(0);
             CheckForIllegalCrossThreadCalls = false;
-            l = new mylog(output);
-            ping = new myping(l, ping_stop_cb);
-            init_params();
+            pinglog = new mylog(output);
+            ping = new myping(pinglog, ping_stop_cb);
+            init_elements();
+            readconf();
         }
         protected override bool ProcessDialogKey(Keys keyData)
         {
@@ -28,109 +33,51 @@ namespace rabbit
         }
         public void ping_stop_cb()
         {
-            setvalue("form", "ping");
-            setvalue("btn", "开始");
+            ((Form)formhash["form"]).Text = "Rabbit";
+            ((Button)btnhash["btn"]).Text = "开始";
         }
-        private void init_params()
+        private void init_elements()
         {
-            setvalue("addr", myconf.read("addr"));
-            setvalue("timeout", myconf.read("timeout"));
-            setvalue("times", myconf.read("times"));
-            setvalue("logfile", myconf.read("logfile"));
+            texthash = new Hashtable();
+            btnhash = new Hashtable();
+            formhash = new Hashtable();
+            texthash.Add("addr", text_addr);
+            texthash.Add("timeout", text_interval);
+            texthash.Add("times", text_count);
+            texthash.Add("logfile", text_logpath);
+            btnhash.Add("btn", btn_ping);
+            formhash.Add("form", this);
+        }
+        private void readconf()
+        {
+            foreach (string key in texthash.Keys)
+            {
+                ((TextBox)texthash[key]).Text = myconf.read(key);
+            }
         }
         private void saveconf()
         {
-            myconf.write("addr", getvalue("addr"));
-            myconf.write("timeout", getvalue("timeout"));
-            myconf.write("times", getvalue("times"));
-            myconf.write("logfile", getvalue("logfile"));
-        }
-        public string getvalue(string name)
-        {
-            if (name == "addr")
+            foreach (string key in texthash.Keys)
             {
-                return text_addr.Text;
+                myconf.write(key, ((TextBox)texthash[key]).Text);
             }
-            if (name == "timeout")
-            {
-                return text_interval.Text;
-            }
-            if (name == "times")
-            {
-                return text_count.Text;
-            }
-            if (name == "logfile")
-            {
-                return text_logpath.Text;
-            }
-            if (name == "btn")
-            {
-                return btn_ping.Text;
-            }
-            return "";
-        }
-        public void setvalue(string name, string value)
-        {
-            if (value == "")
-            {
-                return;
-            }
-            if (name == "addr")
-            {
-                text_addr.Text = value;
-                text_addr.Refresh();
-            }
-            if (name == "timeout")
-            {
-                text_interval.Text = value;
-                text_interval.Refresh();
-            }
-            if (name == "times")
-            {
-                text_count.Text = value;
-                text_count.Refresh();
-            }
-            if (name == "logfile")
-            {
-                text_logpath.Text = value;
-                text_logpath.Refresh();
-            }
-            if (name == "btn")
-            {
-                btn_ping.Text = value;
-                btn_ping.Refresh();
-            }
-            if (name == "form")
-            {
-                this.Text = value;
-                this.Refresh();
-            }
-        }
-        string addr;
-        int timeout, times;
-        private void env_setup()
-        {
-            saveconf(); // save empty config to restore default config
-            addr = text_addr.Text;
-            timeout = int.Parse(text_interval.Text);
-            times = int.Parse(text_count.Text);
-            l.setfile(text_logpath.Text);
-            setvalue("form", addr);
-            setvalue("btn", "停止");
-            l.clear();
         }
         private void button1_Click(object sender, EventArgs evt)
         {
-            if (getvalue("btn") == "开始")
+            if (((Button)btnhash["btn"]).Text == "开始")
             {
                 try
                 {
-                    env_setup();
-                    ping.start(addr, timeout, times);
+                    saveconf(); // save empty config to restore default config
+                    ((Form)formhash["form"]).Text = ((TextBox)texthash["addr"]).Text;
+                    ((Button)btnhash["btn"]).Text = "停止";
+                    pinglog.setfile(text_logpath.Text);
+                    pinglog.clear();
+                    ping.start(((TextBox)texthash["addr"]).Text, int.Parse(((TextBox)texthash["timeout"]).Text), int.Parse(((TextBox)texthash["times"]).Text));
                 }
                 catch (Exception e)
                 {
-                    l.log("Error: " + e.Message);
+                    pinglog.write("Error: " + e.Message);
                 }
             }
             else
@@ -149,7 +96,7 @@ namespace rabbit
             filename.OverwritePrompt = true;
             if (filename.ShowDialog() == DialogResult.OK)
             {
-                setvalue("logfile", filename.FileName);
+                ((TextBox)texthash["logfile"]).Text = filename.FileName;
             }
         }
     }

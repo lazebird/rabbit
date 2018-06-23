@@ -23,8 +23,8 @@ namespace rabbit
         {
             Hashtable cfg = new Hashtable();
             cfg.Add("addr", "www.mozilla.com");
-            cfg.Add("interval", "1000");
-            cfg.Add("count", "-1");
+            cfg.Add("timeout", "1000");
+            cfg.Add("times", "-1");
             return (string)cfg[key];
         }
 
