@@ -1,17 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 
 namespace rabbit
 {
     class myconf
     {
-        public static string read(string key)
+        public static string read(string key)   // property.setting must be set to avoid exception
         {
             string value = (string)Properties.Settings.Default[key];
-            if (value != "")
+            if (value == "")
             {
-                return value;
+                return get_default(key);
             }
-            return get_default(key);
+            return value;
         }
         public static void write(string key, string value)
         {
@@ -19,13 +20,18 @@ namespace rabbit
             Properties.Settings.Default.Save();
             Properties.Settings.Default.Upgrade();
         }
-        public static string get_default(string key)
+        private static string get_default(string key) // effective only when settings have been set to ""
         {
             Hashtable cfg = new Hashtable();
-            cfg.Add("addr", "www.mozilla.com");
-            cfg.Add("timeout", "1000");
-            cfg.Add("times", "-1");
-            return (string)cfg[key];
+            cfg.Add("ping_addr", "www.mozilla.com");
+            cfg.Add("ping_timeout", "1000");
+            cfg.Add("ping_times", "-1");
+            cfg.Add("http_port", "80");
+            if (cfg[key] != null)
+            {
+                return (string)cfg[key];
+            }
+            return "";
         }
 
     }

@@ -12,7 +12,7 @@ namespace rabbit.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.1.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.7.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -25,49 +25,73 @@ namespace rabbit.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("www.mozilla.com")]
-        public string addr {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ping_addr {
             get {
-                return ((string)(this["addr"]));
+                return ((string)(this["ping_addr"]));
             }
             set {
-                this["addr"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
-        public string timeout {
-            get {
-                return ((string)(this["timeout"]));
-            }
-            set {
-                this["timeout"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
-        public string times {
-            get {
-                return ((string)(this["times"]));
-            }
-            set {
-                this["times"] = value;
+                this["ping_addr"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string logfile {
+        public string ping_timeout {
             get {
-                return ((string)(this["logfile"]));
+                return ((string)(this["ping_timeout"]));
             }
             set {
-                this["logfile"] = value;
+                this["ping_timeout"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ping_times {
+            get {
+                return ((string)(this["ping_times"]));
+            }
+            set {
+                this["ping_times"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ping_logfile {
+            get {
+                return ((string)(this["ping_logfile"]));
+            }
+            set {
+                this["ping_logfile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string http_port {
+            get {
+                return ((string)(this["http_port"]));
+            }
+            set {
+                this["http_port"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string http_dir {
+            get {
+                return ((string)(this["http_dir"]));
+            }
+            set {
+                this["http_dir"] = value;
             }
         }
     }

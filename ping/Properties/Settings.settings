@@ -1,17 +1,23 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ping.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="rabbit.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="addr" Type="System.String" Scope="User">
-      <Value Profile="(Default)">www.mozilla.com</Value>
+    <Setting Name="ping_addr" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="timeout" Type="System.String" Scope="User">
-      <Value Profile="(Default)">1000</Value>
+    <Setting Name="ping_timeout" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="times" Type="System.String" Scope="User">
-      <Value Profile="(Default)">-1</Value>
+    <Setting Name="ping_times" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="logfile" Type="System.String" Scope="User">
+    <Setting Name="ping_logfile" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="http_port" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="http_dir" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

@@ -41,10 +41,12 @@ namespace rabbit
             texthash = new Hashtable();
             btnhash = new Hashtable();
             formhash = new Hashtable();
-            texthash.Add("addr", text_addr);
-            texthash.Add("timeout", text_interval);
-            texthash.Add("times", text_count);
-            texthash.Add("logfile", text_logpath);
+            texthash.Add("ping_addr", text_addr);
+            texthash.Add("ping_timeout", text_interval);
+            texthash.Add("ping_times", text_count);
+            texthash.Add("ping_logfile", text_logpath);
+            texthash.Add("http_port", text_port);
+            texthash.Add("http_dir", text_dir);
             btnhash.Add("btn", btn_ping);
             formhash.Add("form", this);
         }
@@ -69,11 +71,11 @@ namespace rabbit
                 try
                 {
                     saveconf(); // save empty config to restore default config
-                    ((Form)formhash["form"]).Text = ((TextBox)texthash["addr"]).Text;
+                    ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
                     ((Button)btnhash["btn"]).Text = "停止";
                     pinglog.setfile(text_logpath.Text);
                     pinglog.clear();
-                    ping.start(((TextBox)texthash["addr"]).Text, int.Parse(((TextBox)texthash["timeout"]).Text), int.Parse(((TextBox)texthash["times"]).Text));
+                    ping.start(((TextBox)texthash["ping_addr"]).Text, int.Parse(((TextBox)texthash["ping_timeout"]).Text), int.Parse(((TextBox)texthash["ping_times"]).Text));
                 }
                 catch (Exception e)
                 {
@@ -96,7 +98,7 @@ namespace rabbit
             filename.OverwritePrompt = true;
             if (filename.ShowDialog() == DialogResult.OK)
             {
-                ((TextBox)texthash["logfile"]).Text = filename.FileName;
+                ((TextBox)texthash["ping_logfile"]).Text = filename.FileName;
             }
         }
     }
