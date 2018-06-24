@@ -48,6 +48,7 @@
             this.label_dir = new System.Windows.Forms.Label();
             this.text_dir = new System.Windows.Forms.TextBox();
             this.btn_httpd = new System.Windows.Forms.Button();
+            this.httpd_output = new System.Windows.Forms.ListBox();
             this.TFTPD = new System.Windows.Forms.TabPage();
             this.tftp_dirtext1 = new System.Windows.Forms.TextBox();
             this.tftp_dirbtn1 = new System.Windows.Forms.Button();
@@ -72,10 +73,20 @@
             this.ftp_dirtext5 = new System.Windows.Forms.TextBox();
             this.ftp_dirbtn5 = new System.Windows.Forms.Button();
             this.btn_ftp = new System.Windows.Forms.Button();
+            this.DHCPD = new System.Windows.Forms.TabPage();
+            this.dhcp_startlabel = new System.Windows.Forms.Label();
+            this.dhcp_starttext = new System.Windows.Forms.TextBox();
+            this.dhcp_endlabel = new System.Windows.Forms.Label();
+            this.dhcp_endtext = new System.Windows.Forms.TextBox();
+            this.dhcp_gatewaylabel = new System.Windows.Forms.Label();
+            this.dhcp_gatewaytext = new System.Windows.Forms.TextBox();
+            this.dhcp_logbtn = new System.Windows.Forms.Button();
+            this.dhcp_logtext = new System.Windows.Forms.TextBox();
+            this.dhcp_btn = new System.Windows.Forms.Button();
+            this.dhcp_logmsg = new System.Windows.Forms.ListBox();
             this.Setting = new System.Windows.Forms.TabPage();
             this.lang = new System.Windows.Forms.Label();
             this.lang_opt = new System.Windows.Forms.ComboBox();
-            this.httpd_output = new System.Windows.Forms.ListBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -83,6 +94,7 @@
             this.HTTPD.SuspendLayout();
             this.TFTPD.SuspendLayout();
             this.FTPD.SuspendLayout();
+            this.DHCPD.SuspendLayout();
             this.Setting.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -157,6 +169,7 @@
             this.tabs.Controls.Add(this.HTTPD);
             this.tabs.Controls.Add(this.TFTPD);
             this.tabs.Controls.Add(this.FTPD);
+            this.tabs.Controls.Add(this.DHCPD);
             this.tabs.Controls.Add(this.Setting);
             this.tabs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabs.Location = new System.Drawing.Point(0, 0);
@@ -278,10 +291,10 @@
             this.HTTPD.Controls.Add(this.text_dir);
             this.HTTPD.Controls.Add(this.btn_httpd);
             this.HTTPD.Controls.Add(this.httpd_output);
-            this.HTTPD.Location = new System.Drawing.Point(4, 29);
+            this.HTTPD.Location = new System.Drawing.Point(4, 25);
             this.HTTPD.Name = "HTTPD";
             this.HTTPD.Padding = new System.Windows.Forms.Padding(3);
-            this.HTTPD.Size = new System.Drawing.Size(759, 444);
+            this.HTTPD.Size = new System.Drawing.Size(759, 448);
             this.HTTPD.TabIndex = 1;
             this.HTTPD.Text = "HTTPD";
             this.HTTPD.UseVisualStyleBackColor = true;
@@ -332,6 +345,18 @@
             this.btn_httpd.Text = "开始";
             this.btn_httpd.UseVisualStyleBackColor = true;
             this.btn_httpd.Click += new System.EventHandler(this.httpd_click);
+            // 
+            // httpd_output
+            // 
+            this.httpd_output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.httpd_output.FormattingEnabled = true;
+            this.httpd_output.ItemHeight = 20;
+            this.httpd_output.Location = new System.Drawing.Point(36, 198);
+            this.httpd_output.Name = "httpd_output";
+            this.httpd_output.Size = new System.Drawing.Size(674, 244);
+            this.httpd_output.TabIndex = 5;
             // 
             // TFTPD
             // 
@@ -575,6 +600,151 @@
             this.btn_ftp.Text = "Start";
             this.btn_ftp.UseVisualStyleBackColor = true;
             // 
+            // DHCPD
+            // 
+            this.DHCPD.Controls.Add(this.dhcp_startlabel);
+            this.DHCPD.Controls.Add(this.dhcp_starttext);
+            this.DHCPD.Controls.Add(this.dhcp_endlabel);
+            this.DHCPD.Controls.Add(this.dhcp_endtext);
+            this.DHCPD.Controls.Add(this.dhcp_gatewaylabel);
+            this.DHCPD.Controls.Add(this.dhcp_gatewaytext);
+            this.DHCPD.Controls.Add(this.dhcp_logbtn);
+            this.DHCPD.Controls.Add(this.dhcp_logtext);
+            this.DHCPD.Controls.Add(this.dhcp_btn);
+            this.DHCPD.Controls.Add(this.dhcp_logmsg);
+            this.DHCPD.Location = new System.Drawing.Point(4, 29);
+            this.DHCPD.Name = "DHCPD";
+            this.DHCPD.Padding = new System.Windows.Forms.Padding(3);
+            this.DHCPD.Size = new System.Drawing.Size(759, 444);
+            this.DHCPD.TabIndex = 5;
+            this.DHCPD.Text = "DHCPD";
+            // 
+            // dhcp_startlabel
+            // 
+            this.dhcp_startlabel.AutoSize = true;
+            this.dhcp_startlabel.BackColor = System.Drawing.Color.Transparent;
+            this.dhcp_startlabel.Location = new System.Drawing.Point(5, 19);
+            this.dhcp_startlabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.dhcp_startlabel.Name = "dhcp_startlabel";
+            this.dhcp_startlabel.Size = new System.Drawing.Size(65, 20);
+            this.dhcp_startlabel.TabIndex = 12;
+            this.dhcp_startlabel.Text = "起始地址";
+            // 
+            // dhcp_starttext
+            // 
+            this.dhcp_starttext.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dhcp_starttext.Location = new System.Drawing.Point(72, 14);
+            this.dhcp_starttext.Margin = new System.Windows.Forms.Padding(2);
+            this.dhcp_starttext.Name = "dhcp_starttext";
+            this.dhcp_starttext.Size = new System.Drawing.Size(679, 25);
+            this.dhcp_starttext.TabIndex = 1;
+            // 
+            // dhcp_endlabel
+            // 
+            this.dhcp_endlabel.AutoSize = true;
+            this.dhcp_endlabel.BackColor = System.Drawing.Color.Transparent;
+            this.dhcp_endlabel.Location = new System.Drawing.Point(5, 60);
+            this.dhcp_endlabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.dhcp_endlabel.Name = "dhcp_endlabel";
+            this.dhcp_endlabel.Size = new System.Drawing.Size(65, 20);
+            this.dhcp_endlabel.TabIndex = 0;
+            this.dhcp_endlabel.Text = "结束地址";
+            // 
+            // dhcp_endtext
+            // 
+            this.dhcp_endtext.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dhcp_endtext.Location = new System.Drawing.Point(72, 55);
+            this.dhcp_endtext.Margin = new System.Windows.Forms.Padding(2);
+            this.dhcp_endtext.Name = "dhcp_endtext";
+            this.dhcp_endtext.Size = new System.Drawing.Size(679, 25);
+            this.dhcp_endtext.TabIndex = 2;
+            // 
+            // dhcp_gatewaylabel
+            // 
+            this.dhcp_gatewaylabel.AutoSize = true;
+            this.dhcp_gatewaylabel.BackColor = System.Drawing.Color.Transparent;
+            this.dhcp_gatewaylabel.Location = new System.Drawing.Point(5, 101);
+            this.dhcp_gatewaylabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.dhcp_gatewaylabel.Name = "dhcp_gatewaylabel";
+            this.dhcp_gatewaylabel.Size = new System.Drawing.Size(37, 20);
+            this.dhcp_gatewaylabel.TabIndex = 1;
+            this.dhcp_gatewaylabel.Text = "网关";
+            // 
+            // dhcp_gatewaytext
+            // 
+            this.dhcp_gatewaytext.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dhcp_gatewaytext.Location = new System.Drawing.Point(72, 96);
+            this.dhcp_gatewaytext.Margin = new System.Windows.Forms.Padding(2);
+            this.dhcp_gatewaytext.Name = "dhcp_gatewaytext";
+            this.dhcp_gatewaytext.Size = new System.Drawing.Size(679, 25);
+            this.dhcp_gatewaytext.TabIndex = 3;
+            // 
+            // dhcp_logbtn
+            // 
+            this.dhcp_logbtn.BackColor = System.Drawing.Color.YellowGreen;
+            this.dhcp_logbtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.dhcp_logbtn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.dhcp_logbtn.FlatAppearance.BorderSize = 0;
+            this.dhcp_logbtn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.dhcp_logbtn.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.dhcp_logbtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.dhcp_logbtn.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dhcp_logbtn.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.dhcp_logbtn.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.dhcp_logbtn.Location = new System.Drawing.Point(9, 133);
+            this.dhcp_logbtn.Margin = new System.Windows.Forms.Padding(2);
+            this.dhcp_logbtn.Name = "dhcp_logbtn";
+            this.dhcp_logbtn.Size = new System.Drawing.Size(52, 32);
+            this.dhcp_logbtn.TabIndex = 4;
+            this.dhcp_logbtn.Text = "日志";
+            this.dhcp_logbtn.UseVisualStyleBackColor = false;
+            // 
+            // dhcp_logtext
+            // 
+            this.dhcp_logtext.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dhcp_logtext.Location = new System.Drawing.Point(72, 140);
+            this.dhcp_logtext.Margin = new System.Windows.Forms.Padding(2);
+            this.dhcp_logtext.Name = "dhcp_logtext";
+            this.dhcp_logtext.Size = new System.Drawing.Size(679, 25);
+            this.dhcp_logtext.TabIndex = 5;
+            // 
+            // dhcp_btn
+            // 
+            this.dhcp_btn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.dhcp_btn.BackColor = System.Drawing.Color.YellowGreen;
+            this.dhcp_btn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.dhcp_btn.FlatAppearance.BorderSize = 0;
+            this.dhcp_btn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.dhcp_btn.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.dhcp_btn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.dhcp_btn.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dhcp_btn.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.dhcp_btn.Location = new System.Drawing.Point(678, 190);
+            this.dhcp_btn.Margin = new System.Windows.Forms.Padding(2);
+            this.dhcp_btn.Name = "dhcp_btn";
+            this.dhcp_btn.Size = new System.Drawing.Size(73, 37);
+            this.dhcp_btn.TabIndex = 6;
+            this.dhcp_btn.Text = "开始";
+            this.dhcp_btn.UseVisualStyleBackColor = false;
+            // 
+            // dhcp_logmsg
+            // 
+            this.dhcp_logmsg.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dhcp_logmsg.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dhcp_logmsg.FormattingEnabled = true;
+            this.dhcp_logmsg.ItemHeight = 19;
+            this.dhcp_logmsg.Location = new System.Drawing.Point(9, 253);
+            this.dhcp_logmsg.Margin = new System.Windows.Forms.Padding(2);
+            this.dhcp_logmsg.Name = "dhcp_logmsg";
+            this.dhcp_logmsg.Size = new System.Drawing.Size(742, 118);
+            this.dhcp_logmsg.TabIndex = 7;
+            // 
             // Setting
             // 
             this.Setting.Controls.Add(this.lang);
@@ -583,7 +753,7 @@
             this.Setting.Name = "Setting";
             this.Setting.Padding = new System.Windows.Forms.Padding(3);
             this.Setting.Size = new System.Drawing.Size(759, 448);
-            this.Setting.TabIndex = 2;
+            this.Setting.TabIndex = 6;
             this.Setting.Text = "Setting";
             this.Setting.UseVisualStyleBackColor = true;
             // 
@@ -603,18 +773,6 @@
             this.lang_opt.Name = "lang_opt";
             this.lang_opt.Size = new System.Drawing.Size(121, 28);
             this.lang_opt.TabIndex = 1;
-            // 
-            // httpd_output
-            // 
-            this.httpd_output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.httpd_output.FormattingEnabled = true;
-            this.httpd_output.ItemHeight = 20;
-            this.httpd_output.Location = new System.Drawing.Point(36, 198);
-            this.httpd_output.Name = "httpd_output";
-            this.httpd_output.Size = new System.Drawing.Size(674, 244);
-            this.httpd_output.TabIndex = 5;
             // 
             // Form1
             // 
@@ -642,6 +800,8 @@
             this.TFTPD.PerformLayout();
             this.FTPD.ResumeLayout(false);
             this.FTPD.PerformLayout();
+            this.DHCPD.ResumeLayout(false);
+            this.DHCPD.PerformLayout();
             this.Setting.ResumeLayout(false);
             this.Setting.PerformLayout();
             this.ResumeLayout(false);
@@ -697,6 +857,17 @@
         private System.Windows.Forms.Label lang;
         private System.Windows.Forms.ComboBox lang_opt;
         private System.Windows.Forms.ListBox httpd_output;
+        private System.Windows.Forms.TabPage DHCPD;
+        private System.Windows.Forms.Label dhcp_startlabel;
+        private System.Windows.Forms.TextBox dhcp_starttext;
+        private System.Windows.Forms.Label dhcp_endlabel;
+        private System.Windows.Forms.TextBox dhcp_endtext;
+        private System.Windows.Forms.Label dhcp_gatewaylabel;
+        private System.Windows.Forms.TextBox dhcp_gatewaytext;
+        private System.Windows.Forms.Button dhcp_logbtn;
+        private System.Windows.Forms.TextBox dhcp_logtext;
+        private System.Windows.Forms.Button dhcp_btn;
+        private System.Windows.Forms.ListBox dhcp_logmsg;
     }
 }
 
