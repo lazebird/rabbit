@@ -105,6 +105,7 @@ namespace rabbit
         }
         private void ping_click(object sender, EventArgs evt)
         {
+            pinglog.setfile(((TextBox)texthash["ping_logfile"]).Text);
             if (((Button)btnhash["ping_btn"]).Text == "开始")
             {
                 try
@@ -141,6 +142,7 @@ namespace rabbit
         }
         private void httpd_click(object sender, EventArgs evt)
         {
+            httpd.set_dir(((TextBox)texthash["http_dir"]).Text);
             if (((Button)btnhash["httpd_btn"]).Text == "开始")
             {
                 ((Button)btnhash["httpd_btn"]).Text = "停止";
@@ -159,7 +161,7 @@ namespace rabbit
             dialog.Description = "请选择文件路径";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                httpd.set_dir(dialog.SelectedPath);
+                text_http_dir.Text = dialog.SelectedPath;
             }
         }
     }
