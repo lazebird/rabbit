@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Windows.Forms;
 
-namespace rabbit
+namespace rabbit.common
 {
     class mylog
     {

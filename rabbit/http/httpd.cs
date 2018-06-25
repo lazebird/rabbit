@@ -1,7 +1,8 @@
-﻿using System;
+﻿using rabbit.common;
+using System;
 using System.Net;
 
-namespace rabbit
+namespace rabbit.http
 {
     class httpd
     {

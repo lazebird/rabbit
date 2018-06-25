@@ -1,7 +1,7 @@
 ﻿using Microsoft.WindowsAPICodePack.Taskbar;
 using System;
 
-namespace rabbit
+namespace rabbit.common
 {
     class mytaskbar
     {

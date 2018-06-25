@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 
-namespace rabbit
+namespace rabbit.common
 {
     class myconf
     {

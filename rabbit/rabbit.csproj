@@ -108,6 +108,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="dhcp\dhcp.cs" />
+    <Compile Include="ftp\ftp.cs" />
     <Compile Include="http\httpd.cs" />
     <Compile Include="common\myconf.cs" />
     <Compile Include="common\mylog.cs" />
@@ -121,6 +123,7 @@
     <Compile Include="common\mytaskbar.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="tftp\tftp.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

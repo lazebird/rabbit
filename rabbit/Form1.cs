@@ -1,4 +1,10 @@
-﻿using System;
+﻿using rabbit.common;
+using rabbit.http;
+using rabbit.ping;
+using rabbit.tftp;
+using rabbit.ftp;
+using rabbit.dhcp;
+using System;
 using System.Collections;
 using System.Windows.Forms;
 
@@ -8,6 +14,9 @@ namespace rabbit
     {
         myping ping;
         httpd httpd;
+        tftpd tftp;
+        ftpd ftp;
+        dhcpd dhcp;
         mylog pinglog;
         mylog httpdlog;
         Hashtable texthash;

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using rabbit.common;
+using System;
 using System.Net.NetworkInformation;
 using System.Threading;
 
-namespace rabbit
+namespace rabbit.ping
 {
     class myping
     {
