@@ -7,6 +7,7 @@ using rabbit.dhcp;
 using System;
 using System.Collections;
 using System.Windows.Forms;
+using System.IO;
 
 namespace rabbit
 {
@@ -22,6 +23,7 @@ namespace rabbit
         Hashtable texthash;
         Hashtable btnhash;
         Hashtable formhash;
+        Hashtable indexhash;
         public Form1()
         {
             InitializeComponent();
@@ -33,6 +35,10 @@ namespace rabbit
             ping = new myping(pinglog, ping_stop_cb);
             httpd = new httpd(httpdlog);
             init_elements();
+        }
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
             readconf();
         }
         protected override bool ProcessDialogKey(Keys keyData)
@@ -54,21 +60,35 @@ namespace rabbit
             texthash = new Hashtable();
             btnhash = new Hashtable();
             formhash = new Hashtable();
+            indexhash = new Hashtable();
             texthash.Add("ping_addr", text_addr);
             texthash.Add("ping_timeout", text_interval);
             texthash.Add("ping_times", text_count);
             texthash.Add("ping_logfile", text_logpath);
-            texthash.Add("http_port", text_port);
-            texthash.Add("http_dir", text_dir);
+            texthash.Add("http_port", text_http_port);
+            texthash.Add("http_dir", text_http_dir);
             btnhash.Add("ping_btn", btn_ping);
             btnhash.Add("httpd_btn", btn_httpd);
             formhash.Add("form", this);
+            indexhash.Add("tabs", tabs);
+            btn_ping.Click += new EventHandler(ping_click);
+            btn_ping_log.Click += new EventHandler(ping_log_click);
+            btn_httpd.Click += new EventHandler(httpd_click);
+            btn_http_dir.Click += new EventHandler(httpd_dir_click);
         }
         private void readconf()
         {
             foreach (string key in texthash.Keys)
             {
                 ((TextBox)texthash[key]).Text = myconf.read(key);
+            }
+            ((TabControl)indexhash["tabs"]).SelectedIndex = int.Parse(myconf.read("tabs"));
+            foreach (string key in btnhash.Keys)
+            {
+                if (myconf.read(key) == "停止")
+                {
+                    ((Button)btnhash[key]).PerformClick();
+                }
             }
         }
         private void saveconf()
@@ -77,6 +97,11 @@ namespace rabbit
             {
                 myconf.write(key, ((TextBox)texthash[key]).Text);
             }
+            myconf.write("tabs", ((TabControl)indexhash["tabs"]).SelectedIndex.ToString());
+            foreach (string key in btnhash.Keys)
+            {
+                myconf.write(key, ((Button)btnhash[key]).Text);
+            }
         }
         private void ping_click(object sender, EventArgs evt)
         {
@@ -84,7 +109,6 @@ namespace rabbit
             {
                 try
                 {
-                    saveconf(); // save empty config to restore default config
                     ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
                     ((Button)btnhash["ping_btn"]).Text = "停止";
                     pinglog.setfile(text_logpath.Text);
@@ -98,9 +122,9 @@ namespace rabbit
             }
             else
             {
-                // stop
                 ping.stop();
             }
+            saveconf(); // save empty config to restore default config
         }
         private void ping_log_click(object sender, EventArgs e)
         {
@@ -119,7 +143,6 @@ namespace rabbit
         {
             if (((Button)btnhash["httpd_btn"]).Text == "开始")
             {
-                saveconf(); // save empty config to restore default config
                 ((Button)btnhash["httpd_btn"]).Text = "停止";
                 httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
             }
@@ -127,6 +150,16 @@ namespace rabbit
             {
                 ((Button)btnhash["httpd_btn"]).Text = "开始";
                 httpd.stop();
+            }
+            saveconf(); // save empty config to restore default config
+        }
+        private void httpd_dir_click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog dialog = new FolderBrowserDialog();
+            dialog.Description = "请选择文件路径";
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                httpd.set_dir(dialog.SelectedPath);
             }
         }
     }

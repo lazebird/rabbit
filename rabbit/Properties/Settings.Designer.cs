@@ -94,5 +94,41 @@ namespace rabbit.Properties {
                 this["http_dir"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tabs {
+            get {
+                return ((string)(this["tabs"]));
+            }
+            set {
+                this["tabs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ping_btn {
+            get {
+                return ((string)(this["ping_btn"]));
+            }
+            set {
+                this["ping_btn"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string httpd_btn {
+            get {
+                return ((string)(this["httpd_btn"]));
+            }
+            set {
+                this["httpd_btn"] = value;
+            }
+        }
     }
 }

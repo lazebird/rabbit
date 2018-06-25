@@ -38,15 +38,14 @@
             this.Ping = new System.Windows.Forms.TabPage();
             this.label_addr = new System.Windows.Forms.Label();
             this.text_count = new System.Windows.Forms.TextBox();
-            this.btn_log = new System.Windows.Forms.Button();
+            this.btn_ping_log = new System.Windows.Forms.Button();
             this.text_logpath = new System.Windows.Forms.TextBox();
             this.btn_ping = new System.Windows.Forms.Button();
             this.ping_output = new System.Windows.Forms.ListBox();
             this.HTTPD = new System.Windows.Forms.TabPage();
-            this.label_port = new System.Windows.Forms.Label();
-            this.text_port = new System.Windows.Forms.TextBox();
-            this.label_dir = new System.Windows.Forms.Label();
-            this.text_dir = new System.Windows.Forms.TextBox();
+            this.label_http_port = new System.Windows.Forms.Label();
+            this.text_http_port = new System.Windows.Forms.TextBox();
+            this.text_http_dir = new System.Windows.Forms.TextBox();
             this.btn_httpd = new System.Windows.Forms.Button();
             this.httpd_output = new System.Windows.Forms.ListBox();
             this.TFTPD = new System.Windows.Forms.TabPage();
@@ -87,6 +86,7 @@
             this.Setting = new System.Windows.Forms.TabPage();
             this.lang = new System.Windows.Forms.Label();
             this.lang_opt = new System.Windows.Forms.ComboBox();
+            this.btn_http_dir = new System.Windows.Forms.Button();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -186,7 +186,7 @@
             this.Ping.Controls.Add(this.text_interval);
             this.Ping.Controls.Add(this.label_count);
             this.Ping.Controls.Add(this.text_count);
-            this.Ping.Controls.Add(this.btn_log);
+            this.Ping.Controls.Add(this.btn_ping_log);
             this.Ping.Controls.Add(this.text_logpath);
             this.Ping.Controls.Add(this.btn_ping);
             this.Ping.Controls.Add(this.ping_output);
@@ -218,26 +218,25 @@
             this.text_count.Size = new System.Drawing.Size(679, 25);
             this.text_count.TabIndex = 3;
             // 
-            // btn_log
+            // btn_ping_log
             // 
-            this.btn_log.BackColor = System.Drawing.Color.YellowGreen;
-            this.btn_log.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.btn_log.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.btn_log.FlatAppearance.BorderSize = 0;
-            this.btn_log.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
-            this.btn_log.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
-            this.btn_log.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_log.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_log.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btn_log.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.btn_log.Location = new System.Drawing.Point(9, 133);
-            this.btn_log.Margin = new System.Windows.Forms.Padding(2);
-            this.btn_log.Name = "btn_log";
-            this.btn_log.Size = new System.Drawing.Size(52, 32);
-            this.btn_log.TabIndex = 4;
-            this.btn_log.Text = "日志";
-            this.btn_log.UseVisualStyleBackColor = false;
-            this.btn_log.Click += new System.EventHandler(this.ping_log_click);
+            this.btn_ping_log.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_ping_log.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.btn_ping_log.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.btn_ping_log.FlatAppearance.BorderSize = 0;
+            this.btn_ping_log.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btn_ping_log.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btn_ping_log.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_ping_log.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_ping_log.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btn_ping_log.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.btn_ping_log.Location = new System.Drawing.Point(9, 133);
+            this.btn_ping_log.Margin = new System.Windows.Forms.Padding(2);
+            this.btn_ping_log.Name = "btn_ping_log";
+            this.btn_ping_log.Size = new System.Drawing.Size(52, 32);
+            this.btn_ping_log.TabIndex = 4;
+            this.btn_ping_log.Text = "日志";
+            this.btn_ping_log.UseVisualStyleBackColor = false;
             // 
             // text_logpath
             // 
@@ -267,7 +266,6 @@
             this.btn_ping.TabIndex = 6;
             this.btn_ping.Text = "开始";
             this.btn_ping.UseVisualStyleBackColor = false;
-            this.btn_ping.Click += new System.EventHandler(this.ping_click);
             // 
             // ping_output
             // 
@@ -285,55 +283,46 @@
             // 
             // HTTPD
             // 
-            this.HTTPD.Controls.Add(this.label_port);
-            this.HTTPD.Controls.Add(this.text_port);
-            this.HTTPD.Controls.Add(this.label_dir);
-            this.HTTPD.Controls.Add(this.text_dir);
+            this.HTTPD.Controls.Add(this.label_http_port);
+            this.HTTPD.Controls.Add(this.text_http_port);
+            this.HTTPD.Controls.Add(this.btn_http_dir);
+            this.HTTPD.Controls.Add(this.text_http_dir);
             this.HTTPD.Controls.Add(this.btn_httpd);
             this.HTTPD.Controls.Add(this.httpd_output);
-            this.HTTPD.Location = new System.Drawing.Point(4, 25);
+            this.HTTPD.Location = new System.Drawing.Point(4, 29);
             this.HTTPD.Name = "HTTPD";
             this.HTTPD.Padding = new System.Windows.Forms.Padding(3);
-            this.HTTPD.Size = new System.Drawing.Size(759, 448);
+            this.HTTPD.Size = new System.Drawing.Size(759, 444);
             this.HTTPD.TabIndex = 1;
             this.HTTPD.Text = "HTTPD";
             this.HTTPD.UseVisualStyleBackColor = true;
             // 
-            // label_port
+            // label_http_port
             // 
-            this.label_port.AutoSize = true;
-            this.label_port.Location = new System.Drawing.Point(32, 35);
-            this.label_port.Name = "label_port";
-            this.label_port.Size = new System.Drawing.Size(37, 20);
-            this.label_port.TabIndex = 0;
-            this.label_port.Text = "Port";
+            this.label_http_port.AutoSize = true;
+            this.label_http_port.Location = new System.Drawing.Point(32, 35);
+            this.label_http_port.Name = "label_http_port";
+            this.label_http_port.Size = new System.Drawing.Size(37, 20);
+            this.label_http_port.TabIndex = 0;
+            this.label_http_port.Text = "Port";
             // 
-            // text_port
+            // text_http_port
             // 
-            this.text_port.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.text_http_port.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.text_port.Location = new System.Drawing.Point(114, 30);
-            this.text_port.Name = "text_port";
-            this.text_port.Size = new System.Drawing.Size(596, 25);
-            this.text_port.TabIndex = 1;
+            this.text_http_port.Location = new System.Drawing.Point(114, 30);
+            this.text_http_port.Name = "text_http_port";
+            this.text_http_port.Size = new System.Drawing.Size(596, 25);
+            this.text_http_port.TabIndex = 1;
             // 
-            // label_dir
+            // text_http_dir
             // 
-            this.label_dir.AutoSize = true;
-            this.label_dir.Location = new System.Drawing.Point(32, 85);
-            this.label_dir.Name = "label_dir";
-            this.label_dir.Size = new System.Drawing.Size(70, 20);
-            this.label_dir.TabIndex = 2;
-            this.label_dir.Text = "Directory";
-            // 
-            // text_dir
-            // 
-            this.text_dir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.text_http_dir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.text_dir.Location = new System.Drawing.Point(114, 80);
-            this.text_dir.Name = "text_dir";
-            this.text_dir.Size = new System.Drawing.Size(596, 25);
-            this.text_dir.TabIndex = 3;
+            this.text_http_dir.Location = new System.Drawing.Point(114, 80);
+            this.text_http_dir.Name = "text_http_dir";
+            this.text_http_dir.Size = new System.Drawing.Size(596, 25);
+            this.text_http_dir.TabIndex = 3;
             // 
             // btn_httpd
             // 
@@ -344,7 +333,6 @@
             this.btn_httpd.TabIndex = 4;
             this.btn_httpd.Text = "开始";
             this.btn_httpd.UseVisualStyleBackColor = true;
-            this.btn_httpd.Click += new System.EventHandler(this.httpd_click);
             // 
             // httpd_output
             // 
@@ -355,7 +343,7 @@
             this.httpd_output.ItemHeight = 20;
             this.httpd_output.Location = new System.Drawing.Point(36, 198);
             this.httpd_output.Name = "httpd_output";
-            this.httpd_output.Size = new System.Drawing.Size(674, 244);
+            this.httpd_output.Size = new System.Drawing.Size(674, 204);
             this.httpd_output.TabIndex = 5;
             // 
             // TFTPD
@@ -612,10 +600,10 @@
             this.DHCPD.Controls.Add(this.dhcp_logtext);
             this.DHCPD.Controls.Add(this.dhcp_btn);
             this.DHCPD.Controls.Add(this.dhcp_logmsg);
-            this.DHCPD.Location = new System.Drawing.Point(4, 29);
+            this.DHCPD.Location = new System.Drawing.Point(4, 25);
             this.DHCPD.Name = "DHCPD";
             this.DHCPD.Padding = new System.Windows.Forms.Padding(3);
-            this.DHCPD.Size = new System.Drawing.Size(759, 444);
+            this.DHCPD.Size = new System.Drawing.Size(759, 448);
             this.DHCPD.TabIndex = 5;
             this.DHCPD.Text = "DHCPD";
             // 
@@ -774,6 +762,15 @@
             this.lang_opt.Size = new System.Drawing.Size(121, 28);
             this.lang_opt.TabIndex = 1;
             // 
+            // btn_http_dir
+            // 
+            this.btn_http_dir.Location = new System.Drawing.Point(33, 82);
+            this.btn_http_dir.Name = "btn_http_dir";
+            this.btn_http_dir.Size = new System.Drawing.Size(75, 23);
+            this.btn_http_dir.TabIndex = 6;
+            this.btn_http_dir.Text = "Directory";
+            this.btn_http_dir.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
@@ -816,7 +813,7 @@
         private System.Windows.Forms.TextBox text_interval;
         private System.Windows.Forms.ToolStripContainer toolStripContainer1;
         private System.Windows.Forms.Button btn_ping;
-        private System.Windows.Forms.Button btn_log;
+        private System.Windows.Forms.Button btn_ping_log;
         private System.Windows.Forms.TextBox text_count;
         private System.Windows.Forms.Label label_addr;
         private System.Windows.Forms.TextBox text_logpath;
@@ -826,10 +823,9 @@
         private System.Windows.Forms.ListBox ping_output;
         private System.Windows.Forms.TabPage FTPD;
         private System.Windows.Forms.TabPage Setting;
-        private System.Windows.Forms.Label label_port;
-        private System.Windows.Forms.TextBox text_port;
-        private System.Windows.Forms.Label label_dir;
-        private System.Windows.Forms.TextBox text_dir;
+        private System.Windows.Forms.Label label_http_port;
+        private System.Windows.Forms.TextBox text_http_port;
+        private System.Windows.Forms.TextBox text_http_dir;
         private System.Windows.Forms.Button btn_httpd;
         private System.Windows.Forms.TextBox ftp_dirtext1;
         private System.Windows.Forms.Button ftp_dirbtn1;
@@ -868,6 +864,7 @@
         private System.Windows.Forms.TextBox dhcp_logtext;
         private System.Windows.Forms.Button dhcp_btn;
         private System.Windows.Forms.ListBox dhcp_logmsg;
+        private System.Windows.Forms.Button btn_http_dir;
     }
 }
 
