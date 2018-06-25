@@ -45,6 +45,7 @@
             this.HTTPD = new System.Windows.Forms.TabPage();
             this.label_http_port = new System.Windows.Forms.Label();
             this.text_http_port = new System.Windows.Forms.TextBox();
+            this.btn_http_dir = new System.Windows.Forms.Button();
             this.text_http_dir = new System.Windows.Forms.TextBox();
             this.btn_httpd = new System.Windows.Forms.Button();
             this.httpd_output = new System.Windows.Forms.ListBox();
@@ -86,7 +87,6 @@
             this.Setting = new System.Windows.Forms.TabPage();
             this.lang = new System.Windows.Forms.Label();
             this.lang_opt = new System.Windows.Forms.ComboBox();
-            this.btn_http_dir = new System.Windows.Forms.Button();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -315,6 +315,15 @@
             this.text_http_port.Size = new System.Drawing.Size(596, 25);
             this.text_http_port.TabIndex = 1;
             // 
+            // btn_http_dir
+            // 
+            this.btn_http_dir.Location = new System.Drawing.Point(33, 82);
+            this.btn_http_dir.Name = "btn_http_dir";
+            this.btn_http_dir.Size = new System.Drawing.Size(75, 23);
+            this.btn_http_dir.TabIndex = 6;
+            this.btn_http_dir.Text = "Directory";
+            this.btn_http_dir.UseVisualStyleBackColor = true;
+            // 
             // text_http_dir
             // 
             this.text_http_dir.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -343,7 +352,7 @@
             this.httpd_output.ItemHeight = 20;
             this.httpd_output.Location = new System.Drawing.Point(36, 198);
             this.httpd_output.Name = "httpd_output";
-            this.httpd_output.Size = new System.Drawing.Size(674, 204);
+            this.httpd_output.Size = new System.Drawing.Size(674, 184);
             this.httpd_output.TabIndex = 5;
             // 
             // TFTPD
@@ -761,15 +770,6 @@
             this.lang_opt.Name = "lang_opt";
             this.lang_opt.Size = new System.Drawing.Size(121, 28);
             this.lang_opt.TabIndex = 1;
-            // 
-            // btn_http_dir
-            // 
-            this.btn_http_dir.Location = new System.Drawing.Point(33, 82);
-            this.btn_http_dir.Name = "btn_http_dir";
-            this.btn_http_dir.Size = new System.Drawing.Size(75, 23);
-            this.btn_http_dir.TabIndex = 6;
-            this.btn_http_dir.Text = "Directory";
-            this.btn_http_dir.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 

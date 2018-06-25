@@ -10,7 +10,7 @@ namespace rabbit.http
     {
         mylog l;
         HttpListener httpListener;
-        DirectoryInfo dir;
+        string path;
         Hashtable fpathhash;
         Hashtable fsizehash;
         Hashtable ftmhash;
@@ -77,7 +77,7 @@ namespace rabbit.http
         {
             foreach (FileInfo f in dir.GetFiles())
             {
-                string key = f.FullName.Substring(dir.FullName.Length).Replace('\\', '/');
+                string key = f.FullName.Substring(path.Length).Replace('\\', '/');
                 fpathhash.Add(key, f.FullName);
                 fsizehash.Add(key, f.Length);
                 ftmhash.Add(key, f.LastWriteTime);
@@ -89,7 +89,7 @@ namespace rabbit.http
         }
         string gen_index()
         {
-            string index = "<html><body><table><tbody>";
+            string index = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><table><tbody>";
             index += "<tr>" +
                 "<th>Name</th>" +
                 "<th>Size (Bytes)</th>" +
@@ -113,10 +113,10 @@ namespace rabbit.http
             {
                 path = Directory.GetCurrentDirectory();
             }
+            this.path = path;
             l.write("Info: set dir " + path);
             fpathhash.Clear();
-            dir = new DirectoryInfo(path);
-            readdir(dir);
+            readdir(new DirectoryInfo(path));
         }
     }
 }
