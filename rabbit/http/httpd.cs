@@ -10,13 +10,21 @@ namespace rabbit
         public httpd(mylog l)
         {
             this.l = l;
-            this.httpListener = new HttpListener();
+            httpListener = new HttpListener();
+            httpListener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
         }
-
+        ~httpd()
+        {
+            if (httpListener != null)
+            {
+                httpListener.Prefixes.Clear();
+                httpListener.Abort();
+            }
+        }
         public bool start(int port)
         {
-            httpListener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-            httpListener.Prefixes.Add(string.Format("http://*:{0}/", port));
+            httpListener.Prefixes.Clear();
+            httpListener.Prefixes.Add(string.Format("http://+:{0}/", port));
             httpListener.Start();
             httpListener.BeginGetContext(new AsyncCallback(Dispather), null);
             return true;
@@ -32,8 +40,7 @@ namespace rabbit
                 HttpListenerContext context = httpListener.EndGetContext(ar);
                 HttpListenerRequest request = context.Request;
                 HttpListenerResponse response = context.Response;
-                l.write("Info: request method " + request.HttpMethod);
-                l.write("Info: request uri " + request.RawUrl);
+                l.write("Info: request method " + request.HttpMethod + " uri " + request.RawUrl);
                 string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
                 byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
                 response.ContentLength64 = buffer.Length;

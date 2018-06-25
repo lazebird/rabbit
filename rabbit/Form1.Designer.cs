@@ -237,7 +237,7 @@
             this.btn_log.TabIndex = 4;
             this.btn_log.Text = "日志";
             this.btn_log.UseVisualStyleBackColor = false;
-            this.btn_log.Click += new System.EventHandler(this.button2_Click);
+            this.btn_log.Click += new System.EventHandler(this.ping_log_click);
             // 
             // text_logpath
             // 
@@ -267,7 +267,7 @@
             this.btn_ping.TabIndex = 6;
             this.btn_ping.Text = "开始";
             this.btn_ping.UseVisualStyleBackColor = false;
-            this.btn_ping.Click += new System.EventHandler(this.button1_Click);
+            this.btn_ping.Click += new System.EventHandler(this.ping_click);
             // 
             // ping_output
             // 

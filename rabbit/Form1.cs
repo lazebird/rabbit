@@ -69,7 +69,7 @@ namespace rabbit
                 myconf.write(key, ((TextBox)texthash[key]).Text);
             }
         }
-        private void button1_Click(object sender, EventArgs evt)
+        private void ping_click(object sender, EventArgs evt)
         {
             if (((Button)btnhash["ping_btn"]).Text == "开始")
             {
@@ -93,7 +93,7 @@ namespace rabbit
                 ping.stop();
             }
         }
-        private void button2_Click(object sender, EventArgs e)
+        private void ping_log_click(object sender, EventArgs e)
         {
             SaveFileDialog filename = new SaveFileDialog();
             //filename.InitialDirectory = Application.StartupPath;
@@ -108,24 +108,16 @@ namespace rabbit
         }
         private void httpd_click(object sender, EventArgs evt)
         {
-            try
+            if (((Button)btnhash["httpd_btn"]).Text == "开始")
             {
-                if (((Button)btnhash["httpd_btn"]).Text == "开始")
-                {
-                    saveconf(); // save empty config to restore default config
-                    ((Button)btnhash["httpd_btn"]).Text = "停止";
-                    httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
-                }
-                else
-                {
-                    ((Button)btnhash["httpd_btn"]).Text = "开始";
-                    httpd.stop();
-                }
+                saveconf(); // save empty config to restore default config
+                ((Button)btnhash["httpd_btn"]).Text = "停止";
+                httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
             }
-            catch (Exception e)
+            else
             {
                 ((Button)btnhash["httpd_btn"]).Text = "开始";
-                httpdlog.write("Error: " + e.Message);
+                httpd.stop();
             }
         }
     }
