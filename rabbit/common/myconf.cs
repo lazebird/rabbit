@@ -26,7 +26,7 @@ namespace rabbit
             cfg.Add("ping_addr", "www.mozilla.com");
             cfg.Add("ping_timeout", "1000");
             cfg.Add("ping_times", "-1");
-            cfg.Add("http_port", "80");
+            cfg.Add("http_port", "8000");
             if (cfg[key] != null)
             {
                 return (string)cfg[key];
