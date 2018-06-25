@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace rabbit.http
@@ -45,18 +46,23 @@ namespace rabbit.http
                 HttpListenerContext context = httpListener.EndGetContext(ar);
                 HttpListenerRequest request = context.Request;
                 HttpListenerResponse response = context.Response;
+                response.ContentEncoding = Encoding.UTF8;
                 l.write("Info: request method " + request.HttpMethod + " uri " + request.RawUrl);
                 byte[] buffer = null;
                 if ((string)ftypehash[request.RawUrl] == "dir")
                 {
-                    buffer = System.Text.Encoding.UTF8.GetBytes(gen_dir_index(request.RawUrl));
+                    buffer = Encoding.UTF8.GetBytes(gen_dir_index(request.RawUrl));
                 }
                 else if (ftypehash[request.RawUrl] == null)
                 {
-                    buffer = System.Text.Encoding.UTF8.GetBytes("404");
+                    buffer = Encoding.UTF8.GetBytes("404");
                 }
                 else
                 {
+                    if (request.RawUrl.Contains(".svg"))
+                    {
+                        response.ContentType = "image/svg+xml";
+                    }
                     FileStream fs = new FileStream((string)fpathhash[request.RawUrl], FileMode.Open, FileAccess.Read);
                     BinaryReader binReader = new BinaryReader(fs);
                     buffer = new byte[fs.Length];
