@@ -80,12 +80,12 @@ namespace rabbit
         {
             foreach (string key in texthash.Keys)
             {
-                ((TextBox)texthash[key]).Text = myconf.read(key);
+                ((TextBox)texthash[key]).Text = myconf.get(key);
             }
-            ((TabControl)indexhash["tabs"]).SelectedIndex = int.Parse(myconf.read("tabs"));
+            ((TabControl)indexhash["tabs"]).SelectedIndex = int.Parse(myconf.get("tabs"));
             foreach (string key in btnhash.Keys)
             {
-                if (myconf.read(key) == "停止")
+                if (myconf.get(key) == "停止")
                 {
                     ((Button)btnhash[key]).PerformClick();
                 }
@@ -95,12 +95,12 @@ namespace rabbit
         {
             foreach (string key in texthash.Keys)
             {
-                myconf.write(key, ((TextBox)texthash[key]).Text);
+                myconf.set(key, ((TextBox)texthash[key]).Text);
             }
-            myconf.write("tabs", ((TabControl)indexhash["tabs"]).SelectedIndex.ToString());
+            myconf.set("tabs", ((TabControl)indexhash["tabs"]).SelectedIndex.ToString());
             foreach (string key in btnhash.Keys)
             {
-                myconf.write(key, ((Button)btnhash[key]).Text);
+                myconf.set(key, ((Button)btnhash[key]).Text);
             }
         }
         private void ping_click(object sender, EventArgs evt)

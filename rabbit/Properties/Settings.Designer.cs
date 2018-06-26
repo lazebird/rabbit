@@ -130,5 +130,17 @@ namespace rabbit.Properties {
                 this["httpd_btn"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string mime {
+            get {
+                return ((string)(this["mime"]));
+            }
+            set {
+                this["mime"] = value;
+            }
+        }
     }
 }

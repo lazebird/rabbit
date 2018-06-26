@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace rabbit.http
 {
@@ -13,6 +14,7 @@ namespace rabbit.http
         mylog l;
         HttpListener httpListener;
         string path;
+        Hashtable mimehash;
         Hashtable ftypehash;
         Hashtable fpathhash;
         Hashtable fsizehash;
@@ -26,6 +28,22 @@ namespace rabbit.http
             fpathhash = new Hashtable();
             fsizehash = new Hashtable();
             ftmhash = new Hashtable();
+            init_mime();
+        }
+        void init_mime()
+        {
+            mimehash = new Hashtable();
+            string value = myconf.get("mime");
+            string[] mimes = value.Split(';');
+            foreach (string mime in mimes)
+            {
+                string[] e = mime.Split(':');
+                if (e.Length == 2)
+                {
+                    mimehash.Add(e[0], e[1]);
+                }
+            }
+
         }
         public bool start(int port)
         {
@@ -39,6 +57,14 @@ namespace rabbit.http
         {
             httpListener.Stop();
         }
+        string get_suffix(string fname)
+        {
+            return fname.Substring(fname.LastIndexOf("."));
+        }
+        string get_mime(string suffix)
+        {
+            return (string)mimehash[suffix] ?? (string)mimehash["*"] ?? "";
+        }
         void Dispather(IAsyncResult ar)
         {
             try
@@ -47,23 +73,22 @@ namespace rabbit.http
                 HttpListenerRequest request = context.Request;
                 HttpListenerResponse response = context.Response;
                 response.ContentEncoding = Encoding.UTF8;
-                l.write("Info: request method " + request.HttpMethod + " uri " + request.RawUrl);
+                string uri = Uri.UnescapeDataString(request.RawUrl);
+                l.write("Info: request method " + request.HttpMethod + " uri " + uri);
                 byte[] buffer = null;
-                if ((string)ftypehash[request.RawUrl] == "dir")
+                if ((string)ftypehash[uri] == "dir")
                 {
-                    buffer = Encoding.UTF8.GetBytes(gen_dir_index(request.RawUrl));
+                    buffer = Encoding.UTF8.GetBytes(gen_dir_index(uri));
                 }
-                else if (ftypehash[request.RawUrl] == null)
+                else if (ftypehash[uri] == null)
                 {
                     buffer = Encoding.UTF8.GetBytes("404");
                 }
                 else
                 {
-                    if (request.RawUrl.Contains(".svg"))
-                    {
-                        response.ContentType = "image/svg+xml";
-                    }
-                    FileStream fs = new FileStream((string)fpathhash[request.RawUrl], FileMode.Open, FileAccess.Read);
+                    response.ContentType = get_mime(get_suffix(uri));
+                    //l.write("Info: response suffix " + get_suffix(uri) + " ContentType " + response.ContentType);
+                    FileStream fs = new FileStream((string)fpathhash[uri], FileMode.Open, FileAccess.Read);
                     BinaryReader binReader = new BinaryReader(fs);
                     buffer = new byte[fs.Length];
                     binReader.Read(buffer, 0, (int)fs.Length);
@@ -115,6 +140,11 @@ namespace rabbit.http
                 "<th>Size (Bytes)</th>" +
                 "<th>Last Modified</th>" +
                 "</tr>";
+            index += "<tr>" +
+              "<td><a href=" + Uri.EscapeUriString(dir.Substring(0, dir.Substring(0, dir.Length - 1).LastIndexOf('/') + 1)) + ">" + ".." + " </a></td>" +
+              "<td>" + "</td>" +
+              "<td>" + "</td>" +
+              "</tr>";
             Regex rgright = new Regex("^" + dir + ".");
             Regex rgwrong = new Regex("^" + dir + ".+/.");
             foreach (string key in ftypehash.Keys)
@@ -124,7 +154,7 @@ namespace rabbit.http
                     continue;
                 }
                 index += "<tr>" +
-                 "<td><a href=" + key + ">" + key.Substring(dir.Length) + " </a></td>" +
+                 "<td><a href=" + Uri.EscapeUriString(key) + ">" + key.Substring(dir.Length) + " </a></td>" +
                  "<td>" + fsizehash[key] + "</td>" +
                  "<td>" + ftmhash[key] + "</td>" +
                  "</tr>";
