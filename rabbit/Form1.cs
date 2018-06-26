@@ -36,10 +36,13 @@ namespace rabbit
             httpd = new httpd(httpdlog);
             init_elements();
         }
+        bool onloading = false;
         protected override void OnLoad(EventArgs e)
         {
+            onloading = true;
             base.OnLoad(e);
             readconf();
+            onloading = false;
         }
         protected override bool ProcessDialogKey(Keys keyData)
         {
@@ -71,6 +74,8 @@ namespace rabbit
             btnhash.Add("httpd_btn", btn_httpd);
             formhash.Add("form", this);
             indexhash.Add("tabs", tabs);
+            indexhash.Add("ping_btn", 0);
+            indexhash.Add("httpd_btn", 1);
             btn_ping.Click += new EventHandler(ping_click);
             btn_ping_log.Click += new EventHandler(ping_log_click);
             btn_httpd.Click += new EventHandler(httpd_click);
@@ -82,17 +87,22 @@ namespace rabbit
             {
                 ((TextBox)texthash[key]).Text = myconf.get(key);
             }
-            ((TabControl)indexhash["tabs"]).SelectedIndex = int.Parse(myconf.get("tabs"));
             foreach (string key in btnhash.Keys)
             {
                 if (myconf.get(key) == "停止")
                 {
+                    ((TabControl)indexhash["tabs"]).SelectedIndex = (int)indexhash[key];
                     ((Button)btnhash[key]).PerformClick();
                 }
             }
+            ((TabControl)indexhash["tabs"]).SelectedIndex = int.Parse(myconf.get("tabs"));
         }
         private void saveconf()
         {
+            if (onloading)
+            {
+                return;
+            }
             foreach (string key in texthash.Keys)
             {
                 myconf.set(key, ((TextBox)texthash[key]).Text);
@@ -105,14 +115,13 @@ namespace rabbit
         }
         private void ping_click(object sender, EventArgs evt)
         {
-            pinglog.setfile(((TextBox)texthash["ping_logfile"]).Text);
             if (((Button)btnhash["ping_btn"]).Text == "开始")
             {
                 try
                 {
                     ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
                     ((Button)btnhash["ping_btn"]).Text = "停止";
-                    pinglog.setfile(text_logpath.Text);
+                    pinglog.setfile(((TextBox)texthash["ping_logfile"]).Text);
                     pinglog.clear();
                     ping.start(((TextBox)texthash["ping_addr"]).Text, int.Parse(((TextBox)texthash["ping_timeout"]).Text), int.Parse(((TextBox)texthash["ping_times"]).Text));
                 }
@@ -142,10 +151,10 @@ namespace rabbit
         }
         private void httpd_click(object sender, EventArgs evt)
         {
-            httpd.set_dir(((TextBox)texthash["http_dir"]).Text);
             if (((Button)btnhash["httpd_btn"]).Text == "开始")
             {
                 ((Button)btnhash["httpd_btn"]).Text = "停止";
+                httpd.set_dir(((TextBox)texthash["http_dir"]).Text);
                 httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
             }
             else
