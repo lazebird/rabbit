@@ -138,15 +138,16 @@ namespace rabbit
         }
         private void ping_log_click(object sender, EventArgs e)
         {
-            SaveFileDialog filename = new SaveFileDialog();
+            SaveFileDialog fd = new SaveFileDialog();
             //filename.InitialDirectory = Application.StartupPath;
-            filename.Filter = "文本文件 (*.txt)|*.txt|All files (*.*)|*.*";
-            filename.RestoreDirectory = true;
-            filename.CreatePrompt = true;
-            filename.OverwritePrompt = true;
-            if (filename.ShowDialog() == DialogResult.OK)
+            fd.Filter = "文本文件 (*.txt)|*.txt|All files (*.*)|*.*";
+            fd.RestoreDirectory = true;
+            fd.CreatePrompt = true;
+            fd.OverwritePrompt = true;
+            fd.InitialDirectory = Environment.CurrentDirectory;
+            if (fd.ShowDialog() == DialogResult.OK)
             {
-                ((TextBox)texthash["ping_logfile"]).Text = filename.FileName;
+                ((TextBox)texthash["ping_logfile"]).Text = fd.FileName;
             }
         }
         private void httpd_click(object sender, EventArgs evt)
@@ -167,6 +168,7 @@ namespace rabbit
         private void httpd_dir_click(object sender, EventArgs e)
         {
             FolderBrowserDialog dialog = new FolderBrowserDialog();
+            dialog.SelectedPath = Environment.CurrentDirectory;
             dialog.Description = "请选择文件路径";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
