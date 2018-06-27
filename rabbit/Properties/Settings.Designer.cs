@@ -142,5 +142,65 @@ namespace rabbit.Properties {
                 this["mime"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftp_dir1 {
+            get {
+                return ((string)(this["tftp_dir1"]));
+            }
+            set {
+                this["tftp_dir1"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftp_dir2 {
+            get {
+                return ((string)(this["tftp_dir2"]));
+            }
+            set {
+                this["tftp_dir2"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftp_dir3 {
+            get {
+                return ((string)(this["tftp_dir3"]));
+            }
+            set {
+                this["tftp_dir3"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftp_dir4 {
+            get {
+                return ((string)(this["tftp_dir4"]));
+            }
+            set {
+                this["tftp_dir4"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftp_dir5 {
+            get {
+                return ((string)(this["tftp_dir5"]));
+            }
+            set {
+                this["tftp_dir5"] = value;
+            }
+        }
     }
 }

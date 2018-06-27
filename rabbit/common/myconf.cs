@@ -7,7 +7,7 @@ namespace rabbit.common
     {
         public static string get(string key)   // property.setting must be set to avoid exception
         {
-            return String.IsNullOrEmpty((string)Properties.Settings.Default[key]) ? get_default(key) : (string)Properties.Settings.Default[key];
+            return ((string)Properties.Settings.Default[key] == "") ? get_default(key) : (string)Properties.Settings.Default[key];
         }
         public static void set(string key, string value)
         {

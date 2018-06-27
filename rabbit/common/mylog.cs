@@ -46,5 +46,23 @@ namespace rabbit.common
                 logview.Items.Clear();
             }
         }
+        public int write(string msg, int line)
+        {
+            if (logview == null)
+            {
+                return 0;
+            }
+            if (line == 0)
+            {
+                line = logview.Items.Add(msg);
+                logview.TopIndex = logview.Items.Count - (int)(logview.Height / logview.ItemHeight);
+            }
+            else
+            {
+                logview.Items.Insert(line, msg);
+            }
+            logview.Refresh();
+            return line;
+        }
     }
 }
