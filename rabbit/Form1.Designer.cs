@@ -762,6 +762,9 @@
             // 
             // tftpd_output
             // 
+            this.tftpd_output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tftpd_output.FormattingEnabled = true;
             this.tftpd_output.ItemHeight = 20;
             this.tftpd_output.Location = new System.Drawing.Point(31, 254);

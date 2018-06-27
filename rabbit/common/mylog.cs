@@ -60,6 +60,8 @@ namespace rabbit.common
             else
             {
                 logview.Items.Insert(line, msg);
+                logview.Items.RemoveAt(line + 1);
+                logview.TopIndex = logview.Items.Count - (int)(logview.Height / logview.ItemHeight);
             }
             logview.Refresh();
             return line;

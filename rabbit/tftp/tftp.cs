@@ -13,6 +13,7 @@ namespace rabbit.tftp
         Hashtable dirhash;
         Hashtable filehash;
         Hashtable loghash;
+        Hashtable logtmhash;
         TftpServer server;
 
         public tftpd(mylog l)
@@ -21,6 +22,7 @@ namespace rabbit.tftp
             dirhash = new Hashtable();
             filehash = new Hashtable();
             loghash = new Hashtable();
+            logtmhash = new Hashtable();
             server = new TftpServer();
             server.OnReadRequest += new TftpServerEventHandler(server_OnReadRequest);
             server.OnWriteRequest += new TftpServerEventHandler(server_OnWriteRequest);
@@ -86,7 +88,6 @@ namespace rabbit.tftp
             }
             else
             {
-                OutputTransferStatus(transfer, "Accepting write request from " + client);
                 transfer.UserContext = client;      // append client info
                 StartTransfer(transfer, new FileStream(file, FileMode.CreateNew));
             }
@@ -99,7 +100,6 @@ namespace rabbit.tftp
                 return;
             }
             FileInfo file = new FileInfo(Path.Combine((string)filehash[transfer.Filename], transfer.Filename));
-            OutputTransferStatus(transfer, "Accepting request from " + client);
             transfer.UserContext = client;      // append client info
             StartTransfer(transfer, new FileStream(file.FullName, FileMode.Open));
         }
@@ -114,7 +114,7 @@ namespace rabbit.tftp
 
         private void CancelTransfer(ITftpTransfer transfer, TftpErrorPacket reason)
         {
-            OutputTransferStatus(transfer, "Cancelling transfer: " + reason.ErrorMessage);
+            OutputTransferStatus(transfer, "Error: " + reason.ErrorMessage);
             transfer.Cancel(reason);
         }
 
@@ -137,16 +137,22 @@ namespace rabbit.tftp
             string key = (EndPoint)transfer.UserContext + "/" + transfer.Filename;
             if (loghash.ContainsKey(key))
             {
-                l.write(key + ": " + message, (int)loghash[key]);
+                if (Environment.TickCount - (int)logtmhash[key] > 50 || message == "Success" || message.Contains("Error"))
+                {
+                    l.write(key + ": " + message, (int)loghash[key]);
+                    logtmhash[key] = Environment.TickCount;
+                }
             }
             else
             {
                 int line = l.write(key + ": " + message, 0);
                 loghash.Add(key, line);
+                logtmhash.Add(key, Environment.TickCount);
             }
-            if (message == "success" || message.Contains("Error"))
+            if (message == "Success" || message.Contains("Error"))
             {
                 loghash.Remove(key);
+                logtmhash.Remove(key);
             }
         }
     }
