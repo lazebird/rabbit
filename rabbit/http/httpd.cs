@@ -72,31 +72,47 @@ namespace rabbit.http
                 HttpListenerContext context = httpListener.EndGetContext(ar);
                 HttpListenerRequest request = context.Request;
                 HttpListenerResponse response = context.Response;
+                Stream output = response.OutputStream;
                 response.ContentEncoding = Encoding.UTF8;
                 string uri = Uri.UnescapeDataString(request.RawUrl);
                 l.write("Info: request method " + request.HttpMethod + " uri " + uri);
                 byte[] buffer = null;
-                if ((string)ftypehash[uri] == "dir")
-                {
-                    buffer = Encoding.UTF8.GetBytes(gen_dir_index(uri));
-                }
-                else if (ftypehash[uri] == null)
-                {
-                    buffer = Encoding.UTF8.GetBytes("404");
-                }
-                else
+
+                if (ftypehash.ContainsKey(uri) && ftypehash[uri] == "file")
                 {
                     response.ContentType = get_mime(get_suffix(uri));
                     //l.write("Info: response suffix " + get_suffix(uri) + " ContentType " + response.ContentType);
                     FileStream fs = new FileStream((string)fpathhash[uri], FileMode.Open, FileAccess.Read);
                     BinaryReader binReader = new BinaryReader(fs);
-                    buffer = new byte[fs.Length];
-                    binReader.Read(buffer, 0, (int)fs.Length);
+                    response.ContentLength64 = fs.Length;
+                    long left = fs.Length;
+                    long size = Math.Max(200000000, fs.Length); // max memory size 200M, fix memory not enough exception
+                    while (left > size)
+                    {
+                        buffer = binReader.ReadBytes((int)size);
+                        output.Write(buffer, 0, buffer.Length);
+                        left -= size;
+                    }
+                    if (left > 0)
+                    {
+                        buffer = binReader.ReadBytes((int)left);
+                        output.Write(buffer, 0, buffer.Length);
+                    }
                     binReader.Close();
                     fs.Close();
+                    output.Close();
+                    httpListener.BeginGetContext(new AsyncCallback(Dispather), null);
+                    return;
+                }
+                else if (!ftypehash.ContainsKey(uri))
+                {
+                    buffer = Encoding.UTF8.GetBytes("404");
+                }
+                else if ((string)ftypehash[uri] == "dir")
+                {
+                    buffer = Encoding.UTF8.GetBytes(gen_dir_index(uri));
                 }
                 response.ContentLength64 = buffer.Length;
-                Stream output = response.OutputStream;
                 output.Write(buffer, 0, buffer.Length);
                 output.Close();
                 httpListener.BeginGetContext(new AsyncCallback(Dispather), null);
