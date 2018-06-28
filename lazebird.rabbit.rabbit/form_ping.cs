@@ -27,6 +27,7 @@ namespace lazebird.rabbit.rabbit
         mytaskbar bar;
         void bar_test()
         {
+            Thread.Sleep(500);
             if (!bar.set(0, 0, 0))
             {
                 pinglog.write("Error: " + bar.strerr());
