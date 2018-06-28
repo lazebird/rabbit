@@ -37,6 +37,7 @@ namespace lazebird.rabbit.ping
             catch (Exception e)
             {
                 log("Error: " + e.Message);
+                callback(id, null);
             }
         }
     }

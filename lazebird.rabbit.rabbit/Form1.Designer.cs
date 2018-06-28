@@ -60,6 +60,7 @@
             this.tftp_dirbtn4 = new System.Windows.Forms.Button();
             this.tftp_dirtext5 = new System.Windows.Forms.TextBox();
             this.tftp_dirbtn5 = new System.Windows.Forms.Button();
+            this.tftpd_output = new System.Windows.Forms.ListBox();
             this.FTPD = new System.Windows.Forms.TabPage();
             this.ftp_dirtext1 = new System.Windows.Forms.TextBox();
             this.ftp_dirbtn1 = new System.Windows.Forms.Button();
@@ -86,7 +87,7 @@
             this.Setting = new System.Windows.Forms.TabPage();
             this.lang = new System.Windows.Forms.Label();
             this.lang_opt = new System.Windows.Forms.ComboBox();
-            this.tftpd_output = new System.Windows.Forms.ListBox();
+            this.tftpd_btn = new System.Windows.Forms.Button();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -366,6 +367,7 @@
             this.TFTPD.Controls.Add(this.tftp_dirbtn4);
             this.TFTPD.Controls.Add(this.tftp_dirtext5);
             this.TFTPD.Controls.Add(this.tftp_dirbtn5);
+            this.TFTPD.Controls.Add(this.tftpd_btn);
             this.TFTPD.Controls.Add(this.tftpd_output);
             this.TFTPD.Location = new System.Drawing.Point(4, 29);
             this.TFTPD.Name = "TFTPD";
@@ -464,6 +466,18 @@
             this.tftp_dirbtn5.TabIndex = 1;
             this.tftp_dirbtn5.Text = "Directory 5";
             this.tftp_dirbtn5.UseVisualStyleBackColor = true;
+            // 
+            // tftpd_output
+            // 
+            this.tftpd_output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tftpd_output.FormattingEnabled = true;
+            this.tftpd_output.ItemHeight = 20;
+            this.tftpd_output.Location = new System.Drawing.Point(31, 294);
+            this.tftpd_output.Name = "tftpd_output";
+            this.tftpd_output.Size = new System.Drawing.Size(680, 124);
+            this.tftpd_output.TabIndex = 11;
             // 
             // FTPD
             // 
@@ -760,17 +774,14 @@
             this.lang_opt.Size = new System.Drawing.Size(121, 28);
             this.lang_opt.TabIndex = 1;
             // 
-            // tftpd_output
+            // tftp_btn
             // 
-            this.tftpd_output.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tftpd_output.FormattingEnabled = true;
-            this.tftpd_output.ItemHeight = 20;
-            this.tftpd_output.Location = new System.Drawing.Point(31, 254);
-            this.tftpd_output.Name = "tftpd_output";
-            this.tftpd_output.Size = new System.Drawing.Size(680, 184);
-            this.tftpd_output.TabIndex = 11;
+            this.tftpd_btn.Location = new System.Drawing.Point(635, 240);
+            this.tftpd_btn.Name = "tftp_btn";
+            this.tftpd_btn.Size = new System.Drawing.Size(75, 23);
+            this.tftpd_btn.TabIndex = 12;
+            this.tftpd_btn.Text = "button1";
+            this.tftpd_btn.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -865,6 +876,7 @@
         private System.Windows.Forms.ListBox dhcp_logmsg;
         private System.Windows.Forms.Button btn_http_dir;
         private System.Windows.Forms.ListBox tftpd_output;
+        private System.Windows.Forms.Button tftpd_btn;
     }
 }
 

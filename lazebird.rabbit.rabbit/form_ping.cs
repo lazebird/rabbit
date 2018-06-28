@@ -39,7 +39,12 @@ namespace lazebird.rabbit.rabbit
         long RoundtripTime;
         void ping_cb(int id, PingReply reply)
         {
-            if (reply.Status == IPStatus.Success)
+            if (reply == null)  // exception
+            {
+                RoundtripTime = 0;
+                stop_ping();
+            }
+            else if (reply.Status == IPStatus.Success)
             {
                 rxcnt++;
                 display_taskbar(1);
@@ -53,6 +58,7 @@ namespace lazebird.rabbit.rabbit
             {
                 losscnt++;
                 display_taskbar(0);
+                RoundtripTime = int.Parse(((TextBox)texthash["ping_timeout"]).Text);
                 pinglog.write("请求超时。");
             }
         }
@@ -62,6 +68,7 @@ namespace lazebird.rabbit.rabbit
             string addr = ((TextBox)texthash["ping_addr"]).Text;
             int timeout = int.Parse(((TextBox)texthash["ping_timeout"]).Text);
             int count = int.Parse(((TextBox)texthash["ping_times"]).Text);
+            ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
             ((Button)btnhash["ping_btn"]).Text = "停止";
             stop_unset = true;
             recordidx = 0;
@@ -70,7 +77,6 @@ namespace lazebird.rabbit.rabbit
             maxtm = totaltm = 0;
             while (stop_unset && (count < 0 || count-- > 0))
             {
-                RoundtripTime = timeout;
                 ping.start(addr, timeout, ping_cb);
                 txcnt++;
                 if (timeout > (int)RoundtripTime)
@@ -84,24 +90,16 @@ namespace lazebird.rabbit.rabbit
         void stop_ping()
         {
             stop_unset = false;
+            ((Form)formhash["form"]).Text = "Rabbit";
             ((Button)btnhash["ping_btn"]).Text = "开始";
         }
         void ping_click(object sender, EventArgs evt)
         {
             if (((Button)btnhash["ping_btn"]).Text == "开始")
             {
-                try
-                {
-                    ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
-                    pinglog.setfile(((TextBox)texthash["ping_logfile"]).Text);
-                    pinglog.clear();
-                    new Thread(start_ping).Start();
-                }
-                catch (Exception e)
-                {
-                    pinglog.write("Error: " + e.Message);
-                    stop_ping();
-                }
+                pinglog.setfile(((TextBox)texthash["ping_logfile"]).Text);
+                pinglog.clear();
+                new Thread(start_ping).Start();
             }
             else
             {

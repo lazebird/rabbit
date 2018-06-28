@@ -69,6 +69,7 @@ namespace lazebird.rabbit.rabbit
             texthash.Add("tftp_dir5", tftp_dirtext5);
             btnhash.Add("ping_btn", btn_ping);
             btnhash.Add("httpd_btn", btn_httpd);
+            btnhash.Add("tftpd_btn", tftpd_btn);
             formhash.Add("form", this);
             indexhash.Add("ping_btn", 0);
             indexhash.Add("httpd_btn", 1);
@@ -85,7 +86,7 @@ namespace lazebird.rabbit.rabbit
             }
             foreach (string key in btnhash.Keys)
             {
-                if (myconf.get(key) == "停止")
+                if (myconf.get(key) != ((Button)btnhash[key]).Text)
                 {
                     tabs.SelectedIndex = (int)indexhash[key];
                     ((Button)btnhash[key]).PerformClick();

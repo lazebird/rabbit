@@ -202,5 +202,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["tftp_dir5"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpd_btn {
+            get {
+                return ((string)(this["tftpd_btn"]));
+            }
+            set {
+                this["tftpd_btn"] = value;
+            }
+        }
     }
 }
