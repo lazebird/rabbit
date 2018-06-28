@@ -46,7 +46,7 @@ namespace lazebird.rabbit.common
                 logview.Items.Clear();
             }
         }
-        public int write(string msg, int line)
+        public int write(int line, string msg)
         {
             if (logview == null)
             {

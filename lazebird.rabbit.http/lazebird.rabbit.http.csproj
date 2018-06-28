@@ -43,11 +43,5 @@
     <Compile Include="httpd.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\lazebird.rabbit.common\lazebird.rabbit.common.csproj">
-      <Project>{6c93b9cb-1bad-42fd-a497-ac81c64b5d33}</Project>
-      <Name>lazebird.rabbit.common</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

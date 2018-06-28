@@ -1,5 +1,4 @@
-﻿using lazebird.rabbit.common;
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Net;
@@ -9,16 +8,16 @@ namespace lazebird.rabbit.tftp
 {
     public class tftpd
     {
-        mylog l;
+        Func<int, string, int> log;
         Hashtable dirhash;
         Hashtable filehash;
         Hashtable loghash;
         Hashtable logtmhash;
         TftpServer server;
 
-        public tftpd(mylog l)
+        public tftpd(Func<int, string, int> log)
         {
-            this.l = l;
+            this.log = log;
             dirhash = new Hashtable();
             filehash = new Hashtable();
             loghash = new Hashtable();
@@ -45,13 +44,13 @@ namespace lazebird.rabbit.tftp
             {
                 if (filehash.ContainsKey(f.Name))
                 {
-                    l.write("File " + f.Name + " conflict in both " + filehash[f.Name] + " and " + abs_dir);
+                    log(0, "!F: " + f.Name + " in both " + filehash[f.Name] + " and " + abs_dir);
                     filehash.Remove(f.Name);
                 }
                 filehash.Add(f.Name, abs_dir);
                 filecnt++;
             }
-            l.write("Add " + abs_dir + " (" + filecnt + " files).");
+            log(0, "+D: " + abs_dir + " (" + filecnt + " files).");
         }
         public void del_dir(string dir)
         {
@@ -75,7 +74,7 @@ namespace lazebird.rabbit.tftp
                 {
                     filehash.Remove(key);
                 }
-                l.write("Del " + abs_dir + " (" + al.Count + " files).");
+                log(0, "-D: " + abs_dir + " (" + al.Count + " files).");
                 al = null;
             }
         }
@@ -114,13 +113,13 @@ namespace lazebird.rabbit.tftp
 
         private void CancelTransfer(ITftpTransfer transfer, TftpErrorPacket reason)
         {
-            OutputTransferStatus(transfer, "Error: " + reason.ErrorMessage);
+            OutputTransferStatus(transfer, "!E: " + reason.ErrorMessage);
             transfer.Cancel(reason);
         }
 
         void transfer_OnError(ITftpTransfer transfer, TftpTransferError error)
         {
-            OutputTransferStatus(transfer, "Error: " + error);
+            OutputTransferStatus(transfer, "!E: " + error);
         }
 
         void transfer_OnFinished(ITftpTransfer transfer)
@@ -137,19 +136,19 @@ namespace lazebird.rabbit.tftp
             string key = (EndPoint)transfer.UserContext + "/" + transfer.Filename;
             if (loghash.ContainsKey(key))
             {
-                if (Environment.TickCount - (int)logtmhash[key] > 50 || message == "Success" || message.Contains("Error"))
+                if (Environment.TickCount - (int)logtmhash[key] > 50 || message == "Success" || message.Contains("!E: "))
                 {
-                    l.write(key + ": " + message, (int)loghash[key]);
+                    log((int)loghash[key], key + ": " + message);
                     logtmhash[key] = Environment.TickCount;
                 }
             }
             else
             {
-                int line = l.write(key + ": " + message, 0);
+                int line = log(0, key + ": " + message);
                 loghash.Add(key, line);
                 logtmhash.Add(key, Environment.TickCount);
             }
-            if (message == "Success" || message.Contains("Error"))
+            if (message == "Success" || message.Contains("!E: "))
             {
                 loghash.Remove(key);
                 logtmhash.Remove(key);
