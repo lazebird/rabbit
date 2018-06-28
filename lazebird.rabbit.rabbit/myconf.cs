@@ -23,6 +23,8 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("ping_timeout", "1000");
             cfg.Add("ping_times", "-1");
             cfg.Add("http_port", "8000");
+            cfg.Add("scan_ipstart", "192.168.1.1");
+            cfg.Add("scan_ipend", "254");
             cfg.Add("tabs", "0");
             mime += ".svg:image/svg+xml;";
             mime += ".html:text/html;";
