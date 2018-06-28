@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("lazebird.rabbit.tftp")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("an stupid tftp server")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("lazebird")]
 [assembly: AssemblyProduct("lazebird.rabbit.tftp")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]

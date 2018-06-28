@@ -10,9 +10,9 @@
     <projectUrl>https://github.com/lazebird/rabbit</projectUrl>
     <iconUrl>https://github.com/lazebird/rabbit/blob/master/lazebird.rabbit.rabbit/easter%20Bunny.ico</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>$description$</description>
-    <releaseNotes>listbox log and taskbar view api for lazebird.rabbit.</releaseNotes>
+    <description>an stupid http server</description>
+    <releaseNotes>support http server, set root dir, add dir, add file</releaseNotes>
     <copyright>Copyright 2018</copyright>
-    <tags>lazebird rabbit common</tags>
+    <tags>lazebird rabbit http</tags>
   </metadata>
 </package>
