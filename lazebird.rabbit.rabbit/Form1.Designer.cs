@@ -48,6 +48,7 @@
             this.label_scanend = new System.Windows.Forms.Label();
             this.text_scanend = new System.Windows.Forms.TextBox();
             this.btn_scan = new System.Windows.Forms.Button();
+            this.fp_scan = new System.Windows.Forms.FlowLayoutPanel();
             this.HTTPD = new System.Windows.Forms.TabPage();
             this.label_http_port = new System.Windows.Forms.Label();
             this.text_http_port = new System.Windows.Forms.TextBox();
@@ -94,7 +95,6 @@
             this.Setting = new System.Windows.Forms.TabPage();
             this.lang = new System.Windows.Forms.Label();
             this.lang_opt = new System.Windows.Forms.ComboBox();
-            this.fp_scan = new System.Windows.Forms.FlowLayoutPanel();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -320,17 +320,17 @@
             // 
             this.text_scanstart.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.text_scanstart.Location = new System.Drawing.Point(72, 14);
+            this.text_scanstart.Location = new System.Drawing.Point(72, 15);
             this.text_scanstart.Margin = new System.Windows.Forms.Padding(2);
             this.text_scanstart.Name = "text_scanstart";
-            this.text_scanstart.Size = new System.Drawing.Size(348, 25);
+            this.text_scanstart.Size = new System.Drawing.Size(468, 25);
             this.text_scanstart.TabIndex = 1;
             // 
             // label_scanend
             // 
             this.label_scanend.AutoSize = true;
             this.label_scanend.BackColor = System.Drawing.Color.Transparent;
-            this.label_scanend.Location = new System.Drawing.Point(425, 19);
+            this.label_scanend.Location = new System.Drawing.Point(545, 19);
             this.label_scanend.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label_scanend.Name = "label_scanend";
             this.label_scanend.Size = new System.Drawing.Size(15, 20);
@@ -340,10 +340,10 @@
             // text_scanend
             // 
             this.text_scanend.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.text_scanend.Location = new System.Drawing.Point(446, 16);
+            this.text_scanend.Location = new System.Drawing.Point(565, 16);
             this.text_scanend.Margin = new System.Windows.Forms.Padding(2);
             this.text_scanend.Name = "text_scanend";
-            this.text_scanend.Size = new System.Drawing.Size(198, 25);
+            this.text_scanend.Size = new System.Drawing.Size(79, 25);
             this.text_scanend.TabIndex = 2;
             // 
             // btn_scan
@@ -355,6 +355,16 @@
             this.btn_scan.TabIndex = 14;
             this.btn_scan.Text = "开始";
             this.btn_scan.UseVisualStyleBackColor = true;
+            // 
+            // fp_scan
+            // 
+            this.fp_scan.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.fp_scan.Location = new System.Drawing.Point(9, 62);
+            this.fp_scan.Name = "fp_scan";
+            this.fp_scan.Size = new System.Drawing.Size(740, 374);
+            this.fp_scan.TabIndex = 15;
             // 
             // HTTPD
             // 
@@ -857,13 +867,6 @@
             this.lang_opt.Name = "lang_opt";
             this.lang_opt.Size = new System.Drawing.Size(121, 28);
             this.lang_opt.TabIndex = 1;
-            // 
-            // fp_scan
-            // 
-            this.fp_scan.Location = new System.Drawing.Point(9, 62);
-            this.fp_scan.Name = "fp_scan";
-            this.fp_scan.Size = new System.Drawing.Size(740, 374);
-            this.fp_scan.TabIndex = 15;
             // 
             // Form1
             // 
