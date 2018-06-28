@@ -1,11 +1,11 @@
-﻿using rabbit.common;
+﻿using lazebird.rabbit.common;
 using System;
 using System.Net.NetworkInformation;
 using System.Threading;
 
-namespace rabbit.ping
+namespace lazebird.rabbit.ping
 {
-    class myping
+    public class myping
     {
         string addr;
         int timeout, times;

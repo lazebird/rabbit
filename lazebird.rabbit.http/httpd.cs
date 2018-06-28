@@ -1,15 +1,14 @@
-﻿using rabbit.common;
+﻿using lazebird.rabbit.common;
 using System;
 using System.Collections;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 
-namespace rabbit.http
+namespace lazebird.rabbit.http
 {
-    class httpd
+    public class httpd
     {
         mylog l;
         HttpListener httpListener;
@@ -28,12 +27,10 @@ namespace rabbit.http
             fpathhash = new Hashtable();
             fsizehash = new Hashtable();
             ftmhash = new Hashtable();
-            init_mime();
         }
-        void init_mime()
+        public void init_mime(string value)
         {
             mimehash = new Hashtable();
-            string value = myconf.get("mime");
             string[] mimes = value.Split(';');
             foreach (string mime in mimes)
             {

@@ -1,4 +1,4 @@
-﻿namespace rabbit
+﻿namespace lazebird.rabbit.rabbit
 {
     partial class Form1
     {

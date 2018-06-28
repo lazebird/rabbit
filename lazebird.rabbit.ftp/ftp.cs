@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace rabbit.dhcp
+namespace lazebird.rabbit.ftp
 {
-    class dhcpd
+    public class ftpd
     {
     }
 }

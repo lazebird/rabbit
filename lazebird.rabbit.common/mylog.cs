@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Windows.Forms;
 
-namespace rabbit.common
+namespace lazebird.rabbit.common
 {
-    class mylog
+    public class mylog
     {
         string logfile = null;
         ListBox logview = null;

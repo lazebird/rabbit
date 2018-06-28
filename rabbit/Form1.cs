@@ -1,15 +1,14 @@
-﻿using rabbit.common;
-using rabbit.http;
-using rabbit.ping;
-using rabbit.tftp;
-using rabbit.ftp;
-using rabbit.dhcp;
+﻿using lazebird.rabbit.common;
+using lazebird.rabbit.http;
+using lazebird.rabbit.ping;
+using lazebird.rabbit.tftp;
+using lazebird.rabbit.ftp;
+using lazebird.rabbit.dhcp;
 using System;
 using System.Collections;
 using System.Windows.Forms;
-using System.IO;
 
-namespace rabbit
+namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
@@ -36,6 +35,7 @@ namespace rabbit
             tftpdlog = new mylog(tftpd_output);
             ping = new myping(pinglog, ping_stop_cb);
             httpd = new httpd(httpdlog);
+            httpd.init_mime(myconf.get("mime"));
             tftpd = new tftpd(tftpdlog);
             btn_ping.Click += new EventHandler(ping_click);
             btn_ping_log.Click += new EventHandler(ping_log_click);

@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{641E1CCA-8960-4D70-8376-4601AC5A8E07}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>rabbit</RootNamespace>
+    <RootNamespace>lazebird.rabbit.rabbit</RootNamespace>
     <AssemblyName>Rabbit</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -91,13 +91,10 @@
   <PropertyGroup>
     <TargetZone>LocalIntranet</TargetZone>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>lazebird.rabbit.rabbit.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.WindowsAPICodePack">
-      <HintPath>lib\Microsoft.WindowsAPICodePack.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack.Shell">
-      <HintPath>lib\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -106,27 +103,17 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Tftp.Net, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Tftp.Net.1.1.0.0\lib\Tftp.Net.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="dhcp\dhcp.cs" />
-    <Compile Include="ftp\ftp.cs" />
-    <Compile Include="http\httpd.cs" />
-    <Compile Include="common\myconf.cs" />
-    <Compile Include="common\mylog.cs" />
-    <Compile Include="ping\myping.cs" />
+    <Compile Include="myconf.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="common\mytaskbar.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="tftp\tftp.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -142,7 +129,6 @@
     </Compile>
     <None Include="app.config" />
     <None Include="app.manifest" />
-    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -170,6 +156,32 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lazebird.rabbit.common\lazebird.rabbit.common.csproj">
+      <Project>{6c93b9cb-1bad-42fd-a497-ac81c64b5d33}</Project>
+      <Name>lazebird.rabbit.common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lazebird.rabbit.dhcp\lazebird.rabbit.dhcp.csproj">
+      <Project>{f722ccc9-3f3c-48bb-b868-9f8f5807f220}</Project>
+      <Name>lazebird.rabbit.dhcp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lazebird.rabbit.ftp\lazebird.rabbit.ftp.csproj">
+      <Project>{a430ad1a-2327-4a7a-8d37-082d1b5df0e4}</Project>
+      <Name>lazebird.rabbit.ftp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lazebird.rabbit.http\lazebird.rabbit.http.csproj">
+      <Project>{66efb1d8-8785-4ad9-b135-f8d699e186f6}</Project>
+      <Name>lazebird.rabbit.http</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lazebird.rabbit.ping\lazebird.rabbit.ping.csproj">
+      <Project>{3fb652a4-a6d7-40d1-907d-33f0e6d78b63}</Project>
+      <Name>lazebird.rabbit.ping</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lazebird.rabbit.tftp\lazebird.rabbit.tftp.csproj">
+      <Project>{6d969711-be11-48ec-8f9c-af8aa185d032}</Project>
+      <Name>lazebird.rabbit.tftp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

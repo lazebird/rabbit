@@ -1,13 +1,13 @@
-﻿using rabbit.common;
+﻿using lazebird.rabbit.common;
 using System;
 using System.Collections;
 using System.IO;
 using System.Net;
 using Tftp.Net;
 
-namespace rabbit.tftp
+namespace lazebird.rabbit.tftp
 {
-    class tftpd
+    public class tftpd
     {
         mylog l;
         Hashtable dirhash;

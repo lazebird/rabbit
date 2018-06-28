@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace rabbit
+namespace lazebird.rabbit.rabbit
 {
     static class Program
     {

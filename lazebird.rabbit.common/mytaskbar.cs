@@ -1,9 +1,9 @@
 ﻿using Microsoft.WindowsAPICodePack.Taskbar;
 using System;
 
-namespace rabbit.common
+namespace lazebird.rabbit.common
 {
-    class mytaskbar
+    public class mytaskbar
     {
         bool taskbar_support = true;
         string errmsg;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 
-namespace rabbit.common
+namespace lazebird.rabbit.rabbit
 {
     class myconf
     {
