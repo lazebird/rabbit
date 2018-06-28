@@ -214,5 +214,29 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["tftpd_btn"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string scan_ipstart {
+            get {
+                return ((string)(this["scan_ipstart"]));
+            }
+            set {
+                this["scan_ipstart"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string scan_ipend {
+            get {
+                return ((string)(this["scan_ipend"]));
+            }
+            set {
+                this["scan_ipend"] = value;
+            }
+        }
     }
 }
