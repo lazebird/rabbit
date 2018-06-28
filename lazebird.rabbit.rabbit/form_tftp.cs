@@ -61,15 +61,7 @@ namespace lazebird.rabbit.rabbit
         private void tftpd_click(object sender, EventArgs e)
         {
             saveconf();
-            //readconf();       // crash?
-            foreach (string key in texthash.Keys)
-            {
-                //((TextBox)texthash[key]).Text = myconf.get(key);
-                if (key.Contains("tftp_dir"))
-                {
-                    tftpd.add_dir(((TextBox)texthash[key]).Text);
-                }
-            }
+            readconf();       // crash?
         }
     }
 }

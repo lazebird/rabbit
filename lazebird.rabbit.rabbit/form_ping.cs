@@ -99,7 +99,9 @@ namespace lazebird.rabbit.rabbit
             {
                 pinglog.setfile(((TextBox)texthash["ping_logfile"]).Text);
                 pinglog.clear();
-                new Thread(start_ping).Start();
+                Thread th = new Thread(start_ping);
+                th.IsBackground = true;
+                th.Start();
             }
             else
             {

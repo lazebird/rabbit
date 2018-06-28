@@ -29,7 +29,9 @@ namespace lazebird.rabbit.rabbit
         {
             onloading = true;
             base.OnLoad(e);
-            new Thread(bar_test).Start();
+            Thread th = new Thread(bar_test);
+            th.IsBackground = true;
+            th.Start();
             readconf();
             onloading = false;
         }
@@ -71,12 +73,10 @@ namespace lazebird.rabbit.rabbit
             texthash.Add("scan_ipstart", text_scanstart);
             texthash.Add("scan_ipend", text_scanend);
             btnhash.Add("ping_btn", btn_ping);
-            btnhash.Add("httpd_btn", btn_httpd);
-            btnhash.Add("tftpd_btn", tftpd_btn);
-            formhash.Add("form", this);
             indexhash.Add("ping_btn", 0);
+            btnhash.Add("httpd_btn", btn_httpd);
             indexhash.Add("httpd_btn", 2);
-            indexhash.Add("tftpd_btn", 3);
+            formhash.Add("form", this);
         }
         private void readconf()
         {
