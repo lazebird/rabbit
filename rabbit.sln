@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.rabbit", "rabbit\lazebird.rabbit.rabbit.csproj", "{641E1CCA-8960-4D70-8376-4601AC5A8E07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.rabbit", "lazebird.rabbit.rabbit\lazebird.rabbit.rabbit.csproj", "{641E1CCA-8960-4D70-8376-4601AC5A8E07}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.http", "lazebird.rabbit.http\lazebird.rabbit.http.csproj", "{66EFB1D8-8785-4AD9-B135-F8D699E186F6}"
 EndProject

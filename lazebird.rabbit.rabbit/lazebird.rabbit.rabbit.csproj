@@ -7,7 +7,7 @@
     <ProjectGuid>{641E1CCA-8960-4D70-8376-4601AC5A8E07}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>lazebird.rabbit.rabbit</RootNamespace>
-    <AssemblyName>Rabbit</AssemblyName>
+    <AssemblyName>lazebird.rabbit.rabbit</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
