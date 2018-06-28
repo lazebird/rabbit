@@ -31,7 +31,7 @@ namespace lazebird.rabbit.ping
         }
         private void bar_test()
         {
-            Thread.Sleep(200);
+            Thread.Sleep(500);
             if (!bar.set(0, 0, 0))
             {
                 l.write("Error: " + bar.strerr());
