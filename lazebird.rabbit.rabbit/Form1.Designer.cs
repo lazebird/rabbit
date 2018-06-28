@@ -42,6 +42,12 @@
             this.text_logpath = new System.Windows.Forms.TextBox();
             this.btn_ping = new System.Windows.Forms.Button();
             this.ping_output = new System.Windows.Forms.ListBox();
+            this.Scan = new System.Windows.Forms.TabPage();
+            this.label_scanip = new System.Windows.Forms.Label();
+            this.text_scanstart = new System.Windows.Forms.TextBox();
+            this.label_scanend = new System.Windows.Forms.Label();
+            this.text_scanend = new System.Windows.Forms.TextBox();
+            this.btn_scan = new System.Windows.Forms.Button();
             this.HTTPD = new System.Windows.Forms.TabPage();
             this.label_http_port = new System.Windows.Forms.Label();
             this.text_http_port = new System.Windows.Forms.TextBox();
@@ -60,6 +66,7 @@
             this.tftp_dirbtn4 = new System.Windows.Forms.Button();
             this.tftp_dirtext5 = new System.Windows.Forms.TextBox();
             this.tftp_dirbtn5 = new System.Windows.Forms.Button();
+            this.tftpd_btn = new System.Windows.Forms.Button();
             this.tftpd_output = new System.Windows.Forms.ListBox();
             this.FTPD = new System.Windows.Forms.TabPage();
             this.ftp_dirtext1 = new System.Windows.Forms.TextBox();
@@ -87,11 +94,12 @@
             this.Setting = new System.Windows.Forms.TabPage();
             this.lang = new System.Windows.Forms.Label();
             this.lang_opt = new System.Windows.Forms.ComboBox();
-            this.tftpd_btn = new System.Windows.Forms.Button();
+            this.fp_scan = new System.Windows.Forms.FlowLayoutPanel();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
             this.Ping.SuspendLayout();
+            this.Scan.SuspendLayout();
             this.HTTPD.SuspendLayout();
             this.TFTPD.SuspendLayout();
             this.FTPD.SuspendLayout();
@@ -166,6 +174,7 @@
             // tabs
             // 
             this.tabs.Controls.Add(this.Ping);
+            this.tabs.Controls.Add(this.Scan);
             this.tabs.Controls.Add(this.HTTPD);
             this.tabs.Controls.Add(this.TFTPD);
             this.tabs.Controls.Add(this.FTPD);
@@ -281,6 +290,72 @@
             this.ping_output.Size = new System.Drawing.Size(742, 175);
             this.ping_output.TabIndex = 7;
             // 
+            // Scan
+            // 
+            this.Scan.Controls.Add(this.label_scanip);
+            this.Scan.Controls.Add(this.text_scanstart);
+            this.Scan.Controls.Add(this.label_scanend);
+            this.Scan.Controls.Add(this.text_scanend);
+            this.Scan.Controls.Add(this.btn_scan);
+            this.Scan.Controls.Add(this.fp_scan);
+            this.Scan.Location = new System.Drawing.Point(4, 29);
+            this.Scan.Name = "Scan";
+            this.Scan.Padding = new System.Windows.Forms.Padding(3);
+            this.Scan.Size = new System.Drawing.Size(759, 444);
+            this.Scan.TabIndex = 7;
+            this.Scan.Text = "Scan";
+            // 
+            // label_scanip
+            // 
+            this.label_scanip.AutoSize = true;
+            this.label_scanip.BackColor = System.Drawing.Color.Transparent;
+            this.label_scanip.Location = new System.Drawing.Point(5, 19);
+            this.label_scanip.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label_scanip.Name = "label_scanip";
+            this.label_scanip.Size = new System.Drawing.Size(37, 20);
+            this.label_scanip.TabIndex = 12;
+            this.label_scanip.Text = "地址";
+            // 
+            // text_scanstart
+            // 
+            this.text_scanstart.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_scanstart.Location = new System.Drawing.Point(72, 14);
+            this.text_scanstart.Margin = new System.Windows.Forms.Padding(2);
+            this.text_scanstart.Name = "text_scanstart";
+            this.text_scanstart.Size = new System.Drawing.Size(348, 25);
+            this.text_scanstart.TabIndex = 1;
+            // 
+            // label_scanend
+            // 
+            this.label_scanend.AutoSize = true;
+            this.label_scanend.BackColor = System.Drawing.Color.Transparent;
+            this.label_scanend.Location = new System.Drawing.Point(425, 19);
+            this.label_scanend.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label_scanend.Name = "label_scanend";
+            this.label_scanend.Size = new System.Drawing.Size(15, 20);
+            this.label_scanend.TabIndex = 0;
+            this.label_scanend.Text = "-";
+            // 
+            // text_scanend
+            // 
+            this.text_scanend.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_scanend.Location = new System.Drawing.Point(446, 16);
+            this.text_scanend.Margin = new System.Windows.Forms.Padding(2);
+            this.text_scanend.Name = "text_scanend";
+            this.text_scanend.Size = new System.Drawing.Size(198, 25);
+            this.text_scanend.TabIndex = 2;
+            // 
+            // btn_scan
+            // 
+            this.btn_scan.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_scan.Location = new System.Drawing.Point(674, 19);
+            this.btn_scan.Name = "btn_scan";
+            this.btn_scan.Size = new System.Drawing.Size(75, 23);
+            this.btn_scan.TabIndex = 14;
+            this.btn_scan.Text = "开始";
+            this.btn_scan.UseVisualStyleBackColor = true;
+            // 
             // HTTPD
             // 
             this.HTTPD.Controls.Add(this.label_http_port);
@@ -369,10 +444,10 @@
             this.TFTPD.Controls.Add(this.tftp_dirbtn5);
             this.TFTPD.Controls.Add(this.tftpd_btn);
             this.TFTPD.Controls.Add(this.tftpd_output);
-            this.TFTPD.Location = new System.Drawing.Point(4, 29);
+            this.TFTPD.Location = new System.Drawing.Point(4, 25);
             this.TFTPD.Name = "TFTPD";
             this.TFTPD.Padding = new System.Windows.Forms.Padding(3);
-            this.TFTPD.Size = new System.Drawing.Size(759, 444);
+            this.TFTPD.Size = new System.Drawing.Size(759, 448);
             this.TFTPD.TabIndex = 5;
             this.TFTPD.Text = "TFTPD";
             this.TFTPD.UseVisualStyleBackColor = true;
@@ -466,6 +541,15 @@
             this.tftp_dirbtn5.TabIndex = 1;
             this.tftp_dirbtn5.Text = "Directory 5";
             this.tftp_dirbtn5.UseVisualStyleBackColor = true;
+            // 
+            // tftpd_btn
+            // 
+            this.tftpd_btn.Location = new System.Drawing.Point(635, 240);
+            this.tftpd_btn.Name = "tftpd_btn";
+            this.tftpd_btn.Size = new System.Drawing.Size(75, 23);
+            this.tftpd_btn.TabIndex = 12;
+            this.tftpd_btn.Text = "button1";
+            this.tftpd_btn.UseVisualStyleBackColor = true;
             // 
             // tftpd_output
             // 
@@ -774,14 +858,12 @@
             this.lang_opt.Size = new System.Drawing.Size(121, 28);
             this.lang_opt.TabIndex = 1;
             // 
-            // tftp_btn
+            // fp_scan
             // 
-            this.tftpd_btn.Location = new System.Drawing.Point(635, 240);
-            this.tftpd_btn.Name = "tftp_btn";
-            this.tftpd_btn.Size = new System.Drawing.Size(75, 23);
-            this.tftpd_btn.TabIndex = 12;
-            this.tftpd_btn.Text = "button1";
-            this.tftpd_btn.UseVisualStyleBackColor = true;
+            this.fp_scan.Location = new System.Drawing.Point(9, 62);
+            this.fp_scan.Name = "fp_scan";
+            this.fp_scan.Size = new System.Drawing.Size(740, 374);
+            this.fp_scan.TabIndex = 15;
             // 
             // Form1
             // 
@@ -802,6 +884,8 @@
             this.tabs.ResumeLayout(false);
             this.Ping.ResumeLayout(false);
             this.Ping.PerformLayout();
+            this.Scan.ResumeLayout(false);
+            this.Scan.PerformLayout();
             this.HTTPD.ResumeLayout(false);
             this.HTTPD.PerformLayout();
             this.TFTPD.ResumeLayout(false);
@@ -877,6 +961,13 @@
         private System.Windows.Forms.Button btn_http_dir;
         private System.Windows.Forms.ListBox tftpd_output;
         private System.Windows.Forms.Button tftpd_btn;
+        private System.Windows.Forms.TabPage Scan;
+        private System.Windows.Forms.Label label_scanip;
+        private System.Windows.Forms.TextBox text_scanstart;
+        private System.Windows.Forms.Label label_scanend;
+        private System.Windows.Forms.TextBox text_scanend;
+        private System.Windows.Forms.Button btn_scan;
+        private System.Windows.Forms.FlowLayoutPanel fp_scan;
     }
 }
 

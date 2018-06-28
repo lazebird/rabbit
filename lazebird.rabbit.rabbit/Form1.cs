@@ -19,6 +19,7 @@ namespace lazebird.rabbit.rabbit
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
             init_form_ping();
+            init_form_scan();
             init_form_http();
             init_form_tftp();
             init_hash();
@@ -72,7 +73,7 @@ namespace lazebird.rabbit.rabbit
             btnhash.Add("tftpd_btn", tftpd_btn);
             formhash.Add("form", this);
             indexhash.Add("ping_btn", 0);
-            indexhash.Add("httpd_btn", 1);
+            indexhash.Add("httpd_btn", 2);
         }
         private void readconf()
         {
