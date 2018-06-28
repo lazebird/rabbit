@@ -1,7 +1,4 @@
-﻿using lazebird.rabbit.common;
-using lazebird.rabbit.http;
-using lazebird.rabbit.ping;
-using lazebird.rabbit.tftp;
+﻿using lazebird.rabbit.tftp;
 using lazebird.rabbit.ftp;
 using lazebird.rabbit.dhcp;
 using System;
@@ -16,8 +13,6 @@ namespace lazebird.rabbit.rabbit
         Hashtable btnhash;
         Hashtable formhash;
         Hashtable indexhash;
-        ftpd ftp;
-        dhcpd dhcp;
         public Form1()
         {
             InitializeComponent();
