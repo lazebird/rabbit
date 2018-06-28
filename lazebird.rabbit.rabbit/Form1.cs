@@ -4,6 +4,7 @@ using lazebird.rabbit.dhcp;
 using System;
 using System.Collections;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace lazebird.rabbit.rabbit
 {
@@ -27,6 +28,7 @@ namespace lazebird.rabbit.rabbit
         {
             onloading = true;
             base.OnLoad(e);
+            new Thread(bar_test).Start();
             readconf();
             onloading = false;
         }

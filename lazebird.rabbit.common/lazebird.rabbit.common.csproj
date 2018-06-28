@@ -48,5 +48,8 @@
     <Compile Include="mytaskbar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="lazebird.rabbit.common.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
