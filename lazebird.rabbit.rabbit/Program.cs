@@ -13,7 +13,9 @@ namespace lazebird.rabbit.rabbit
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Form1 f = new Form1();
+            Language.SetLang(Language.Getsetting(), f, typeof(Form1));
+            Application.Run(f);
         }
     }
 }

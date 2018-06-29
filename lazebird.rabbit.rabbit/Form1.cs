@@ -22,6 +22,7 @@ namespace lazebird.rabbit.rabbit
             init_form_scan();
             init_form_http();
             init_form_tftp();
+            init_form_setting();
             init_hash();
         }
         bool onloading = false;
@@ -90,7 +91,7 @@ namespace lazebird.rabbit.rabbit
             }
             foreach (string key in btnhash.Keys)
             {
-                if (myconf.get(key) != ((Button)btnhash[key]).Text)
+                if (Language.trans(myconf.get(key)) != ((Button)btnhash[key]).Text)
                 {
                     tabs.SelectedIndex = (int)indexhash[key];
                     ((Button)btnhash[key]).PerformClick();

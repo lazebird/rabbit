@@ -111,9 +111,13 @@
     <Compile Include="form_scan.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="form_setting.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="form_tftp.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="lang.cs" />
     <Compile Include="myconf.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -127,6 +131,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form1.zh-CN.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

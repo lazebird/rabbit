@@ -70,7 +70,7 @@ namespace lazebird.rabbit.rabbit
             int timeout = int.Parse(((TextBox)texthash["ping_timeout"]).Text);
             int count = int.Parse(((TextBox)texthash["ping_times"]).Text);
             ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
-            ((Button)btnhash["ping_btn"]).Text = "停止";
+            ((Button)btnhash["ping_btn"]).Text = Language.trans("停止");
             stop_unset = true;
             recordidx = 0;
             txcnt = rxcnt = losscnt = 0;
@@ -92,11 +92,11 @@ namespace lazebird.rabbit.rabbit
         {
             stop_unset = false;
             ((Form)formhash["form"]).Text = "Rabbit";
-            ((Button)btnhash["ping_btn"]).Text = "开始";
+            ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
         }
         void ping_click(object sender, EventArgs evt)
         {
-            if (((Button)btnhash["ping_btn"]).Text == "开始")
+            if (((Button)btnhash["ping_btn"]).Text == Language.trans("开始"))
             {
                 pinglog.setfile(((TextBox)texthash["ping_logfile"]).Text);
                 pinglog.clear();

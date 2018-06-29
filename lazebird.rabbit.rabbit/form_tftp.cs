@@ -18,7 +18,6 @@ namespace lazebird.rabbit.rabbit
             tftp_dirbtn3.Click += new EventHandler(tftpd_dir3_click);
             tftp_dirbtn4.Click += new EventHandler(tftpd_dir4_click);
             tftp_dirbtn5.Click += new EventHandler(tftpd_dir5_click);
-            tftpd_btn.Text = "Apply";
             tftpd_btn.Click += new EventHandler(tftpd_click);
         }
         int tftpd_log_func(int line, string msg)
