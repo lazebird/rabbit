@@ -91,7 +91,7 @@ namespace lazebird.rabbit.rabbit
             }
             foreach (string key in btnhash.Keys)
             {
-                if (Language.trans(myconf.get(key)) != ((Button)btnhash[key]).Text)
+                if (myconf.get(key) != "" && Language.trans(myconf.get(key)) != ((Button)btnhash[key]).Text)
                 {
                     tabs.SelectedIndex = (int)indexhash[key];
                     ((Button)btnhash[key]).PerformClick();
