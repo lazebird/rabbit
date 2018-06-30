@@ -45,11 +45,19 @@ namespace lazebird.rabbit.http
         }
         public bool start(int port)
         {
-            httpListener.Prefixes.Clear();
-            httpListener.Prefixes.Add(string.Format("http://+:{0}/", port));
-            httpListener.Start();
-            httpListener.BeginGetContext(new AsyncCallback(Dispather), null);
-            return true;
+            try
+            {
+                httpListener.Prefixes.Clear();
+                httpListener.Prefixes.Add(string.Format("http://+:{0}/", port));
+                httpListener.Start();
+                httpListener.BeginGetContext(new AsyncCallback(Dispather), null);
+                return true;
+            }
+            catch (Exception e)
+            {
+                log("Exception: " + e.Message);
+                return false;
+            }
         }
         public void stop()
         {

@@ -22,10 +22,17 @@ namespace lazebird.rabbit.tftp
             filehash = new Hashtable();
             loghash = new Hashtable();
             logtmhash = new Hashtable();
-            server = new TftpServer();
-            server.OnReadRequest += new TftpServerEventHandler(server_OnReadRequest);
-            server.OnWriteRequest += new TftpServerEventHandler(server_OnWriteRequest);
-            server.Start();
+            try
+            {
+                server = new TftpServer();
+                server.OnReadRequest += new TftpServerEventHandler(server_OnReadRequest);
+                server.OnWriteRequest += new TftpServerEventHandler(server_OnWriteRequest);
+                server.Start();
+            }
+            catch (Exception e)
+            {
+                this.log(0, "Exception: " + e.Message);
+            }
         }
         public void add_dir(string dir)
         {
