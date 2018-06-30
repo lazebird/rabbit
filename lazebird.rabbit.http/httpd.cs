@@ -19,8 +19,6 @@ namespace lazebird.rabbit.http
         public httpd(Action<string> log)
         {
             this.log = log;
-            httpListener = new HttpListener();
-            httpListener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
             ftypehash = new Hashtable();
             fpathhash = new Hashtable();
             fsizehash = new Hashtable();
@@ -45,10 +43,12 @@ namespace lazebird.rabbit.http
         }
         public bool start(int port)
         {
+            httpListener = new HttpListener();
+            httpListener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+            httpListener.Prefixes.Clear();
+            httpListener.Prefixes.Add(string.Format("http://+:{0}/", port));
             try
             {
-                httpListener.Prefixes.Clear();
-                httpListener.Prefixes.Add(string.Format("http://+:{0}/", port));
                 httpListener.Start();
                 httpListener.BeginGetContext(new AsyncCallback(Dispather), null);
                 return true;
@@ -56,12 +56,13 @@ namespace lazebird.rabbit.http
             catch (Exception e)
             {
                 log("Exception: " + e.Message);
+                httpListener.Close();
                 return false;
             }
         }
         public void stop()
         {
-            httpListener.Stop();
+            httpListener.Close();
         }
         string get_suffix(string fname)
         {

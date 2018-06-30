@@ -33,6 +33,7 @@ namespace lazebird.rabbit.ping
             {
                 reply = pingSender.Send(addr, timeout);
                 callback(id, reply);
+                pingSender.Dispose();
             }
             catch (Exception e)
             {
