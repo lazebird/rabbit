@@ -6,7 +6,7 @@ DESCRIPTION:
 2. a scan app, use ping to check if a ip used.
 3. a http server, support set root dir and port.
 4. a tftp server, implemented with a third party library.
-5. support chinese simplified and english, but i don't known how to combine them. following combined method can only support english.
+5. support chinese simplified and english, but i don't known how to combine them into a single exe file. current combined exe file can only support english.
 6. ...
 
 DISTRIBUTION:
