@@ -9,12 +9,12 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
-        myping ping;
+        rping ping;
         mylog pinglog;
         void init_form_ping()
         {
             pinglog = new mylog(ping_output);
-            ping = new myping(ping_log_func);
+            ping = new rping(ping_log_func);
             btn_ping.Click += new EventHandler(ping_click);
             btn_ping_log.Click += new EventHandler(ping_log_click);
             bar = new mytaskbar();

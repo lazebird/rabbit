@@ -10,11 +10,11 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
-        myping scan;
+        rping scan;
         Hashtable lbhash;
         void init_form_scan()
         {
-            scan = new myping(scan_log_func);
+            scan = new rping(scan_log_func);
             lbhash = new Hashtable();
             btn_scan.Click += new EventHandler(scan_click);
         }

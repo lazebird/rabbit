@@ -4,12 +4,12 @@ using System.Threading;
 
 namespace lazebird.rabbit.ping
 {
-    public class myping
+    public class rping
     {
         Action<string> log;
         int reqid = 0;
 
-        public myping(Action<string> log)
+        public rping(Action<string> log)
         {
             this.log = log;
         }

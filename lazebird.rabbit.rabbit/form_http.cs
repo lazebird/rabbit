@@ -7,12 +7,12 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
-        httpd httpd;
+        rhttpd httpd;
         mylog httpdlog;
         void init_form_http()
         {
             httpdlog = new mylog(httpd_output);
-            httpd = new httpd(httpd_log_func);
+            httpd = new rhttpd(httpd_log_func);
             httpd.init_mime(myconf.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);
             btn_http_dir.Click += new EventHandler(httpd_dir_click);

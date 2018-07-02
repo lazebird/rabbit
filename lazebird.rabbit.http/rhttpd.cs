@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace lazebird.rabbit.http
 {
-    public class httpd
+    public class rhttpd
     {
         Action<string> log;
         HttpListener httpListener;
@@ -16,7 +16,7 @@ namespace lazebird.rabbit.http
         Hashtable fpathhash;
         Hashtable fsizehash;
         Hashtable ftmhash;
-        public httpd(Action<string> log)
+        public rhttpd(Action<string> log)
         {
             this.log = log;
             ftypehash = new Hashtable();
@@ -85,7 +85,7 @@ namespace lazebird.rabbit.http
                 log("I: " + request.HttpMethod + uri);
                 byte[] buffer = null;
 
-                if (ftypehash.ContainsKey(uri) && ftypehash[uri] == "file")
+                if (ftypehash.ContainsKey(uri) && (string)ftypehash[uri] == "file")
                 {
                     response.ContentType = get_mime(get_suffix(uri));
                     //log("Info: response suffix " + get_suffix(uri) + " ContentType " + response.ContentType);
@@ -169,7 +169,7 @@ namespace lazebird.rabbit.http
             }
             foreach (string f in list)
             {
-                log("-" + ((ftypehash[f] == "dir") ? "D" : "F") + ": " + f);
+                log("-" + (((string)ftypehash[f] == "dir") ? "D" : "F") + ": " + f);
                 ftypehash.Remove(f);
                 fpathhash.Remove(f);
                 fsizehash.Remove(f);

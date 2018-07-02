@@ -38,7 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="tftp.cs" />
+    <Compile Include="rtftpd.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lazebird.rabbit.tftp.nuspec" />

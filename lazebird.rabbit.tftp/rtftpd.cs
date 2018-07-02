@@ -6,7 +6,7 @@ using Tftp.Net;
 
 namespace lazebird.rabbit.tftp
 {
-    public class tftpd
+    public class rtftpd
     {
         Func<int, string, int> log;
         Hashtable dirhash;
@@ -15,19 +15,39 @@ namespace lazebird.rabbit.tftp
         Hashtable logtmhash;
         TftpServer server;
 
-        public tftpd(Func<int, string, int> log)
+        public rtftpd(Func<int, string, int> log)
         {
             this.log = log;
             dirhash = new Hashtable();
             filehash = new Hashtable();
             loghash = new Hashtable();
             logtmhash = new Hashtable();
+        }
+        public void start(int port)
+        {
             try
             {
-                server = new TftpServer();
+                server = new TftpServer(port);
                 server.OnReadRequest += new TftpServerEventHandler(server_OnReadRequest);
                 server.OnWriteRequest += new TftpServerEventHandler(server_OnWriteRequest);
                 server.Start();
+                log(0, "Listening port " + port);
+            }
+            catch (Exception e)
+            {
+                this.log(0, "Exception: " + e.Message);
+            }
+        }
+        public void stop()
+        {
+            try
+            {
+                dirhash.Clear();
+                filehash.Clear();
+                loghash.Clear();
+                logtmhash.Clear();
+                server.Dispose();
+                log(0, "Stopped & Clear All Directory");
             }
             catch (Exception e)
             {
@@ -110,7 +130,7 @@ namespace lazebird.rabbit.tftp
             StartTransfer(transfer, new FileStream(file.FullName, FileMode.Open));
         }
 
-        private void StartTransfer(ITftpTransfer transfer, Stream stream)
+        void StartTransfer(ITftpTransfer transfer, Stream stream)
         {
             transfer.OnProgress += new TftpProgressHandler(transfer_OnProgress);
             transfer.OnError += new TftpErrorHandler(transfer_OnError);
@@ -118,7 +138,7 @@ namespace lazebird.rabbit.tftp
             transfer.Start(stream);
         }
 
-        private void CancelTransfer(ITftpTransfer transfer, TftpErrorPacket reason)
+        void CancelTransfer(ITftpTransfer transfer, TftpErrorPacket reason)
         {
             OutputTransferStatus(transfer, "!E: " + reason.ErrorMessage);
             transfer.Cancel(reason);
@@ -138,7 +158,7 @@ namespace lazebird.rabbit.tftp
         {
             OutputTransferStatus(transfer, "" + progress);
         }
-        private void OutputTransferStatus(ITftpTransfer transfer, string message)
+        void OutputTransferStatus(ITftpTransfer transfer, string message)
         {
             string key = (EndPoint)transfer.UserContext + "/" + transfer.Filename;
             if (loghash.ContainsKey(key))

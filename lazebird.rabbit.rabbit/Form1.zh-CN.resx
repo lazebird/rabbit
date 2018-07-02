@@ -170,7 +170,7 @@
     <value>开始</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>740, 394</value>
+    <value>740, 398</value>
   </data>
   <data name="label_http_port.Text" xml:space="preserve">
     <value>端口</value>
@@ -197,7 +197,7 @@
     <value>目录5</value>
   </data>
   <data name="tftpd_btn.Text" xml:space="preserve">
-    <value>应用</value>
+    <value>开始</value>
   </data>
   <data name="lang.Size" type="System.Drawing.Size, System.Drawing">
     <value>37, 20</value>

@@ -77,6 +77,8 @@ namespace lazebird.rabbit.rabbit
             indexhash.Add("ping_btn", 0);
             btnhash.Add("httpd_btn", btn_httpd);
             indexhash.Add("httpd_btn", 2);
+            btnhash.Add("tftpd_btn", tftpd_btn);
+            indexhash.Add("tftpd_btn", 3);
             formhash.Add("form", this);
         }
         private void readconf()
