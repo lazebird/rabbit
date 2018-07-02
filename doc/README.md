@@ -30,7 +30,7 @@ library APIs please refer to doc/{library name}.mk, such as doc/ping.mk, here is
 ```
 
 ## SCREENSHOTS
-1. ![Alt ?](./Screenshots.PNG)  
+1. ![Alt ?](/doc/Screenshots.PNG)  
 
 ## TODO
 1. add version management and auto update function?
