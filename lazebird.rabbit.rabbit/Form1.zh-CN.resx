@@ -170,7 +170,7 @@
     <value>开始</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>740, 398</value>
+    <value>740, 418</value>
   </data>
   <data name="label_http_port.Text" xml:space="preserve">
     <value>端口</value>
@@ -199,10 +199,58 @@
   <data name="tftpd_btn.Text" xml:space="preserve">
     <value>开始</value>
   </data>
-  <data name="lang.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="ftp_dirbtn1.Text" xml:space="preserve">
+    <value>目录1</value>
+  </data>
+  <data name="ftp_dirbtn2.Text" xml:space="preserve">
+    <value>目录2</value>
+  </data>
+  <data name="ftp_dirbtn3.Text" xml:space="preserve">
+    <value>目录3</value>
+  </data>
+  <data name="ftp_dirbtn4.Text" xml:space="preserve">
+    <value>目录4</value>
+  </data>
+  <data name="ftp_dirbtn5.Text" xml:space="preserve">
+    <value>目录5</value>
+  </data>
+  <data name="btn_ftp.Text" xml:space="preserve">
+    <value>开始</value>
+  </data>
+  <data name="dhcp_startlabel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>50, 20</value>
+  </data>
+  <data name="dhcp_startlabel.Text" xml:space="preserve">
+    <value>开始IP</value>
+  </data>
+  <data name="dhcp_endlabel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>50, 20</value>
+  </data>
+  <data name="dhcp_endlabel.Text" xml:space="preserve">
+    <value>结束IP</value>
+  </data>
+  <data name="dhcp_gatewaylabel.Size" type="System.Drawing.Size, System.Drawing">
     <value>37, 20</value>
   </data>
-  <data name="lang.Text" xml:space="preserve">
+  <data name="dhcp_gatewaylabel.Text" xml:space="preserve">
+    <value>网关</value>
+  </data>
+  <data name="dhcp_logbtn.Text" xml:space="preserve">
+    <value>日志</value>
+  </data>
+  <data name="dhcp_btn.Text" xml:space="preserve">
+    <value>开始</value>
+  </data>
+  <data name="hp_label.Size" type="System.Drawing.Size, System.Drawing">
+    <value>37, 20</value>
+  </data>
+  <data name="hp_label.Text" xml:space="preserve">
+    <value>主页</value>
+  </data>
+  <data name="lang_label.Size" type="System.Drawing.Size, System.Drawing">
+    <value>37, 20</value>
+  </data>
+  <data name="lang_label.Text" xml:space="preserve">
     <value>语言</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
