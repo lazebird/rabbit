@@ -43,8 +43,8 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="mylog.cs" />
-    <Compile Include="mytaskbar.cs" />
+    <Compile Include="rlog.cs" />
+    <Compile Include="rtaskbar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

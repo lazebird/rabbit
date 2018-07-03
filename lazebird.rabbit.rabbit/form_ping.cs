@@ -10,28 +10,25 @@ namespace lazebird.rabbit.rabbit
     public partial class Form1 : Form
     {
         rping ping;
-        mylog pinglog;
+        rlog pinglog;
         void init_form_ping()
         {
-            pinglog = new mylog(ping_output);
+            pinglog = new rlog(ping_output);
             ping = new rping(ping_log_func);
             btn_ping.Click += new EventHandler(ping_click);
             btn_ping_log.Click += new EventHandler(ping_log_click);
-            bar = new mytaskbar();
+            bar = new rtaskbar(pinglog.write);
             records = new int[5];
         }
         int txcnt, rxcnt, losscnt;
         int mintm, maxtm, totaltm;
         int[] records;
         int recordidx;
-        mytaskbar bar;
+        rtaskbar bar;
         void bar_test()
         {
             Thread.Sleep(500);
-            if (!bar.set(0, 0, 0))
-            {
-                pinglog.write("Error: " + bar.strerr());
-            }
+            bar.set(0, 0, 0);
         }
         void ping_log_func(string msg)
         {

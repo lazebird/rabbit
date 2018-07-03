@@ -8,10 +8,10 @@ namespace lazebird.rabbit.rabbit
     public partial class Form1 : Form
     {
         rtftpd tftpd;
-        mylog tftpdlog;
+        rlog tftpdlog;
         void init_form_tftp()
         {
-            tftpdlog = new mylog(tftpd_output);
+            tftpdlog = new rlog(tftpd_output);
             tftpd = new rtftpd(tftpd_log_func);
             tftp_dirbtn1.Click += new EventHandler(tftpd_dir1_click);
             tftp_dirbtn2.Click += new EventHandler(tftpd_dir2_click);

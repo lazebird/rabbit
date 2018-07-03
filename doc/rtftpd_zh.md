@@ -1,11 +1,11 @@
-# tftpd
+# rtftpd
 
 ## Description
 
 ## Target
 
 ## API
-1. public tftpd(Func<int, string, int> log)  
+1. public rtftpd(Func<int, string, int> log)  
 构造函数
 log：log输出接口;第一个参数为输出位置，0表示自动占位置，第二个参数为待输出字符串，返回值为输出位置；该接口最初用于ListBox的同行进度更新。
 
@@ -25,10 +25,10 @@ path：文件夹路径
 
 ## Sample
 ```
-tftpd tftpd = new tftpd(tftpd_log_func);
-tftpd.add_dir(t.Text);
-int tftpd_log_func(int line, string msg)
+rtftpd rtftpd = new rtftpd(rtftpd_log_func);
+rtftpd.add_dir(t.Text);
+int rtftpd_log_func(int line, string msg)
 {
-    return tftpdlog.write(line, msg);
+    return rtftpdlog.write(line, msg);
 }
 ```

@@ -4,12 +4,12 @@ using System.Windows.Forms;
 
 namespace lazebird.rabbit.common
 {
-    public class mylog
+    public class rlog
     {
         ListBox logview = null;
         StreamWriter file;
 
-        public mylog(ListBox logview)
+        public rlog(ListBox logview)
         {
             this.logview = logview;
         }

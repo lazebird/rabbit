@@ -1,11 +1,11 @@
-# httpd
+# rhttpd
 
 ## Description
 
 ## Target
 
 ## API
-1. public httpd(Action<string> log)  
+1. public rhttpd(Action<string> log)  
 构造函数
 log：log输出接口
 
@@ -34,11 +34,11 @@ mime += "*:application/octet-stream;";
 ```
 
 3. public bool start(int port)  
-启动httpd
+启动rhttpd
 port：http端口号
 
 4. public void stop()  
-停止httpd
+停止rhttpd
 
 5. public void set_root(string path)  
 设置服务器根目录，默认为空目录
@@ -61,11 +61,11 @@ path：文件路径
 
 ## Sample
 ```
-httpd httpd = new httpd(httpd_log_func);
-httpd.init_mime(myconf.get("mime"));
-httpd.set_root(".");
-httpd.start(8000);
-void httpd_log_func(string msg)
+rhttpd rhttpd = new rhttpd(rhttpd_log_func);
+rhttpd.init_mime(myconf.get("mime"));
+rhttpd.set_root(".");
+rhttpd.start(8000);
+void rhttpd_log_func(string msg)
 {
     console.write(msg);
 }

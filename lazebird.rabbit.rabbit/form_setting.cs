@@ -7,10 +7,10 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
-        mylog setlog;
+        rlog setlog;
         void init_form_setting()
         {
-            setlog = new mylog(setting_output);
+            setlog = new rlog(setting_output);
             List<string> list = new List<string>();
             list.Add("System");
             list.Add("English");

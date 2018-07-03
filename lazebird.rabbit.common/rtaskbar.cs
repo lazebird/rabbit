@@ -3,10 +3,16 @@ using System;
 
 namespace lazebird.rabbit.common
 {
-    public class mytaskbar
+    public class rtaskbar
     {
-        bool taskbar_support = true;
-        string errmsg;
+        Action<string> log;
+        bool taskbar_support;
+
+        public rtaskbar(Action<string> log)
+        {
+            this.log = log;
+            this.taskbar_support = true;
+        }
 
         public bool set(int state, int cur, int total)
         {
@@ -18,17 +24,13 @@ namespace lazebird.rabbit.common
                 }
                 catch (Exception e)
                 {
-                    errmsg = e.Message;
+                    log(e.Message);
                     taskbar_support = false;
                 }
             }
             return taskbar_support;
         }
-        public string strerr()
-        {
-            return errmsg;
-        }
-        private void set_internal(int state, int cur, int total)
+        void set_internal(int state, int cur, int total)
         {
             if (!TaskbarManager.IsPlatformSupported)
             {

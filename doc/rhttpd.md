@@ -1,11 +1,11 @@
-# httpd
+# rhttpd
 
 ## Description
 
 ## Target
 
 ## API
-1. public httpd(Action<string> log)  
+1. public rhttpd(Action<string> log)  
 Constructor
 log：Log output interface
 
@@ -34,11 +34,11 @@ mime += "*:application/octet-stream;";
 ```
 
 3. public bool start(int port)  
-Start httpd
+Start rhttpd
 Port: http port number
 
 4. public void stop()  
-Stop httpd
+Stop rhttpd
 
 5. public void set_root(string path)  
 Set the server root directory, the default is empty directory
@@ -61,11 +61,11 @@ Path: file path
 
 ## Sample
 ```
-httpd httpd = new httpd(httpd_log_func);
-httpd.init_mime(myconf.get("mime"));
-httpd.set_root(".");
-httpd.start(8000);
-void httpd_log_func(string msg)
+rhttpd rhttpd = new rhttpd(rhttpd_log_func);
+rhttpd.init_mime(myconf.get("mime"));
+rhttpd.set_root(".");
+rhttpd.start(8000);
+void rhttpd_log_func(string msg)
 {
     console.write(msg);
 }

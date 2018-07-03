@@ -1,11 +1,11 @@
-# tftpd
+# rtftpd
 
 ## Description
 
 ## Target
 
 ## API
-1. public tftpd(Func<int, string, int> log)  
+1. public rtftpd(Func<int, string, int> log)  
 Constructor
 Log: log output interface; the first parameter is the output position, 0 means automatic position, the second parameter is the string to be output, and the return value is the output position; the interface is initially used for peer progress update of ListBox.
 
@@ -25,10 +25,10 @@ Stop the server while emptying the listening folder
 
 ## Sample
 ```
-tftpd tftpd = new tftpd(tftpd_log_func);
-tftpd.add_dir(t.Text);
-int tftpd_log_func(int line, string msg)
+rtftpd rtftpd = new rtftpd(rtftpd_log_func);
+rtftpd.add_dir(t.Text);
+int rtftpd_log_func(int line, string msg)
 {
-    return tftpdlog.write(line, msg);
+    return rtftpdlog.write(line, msg);
 }
 ```

@@ -8,10 +8,10 @@ namespace lazebird.rabbit.rabbit
     public partial class Form1 : Form
     {
         rhttpd httpd;
-        mylog httpdlog;
+        rlog httpdlog;
         void init_form_http()
         {
-            httpdlog = new mylog(httpd_output);
+            httpdlog = new rlog(httpd_output);
             httpd = new rhttpd(httpd_log_func);
             httpd.init_mime(rconf.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);
