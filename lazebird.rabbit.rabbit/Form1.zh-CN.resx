@@ -125,10 +125,10 @@
     <value>地址</value>
   </data>
   <data name="text_addr.Location" type="System.Drawing.Point, System.Drawing">
-    <value>75, 14</value>
+    <value>80, 14</value>
   </data>
   <data name="text_addr.Size" type="System.Drawing.Size, System.Drawing">
-    <value>676, 25</value>
+    <value>671, 18</value>
   </data>
   <data name="label_interval.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 20</value>
@@ -137,10 +137,10 @@
     <value>间隔(ms)</value>
   </data>
   <data name="text_interval.Location" type="System.Drawing.Point, System.Drawing">
-    <value>75, 55</value>
+    <value>80, 55</value>
   </data>
   <data name="text_interval.Size" type="System.Drawing.Size, System.Drawing">
-    <value>676, 25</value>
+    <value>671, 18</value>
   </data>
   <data name="label_count.Size" type="System.Drawing.Size, System.Drawing">
     <value>37, 20</value>
@@ -149,28 +149,25 @@
     <value>次数</value>
   </data>
   <data name="text_count.Location" type="System.Drawing.Point, System.Drawing">
-    <value>75, 96</value>
+    <value>80, 96</value>
   </data>
   <data name="text_count.Size" type="System.Drawing.Size, System.Drawing">
-    <value>676, 25</value>
+    <value>671, 18</value>
   </data>
   <data name="btn_ping_log.Text" xml:space="preserve">
     <value>日志</value>
   </data>
   <data name="text_logpath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>75, 140</value>
+    <value>80, 140</value>
   </data>
   <data name="text_logpath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>676, 25</value>
+    <value>671, 18</value>
   </data>
   <data name="btn_ping.Text" xml:space="preserve">
     <value>开始</value>
   </data>
   <data name="btn_scan.Text" xml:space="preserve">
     <value>开始</value>
-  </data>
-  <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>740, 418</value>
   </data>
   <data name="label_http_port.Text" xml:space="preserve">
     <value>端口</value>

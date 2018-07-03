@@ -151,12 +151,14 @@
             this.tabs.Controls.Add(this.FTPD);
             this.tabs.Controls.Add(this.DHCPD);
             this.tabs.Controls.Add(this.Setting);
+            this.tabs.Multiline = true;
             this.tabs.Name = "tabs";
             this.tabs.SelectedIndex = 0;
             // 
             // Ping
             // 
             resources.ApplyResources(this.Ping, "Ping");
+            this.Ping.BackColor = System.Drawing.Color.DimGray;
             this.Ping.Controls.Add(this.label_addr);
             this.Ping.Controls.Add(this.text_addr);
             this.Ping.Controls.Add(this.label_interval);
@@ -167,6 +169,7 @@
             this.Ping.Controls.Add(this.text_logpath);
             this.Ping.Controls.Add(this.btn_ping);
             this.Ping.Controls.Add(this.ping_output);
+            this.Ping.ForeColor = System.Drawing.Color.White;
             this.Ping.Name = "Ping";
             // 
             // label_addr
@@ -178,6 +181,9 @@
             // text_addr
             // 
             resources.ApplyResources(this.text_addr, "text_addr");
+            this.text_addr.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_addr.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_addr.ForeColor = System.Drawing.Color.White;
             this.text_addr.Name = "text_addr";
             // 
             // label_interval
@@ -189,6 +195,9 @@
             // text_interval
             // 
             resources.ApplyResources(this.text_interval, "text_interval");
+            this.text_interval.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_interval.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_interval.ForeColor = System.Drawing.Color.White;
             this.text_interval.Name = "text_interval";
             // 
             // label_count
@@ -200,6 +209,9 @@
             // text_count
             // 
             resources.ApplyResources(this.text_count, "text_count");
+            this.text_count.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_count.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_count.ForeColor = System.Drawing.Color.White;
             this.text_count.Name = "text_count";
             // 
             // btn_ping_log
@@ -210,13 +222,16 @@
             this.btn_ping_log.FlatAppearance.BorderSize = 0;
             this.btn_ping_log.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btn_ping_log.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
-            this.btn_ping_log.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btn_ping_log.ForeColor = System.Drawing.Color.White;
             this.btn_ping_log.Name = "btn_ping_log";
             this.btn_ping_log.UseVisualStyleBackColor = false;
             // 
             // text_logpath
             // 
             resources.ApplyResources(this.text_logpath, "text_logpath");
+            this.text_logpath.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_logpath.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_logpath.ForeColor = System.Drawing.Color.White;
             this.text_logpath.Name = "text_logpath";
             // 
             // btn_ping
@@ -227,25 +242,30 @@
             this.btn_ping.FlatAppearance.BorderSize = 0;
             this.btn_ping.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btn_ping.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
-            this.btn_ping.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btn_ping.ForeColor = System.Drawing.Color.White;
             this.btn_ping.Name = "btn_ping";
             this.btn_ping.UseVisualStyleBackColor = false;
             // 
             // ping_output
             // 
             resources.ApplyResources(this.ping_output, "ping_output");
+            this.ping_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.ping_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ping_output.ForeColor = System.Drawing.Color.White;
             this.ping_output.FormattingEnabled = true;
             this.ping_output.Name = "ping_output";
             // 
             // Scan
             // 
             resources.ApplyResources(this.Scan, "Scan");
+            this.Scan.BackColor = System.Drawing.Color.DimGray;
             this.Scan.Controls.Add(this.label_scanip);
             this.Scan.Controls.Add(this.text_scanstart);
             this.Scan.Controls.Add(this.label_scanend);
             this.Scan.Controls.Add(this.text_scanend);
             this.Scan.Controls.Add(this.btn_scan);
             this.Scan.Controls.Add(this.fp_scan);
+            this.Scan.ForeColor = System.Drawing.Color.White;
             this.Scan.Name = "Scan";
             // 
             // label_scanip
@@ -257,6 +277,9 @@
             // text_scanstart
             // 
             resources.ApplyResources(this.text_scanstart, "text_scanstart");
+            this.text_scanstart.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_scanstart.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_scanstart.ForeColor = System.Drawing.Color.White;
             this.text_scanstart.Name = "text_scanstart";
             // 
             // label_scanend
@@ -268,6 +291,9 @@
             // text_scanend
             // 
             resources.ApplyResources(this.text_scanend, "text_scanend");
+            this.text_scanend.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_scanend.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_scanend.ForeColor = System.Drawing.Color.White;
             this.text_scanend.Name = "text_scanend";
             // 
             // btn_scan
@@ -281,19 +307,22 @@
             // fp_scan
             // 
             resources.ApplyResources(this.fp_scan, "fp_scan");
+            this.fp_scan.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.fp_scan.ForeColor = System.Drawing.Color.White;
             this.fp_scan.Name = "fp_scan";
             // 
             // HTTPD
             // 
             resources.ApplyResources(this.HTTPD, "HTTPD");
+            this.HTTPD.BackColor = System.Drawing.Color.DimGray;
             this.HTTPD.Controls.Add(this.label_http_port);
             this.HTTPD.Controls.Add(this.text_http_port);
             this.HTTPD.Controls.Add(this.btn_http_dir);
             this.HTTPD.Controls.Add(this.text_http_dir);
             this.HTTPD.Controls.Add(this.btn_httpd);
             this.HTTPD.Controls.Add(this.httpd_output);
+            this.HTTPD.ForeColor = System.Drawing.Color.White;
             this.HTTPD.Name = "HTTPD";
-            this.HTTPD.UseVisualStyleBackColor = true;
             // 
             // label_http_port
             // 
@@ -303,6 +332,9 @@
             // text_http_port
             // 
             resources.ApplyResources(this.text_http_port, "text_http_port");
+            this.text_http_port.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_http_port.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_http_port.ForeColor = System.Drawing.Color.White;
             this.text_http_port.Name = "text_http_port";
             // 
             // btn_http_dir
@@ -316,6 +348,9 @@
             // text_http_dir
             // 
             resources.ApplyResources(this.text_http_dir, "text_http_dir");
+            this.text_http_dir.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_http_dir.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_http_dir.ForeColor = System.Drawing.Color.White;
             this.text_http_dir.Name = "text_http_dir";
             // 
             // btn_httpd
@@ -329,12 +364,16 @@
             // httpd_output
             // 
             resources.ApplyResources(this.httpd_output, "httpd_output");
+            this.httpd_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.httpd_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.httpd_output.ForeColor = System.Drawing.Color.White;
             this.httpd_output.FormattingEnabled = true;
             this.httpd_output.Name = "httpd_output";
             // 
             // TFTPD
             // 
             resources.ApplyResources(this.TFTPD, "TFTPD");
+            this.TFTPD.BackColor = System.Drawing.Color.DimGray;
             this.TFTPD.Controls.Add(this.tftp_dirtext1);
             this.TFTPD.Controls.Add(this.tftp_dirbtn1);
             this.TFTPD.Controls.Add(this.tftp_dirtext2);
@@ -347,12 +386,15 @@
             this.TFTPD.Controls.Add(this.tftp_dirbtn5);
             this.TFTPD.Controls.Add(this.tftpd_btn);
             this.TFTPD.Controls.Add(this.tftpd_output);
+            this.TFTPD.ForeColor = System.Drawing.Color.White;
             this.TFTPD.Name = "TFTPD";
-            this.TFTPD.UseVisualStyleBackColor = true;
             // 
             // tftp_dirtext1
             // 
             resources.ApplyResources(this.tftp_dirtext1, "tftp_dirtext1");
+            this.tftp_dirtext1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.tftp_dirtext1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tftp_dirtext1.ForeColor = System.Drawing.Color.White;
             this.tftp_dirtext1.Name = "tftp_dirtext1";
             // 
             // tftp_dirbtn1
@@ -366,6 +408,9 @@
             // tftp_dirtext2
             // 
             resources.ApplyResources(this.tftp_dirtext2, "tftp_dirtext2");
+            this.tftp_dirtext2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.tftp_dirtext2.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tftp_dirtext2.ForeColor = System.Drawing.Color.White;
             this.tftp_dirtext2.Name = "tftp_dirtext2";
             // 
             // tftp_dirbtn2
@@ -379,6 +424,9 @@
             // tftp_dirtext3
             // 
             resources.ApplyResources(this.tftp_dirtext3, "tftp_dirtext3");
+            this.tftp_dirtext3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.tftp_dirtext3.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tftp_dirtext3.ForeColor = System.Drawing.Color.White;
             this.tftp_dirtext3.Name = "tftp_dirtext3";
             // 
             // tftp_dirbtn3
@@ -392,6 +440,9 @@
             // tftp_dirtext4
             // 
             resources.ApplyResources(this.tftp_dirtext4, "tftp_dirtext4");
+            this.tftp_dirtext4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.tftp_dirtext4.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tftp_dirtext4.ForeColor = System.Drawing.Color.White;
             this.tftp_dirtext4.Name = "tftp_dirtext4";
             // 
             // tftp_dirbtn4
@@ -405,6 +456,9 @@
             // tftp_dirtext5
             // 
             resources.ApplyResources(this.tftp_dirtext5, "tftp_dirtext5");
+            this.tftp_dirtext5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.tftp_dirtext5.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tftp_dirtext5.ForeColor = System.Drawing.Color.White;
             this.tftp_dirtext5.Name = "tftp_dirtext5";
             // 
             // tftp_dirbtn5
@@ -426,12 +480,16 @@
             // tftpd_output
             // 
             resources.ApplyResources(this.tftpd_output, "tftpd_output");
+            this.tftpd_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.tftpd_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tftpd_output.ForeColor = System.Drawing.Color.White;
             this.tftpd_output.FormattingEnabled = true;
             this.tftpd_output.Name = "tftpd_output";
             // 
             // FTPD
             // 
             resources.ApplyResources(this.FTPD, "FTPD");
+            this.FTPD.BackColor = System.Drawing.Color.DimGray;
             this.FTPD.Controls.Add(this.ftp_dirtext1);
             this.FTPD.Controls.Add(this.ftp_dirbtn1);
             this.FTPD.Controls.Add(this.ftp_dirtext2);
@@ -444,12 +502,15 @@
             this.FTPD.Controls.Add(this.ftp_dirbtn5);
             this.FTPD.Controls.Add(this.btn_ftp);
             this.FTPD.Controls.Add(this.ftpd_output);
+            this.FTPD.ForeColor = System.Drawing.Color.White;
             this.FTPD.Name = "FTPD";
-            this.FTPD.UseVisualStyleBackColor = true;
             // 
             // ftp_dirtext1
             // 
             resources.ApplyResources(this.ftp_dirtext1, "ftp_dirtext1");
+            this.ftp_dirtext1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.ftp_dirtext1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ftp_dirtext1.ForeColor = System.Drawing.Color.White;
             this.ftp_dirtext1.Name = "ftp_dirtext1";
             // 
             // ftp_dirbtn1
@@ -463,6 +524,9 @@
             // ftp_dirtext2
             // 
             resources.ApplyResources(this.ftp_dirtext2, "ftp_dirtext2");
+            this.ftp_dirtext2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.ftp_dirtext2.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ftp_dirtext2.ForeColor = System.Drawing.Color.White;
             this.ftp_dirtext2.Name = "ftp_dirtext2";
             // 
             // ftp_dirbtn2
@@ -476,6 +540,9 @@
             // ftp_dirtext3
             // 
             resources.ApplyResources(this.ftp_dirtext3, "ftp_dirtext3");
+            this.ftp_dirtext3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.ftp_dirtext3.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ftp_dirtext3.ForeColor = System.Drawing.Color.White;
             this.ftp_dirtext3.Name = "ftp_dirtext3";
             // 
             // ftp_dirbtn3
@@ -489,6 +556,9 @@
             // ftp_dirtext4
             // 
             resources.ApplyResources(this.ftp_dirtext4, "ftp_dirtext4");
+            this.ftp_dirtext4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.ftp_dirtext4.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ftp_dirtext4.ForeColor = System.Drawing.Color.White;
             this.ftp_dirtext4.Name = "ftp_dirtext4";
             // 
             // ftp_dirbtn4
@@ -502,6 +572,9 @@
             // ftp_dirtext5
             // 
             resources.ApplyResources(this.ftp_dirtext5, "ftp_dirtext5");
+            this.ftp_dirtext5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.ftp_dirtext5.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ftp_dirtext5.ForeColor = System.Drawing.Color.White;
             this.ftp_dirtext5.Name = "ftp_dirtext5";
             // 
             // ftp_dirbtn5
@@ -523,12 +596,16 @@
             // ftpd_output
             // 
             resources.ApplyResources(this.ftpd_output, "ftpd_output");
+            this.ftpd_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.ftpd_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ftpd_output.ForeColor = System.Drawing.Color.White;
             this.ftpd_output.FormattingEnabled = true;
             this.ftpd_output.Name = "ftpd_output";
             // 
             // DHCPD
             // 
             resources.ApplyResources(this.DHCPD, "DHCPD");
+            this.DHCPD.BackColor = System.Drawing.Color.DimGray;
             this.DHCPD.Controls.Add(this.dhcp_startlabel);
             this.DHCPD.Controls.Add(this.dhcp_starttext);
             this.DHCPD.Controls.Add(this.dhcp_endlabel);
@@ -539,6 +616,7 @@
             this.DHCPD.Controls.Add(this.dhcp_logtext);
             this.DHCPD.Controls.Add(this.dhcp_btn);
             this.DHCPD.Controls.Add(this.dhcp_logmsg);
+            this.DHCPD.ForeColor = System.Drawing.Color.White;
             this.DHCPD.Name = "DHCPD";
             // 
             // dhcp_startlabel
@@ -550,6 +628,9 @@
             // dhcp_starttext
             // 
             resources.ApplyResources(this.dhcp_starttext, "dhcp_starttext");
+            this.dhcp_starttext.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.dhcp_starttext.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dhcp_starttext.ForeColor = System.Drawing.Color.White;
             this.dhcp_starttext.Name = "dhcp_starttext";
             // 
             // dhcp_endlabel
@@ -561,6 +642,9 @@
             // dhcp_endtext
             // 
             resources.ApplyResources(this.dhcp_endtext, "dhcp_endtext");
+            this.dhcp_endtext.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.dhcp_endtext.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dhcp_endtext.ForeColor = System.Drawing.Color.White;
             this.dhcp_endtext.Name = "dhcp_endtext";
             // 
             // dhcp_gatewaylabel
@@ -572,6 +656,9 @@
             // dhcp_gatewaytext
             // 
             resources.ApplyResources(this.dhcp_gatewaytext, "dhcp_gatewaytext");
+            this.dhcp_gatewaytext.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.dhcp_gatewaytext.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dhcp_gatewaytext.ForeColor = System.Drawing.Color.White;
             this.dhcp_gatewaytext.Name = "dhcp_gatewaytext";
             // 
             // dhcp_logbtn
@@ -589,6 +676,9 @@
             // dhcp_logtext
             // 
             resources.ApplyResources(this.dhcp_logtext, "dhcp_logtext");
+            this.dhcp_logtext.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.dhcp_logtext.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dhcp_logtext.ForeColor = System.Drawing.Color.White;
             this.dhcp_logtext.Name = "dhcp_logtext";
             // 
             // dhcp_btn
@@ -606,19 +696,23 @@
             // dhcp_logmsg
             // 
             resources.ApplyResources(this.dhcp_logmsg, "dhcp_logmsg");
+            this.dhcp_logmsg.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.dhcp_logmsg.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dhcp_logmsg.ForeColor = System.Drawing.Color.White;
             this.dhcp_logmsg.FormattingEnabled = true;
             this.dhcp_logmsg.Name = "dhcp_logmsg";
             // 
             // Setting
             // 
             resources.ApplyResources(this.Setting, "Setting");
+            this.Setting.BackColor = System.Drawing.Color.DimGray;
             this.Setting.Controls.Add(this.hp_label);
             this.Setting.Controls.Add(this.prjurl);
             this.Setting.Controls.Add(this.lang_label);
             this.Setting.Controls.Add(this.lang_cb);
             this.Setting.Controls.Add(this.setting_output);
+            this.Setting.ForeColor = System.Drawing.Color.White;
             this.Setting.Name = "Setting";
-            this.Setting.UseVisualStyleBackColor = true;
             // 
             // hp_label
             // 
@@ -639,12 +733,17 @@
             // lang_cb
             // 
             resources.ApplyResources(this.lang_cb, "lang_cb");
+            this.lang_cb.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.lang_cb.ForeColor = System.Drawing.Color.White;
             this.lang_cb.FormattingEnabled = true;
             this.lang_cb.Name = "lang_cb";
             // 
             // setting_output
             // 
             resources.ApplyResources(this.setting_output, "setting_output");
+            this.setting_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.setting_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.setting_output.ForeColor = System.Drawing.Color.White;
             this.setting_output.FormattingEnabled = true;
             this.setting_output.Name = "setting_output";
             // 
@@ -652,8 +751,10 @@
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.Controls.Add(this.toolStripContainer1);
             this.DoubleBuffered = true;
+            this.ForeColor = System.Drawing.Color.White;
             this.Name = "Form1";
             this.toolStripContainer1.ContentPanel.ResumeLayout(false);
             this.toolStripContainer1.ResumeLayout(false);
