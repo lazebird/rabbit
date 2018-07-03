@@ -3,6 +3,8 @@
 ## 2018-07-03
 ### New
 1. add timestamp for log file
+2. add homepage on setting tab
+3. add dark grey color theme
 ### Fix
 1. fix program cannot be started when port conflicts
 2. fix all function started by default problem
