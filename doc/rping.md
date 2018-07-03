@@ -5,21 +5,21 @@
 ## Target
 
 ## API
-1. public rping(Action<string> log)
-构造函数
-log：log输出接口
+1. public rping(Action<string> log)  
+Constructor
+Log: log output interface
 
-2. public void start(string addr, int timeout, Action<int, PingReply> callback)
-同步执行ping操作
-addr：ping地址
-timeout： ping超时时间，单位毫秒
-callback：处理结果的回调函数，第一个参数为请求id，用于匹配请求和响应；第二个参数为ping结果对象
+2. public void start(string addr, int timeout, Action<int, PingReply> callback)  
+Synchronous ping operation
+Addr: ping address
+Timeout: ping timeout in milliseconds
+Callback: the callback function that handles the result. The first parameter is the request id, which is used to match the request and response. The second parameter is the ping result object.
 
-3. public int start_async(string addr, int timeout, Action<int, PingReply> callback)
-异步执行ping操作
-addr：ping地址
-timeout： ping超时时间，单位毫秒
-callback：处理结果的回调函数，第一个参数为请求id，用于匹配请求和响应；第二个参数为ping结果对象
+3. public int start_async(string addr, int timeout, Action<int, PingReply> callback)  
+Asynchronous ping operation
+Addr: ping address
+Timeout: ping timeout in milliseconds
+Callback: the callback function that handles the result. The first parameter is the request id, which is used to match the request and response. The second parameter is the ping result object.
 
 ## Sample
 ```

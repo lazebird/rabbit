@@ -31,7 +31,7 @@ Windows平台下的小工具集合。
 ```
 
 ## 截图
-1. ![Alt ?](./Screenshots.PNG)  
+1. ![Alt ?](/doc/Screenshots.PNG)  
 
 ## 待办
 1. 添加APP自动升级功能？

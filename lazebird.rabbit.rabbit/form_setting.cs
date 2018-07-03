@@ -26,11 +26,11 @@ namespace lazebird.rabbit.rabbit
             string lang = lang_opt.SelectedItem as string;
             if (lang_opt.Text == "System")
             {
-                myconf.set("lang", "");
+                rconf.set("lang", "");
             }
             else
             {
-                myconf.set("lang", lang_opt.Text);
+                rconf.set("lang", lang_opt.Text);
             }
             setlog.write("Set Language: " + lang_opt.Text);
             setlog.write("Restart App to take effect!");

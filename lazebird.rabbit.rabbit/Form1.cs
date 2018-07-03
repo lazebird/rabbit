@@ -54,7 +54,7 @@ namespace lazebird.rabbit.rabbit
             }
             return base.ProcessDialogKey(keyData);
         }
-        private void init_hash()
+        void init_hash()
         {
             texthash = new Hashtable();
             btnhash = new Hashtable();
@@ -81,11 +81,16 @@ namespace lazebird.rabbit.rabbit
             indexhash.Add("tftpd_btn", 3);
             formhash.Add("form", this);
         }
-        private void readconf()
+        void conf_log(string msg)
+        {
+            //tftpdlog.write(msg);
+        }
+        void readconf()
         {
             foreach (string key in texthash.Keys)
             {
-                ((TextBox)texthash[key]).Text = myconf.get(key);
+                conf_log("G: " + key + " - " + rconf.get(key));
+                ((TextBox)texthash[key]).Text = rconf.get(key);
                 if (key.Contains("tftp_dir"))
                 {
                     tftpd.add_dir(((TextBox)texthash[key]).Text);
@@ -93,15 +98,17 @@ namespace lazebird.rabbit.rabbit
             }
             foreach (string key in btnhash.Keys)
             {
-                if (myconf.get(key) != "" && Language.trans(myconf.get(key)) != ((Button)btnhash[key]).Text)
+                conf_log("G: " + key + " - " + rconf.get(key));
+                if (rconf.get(key) != "" && Language.trans(rconf.get(key)) != ((Button)btnhash[key]).Text)
                 {
                     tabs.SelectedIndex = (int)indexhash[key];
                     ((Button)btnhash[key]).PerformClick();
                 }
             }
-            tabs.SelectedIndex = int.Parse(myconf.get("tabs"));
+            conf_log("G: " + "tabs" + " - " + rconf.get("tabs"));
+            tabs.SelectedIndex = int.Parse(rconf.get("tabs"));
         }
-        private void saveconf()
+        void saveconf()
         {
             if (onloading)
             {
@@ -109,12 +116,15 @@ namespace lazebird.rabbit.rabbit
             }
             foreach (string key in texthash.Keys)
             {
-                myconf.set(key, ((TextBox)texthash[key]).Text);
+                rconf.set(key, ((TextBox)texthash[key]).Text);
+                conf_log("S: " + key + " - " + ((TextBox)texthash[key]).Text);
             }
-            myconf.set("tabs", tabs.SelectedIndex.ToString());
+            rconf.set("tabs", tabs.SelectedIndex.ToString());
+            conf_log("S: " + "tabs" + " - " + tabs.SelectedIndex.ToString());
             foreach (string key in btnhash.Keys)
             {
-                myconf.set(key, ((Button)btnhash[key]).Text);
+                rconf.set(key, ((Button)btnhash[key]).Text);
+                conf_log("S: " + key + " - " + ((Button)btnhash[key]).Text);
             }
         }
     }

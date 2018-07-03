@@ -69,8 +69,6 @@ namespace lazebird.rabbit.rabbit
             string addr = ((TextBox)texthash["ping_addr"]).Text;
             int timeout = int.Parse(((TextBox)texthash["ping_timeout"]).Text);
             int count = int.Parse(((TextBox)texthash["ping_times"]).Text);
-            ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
-            ((Button)btnhash["ping_btn"]).Text = Language.trans("停止");
             stop_unset = true;
             recordidx = 0;
             txcnt = rxcnt = losscnt = 0;
@@ -98,6 +96,8 @@ namespace lazebird.rabbit.rabbit
         {
             if (((Button)btnhash["ping_btn"]).Text == Language.trans("开始"))
             {
+                ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
+                ((Button)btnhash["ping_btn"]).Text = Language.trans("停止");
                 pinglog.setfile(((TextBox)texthash["ping_logfile"]).Text);
                 pinglog.clear();
                 Thread th = new Thread(start_ping);
@@ -108,12 +108,11 @@ namespace lazebird.rabbit.rabbit
             {
                 stop_ping();
             }
-            saveconf(); // save empty config to restore default config
+            saveconf();
         }
         void ping_log_click(object sender, EventArgs e)
         {
             SaveFileDialog fd = new SaveFileDialog();
-            //filename.InitialDirectory = Application.StartupPath;
             fd.Filter = "文本文件 (*.txt)|*.txt|All files (*.*)|*.*";
             fd.RestoreDirectory = true;
             fd.CreatePrompt = true;

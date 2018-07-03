@@ -13,7 +13,7 @@ namespace lazebird.rabbit.rabbit
         {
             httpdlog = new mylog(httpd_output);
             httpd = new rhttpd(httpd_log_func);
-            httpd.init_mime(myconf.get("mime"));
+            httpd.init_mime(rconf.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);
             btn_http_dir.Click += new EventHandler(httpd_dir_click);
         }

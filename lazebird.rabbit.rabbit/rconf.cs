@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace lazebird.rabbit.rabbit
 {
-    class myconf
+    class rconf
     {
         public static string get(string key)   // property.setting must be set to avoid exception
         {

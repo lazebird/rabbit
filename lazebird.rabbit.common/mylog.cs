@@ -1,12 +1,13 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace lazebird.rabbit.common
 {
     public class mylog
     {
-        string logfile = null;
         ListBox logview = null;
+        StreamWriter file;
 
         public mylog(ListBox logview)
         {
@@ -15,22 +16,22 @@ namespace lazebird.rabbit.common
 
         public void setfile(string name)
         {
+            if (file != null)
+            {
+                file.Close();
+                file = null;
+            }
             if (name != "")
             {
-                logfile = name;
-            }
-            else
-            {
-                logfile = null;
+                file = new StreamWriter(name, true);
             }
         }
         public void write(string msg)
         {
-            if (logfile != null)
+            if (file != null)
             {
-                StreamWriter file = new StreamWriter(logfile, true);
-                file.WriteLine(msg);
-                file.Close();
+                file.WriteLine(DateTime.Now.ToString() + ": " + msg);
+                file.Flush();
             }
             if (logview != null)
             {

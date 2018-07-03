@@ -26,7 +26,7 @@ namespace lazebird.rabbit.rabbit
         static string language;
         public static string Getsetting()
         {
-            language = myconf.get("lang");
+            language = rconf.get("lang");
             if (language != "中文" && language != "English")
             {
                 language = (System.Threading.Thread.CurrentThread.CurrentUICulture.Name == "zh-CN") ? "中文" : "English";
