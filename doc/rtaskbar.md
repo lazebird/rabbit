@@ -1,4 +1,4 @@
-# rhttpd
+# rtaskbar
 
 ## Description
 
@@ -17,11 +17,9 @@ Total: overall progress
 
 ## Sample
 ```
-rhttpd rhttpd = new rhttpd(rhttpd_log_func);
-rhttpd.init_mime(myconf.get("mime"));
-rhttpd.set_root(".");
-rhttpd.start(8000);
-void rhttpd_log_func(string msg)
+rtaskbar rtaskbar = new rtaskbar(rtaskbar_log_func);
+rtaskbar.set(2, 2, 5);
+void rtaskbar_log_func(string msg)
 {
     console.write(msg);
 }
