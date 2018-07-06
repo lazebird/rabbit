@@ -33,6 +33,4 @@ library APIs please refer to doc/{library name}.mk, such as doc/ping.mk, here is
 1. ![Alt ?](/doc/Screenshots.PNG)  
 
 ## TODO
-1. add version management and auto update function?
-2. add a light dark theme for programmers.
-3. more other small functions/tools, like ftpd/dhcpd...
+refer to /doc/todo.md

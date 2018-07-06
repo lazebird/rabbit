@@ -34,6 +34,4 @@ Windows平台下的小工具集合。
 1. ![Alt ?](/doc/Screenshots.PNG)  
 
 ## 待办
-1. 添加APP自动升级功能？
-2. 为程序员添加暗黑主题？
-3. 更多小功能加入，比如ftpd/dhcpd...
+参考/doc/todo.md
