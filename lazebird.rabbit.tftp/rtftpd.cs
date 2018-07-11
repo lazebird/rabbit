@@ -1,4 +1,5 @@
-﻿using System;
+﻿using lazebird.rabbit.fs;
+using System;
 using System.Collections;
 using System.IO;
 using System.Net;
@@ -9,19 +10,25 @@ namespace lazebird.rabbit.tftp
     public class rtftpd
     {
         Func<int, string, int> log;
-        Hashtable dirhash;
-        Hashtable filehash;
+        Hashtable vfhash;
+        Hashtable fhash;
         Hashtable loghash;
         Hashtable logtmhash;
         TftpServer server;
+        rfs rfs;
 
         public rtftpd(Func<int, string, int> log)
         {
             this.log = log;
-            dirhash = new Hashtable();
-            filehash = new Hashtable();
+            vfhash = new Hashtable();
+            fhash = new Hashtable();
             loghash = new Hashtable();
             logtmhash = new Hashtable();
+            rfs = new rfs(rfs_log);
+        }
+        void rfs_log(string msg)
+        {
+            log(0, msg);
         }
         public void start(int port)
         {
@@ -42,8 +49,8 @@ namespace lazebird.rabbit.tftp
         {
             try
             {
-                dirhash.Clear();
-                filehash.Clear();
+                vfhash.Clear();
+                fhash.Clear();
                 loghash.Clear();
                 logtmhash.Clear();
                 server.Dispose();
@@ -60,49 +67,38 @@ namespace lazebird.rabbit.tftp
             {
                 return;
             }
-            string abs_dir = Path.GetFullPath(dir);
-            if (dirhash.ContainsKey(abs_dir))
+            int filecnt = rfs.adddir(vfhash, "/", dir, false);
+            log(0, "+D: " + dir + " (" + filecnt + " files).");
+            foreach (string key in vfhash.Keys)
             {
-                return;
-            }
-            dirhash.Add(abs_dir, 1);
-            int filecnt = 0;
-            foreach (FileInfo f in (new DirectoryInfo(abs_dir)).GetFiles())
-            {
-                if (filehash.ContainsKey(f.Name))
+                string fname = key.Substring(dir.LastIndexOf('/') + 1);
+                if (fhash.ContainsKey(fname))
                 {
-                    log(0, "!F: " + f.Name + " in both " + filehash[f.Name] + " and " + abs_dir);
-                    filehash.Remove(f.Name);
+                    log(0, "!F: " + key + " and " + fhash[fname] + " conflicts");
+                    fhash.Remove(fname);
                 }
-                filehash.Add(f.Name, abs_dir);
-                filecnt++;
+                fhash.Add(fname, key);
             }
-            log(0, "+D: " + abs_dir + " (" + filecnt + " files).");
         }
         public void del_dir(string dir)
         {
-            if (dir == "")
+            if (dir == null || dir == "")
             {
                 return;
             }
-            string abs_dir = Path.GetFullPath(dir);
-            if (dirhash.ContainsKey(abs_dir))
+            int filecnt = rfs.deldir(vfhash, "/", dir);
+            log(0, "-D: " + dir + " (" + filecnt + " files).");
+            ArrayList list = new ArrayList();
+            foreach (string key in fhash.Keys)
             {
-                dirhash.Remove(abs_dir);
-                ArrayList al = new ArrayList();
-                foreach (DictionaryEntry de in filehash)
+                if (((string)fhash[key]).Length >= dir.Length && ((string)fhash[key]).Substring(0, dir.Length) == dir)
                 {
-                    if ((string)de.Value == abs_dir)
-                    {
-                        al.Add(de.Key);
-                    }
+                    list.Add(key);
                 }
-                foreach (string key in al)
-                {
-                    filehash.Remove(key);
-                }
-                log(0, "-D: " + abs_dir + " (" + al.Count + " files).");
-                al = null;
+            }
+            foreach (string f in list)
+            {
+                fhash.Remove(f);
             }
         }
         void server_OnWriteRequest(ITftpTransfer transfer, EndPoint client)
@@ -120,12 +116,12 @@ namespace lazebird.rabbit.tftp
         }
         void server_OnReadRequest(ITftpTransfer transfer, EndPoint client)
         {
-            if (!filehash.ContainsKey(transfer.Filename))
+            if (!fhash.ContainsKey(transfer.Filename))
             {
                 CancelTransfer(transfer, TftpErrorPacket.FileNotFound);
                 return;
             }
-            FileInfo file = new FileInfo(Path.Combine((string)filehash[transfer.Filename], transfer.Filename));
+            FileInfo file = new FileInfo(Path.Combine((string)fhash[transfer.Filename], transfer.Filename));
             transfer.UserContext = client;      // append client info
             StartTransfer(transfer, new FileStream(file.FullName, FileMode.Open));
         }

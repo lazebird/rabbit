@@ -1,4 +1,5 @@
-﻿using System;
+﻿using lazebird.rabbit.fs;
+using System;
 using System.Collections;
 using System.IO;
 using System.Net;
@@ -12,20 +13,14 @@ namespace lazebird.rabbit.http
         Action<string> log;
         HttpListener httpListener;
         Hashtable mimehash;
-        Hashtable ftypehash;
-        Hashtable fpathhash;
-        Hashtable fsizehash;
-        Hashtable ftmhash;
+        Hashtable fhash;
+        rfs rfs;
         public rhttpd(Action<string> log)
         {
             this.log = log;
-            ftypehash = new Hashtable();
-            fpathhash = new Hashtable();
-            fsizehash = new Hashtable();
-            ftmhash = new Hashtable();
-            ftypehash.Add("/", "dir");
-            fsizehash.Add("/", 0);
-            ftmhash.Add("/", 0);
+            fhash = new Hashtable();
+            fhash.Add("/", new rfile("dir", "", 0, DateTime.Today));
+            rfs = new rfs(log);
         }
         public void init_mime(string value)
         {
@@ -79,49 +74,29 @@ namespace lazebird.rabbit.http
                 HttpListenerContext context = httpListener.EndGetContext(ar);
                 HttpListenerRequest request = context.Request;
                 HttpListenerResponse response = context.Response;
-                Stream output = response.OutputStream;
                 response.ContentEncoding = Encoding.UTF8;
                 string uri = Uri.UnescapeDataString(request.RawUrl);
                 log("I: " + request.HttpMethod + uri);
                 byte[] buffer = null;
 
-                if (ftypehash.ContainsKey(uri) && (string)ftypehash[uri] == "file")
+                if (fhash.ContainsKey(uri) && ((rfile)fhash[uri]).type == "file")
                 {
-                    response.ContentType = get_mime(get_suffix(uri));
-                    //log("Info: response suffix " + get_suffix(uri) + " ContentType " + response.ContentType);
-                    FileStream fs = new FileStream((string)fpathhash[uri], FileMode.Open, FileAccess.Read);
-                    BinaryReader binReader = new BinaryReader(fs);
-                    response.ContentLength64 = fs.Length;
-                    long left = fs.Length;
-                    long size = Math.Max(200000000, fs.Length); // max memory size 200M, fix memory not enough exception
-                    while (left > size)
-                    {
-                        buffer = binReader.ReadBytes((int)size);
-                        output.Write(buffer, 0, buffer.Length);
-                        left -= size;
-                    }
-                    if (left > 0)
-                    {
-                        buffer = binReader.ReadBytes((int)left);
-                        output.Write(buffer, 0, buffer.Length);
-                    }
-                    binReader.Close();
-                    fs.Close();
-                    output.Close();
-                    httpListener.BeginGetContext(new AsyncCallback(Dispather), null);
-                    return;
+                    file_load(response, uri);
                 }
-                else if (!ftypehash.ContainsKey(uri))
+                else if (!fhash.ContainsKey(uri))
                 {
                     buffer = Encoding.UTF8.GetBytes("404");
+                    response.ContentLength64 = buffer.Length;
+                    response.OutputStream.Write(buffer, 0, buffer.Length);
+                    response.OutputStream.Close();
                 }
-                else if ((string)ftypehash[uri] == "dir")
+                else if (((rfile)fhash[uri]).type == "dir")
                 {
-                    buffer = Encoding.UTF8.GetBytes(gen_dir_index(uri));
+                    buffer = Encoding.UTF8.GetBytes(dir_load(uri));
+                    response.ContentLength64 = buffer.Length;
+                    response.OutputStream.Write(buffer, 0, buffer.Length);
+                    response.OutputStream.Close();
                 }
-                response.ContentLength64 = buffer.Length;
-                output.Write(buffer, 0, buffer.Length);
-                output.Close();
                 httpListener.BeginGetContext(new AsyncCallback(Dispather), null);
             }
             catch (Exception e)
@@ -129,82 +104,36 @@ namespace lazebird.rabbit.http
                 log("!E: " + e.Message);
             }
         }
-        void _adddir(string vpath, DirectoryInfo dir) // vpath: vfs path, dir: real dir
+        void file_load(HttpListenerResponse response, string path)
         {
-            if (!dir.Exists || dir.Attributes.HasFlag(FileAttributes.System)) // fix crash bug for select a dir E:
+            Stream output = response.OutputStream;
+            byte[] buffer = null;
+            response.ContentType = get_mime(get_suffix(path));
+            //log("Info: response suffix " + get_suffix(uri) + " ContentType " + response.ContentType);
+            DateTime starttm = DateTime.Now;
+            FileStream fs = new FileStream((string)((rfile)fhash[path]).path, FileMode.Open, FileAccess.Read);
+            BinaryReader binReader = new BinaryReader(fs);
+            response.ContentLength64 = fs.Length;
+            long left = fs.Length;
+            long size = Math.Max(50000000, fs.Length); // max memory size 50M, fix memory not enough exception
+            while (left > size)
             {
-                log("!D: " + dir.FullName + ", A: " + dir.Attributes.ToString());
-                return;
+                buffer = binReader.ReadBytes((int)size);
+                output.Write(buffer, 0, buffer.Length);
+                left -= size;
             }
-            vpath = vpath + dir.Name + "/";
-            ftypehash.Add(vpath, "dir");
-            fpathhash.Add(vpath, dir.FullName);
-            fsizehash.Add(vpath, 0);
-            ftmhash.Add(vpath, dir.LastWriteTime);
-            log("+D: " + vpath);
-            foreach (FileInfo f in dir.GetFiles())
+            if (left > 0)
             {
-                _addfile(vpath, f);
+                buffer = binReader.ReadBytes((int)left);
+                output.Write(buffer, 0, buffer.Length);
             }
-            foreach (DirectoryInfo d in dir.GetDirectories())
-            {
-                _adddir(vpath, d);
-            }
+            DateTime stoptm = DateTime.Now;
+            log("I: load " + path + " in " + (stoptm - starttm).TotalSeconds + " seconds, " + (fs.Length / ((stoptm - starttm).TotalSeconds + 1)).ToString("###,###.0") + " Bps");
+            binReader.Close();
+            fs.Close();
+            output.Close();
         }
-        void _deldir(string vpath, DirectoryInfo dir) // vpath: vfs path, dir: real dir
-        {
-            if (!dir.Exists || dir.Attributes.HasFlag(FileAttributes.System)) // fix crash bug for select a dir E:
-            {
-                log("!D: " + dir.FullName + ", A: " + dir.Attributes.ToString());
-                return;
-            }
-            vpath = vpath + dir.Name + "/";
-            ArrayList list = new ArrayList();
-            foreach (string f in ftypehash.Keys)
-            {
-                if (f.Length >= vpath.Length && f.Substring(0, vpath.Length) == vpath)
-                {
-                    list.Add(f);
-                }
-            }
-            foreach (string f in list)
-            {
-                log("-" + (((string)ftypehash[f] == "dir") ? "D" : "F") + ": " + f);
-                ftypehash.Remove(f);
-                fpathhash.Remove(f);
-                fsizehash.Remove(f);
-                ftmhash.Remove(f);
-            }
-        }
-        void _addfile(string vpath, FileInfo f) // vpath: vfs path, f: real file
-        {
-            if (!f.Exists || f.Attributes.HasFlag(FileAttributes.System))
-            {
-                log("!F: " + f.FullName + ", A: " + f.Attributes.ToString());
-                return;
-            }
-            vpath = vpath + f.Name;
-            ftypehash.Add(vpath, "file");
-            fpathhash.Add(vpath, f.FullName);
-            fsizehash.Add(vpath, f.Length);
-            ftmhash.Add(vpath, f.LastWriteTime);
-            log("+F: " + vpath);
-        }
-        void _delfile(string vpath, FileInfo f) // vpath: vfs path, f: real file
-        {
-            if (!f.Exists || f.Attributes.HasFlag(FileAttributes.System))
-            {
-                log("!F: " + f.FullName + ", A: " + f.Attributes.ToString());
-                return;
-            }
-            vpath = vpath + f.Name;
-            ftypehash.Remove(vpath);
-            fpathhash.Remove(vpath);
-            fsizehash.Remove(vpath);
-            ftmhash.Remove(vpath);
-            log("-F: " + vpath);
-        }
-        string gen_dir_index(string dir)
+        string dir_load(string path)
         {
             string index = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><table><tbody>";
             index += "<tr>" +
@@ -213,22 +142,22 @@ namespace lazebird.rabbit.http
                 "<th>Last Modified</th>" +
                 "</tr>";
             index += "<tr>" +
-              "<td><a href=" + Uri.EscapeUriString(dir.Substring(0, dir.Substring(0, dir.Length - 1).LastIndexOf('/') + 1)) + ">" + ".." + " </a></td>" +
+              "<td><a href=" + Uri.EscapeUriString(path.Substring(0, path.Substring(0, path.Length - 1).LastIndexOf('/') + 1)) + ">" + ".." + " </a></td>" +
               "<td>" + "</td>" +
               "<td>" + "</td>" +
               "</tr>";
-            Regex rgright = new Regex("^" + dir + ".");
-            Regex rgwrong = new Regex("^" + dir + ".+/.");
-            foreach (string key in ftypehash.Keys)
+            Regex rgright = new Regex("^" + path + ".");
+            Regex rgwrong = new Regex("^" + path + ".+/.");
+            foreach (string key in fhash.Keys)
             {
                 if (!rgright.IsMatch(key) || rgwrong.IsMatch(key))
                 {
                     continue;
                 }
                 index += "<tr>" +
-                 "<td><a href=" + Uri.EscapeUriString(key) + ">" + key.Substring(dir.Length) + " </a></td>" +
-                 "<td>" + fsizehash[key] + "</td>" +
-                 "<td>" + ftmhash[key] + "</td>" +
+                 "<td><a href=" + Uri.EscapeUriString(key) + ">" + key.Substring(path.Length) + " </a></td>" +
+                 "<td>" + (((rfile)fhash[key]).size).ToString("###,###") + "</td>" +
+                 "<td>" + ((rfile)fhash[key]).tm + "</td>" +
                  "</tr>";
             }
             index += "</tbody></table></body></html>";
@@ -243,38 +172,33 @@ namespace lazebird.rabbit.http
             }
             this.rootpath = path;
             log("R: " + path);
-            ftypehash = new Hashtable();
-            fpathhash = new Hashtable();
-            fsizehash = new Hashtable();
-            ftmhash = new Hashtable();
-            ftypehash.Add("/", "dir");
-            fsizehash.Add("/", 0);
-            ftmhash.Add("/", 0);
+            fhash = new Hashtable();
+            fhash.Add("/", new rfile("dir", "", 0, DateTime.Today));
             DirectoryInfo dir = new DirectoryInfo(path);
             foreach (FileInfo f in dir.GetFiles())
             {
-                _addfile("/", f);
+                rfs.addfile(fhash, "/", f.FullName);
             }
             foreach (DirectoryInfo d in dir.GetDirectories())
             {
-                _adddir("/", d);
+                rfs.adddir(fhash, "/", d.FullName, true);
             }
         }
         public void add_dir(string path)
         {
-            _adddir("/", new DirectoryInfo(path));
+            rfs.adddir(fhash, "/", path, true);
         }
         public void del_dir(string path)
         {
-            _deldir("/", new DirectoryInfo(path));
+            rfs.deldir(fhash, "/", path);
         }
         public void add_file(string path)
         {
-            _addfile("/", new FileInfo(path));
+            rfs.addfile(fhash, "/", path);
         }
         public void del_file(string path)
         {
-            _delfile("/", new FileInfo(path));
+            rfs.delfile(fhash, "/", path);
         }
     }
 }
