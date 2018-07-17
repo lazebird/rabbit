@@ -50,7 +50,7 @@ namespace lazebird.rabbit.http
             }
             catch (Exception e)
             {
-                log("Exception: " + e.Message);
+                log("!E: " + e.Message);
                 httpListener.Close();
                 return false;
             }
@@ -61,7 +61,12 @@ namespace lazebird.rabbit.http
         }
         string get_suffix(string fname)
         {
-            return fname.Substring(fname.LastIndexOf("."));
+            int idx = fname.LastIndexOf(".");
+            if (idx > 0)
+            {
+                return fname.Substring(idx);
+            }
+            return "";
         }
         string get_mime(string suffix)
         {
