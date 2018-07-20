@@ -155,7 +155,8 @@ namespace lazebird.rabbit.http
             }
             output.Close();
             stoptm = DateTime.Now;
-            log("I: " + path.Substring(path.Substring(0, path.Length - 1).LastIndexOf('/') + 1) + " " + length + " B/" + (stoptm - starttm).TotalSeconds.ToString("###,###.00") + " s; @"
+            log("I: " + path.Substring(path.Substring(0, path.Length - 1).LastIndexOf('/') + 1) + " "
+                + length + " B/" + (stoptm - starttm).TotalSeconds.ToString("###,###.00") + " s; @"
                 + (length / ((stoptm - starttm).TotalSeconds + 1)).ToString("###,###.00") + " Bps");
         }
         void file_load(HttpListenerResponse response, string path)
