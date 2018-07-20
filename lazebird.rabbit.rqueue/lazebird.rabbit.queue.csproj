@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{66EFB1D8-8785-4AD9-B135-F8D699E186F6}</ProjectGuid>
+    <ProjectGuid>{92A8B059-CD4A-4DB6-9E9B-892272540965}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>lazebird.rabbit.http</RootNamespace>
-    <AssemblyName>lazebird.rabbit.http</AssemblyName>
+    <RootNamespace>lazebird.rabbit.queue</RootNamespace>
+    <AssemblyName>lazebird.rabbit.queue</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,24 +31,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="rhttpd.cs" />
+    <Compile Include="rqueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="lazebird.rabbit.http.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\lazebird.rabbit.fs\lazebird.rabbit.fs.csproj">
-      <Project>{18d079a0-6e9e-4d90-8355-c7a73991e46f}</Project>
-      <Name>lazebird.rabbit.fs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\lazebird.rabbit.rqueue\lazebird.rabbit.queue.csproj">
-      <Project>{92A8B059-CD4A-4DB6-9E9B-892272540965}</Project>
-      <Name>lazebird.rabbit.queue</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

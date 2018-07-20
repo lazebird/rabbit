@@ -1,10 +1,12 @@
 ﻿using lazebird.rabbit.fs;
+using lazebird.rabbit.queue;
 using System;
 using System.Collections;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace lazebird.rabbit.http
 {
@@ -15,12 +17,14 @@ namespace lazebird.rabbit.http
         Hashtable mimehash;
         Hashtable fhash;
         rfs rfs;
+        rqueue q;
         public rhttpd(Action<string> log)
         {
             this.log = log;
             fhash = new Hashtable();
             fhash.Add("/", new rfile("dir", "", 0, DateTime.Today));
             rfs = new rfs(log);
+            q = new rqueue(10); // 10 * 10M, max memory used 100M
         }
         public void init_mime(string value)
         {
@@ -81,7 +85,7 @@ namespace lazebird.rabbit.http
                 HttpListenerResponse response = context.Response;
                 response.ContentEncoding = Encoding.UTF8;
                 string uri = Uri.UnescapeDataString(request.RawUrl);
-                log("I: " + request.HttpMethod + uri);
+                log("I: " + request.HttpMethod + " " + uri);
                 byte[] buffer = null;
 
                 if (fhash.ContainsKey(uri) && ((rfile)fhash[uri]).type == "file")
@@ -109,34 +113,62 @@ namespace lazebird.rabbit.http
                 log("!E: " + e.Message);
             }
         }
-        void file_load(HttpListenerResponse response, string path)
+        DateTime starttm;
+        DateTime stoptm;
+        void readfile(FileStream fs)
         {
-            Stream output = response.OutputStream;
             byte[] buffer = null;
-            response.ContentType = get_mime(get_suffix(path));
-            //log("Info: response suffix " + get_suffix(uri) + " ContentType " + response.ContentType);
-            DateTime starttm = DateTime.Now;
-            FileStream fs = new FileStream((string)((rfile)fhash[path]).path, FileMode.Open, FileAccess.Read);
             BinaryReader binReader = new BinaryReader(fs);
-            response.ContentLength64 = fs.Length;
             long left = fs.Length;
-            long size = Math.Max(50000000, fs.Length); // max memory size 50M, fix memory not enough exception
+            long size = Math.Max(10000000, fs.Length); // max memory size 10MB, fix memory not enough exception
             while (left > size)
             {
                 buffer = binReader.ReadBytes((int)size);
-                output.Write(buffer, 0, buffer.Length);
+                while (q.produce(buffer) == 0) ;
                 left -= size;
             }
             if (left > 0)
             {
                 buffer = binReader.ReadBytes((int)left);
-                output.Write(buffer, 0, buffer.Length);
+                while (q.produce(buffer) == 0) ;
             }
-            DateTime stoptm = DateTime.Now;
-            log("I: load " + path + " in " + (stoptm - starttm).TotalSeconds + " seconds, " + (fs.Length / ((stoptm - starttm).TotalSeconds + 1)).ToString("###,###.0") + " Bps");
             binReader.Close();
             fs.Close();
+        }
+        void uploadfile(Stream output, string name, long length)
+        {
+            int totalsize = 0;
+            while (true)
+            {
+                byte[] buffer = q.consume();
+                if (buffer == null)
+                {
+                    if (totalsize == length)
+                    {
+                        break;
+                    }
+                    continue;
+                }
+                else
+                {
+                    output.Write(buffer, 0, buffer.Length);
+                    totalsize += buffer.Length;
+                }
+            }
             output.Close();
+            stoptm = DateTime.Now;
+            log("I: " + name + " " + length + "B/" + (stoptm - starttm).TotalSeconds + " s; " + (length / ((stoptm - starttm).TotalSeconds + 1)).ToString("###,###.0") + " Bps");
+        }
+        void file_load(HttpListenerResponse response, string path)
+        {
+            Stream output = response.OutputStream;
+            response.ContentType = get_mime(get_suffix(path));
+            //log("Info: response suffix " + get_suffix(uri) + " ContentType " + response.ContentType);
+            starttm = DateTime.Now;
+            FileStream fs = new FileStream((string)((rfile)fhash[path]).path, FileMode.Open, FileAccess.Read);
+            response.ContentLength64 = fs.Length;
+            new Thread(() => uploadfile(output, fs.Name, fs.Length)).Start();
+            new Thread(() => readfile(fs)).Start();
         }
         string dir_load(string path)
         {
