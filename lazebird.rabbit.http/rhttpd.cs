@@ -17,14 +17,12 @@ namespace lazebird.rabbit.http
         Hashtable mimehash;
         Hashtable fhash;
         rfs rfs;
-        rqueue q;
         public rhttpd(Action<string> log)
         {
             this.log = log;
             fhash = new Hashtable();
             fhash.Add("/", new rfile("dir", "", 0, DateTime.Today));
             rfs = new rfs(log);
-            q = new rqueue(10); // 10 * 10M, max memory used 100M
         }
         public void init_mime(string value)
         {
@@ -115,7 +113,7 @@ namespace lazebird.rabbit.http
         }
         DateTime starttm;
         DateTime stoptm;
-        void readfile(FileStream fs)
+        void readfile(FileStream fs, rqueue q)
         {
             byte[] buffer = null;
             BinaryReader binReader = new BinaryReader(fs);
@@ -135,7 +133,7 @@ namespace lazebird.rabbit.http
             binReader.Close();
             fs.Close();
         }
-        void uploadfile(Stream output, string name, long length)
+        void uploadfile(Stream output, rqueue q, string path, long length)
         {
             int totalsize = 0;
             while (true)
@@ -157,7 +155,8 @@ namespace lazebird.rabbit.http
             }
             output.Close();
             stoptm = DateTime.Now;
-            log("I: " + name + " " + length + "B/" + (stoptm - starttm).TotalSeconds + " s; " + (length / ((stoptm - starttm).TotalSeconds + 1)).ToString("###,###.0") + " Bps");
+            log("I: " + path.Substring(path.Substring(0, path.Length - 1).LastIndexOf('/') + 1) + " " + length + " B/" + (stoptm - starttm).TotalSeconds.ToString("###,###.00") + " s; @"
+                + (length / ((stoptm - starttm).TotalSeconds + 1)).ToString("###,###.00") + " Bps");
         }
         void file_load(HttpListenerResponse response, string path)
         {
@@ -167,8 +166,9 @@ namespace lazebird.rabbit.http
             starttm = DateTime.Now;
             FileStream fs = new FileStream((string)((rfile)fhash[path]).path, FileMode.Open, FileAccess.Read);
             response.ContentLength64 = fs.Length;
-            new Thread(() => uploadfile(output, fs.Name, fs.Length)).Start();
-            new Thread(() => readfile(fs)).Start();
+            rqueue q = new rqueue(10); // 10 * 10M, max memory used 100M
+            new Thread(() => uploadfile(output, q, path, response.ContentLength64)).Start();
+            new Thread(() => readfile(fs, q)).Start();
         }
         string dir_load(string path)
         {

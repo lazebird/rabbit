@@ -27,36 +27,26 @@ namespace lazebird.rabbit.queue
         public byte[] consume()
         {
             byte[] buf = null;
-            if (!sc.WaitOne(timeout))
-            {
-                return buf;
-            }
-            lock (l)
-            {
-                if (q.Count > 0)
-                {
-                    buf = (byte[])q.Dequeue();
-                    sp.Release(1);
-                }
-            }
+            if (sc.WaitOne(timeout))
+                lock (l)
+                    if (q.Count > 0)
+                    {
+                        buf = (byte[])q.Dequeue();
+                        sp.Release(1);
+                    }
             return buf;
         }
         public int produce(byte[] buf)
         {
             int len = 0;
-            if (!sp.WaitOne(timeout))
-            {
-                return 0;
-            }
-            lock (l)
-            {
-                if (q.Count < maxsize)
-                {
-                    q.Enqueue(buf);
-                    sc.Release(1);
-                    len = buf.Length;
-                }
-            }
+            if (sp.WaitOne(timeout))
+                lock (l)
+                    if (q.Count < maxsize)
+                    {
+                        q.Enqueue(buf);
+                        sc.Release(1);
+                        len = buf.Length;
+                    }
             return len;
         }
     }

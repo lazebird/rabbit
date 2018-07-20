@@ -91,13 +91,5 @@ namespace lazebird.rabbit.fs
             }
             return count;
         }
-        public int readfile(string path)
-        {
-            return 1;
-        }
-        public int writefile(string path)
-        {
-            return 1;
-        }
     }
 }
