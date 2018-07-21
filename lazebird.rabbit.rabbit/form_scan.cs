@@ -49,10 +49,7 @@ namespace lazebird.rabbit.rabbit
                     lbhash.Add(id, lb);
                 }
             }
-            catch (Exception e)
-            {
-
-            }
+            catch (Exception) { }
         }
         void stop_scan()
         {

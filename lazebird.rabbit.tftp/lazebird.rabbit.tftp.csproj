@@ -39,6 +39,10 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="rtftpd.cs" />
+    <Compile Include="tftplib.cs" />
+    <Compile Include="tftpsession.cs" />
+    <Compile Include="tftpclient.cs" />
+    <Compile Include="tftpserver.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lazebird.rabbit.tftp.nuspec" />
@@ -48,6 +52,10 @@
     <ProjectReference Include="..\lazebird.rabbit.fs\lazebird.rabbit.fs.csproj">
       <Project>{18d079a0-6e9e-4d90-8355-c7a73991e46f}</Project>
       <Name>lazebird.rabbit.fs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lazebird.rabbit.rqueue\lazebird.rabbit.queue.csproj">
+      <Project>{92A8B059-CD4A-4DB6-9E9B-892272540965}</Project>
+      <Name>lazebird.rabbit.queue</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
