@@ -5,9 +5,8 @@ using System.Collections;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using static lazebird.rabbit.tftp.tftplib;
+using static lazebird.rabbit.tftp.tftppkt;
 
 namespace lazebird.rabbit.tftp
 {
@@ -73,7 +72,7 @@ namespace lazebird.rabbit.tftp
                 s.stop_timer();
                 s.t = new Timer(p => send_data_block(blkno, s), null, s.timeout, s.timeout);
             }
-            byte[] pkt = CreateDataPacket(blkno, data);
+            byte[] pkt = new tftppkt(Opcodes.Data, blkno, data).pack();
             uc.Send(pkt, pkt.Length, s.ep);
             if (blkno == s.blkmax)  // over
             {
@@ -87,24 +86,26 @@ namespace lazebird.rabbit.tftp
         }
         void send_err(IPEndPoint r, int err, string msg)
         {
-            byte[] buf = CreateErrPacket(err, msg);
+            byte[] buf = new tftppkt(Opcodes.Error, err, msg).pack();
             uc.SendAsync(buf, buf.Length, r);
         }
-        void pkt_handler(int port)
+        void recv_task(int port)
         {
             IPEndPoint r = new IPEndPoint(IPAddress.Any, port);
-            byte[] rcvBuffer = new byte[516];
-            rcvBuffer = uc.Receive(ref r);
-            Opcodes op = (Opcodes)rcvBuffer[1];
-            if (op == Opcodes.Read || op == Opcodes.Write)
+            byte[] rcvBuffer;
+            try
             {
-                int pos = 2;
-                while (rcvBuffer[pos] != 0) pos++;
-                string vpath = "/" + Encoding.ASCII.GetString(rcvBuffer, 2, pos - 2);
-                slog("I: " + op.ToString() + " " + vpath);
-                if (!fhash.ContainsKey(vpath))
+                rcvBuffer = uc.Receive(ref r);
+            }
+            catch (Exception) { return; }
+            tftppkt pkt = new tftppkt();
+            if (!pkt.parse(rcvBuffer))
+                return;
+            if (pkt.op == Opcodes.Read || pkt.op == Opcodes.Write)
+            {
+                if (!fhash.ContainsKey(pkt.filename))
                 {
-                    send_err(r, 1, "unknown " + vpath);
+                    send_err(r, 1, "unknown " + pkt.filename);
                     return;
                 }
                 if (chash.ContainsKey(r)) // reset
@@ -112,35 +113,27 @@ namespace lazebird.rabbit.tftp
                     chash.Remove(r);
                 }
                 rqueue q = new rqueue(2000); // 2000 * 512, max memory used 1M
-                FileStream fs = new FileStream(((rfile)fhash[vpath]).path, FileMode.Open, FileAccess.Read);
-                tftpsession s = new tftpsession(r, ((int)fs.Length + 511) / 512, 3, 1000, vpath, q);
+                FileStream fs = new FileStream(((rfile)fhash[pkt.filename]).path, FileMode.Open, FileAccess.Read);
+                tftpsession s = new tftpsession(r, ((int)fs.Length + 511) / 512, 3, 1000, pkt.filename, q);
                 chash.Add(r, s);
                 new Thread(() => rfs.readfile(fs, q, 512)).Start();    // 10000000, max block size 10M
                 new Thread(() => send_data_block(s.blkno + 1, s)).Start();
             }
-            else if (op == Opcodes.Ack && chash.ContainsKey(r))
+            else if (pkt.op == Opcodes.Ack && chash.ContainsKey(r))
             {
                 tftpsession s = (tftpsession)chash[r];
-                int ackno = rcvBuffer[2] << 8 | rcvBuffer[3];
-                if (ackno == s.blkno)
+                if (pkt.blkno == (s.blkno & 0xffff))    // max 2 bytes in pkt
                     new Thread(() => send_data_block(s.blkno + 1, s)).Start();
             }
             else  // error
             {
-                send_err(r, 2, "code " + op.ToString());
+                send_err(r, 2, "code " + pkt.op.ToString());
             }
         }
         void server_task(int port)
         {
-            try
-            {
-                uc = new UdpClient(port);
-                while (true) pkt_handler(port);
-            }
-            catch (Exception e)
-            {
-                slog("!E: " + e.Message);
-            }
+            uc = new UdpClient(port);
+            while (true) recv_task(port);
         }
         public void start(int port)
         {
