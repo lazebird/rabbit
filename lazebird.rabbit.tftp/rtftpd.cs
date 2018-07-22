@@ -42,15 +42,11 @@ namespace lazebird.rabbit.tftp
         }
         void send_data_block(int blkno, tftpsession s)
         {
-            int curtm = Environment.TickCount;
-            if (curtm - s.logtm > 100 || blkno == s.blkmax)
-            {
-                s.logtm = curtm;
-                s.logidx = ilog(s.blkno == blkno ? 0 : s.logidx, "I: " + s.ep.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno);
-            }
+            bool is_retry = false;
             byte[] data;
             if (s.blkno == blkno)   // retry
             {
+                is_retry = true;
                 data = s.blkdata;
                 if (++s.curretry == s.maxretry)   // fail
                 {
@@ -74,6 +70,12 @@ namespace lazebird.rabbit.tftp
             }
             byte[] pkt = new tftppkt(Opcodes.Data, blkno, data).pack();
             uc.Send(pkt, pkt.Length, s.ep);
+            int curtm = Environment.TickCount;
+            if (curtm - s.logtm > 100 || blkno == s.blkmax)
+            {
+                s.logtm = curtm;
+                s.logidx = ilog(is_retry ? 0 : s.logidx, "I: " + s.ep.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno);
+            }
             if (blkno == s.blkmax)  // over
             {
                 slog("I: " + s.filename + " "
@@ -116,14 +118,16 @@ namespace lazebird.rabbit.tftp
                 FileStream fs = new FileStream(((rfile)fhash[pkt.filename]).path, FileMode.Open, FileAccess.Read);
                 tftpsession s = new tftpsession(r, ((int)fs.Length + 511) / 512, 3, 1000, pkt.filename, q);
                 chash.Add(r, s);
-                new Thread(() => rfs.readstream(fs, q, 512)).Start();    // 10000000, max block size 10M
-                new Thread(() => send_data_block(s.blkno + 1, s)).Start();
+                Thread t = new Thread(() => rfs.readstream(fs, q, 512));    // 10000000, max block size 10M
+                t.IsBackground = true;
+                t.Start();
+                send_data_block(s.blkno + 1, s);
             }
             else if (pkt.op == Opcodes.Ack && chash.ContainsKey(r))
             {
                 tftpsession s = (tftpsession)chash[r];
                 if (pkt.blkno == (s.blkno & 0xffff))    // max 2 bytes in pkt
-                    new Thread(() => send_data_block(s.blkno + 1, s)).Start();
+                    send_data_block(s.blkno + 1, s);
             }
             else  // error
             {
@@ -132,7 +136,15 @@ namespace lazebird.rabbit.tftp
         }
         void server_task(int port)
         {
-            uc = new UdpClient(port);
+            try
+            {
+                uc = new UdpClient(port);
+            }
+            catch (Exception e)
+            {
+                slog("!E: " + e.Message);
+                return;
+            }
             while (true) recv_task(port);
         }
         public void start(int port)
@@ -140,6 +152,7 @@ namespace lazebird.rabbit.tftp
             if (tftpd == null)
             {
                 tftpd = new Thread(() => server_task(port));
+                tftpd.IsBackground = true;
                 tftpd.Start();
             }
         }

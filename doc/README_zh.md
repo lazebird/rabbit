@@ -27,7 +27,7 @@ Windows平台下的小工具集合。
 ## 发布
 1. 使用ilmerge.exe可以将生成的执行文件和库一起打包成一个单独的可执行文件，命令参考如下
 ```
-	..\..\..\tools\ILMerge.exe /targetplatform:v4 /ndebug /target:winexe /out:sRabbit.exe lazebird.rabbit.rabbit.exe lazebird.rabbit.common.dll lazebird.rabbit.ftp.dll lazebird.rabbit.ping.dll Microsoft.WindowsAPICodePack.dll Tftp.Net.dll lazebird.rabbit.dhcp.dll lazebird.rabbit.http.dll lazebird.rabbit.tftp.dll Microsoft.WindowsAPICodePack.Shell.dll zh-CN/lazebird.rabbit.rabbit.resources.dll
+	..\..\..\tools\ILMerge.exe /targetplatform:v4 /ndebug /target:winexe /out:sRabbit.exe lazebird.rabbit.rabbit.exe /wildcards *.dll zh-CN/lazebird.rabbit.rabbit.resources.dll
 ```
 
 ## 截图

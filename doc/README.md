@@ -25,9 +25,9 @@ library APIs please refer to doc/{library name}.mk, such as doc/ping.mk, here is
 
 ## DISTRIBUTION
 1. use ilmerge.exe combine exe and dlls like below, copy and run sRabbit.exe directly.  
-```
-	..\..\..\tools\ILMerge.exe /targetplatform:v4 /ndebug /target:winexe /out:sRabbit.exe lazebird.rabbit.rabbit.exe lazebird.rabbit.common.dll lazebird.rabbit.ftp.dll lazebird.rabbit.ping.dll Microsoft.WindowsAPICodePack.dll Tftp.Net.dll lazebird.rabbit.dhcp.dll lazebird.rabbit.http.dll lazebird.rabbit.tftp.dll Microsoft.WindowsAPICodePack.Shell.dll zh-CN/lazebird.rabbit.rabbit.resources.dll
-```
+	```
+	..\..\..\tools\ILMerge.exe /targetplatform:v4 /ndebug /target:winexe /out:sRabbit.exe lazebird.rabbit.rabbit.exe /wildcards *.dll zh-CN/lazebird.rabbit.rabbit.resources.dll
+	```
 
 ## SCREENSHOTS
 1. ![Alt ?](/doc/Screenshots.PNG)  
