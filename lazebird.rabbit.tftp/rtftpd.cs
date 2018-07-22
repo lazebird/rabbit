@@ -116,7 +116,7 @@ namespace lazebird.rabbit.tftp
                 FileStream fs = new FileStream(((rfile)fhash[pkt.filename]).path, FileMode.Open, FileAccess.Read);
                 tftpsession s = new tftpsession(r, ((int)fs.Length + 511) / 512, 3, 1000, pkt.filename, q);
                 chash.Add(r, s);
-                new Thread(() => rfs.readfile(fs, q, 512)).Start();    // 10000000, max block size 10M
+                new Thread(() => rfs.readstream(fs, q, 512)).Start();    // 10000000, max block size 10M
                 new Thread(() => send_data_block(s.blkno + 1, s)).Start();
             }
             else if (pkt.op == Opcodes.Ack && chash.ContainsKey(r))

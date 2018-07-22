@@ -92,7 +92,7 @@ namespace lazebird.rabbit.fs
             }
             return count;
         }
-        public void readfile(Stream fs, rqueue q, int maxblksz)
+        public void readstream(Stream fs, rqueue q, int maxblksz)
         {
             byte[] buffer = null;
             BinaryReader binReader = new BinaryReader(fs);
@@ -112,7 +112,7 @@ namespace lazebird.rabbit.fs
             binReader.Close();
             fs.Close();
         }
-        public void writefile(Stream output, rqueue q, string path, long length)
+        public void writestream(Stream output, rqueue q, string path, long length)
         {
             DateTime starttm;
             DateTime stoptm;
