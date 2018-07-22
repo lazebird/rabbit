@@ -13,6 +13,12 @@ namespace lazebird.rabbit.tftp
             Ack = 4,
             Error = 5
         }
+        public enum Modes
+        {
+            netascii,
+            octet,
+            mail
+        }
         public static byte[] CreateReqPacket(Opcodes opCode, string remoteFile, string tftpMode)
         {
             int pos = 0;
@@ -45,13 +51,13 @@ namespace lazebird.rabbit.tftp
             pkt[3] = (byte)(blkno & 0xff);
             return pkt;
         }
-        public static byte[] CreateErrPacket(string msg)
+        public static byte[] CreateErrPacket(int err, string msg)
         {
             byte[] pkt = new byte[5 + msg.Length];
             pkt[0] = 0;
             pkt[1] = (byte)Opcodes.Error;
             pkt[2] = 0;
-            pkt[3] = 0;
+            pkt[3] = (byte)err;
             Encoding.ASCII.GetBytes(msg, 0, msg.Length, pkt, 4);
             pkt[4 + msg.Length] = 0;
             return pkt;

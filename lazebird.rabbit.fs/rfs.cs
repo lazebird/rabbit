@@ -97,7 +97,7 @@ namespace lazebird.rabbit.fs
             byte[] buffer = null;
             BinaryReader binReader = new BinaryReader(fs);
             long left = fs.Length;
-            long size = Math.Max(maxblksz, fs.Length);
+            long size = Math.Min(maxblksz, fs.Length);
             while (left > size)
             {
                 buffer = binReader.ReadBytes((int)size);

@@ -20,9 +20,9 @@ namespace lazebird.rabbit.rabbit
             tftp_dirbtn5.Click += new EventHandler(tftpd_dir5_click);
             tftpd_btn.Click += new EventHandler(tftpd_click);
         }
-        int tftpd_log_func(int line, string msg)
+        int tftpd_log_func(int id, string msg)
         {
-            return tftpdlog.write(line, msg);
+            return tftpdlog.write(id, msg);
         }
         private void tftpd_dir_set(TextBox t)
         {
@@ -33,8 +33,6 @@ namespace lazebird.rabbit.rabbit
             {
                 tftpd.del_dir(t.Text);
                 t.Text = dialog.SelectedPath;
-                tftpd.add_dir(t.Text);
-                saveconf();
             }
         }
         private void tftpd_dir1_click(object sender, EventArgs e)

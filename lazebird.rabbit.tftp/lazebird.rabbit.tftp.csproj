@@ -32,17 +32,13 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="Tftp.Net, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Tftp.Net.1.1.0.0\lib\Tftp.Net.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="rtftpd.cs" />
     <Compile Include="tftplib.cs" />
     <Compile Include="tftpsession.cs" />
-    <Compile Include="tftpclient.cs" />
-    <Compile Include="tftpserver.cs" />
+    <Compile Include="rtftpc.cs" />
+    <Compile Include="rtftpd.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lazebird.rabbit.tftp.nuspec" />

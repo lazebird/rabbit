@@ -1,181 +1,201 @@
 ﻿using lazebird.rabbit.fs;
+using lazebird.rabbit.queue;
 using System;
 using System.Collections;
 using System.IO;
 using System.Net;
-using Tftp.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using static lazebird.rabbit.tftp.tftplib;
 
 namespace lazebird.rabbit.tftp
 {
     public class rtftpd
     {
         Func<int, string, int> log;
-        Hashtable vfhash;
+        Thread tftpd;
+        UdpClient uc;
+        Hashtable chash;
         Hashtable fhash;
-        Hashtable loghash;
-        Hashtable logtmhash;
-        TftpServer server;
         rfs rfs;
-
+        object obj;
         public rtftpd(Func<int, string, int> log)
         {
             this.log = log;
-            vfhash = new Hashtable();
+            chash = new Hashtable();
             fhash = new Hashtable();
-            loghash = new Hashtable();
-            logtmhash = new Hashtable();
-            rfs = new rfs(rfs_log);
+            rfs = new rfs(slog);
+            obj = new object();
         }
-        void rfs_log(string msg)
+        int ilog(int line, string msg)
+        {
+            int ret;
+            lock (obj)
+            {
+                ret = log(line, msg);
+            }
+            return ret;
+        }
+        void slog(string msg)
         {
             log(0, msg);
         }
-        public void start(int port)
+        void send_data_block(int blkno, tftpsession s)
+        {
+            int curtm = Environment.TickCount;
+            if (curtm - s.logtm > 100 || blkno == s.blkmax)
+            {
+                s.logtm = curtm;
+                s.logidx = ilog(s.blkno == blkno ? 0 : s.logidx, "I: " + s.ep.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno);
+            }
+            byte[] data;
+            if (s.blkno == blkno)   // retry
+            {
+                data = s.blkdata;
+                if (++s.curretry == s.maxretry)   // fail
+                {
+                    s.stop_timer();
+                    chash.Remove(s.ep);
+                    return;
+                }
+            }
+            else
+            {
+                while (true)
+                {
+                    data = s.q.consume();
+                    if (data != null) break;
+                }
+                s.blkno = blkno;
+                s.blkdata = data;
+                s.curretry = 0;
+                s.stop_timer();
+                s.t = new Timer(p => send_data_block(blkno, s), null, s.timeout, s.timeout);
+            }
+            byte[] pkt = CreateDataPacket(blkno, data);
+            uc.Send(pkt, pkt.Length, s.ep);
+            if (blkno == s.blkmax)  // over
+            {
+                slog("I: " + s.filename + " "
+                    + s.blkmax + " p/" + ((curtm - s.starttm) / 1000).ToString("###,###.00") + " s; @"
+                    + (s.blkmax / ((curtm - s.starttm) / 1000 + 1)).ToString("###,###.00") + " pps"); // +1 to avoid divide 0
+                s.stop_timer();
+                chash.Remove(s.ep);
+                return;
+            }
+        }
+        void send_err(IPEndPoint r, int err, string msg)
+        {
+            byte[] buf = CreateErrPacket(err, msg);
+            uc.SendAsync(buf, buf.Length, r);
+        }
+        void pkt_handler(int port)
+        {
+            IPEndPoint r = new IPEndPoint(IPAddress.Any, port);
+            byte[] rcvBuffer = new byte[516];
+            rcvBuffer = uc.Receive(ref r);
+            Opcodes op = (Opcodes)rcvBuffer[1];
+            if (op == Opcodes.Read || op == Opcodes.Write)
+            {
+                int pos = 2;
+                while (rcvBuffer[pos] != 0) pos++;
+                string vpath = "/" + Encoding.ASCII.GetString(rcvBuffer, 2, pos - 2);
+                slog("I: " + op.ToString() + " " + vpath);
+                if (!fhash.ContainsKey(vpath))
+                {
+                    send_err(r, 1, "unknown " + vpath);
+                    return;
+                }
+                if (chash.ContainsKey(r)) // reset
+                {
+                    chash.Remove(r);
+                }
+                rqueue q = new rqueue(2000); // 2000 * 512, max memory used 1M
+                FileStream fs = new FileStream(((rfile)fhash[vpath]).path, FileMode.Open, FileAccess.Read);
+                tftpsession s = new tftpsession(r, ((int)fs.Length + 511) / 512, 3, 1000, vpath, q);
+                chash.Add(r, s);
+                new Thread(() => rfs.readfile(fs, q, 512)).Start();    // 10000000, max block size 10M
+                new Thread(() => send_data_block(s.blkno + 1, s)).Start();
+            }
+            else if (op == Opcodes.Ack && chash.ContainsKey(r))
+            {
+                tftpsession s = (tftpsession)chash[r];
+                int ackno = rcvBuffer[2] << 8 | rcvBuffer[3];
+                if (ackno == s.blkno)
+                    new Thread(() => send_data_block(s.blkno + 1, s)).Start();
+            }
+            else  // error
+            {
+                send_err(r, 2, "code " + op.ToString());
+            }
+        }
+        void server_task(int port)
         {
             try
             {
-                server = new TftpServer(port);
-                server.OnReadRequest += new TftpServerEventHandler(server_OnReadRequest);
-                server.OnWriteRequest += new TftpServerEventHandler(server_OnWriteRequest);
-                server.Start();
-                log(0, "Listening port " + port);
+                uc = new UdpClient(port);
+                while (true) pkt_handler(port);
             }
             catch (Exception e)
             {
-                this.log(0, "Exception: " + e.Message);
+                slog("!E: " + e.Message);
+            }
+        }
+        public void start(int port)
+        {
+            if (tftpd == null)
+            {
+                tftpd = new Thread(() => server_task(port));
+                tftpd.Start();
             }
         }
         public void stop()
         {
             try
             {
-                vfhash.Clear();
                 fhash.Clear();
-                loghash.Clear();
-                logtmhash.Clear();
-                server.Dispose();
-                log(0, "Stopped & Clear All Directory");
+                tftpd.Abort();
+                tftpd = null;
+                uc.Close();
+                uc.Dispose();
             }
             catch (Exception e)
             {
-                this.log(0, "Exception: " + e.Message);
+                slog("!E: " + e.Message);
             }
         }
-        public void add_dir(string dir)
+        public void add_dir(string path)
         {
-            if (dir == null || dir == "")
+            if (path == null || path == "")
             {
                 return;
             }
-            int filecnt = rfs.adddir(vfhash, "/", dir, false);
-            log(0, "+D: " + dir + " (" + filecnt + " files).");
-            foreach (string key in vfhash.Keys)
+            DirectoryInfo dir = new DirectoryInfo(path);
+            foreach (FileInfo f in dir.GetFiles())
             {
-                string fname = key.Substring(dir.LastIndexOf('/') + 1);
-                if (fhash.ContainsKey(fname))
-                {
-                    log(0, "!F: " + key + " and " + fhash[fname] + " conflicts");
-                    fhash.Remove(fname);
-                }
-                fhash.Add(fname, key);
+                rfs.addfile(fhash, "/", f.FullName);
             }
         }
-        public void del_dir(string dir)
+        public void del_dir(string path)
         {
-            if (dir == null || dir == "")
+            if (path == null || path == "")
             {
                 return;
             }
-            int filecnt = rfs.deldir(vfhash, "/", dir);
-            log(0, "-D: " + dir + " (" + filecnt + " files).");
-            ArrayList list = new ArrayList();
-            foreach (string key in fhash.Keys)
+            DirectoryInfo dir = new DirectoryInfo(path);
+            foreach (FileInfo f in dir.GetFiles())
             {
-                if (((string)fhash[key]).Length >= dir.Length && ((string)fhash[key]).Substring(0, dir.Length) == dir)
-                {
-                    list.Add(key);
-                }
-            }
-            foreach (string f in list)
-            {
-                fhash.Remove(f);
+                rfs.delfile(fhash, "/", f.FullName);
             }
         }
-        void server_OnWriteRequest(ITftpTransfer transfer, EndPoint client)
+        public void add_file(string path)
         {
-            String file = Path.Combine(Environment.CurrentDirectory, transfer.Filename);    // upload to current dir only
-            if (File.Exists(file))
-            {
-                CancelTransfer(transfer, TftpErrorPacket.FileAlreadyExists);
-            }
-            else
-            {
-                transfer.UserContext = client;      // append client info
-                StartTransfer(transfer, new FileStream(file, FileMode.CreateNew));
-            }
+            rfs.addfile(fhash, "/", path);
         }
-        void server_OnReadRequest(ITftpTransfer transfer, EndPoint client)
+        public void del_file(string path)
         {
-            if (!fhash.ContainsKey(transfer.Filename))
-            {
-                CancelTransfer(transfer, TftpErrorPacket.FileNotFound);
-                return;
-            }
-            FileInfo file = new FileInfo(Path.Combine((string)fhash[transfer.Filename], transfer.Filename));
-            transfer.UserContext = client;      // append client info
-            StartTransfer(transfer, new FileStream(file.FullName, FileMode.Open));
-        }
-
-        void StartTransfer(ITftpTransfer transfer, Stream stream)
-        {
-            transfer.OnProgress += new TftpProgressHandler(transfer_OnProgress);
-            transfer.OnError += new TftpErrorHandler(transfer_OnError);
-            transfer.OnFinished += new TftpEventHandler(transfer_OnFinished);
-            transfer.Start(stream);
-        }
-
-        void CancelTransfer(ITftpTransfer transfer, TftpErrorPacket reason)
-        {
-            OutputTransferStatus(transfer, "!E: " + reason.ErrorMessage);
-            transfer.Cancel(reason);
-        }
-
-        void transfer_OnError(ITftpTransfer transfer, TftpTransferError error)
-        {
-            OutputTransferStatus(transfer, "!E: " + error);
-        }
-
-        void transfer_OnFinished(ITftpTransfer transfer)
-        {
-            OutputTransferStatus(transfer, "Success");
-        }
-
-        void transfer_OnProgress(ITftpTransfer transfer, TftpTransferProgress progress)
-        {
-            OutputTransferStatus(transfer, "" + progress);
-        }
-        void OutputTransferStatus(ITftpTransfer transfer, string message)
-        {
-            string key = (EndPoint)transfer.UserContext + "/" + transfer.Filename;
-            if (loghash.ContainsKey(key))
-            {
-                if (Environment.TickCount - (int)logtmhash[key] > 50 || message == "Success" || message.Contains("!E: "))
-                {
-                    log((int)loghash[key], key + ": " + message);
-                    logtmhash[key] = Environment.TickCount;
-                }
-            }
-            else
-            {
-                int line = log(0, key + ": " + message);
-                loghash.Add(key, line);
-                logtmhash.Add(key, Environment.TickCount);
-            }
-            if (message == "Success" || message.Contains("!E: "))
-            {
-                loghash.Remove(key);
-                logtmhash.Remove(key);
-            }
+            rfs.delfile(fhash, "/", path);
         }
     }
 }

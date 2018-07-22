@@ -88,10 +88,6 @@ namespace lazebird.rabbit.rabbit
             {
                 conf_log("G: " + key + " - " + rconf.get(key));
                 ((TextBox)texthash[key]).Text = rconf.get(key);
-                if (key.Contains("tftp_dir"))
-                {
-                    tftpd.add_dir(((TextBox)texthash[key]).Text);
-                }
             }
             foreach (string key in btnhash.Keys)
             {
