@@ -1,5 +1,15 @@
 # Release Notes
 
+## 2018-07-22
+### New
+1. Rewrite tftp 
+2. add rqueue to improve performance
+### Fix
+1. minor fixes
+### Tip
+1. if config not saved, try to remove old config files in dir %userprofile%\appdata\local; if problem remains, tell me in a new issue.
+2. single release/debug cannot support chinese!!! please change language to english in setting tab!
+
 ## 2018-07-03
 ### New
 1. add timestamp for log file
