@@ -18,10 +18,17 @@ namespace lazebird.rabbit.tftp
         Hashtable chash;
         Hashtable fhash;
         rfs rfs;
+        int timeout;
+        int maxretry;
         object obj;
-        public rtftpd(Func<int, string, int> log)
+        public rtftpd(Func<int, string, int> log) : this(log, 3, 5000)
+        {
+        }
+        public rtftpd(Func<int, string, int> log, int maxretry, int timeout)
         {
             this.log = log;
+            this.maxretry = maxretry;
+            this.timeout = timeout;
             chash = new Hashtable();
             fhash = new Hashtable();
             rfs = new rfs(slog);
@@ -40,28 +47,44 @@ namespace lazebird.rabbit.tftp
         {
             log(0, msg);
         }
+        void progress_display(tftpsession s, int blkno)
+        {
+            int curtm = Environment.TickCount;
+            if (curtm - s.logtm > 100 || blkno == s.blkmax)
+            {
+                s.logtm = curtm;
+                if (s.curretry == 0)
+                    s.logidx = ilog(s.logidx, "I: " + s.ep.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno);
+                else
+                    s.logidx = ilog(s.logidx, "I: " + s.ep.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno + " retry " + s.curretry);
+            }
+        }
+        void end_session(tftpsession s)
+        {
+            int curtm = Environment.TickCount;
+            slog("I: " + s.filename + " "
+                + s.blkno + " p/" + ((curtm - s.starttm) / 1000).ToString("###,###.00") + " s; @"
+                + (s.blkno / ((curtm - s.starttm) / 1000 + 1)).ToString("###,###.00") + " pps" + ", total retry " + s.totalretry); // +1 to avoid divide 0
+            s.stop_timer();
+            chash.Remove(s.ep);
+        }
         void send_data_block(int blkno, tftpsession s)
         {
-            bool is_retry = false;
             byte[] data;
             if (s.blkno == blkno)   // retry
             {
-                is_retry = true;
+                s.totalretry++;
                 data = s.blkdata;
-                if (++s.curretry == s.maxretry)   // fail
+                if (++s.curretry > s.maxretry)   // fail
                 {
-                    s.stop_timer();
-                    chash.Remove(s.ep);
+                    end_session(s);
                     return;
                 }
             }
             else
             {
-                while (true)
-                {
-                    data = s.q.consume();
-                    if (data != null) break;
-                }
+                data = s.q.consume();
+                if (data == null) data = new byte[0];
                 s.blkno = blkno;
                 s.blkdata = data;
                 s.curretry = 0;
@@ -70,21 +93,7 @@ namespace lazebird.rabbit.tftp
             }
             byte[] pkt = new tftppkt(Opcodes.Data, blkno, data).pack();
             uc.Send(pkt, pkt.Length, s.ep);
-            int curtm = Environment.TickCount;
-            if (curtm - s.logtm > 100 || blkno == s.blkmax)
-            {
-                s.logtm = curtm;
-                s.logidx = ilog(is_retry ? 0 : s.logidx, "I: " + s.ep.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno);
-            }
-            if (blkno == s.blkmax)  // over
-            {
-                slog("I: " + s.filename + " "
-                    + s.blkmax + " p/" + ((curtm - s.starttm) / 1000).ToString("###,###.00") + " s; @"
-                    + (s.blkmax / ((curtm - s.starttm) / 1000 + 1)).ToString("###,###.00") + " pps"); // +1 to avoid divide 0
-                s.stop_timer();
-                chash.Remove(s.ep);
-                return;
-            }
+            progress_display(s, blkno);
         }
         void send_err(IPEndPoint r, int err, string msg)
         {
@@ -114,9 +123,9 @@ namespace lazebird.rabbit.tftp
                 {
                     chash.Remove(r);
                 }
-                rqueue q = new rqueue(2000); // 2000 * 512, max memory used 1M
+                rqueue q = new rqueue(2000, 3000); // 2000 * 512, max memory used 1M, 3000ms timeout
                 FileStream fs = new FileStream(((rfile)fhash[pkt.filename]).path, FileMode.Open, FileAccess.Read);
-                tftpsession s = new tftpsession(r, ((int)fs.Length + 511) / 512, 3, 1000, pkt.filename, q);
+                tftpsession s = new tftpsession(r, ((int)fs.Length + 512) / 512, maxretry, timeout, pkt.filename, q); // if size % 512 = 0, an empty data pkt sent at last
                 chash.Add(r, s);
                 Thread t = new Thread(() => rfs.readstream(fs, q, 512));    // 10000000, max block size 10M
                 t.IsBackground = true;
@@ -127,7 +136,12 @@ namespace lazebird.rabbit.tftp
             {
                 tftpsession s = (tftpsession)chash[r];
                 if (pkt.blkno == (s.blkno & 0xffff))    // max 2 bytes in pkt
-                    send_data_block(s.blkno + 1, s);
+                {
+                    if (s.blkno == s.blkmax)  // over
+                        end_session(s);
+                    else
+                        send_data_block(s.blkno + 1, s);
+                }
             }
             else  // error
             {

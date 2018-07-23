@@ -12,7 +12,7 @@ namespace lazebird.rabbit.rabbit
         void init_form_tftp()
         {
             tftpdlog = new rlog(tftpd_output);
-            tftpd = new rtftpd(tftpd_log_func);
+            tftpd = new rtftpd(tftpd_log_func, 8, 3000);
             tftp_dirbtn1.Click += new EventHandler(tftpd_dir1_click);
             tftp_dirbtn2.Click += new EventHandler(tftpd_dir2_click);
             tftp_dirbtn3.Click += new EventHandler(tftpd_dir3_click);

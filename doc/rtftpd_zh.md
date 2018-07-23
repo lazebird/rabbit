@@ -5,7 +5,7 @@
 ## Target
 
 ## API
-1. public rtftpd(Func<int, string, int> log)  
+1. public rtftpd(Func<int, string, int> log)  public rtftpd(Func<int, string, int> log, int maxretry, int timeout)
     - 构造函数
     - log：log输出接口;第一个参数为输出位置，0表示自动占位置，第二个参数为待输出字符串，返回值为输出位置；该接口最初用于ListBox的同行进度更新。
 

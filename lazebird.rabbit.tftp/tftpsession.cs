@@ -13,6 +13,7 @@ namespace lazebird.rabbit.tftp
         public byte[] blkdata;
         public int maxretry;
         public int curretry;
+        public int totalretry;
         public int timeout; // ms
         public string filename;
         public rqueue q;
@@ -31,6 +32,7 @@ namespace lazebird.rabbit.tftp
             this.blkno = 0;
             this.blkdata = null;
             this.curretry = 0;
+            this.totalretry = 0;
             this.starttm = Environment.TickCount;
             this.logidx = 0;
             this.logtm = 0;

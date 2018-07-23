@@ -5,7 +5,7 @@
 ## Target
 
 ## API
-1. public rtftpd(Func<int, string, int> log)  
+1. public rtftpd(Func<int, string, int> log) public rtftpd(Func<int, string, int> log, int maxretry, int timeout)
     - Constructor
     - Log: log output interface; the first parameter is the output position, 0 means automatic position, the second parameter is the string to be output, and the return value is the output position; the interface is initially used for peer progress update of ListBox.
 

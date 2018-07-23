@@ -11,17 +11,16 @@ namespace lazebird.rabbit.queue
         Semaphore sp;
         int maxsize;
         int timeout;
-        public rqueue(int maxsize)
+        public rqueue() : this(100, 1000) { }
+        public rqueue(int maxsize) : this(maxsize, 1000) { }
+        public rqueue(int maxsize, int timeout)
         {
-            if (maxsize <= 0)
-                this.maxsize = 100;
-            else
-                this.maxsize = maxsize;
+            this.maxsize = maxsize;
+            this.timeout = timeout;
             q = new Queue();
             l = new object();
             sc = new Semaphore(0, this.maxsize);
             sp = new Semaphore(this.maxsize, this.maxsize);
-            timeout = 1000; // ms
         }
         public byte[] consume()
         {
