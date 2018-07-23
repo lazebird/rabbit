@@ -21,18 +21,20 @@ namespace lazebird.rabbit.tftp
         int timeout;
         int maxretry;
         object obj;
-        public rtftpd(Func<int, string, int> log) : this(log, 3, 5000)
-        {
-        }
-        public rtftpd(Func<int, string, int> log, int maxretry, int timeout)
+        public rtftpd(Func<int, string, int> log)
         {
             this.log = log;
-            this.maxretry = maxretry;
-            this.timeout = timeout;
+            this.maxretry = 20;
+            this.timeout = 500;
             chash = new Hashtable();
             fhash = new Hashtable();
             rfs = new rfs(slog);
             obj = new object();
+        }
+        public rtftpd(Func<int, string, int> log, int maxretry, int timeout) : this(log)
+        {
+            this.maxretry = maxretry;
+            this.timeout = timeout;
         }
         int ilog(int line, string msg)
         {
@@ -53,119 +55,121 @@ namespace lazebird.rabbit.tftp
             if (curtm - s.logtm > 100 || blkno == s.blkmax)
             {
                 s.logtm = curtm;
-                if (s.curretry == 0)
-                    s.logidx = ilog(s.logidx, "I: " + s.ep.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno);
-                else
-                    s.logidx = ilog(s.logidx, "I: " + s.ep.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno + " retry " + s.curretry);
+                s.logidx = ilog(s.logidx, "I: " + s.r.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno + ((s.curretry == 0) ? "" : (" retry " + s.curretry)));
             }
         }
-        void end_session(tftpsession s)
+        void session_display(tftpsession s)
         {
             int curtm = Environment.TickCount;
-            slog("I: " + s.filename + " "
-                + s.blkno + " p/" + ((curtm - s.starttm) / 1000).ToString("###,###.00") + " s; @"
-                + (s.blkno / ((curtm - s.starttm) / 1000 + 1)).ToString("###,###.00") + " pps" + ", total retry " + s.totalretry); // +1 to avoid divide 0
-            s.stop_timer();
-            chash.Remove(s.ep);
+            string msg = "I: " + s.r.ToString() + " " + s.filename + " ";
+            msg += (s.blkmax == s.blkno) ? "Succ; " : "Fail; ";
+            msg += s.blkmax + "/" + s.blkno + "/" + ((curtm - s.starttm) / 1000).ToString("###,###.00") + "s @" + (s.blkno / ((curtm - s.starttm) / 1000 + 1)).ToString("###,###.00") + " pps; ";   // +1 to avoid divide 0
+            msg += s.totalretry + " retries";
+            ilog(s.logidx, msg);
         }
-        void send_data_block(int blkno, tftpsession s)
+        void retry_data_block(tftpsession s, int blkno)
         {
-            byte[] data;
-            if (s.blkno == blkno)   // retry
-            {
-                s.totalretry++;
-                data = s.blkdata;
-                if (++s.curretry > s.maxretry)   // fail
-                {
-                    end_session(s);
-                    return;
-                }
-            }
-            else
-            {
-                data = s.q.consume();
-                if (data == null) data = new byte[0];
-                s.blkno = blkno;
-                s.blkdata = data;
-                s.curretry = 0;
-                s.stop_timer();
-                s.t = new Timer(p => send_data_block(blkno, s), null, s.timeout, s.timeout);
-            }
-            byte[] pkt = new tftppkt(Opcodes.Data, blkno, data).pack();
-            uc.Send(pkt, pkt.Length, s.ep);
+            s.totalretry++;
+            byte[] pkt = new tftppkt(Opcodes.Data, blkno, s.blkdata).pack();
+            s.uc.Send(pkt, pkt.Length, s.r);
             progress_display(s, blkno);
+            //slog("I: retransmit block " + blkno + " current " + s.blkno + " pkt blkno " + (blkno & 0xffff));
         }
-        void send_err(IPEndPoint r, int err, string msg)
+        bool send_data_block(tftpsession s, int blkno)
+        {
+            byte[] data = s.q.consume();
+            if (data == null) data = new byte[0];
+            byte[] pkt = new tftppkt(Opcodes.Data, blkno, data).pack();
+            progress_display(s, blkno);
+            s.blkno = blkno;
+            s.blkdata = data;
+            s.curretry = 0;
+            return s.uc.Send(pkt, pkt.Length, s.r) == pkt.Length;
+        }
+        bool send_err(tftpsession s, Errcodes err, string msg)
         {
             byte[] buf = new tftppkt(Opcodes.Error, err, msg).pack();
-            uc.SendAsync(buf, buf.Length, r);
+            s.uc.Send(buf, buf.Length, s.r);
+            return false;
         }
-        void recv_task(int port)
+        bool pkt_proc(tftppkt pkt, tftpsession s)
         {
-            IPEndPoint r = new IPEndPoint(IPAddress.Any, port);
-            byte[] rcvBuffer;
-            try
-            {
-                rcvBuffer = uc.Receive(ref r);
-            }
-            catch (Exception) { return; }
-            tftppkt pkt = new tftppkt();
-            if (!pkt.parse(rcvBuffer))
-                return;
             if (pkt.op == Opcodes.Read || pkt.op == Opcodes.Write)
             {
                 if (!fhash.ContainsKey(pkt.filename))
-                {
-                    send_err(r, 1, "unknown " + pkt.filename);
-                    return;
-                }
-                if (chash.ContainsKey(r)) // reset
-                {
-                    chash.Remove(r);
-                }
-                rqueue q = new rqueue(2000, 3000); // 2000 * 512, max memory used 1M, 3000ms timeout
+                    return send_err(s, Errcodes.FileNotFound, pkt.filename);
+                rqueue q = new rqueue(2000, 1000); // 2000 * 512, max memory used 1M, 1000ms timeout
                 FileStream fs = new FileStream(((rfile)fhash[pkt.filename]).path, FileMode.Open, FileAccess.Read);
-                tftpsession s = new tftpsession(r, ((int)fs.Length + 512) / 512, maxretry, timeout, pkt.filename, q); // if size % 512 = 0, an empty data pkt sent at last
-                chash.Add(r, s);
+                s.set_file(pkt.filename, fs.Length, q);
                 Thread t = new Thread(() => rfs.readstream(fs, q, 512));    // 10000000, max block size 10M
                 t.IsBackground = true;
                 t.Start();
-                send_data_block(s.blkno + 1, s);
+                return send_data_block(s, 1);
             }
-            else if (pkt.op == Opcodes.Ack && chash.ContainsKey(r))
+            if (pkt.op == Opcodes.Ack)
             {
-                tftpsession s = (tftpsession)chash[r];
                 if (pkt.blkno == (s.blkno & 0xffff))    // max 2 bytes in pkt
-                {
                     if (s.blkno == s.blkmax)  // over
-                        end_session(s);
+                        return false;
                     else
-                        send_data_block(s.blkno + 1, s);
+                        return send_data_block(s, s.blkno + 1);
+                return true; // expired pkt?
+            }
+            return send_err(s, Errcodes.UnknownTrans, s.r.ToString() + " " + pkt.op.ToString());
+        }
+        void session_task(byte[] rcvBuffer, IPEndPoint r)
+        {
+            tftpsession s;
+            if (!chash.ContainsKey(r))
+            {
+                s = new tftpsession(new UdpClient(), r, maxretry, timeout);
+                chash.Add(r, s);
+            }
+            else
+                s = (tftpsession)chash[r];
+            tftppkt pkt = new tftppkt();
+            while (s.curretry > 0 || (pkt.parse(rcvBuffer) && pkt_proc(pkt, s)))
+            {
+                try
+                {
+                    rcvBuffer = s.uc.Receive(ref r);
+                    s.curretry = 0;
+                }
+                catch (Exception e)
+                {
+                    if (++s.curretry > s.maxretry) break;
+                    retry_data_block(s, s.blkno);
                 }
             }
-            else  // error
-            {
-                send_err(r, 2, "code " + pkt.op.ToString());
-            }
+            session_display(s);
+            s.destroy();
+            chash.Remove(r);
         }
-        void server_task(int port)
+        void daemon_task(int port)
         {
             try
             {
                 uc = new UdpClient(port);
+                IPEndPoint r = new IPEndPoint(IPAddress.Any, port);
+                byte[] rcvBuffer;
+                while (true)
+                {
+                    rcvBuffer = uc.Receive(ref r);
+                    Thread t = new Thread(() => session_task(rcvBuffer, r));
+                    t.IsBackground = true;
+                    t.Start();
+                }
             }
             catch (Exception e)
             {
-                slog("!E: " + e.Message);
-                return;
+                slog("!E: daemon " + e.ToString());
             }
-            while (true) recv_task(port);
         }
         public void start(int port)
         {
             if (tftpd == null)
             {
-                tftpd = new Thread(() => server_task(port));
+                tftpd = new Thread(() => daemon_task(port));
                 tftpd.IsBackground = true;
                 tftpd.Start();
             }

@@ -19,12 +19,23 @@ namespace lazebird.rabbit.tftp
             octet,
             mail
         }
+        public enum Errcodes
+        {
+            Undefined = 0,
+            FileNotFound = 1,
+            AccessViolation = 2,
+            DiskFull = 3,
+            IllegalOper = 4,
+            UnknownTrans = 5,
+            FileAlreadyExists = 6,
+            NoSuchUser = 7
+        }
         public Opcodes op;
         public string filename;
         public string mode;
         public int blkno;
         public byte[] data;
-        public int errno;
+        public Errcodes errno;
         public string errmsg;
         public tftppkt()
         {
@@ -36,7 +47,6 @@ namespace lazebird.rabbit.tftp
             this.errno = 0;
             this.errmsg = null;
         }
-
         public tftppkt(Opcodes op, string filename, string mode)    // req
         {
             this.op = op;
@@ -57,7 +67,7 @@ namespace lazebird.rabbit.tftp
             this.blkno = blkno;
         }
 
-        public tftppkt(Opcodes op, int errno, string errmsg)    // err
+        public tftppkt(Opcodes op, Errcodes errno, string errmsg)    // err
         {
             this.op = op;
             this.errno = errno;
@@ -66,11 +76,13 @@ namespace lazebird.rabbit.tftp
 
         public bool parse(byte[] buf)
         {
+            if (buf.Length < 2) return false;
             op = (Opcodes)buf[1];
             if (op == Opcodes.Read || op == Opcodes.Write)
             {
                 int filenameend = 2;
-                while (buf[filenameend] != 0) filenameend++;
+                while (filenameend < buf.Length && buf[filenameend] != 0) filenameend++;
+                if (filenameend == buf.Length) return false;
                 filename = "/" + Encoding.ASCII.GetString(buf, 2, filenameend - 2);
                 int modeend = filenameend + 1;
                 while (buf[modeend] != 0) modeend++;
@@ -78,17 +90,20 @@ namespace lazebird.rabbit.tftp
             }
             else if (op == Opcodes.Data)
             {
+                if (buf.Length < 4) return false;
                 blkno = buf[2] << 8 | buf[3];
                 data = new byte[buf.Length - 4];
                 Array.Copy(buf, 4, data, 0, buf.Length - 4);
             }
             else if (op == Opcodes.Ack)
             {
+                if (buf.Length < 4) return false;
                 blkno = buf[2] << 8 | buf[3];
             }
             else if (op == Opcodes.Error)
             {
-                errno = buf[2] << 8 | buf[3];
+                if (buf.Length < 5) return false;
+                errno = (Errcodes)(buf[2] << 8 | buf[3]);
                 errmsg = Encoding.ASCII.GetString(buf, 4, buf.Length - 5);
             }
             else
