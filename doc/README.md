@@ -32,5 +32,8 @@ library APIs please refer to doc/{library name}.mk, such as doc/ping.mk, here is
 ## SCREENSHOTS
 1. ![Alt ?](/doc/Screenshots.PNG)  
 
+## RELEASE NOTES
+refer to /doc/releasenotes.md
+
 ## TODO
 refer to /doc/todo.md

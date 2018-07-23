@@ -33,5 +33,8 @@ Windows平台下的小工具集合。
 ## 截图
 1. ![Alt ?](/doc/Screenshots.PNG)  
 
+## 发布说明
+参考/doc/releasenotes.md
+
 ## 待办
 参考/doc/todo.md
