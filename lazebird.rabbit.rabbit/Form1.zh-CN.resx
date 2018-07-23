@@ -119,7 +119,7 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="label_addr.Size" type="System.Drawing.Size, System.Drawing">
-    <value>37, 20</value>
+    <value>30, 16</value>
   </data>
   <data name="label_addr.Text" xml:space="preserve">
     <value>地址</value>
@@ -128,10 +128,10 @@
     <value>80, 14</value>
   </data>
   <data name="text_addr.Size" type="System.Drawing.Size, System.Drawing">
-    <value>671, 18</value>
+    <value>671, 14</value>
   </data>
   <data name="label_interval.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 20</value>
+    <value>53, 16</value>
   </data>
   <data name="label_interval.Text" xml:space="preserve">
     <value>间隔(ms)</value>
@@ -140,10 +140,10 @@
     <value>80, 55</value>
   </data>
   <data name="text_interval.Size" type="System.Drawing.Size, System.Drawing">
-    <value>671, 18</value>
+    <value>671, 14</value>
   </data>
   <data name="label_count.Size" type="System.Drawing.Size, System.Drawing">
-    <value>37, 20</value>
+    <value>30, 16</value>
   </data>
   <data name="label_count.Text" xml:space="preserve">
     <value>次数</value>
@@ -152,7 +152,7 @@
     <value>80, 96</value>
   </data>
   <data name="text_count.Size" type="System.Drawing.Size, System.Drawing">
-    <value>671, 18</value>
+    <value>671, 14</value>
   </data>
   <data name="btn_ping_log.Text" xml:space="preserve">
     <value>日志</value>
@@ -161,13 +161,16 @@
     <value>80, 140</value>
   </data>
   <data name="text_logpath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>671, 18</value>
+    <value>671, 14</value>
   </data>
   <data name="btn_ping.Text" xml:space="preserve">
     <value>开始</value>
   </data>
   <data name="btn_scan.Text" xml:space="preserve">
     <value>开始</value>
+  </data>
+  <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
+    <value>648, 321</value>
   </data>
   <data name="label_http_port.Text" xml:space="preserve">
     <value>端口</value>
@@ -178,6 +181,18 @@
   <data name="btn_httpd.Text" xml:space="preserve">
     <value>开始</value>
   </data>
+  <data name="label_tftptout.Size" type="System.Drawing.Size, System.Drawing">
+    <value>60, 16</value>
+  </data>
+  <data name="label_tftptout.Text" xml:space="preserve">
+    <value>超时(毫秒)</value>
+  </data>
+  <data name="label_tftpretry.Size" type="System.Drawing.Size, System.Drawing">
+    <value>52, 16</value>
+  </data>
+  <data name="label_tftpretry.Text" xml:space="preserve">
+    <value>重传次数</value>
+  </data>
   <data name="tftp_dirbtn1.Text" xml:space="preserve">
     <value>目录1</value>
   </data>
@@ -186,12 +201,6 @@
   </data>
   <data name="tftp_dirbtn3.Text" xml:space="preserve">
     <value>目录3</value>
-  </data>
-  <data name="tftp_dirbtn4.Text" xml:space="preserve">
-    <value>目录4</value>
-  </data>
-  <data name="tftp_dirbtn5.Text" xml:space="preserve">
-    <value>目录5</value>
   </data>
   <data name="tftpd_btn.Text" xml:space="preserve">
     <value>开始</value>
@@ -215,19 +224,19 @@
     <value>开始</value>
   </data>
   <data name="dhcp_startlabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>50, 20</value>
+    <value>40, 16</value>
   </data>
   <data name="dhcp_startlabel.Text" xml:space="preserve">
     <value>开始IP</value>
   </data>
   <data name="dhcp_endlabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>50, 20</value>
+    <value>40, 16</value>
   </data>
   <data name="dhcp_endlabel.Text" xml:space="preserve">
     <value>结束IP</value>
   </data>
   <data name="dhcp_gatewaylabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>37, 20</value>
+    <value>30, 16</value>
   </data>
   <data name="dhcp_gatewaylabel.Text" xml:space="preserve">
     <value>网关</value>
@@ -239,13 +248,13 @@
     <value>开始</value>
   </data>
   <data name="hp_label.Size" type="System.Drawing.Size, System.Drawing">
-    <value>37, 20</value>
+    <value>30, 16</value>
   </data>
   <data name="hp_label.Text" xml:space="preserve">
     <value>主页</value>
   </data>
   <data name="lang_label.Size" type="System.Drawing.Size, System.Drawing">
-    <value>37, 20</value>
+    <value>30, 16</value>
   </data>
   <data name="lang_label.Text" xml:space="preserve">
     <value>语言</value>

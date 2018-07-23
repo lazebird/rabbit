@@ -24,17 +24,10 @@ namespace lazebird.rabbit.tftp
         public rtftpd(Func<int, string, int> log)
         {
             this.log = log;
-            this.maxretry = 20;
-            this.timeout = 500;
             chash = new Hashtable();
             fhash = new Hashtable();
             rfs = new rfs(slog);
             obj = new object();
-        }
-        public rtftpd(Func<int, string, int> log, int maxretry, int timeout) : this(log)
-        {
-            this.maxretry = maxretry;
-            this.timeout = timeout;
         }
         int ilog(int line, string msg)
         {
@@ -60,10 +53,12 @@ namespace lazebird.rabbit.tftp
         }
         void session_display(tftpsession s)
         {
-            int curtm = Environment.TickCount;
+            int deltatm = (Environment.TickCount - s.starttm) / 1000;
+            if (deltatm == 0) deltatm = 1;
             string msg = "I: " + s.r.ToString() + " " + s.filename + " ";
             msg += (s.blkmax == s.blkno) ? "Succ; " : "Fail; ";
-            msg += s.blkmax + "/" + s.blkno + "/" + ((curtm - s.starttm) / 1000).ToString("###,###.00") + "s @" + (s.blkno / ((curtm - s.starttm) / 1000 + 1)).ToString("###,###.00") + " pps; ";   // +1 to avoid divide 0
+            msg += s.blkmax + "/" + s.blkno + "/" + deltatm.ToString("###,###.0") + "s ";
+            msg += "@" + (s.blkno / deltatm).ToString("###,###.0") + " pps/" + (s.len / deltatm).ToString("###,###.0") + " Bps; ";   // +1 to avoid divide 0
             msg += s.totalretry + " retries";
             ilog(s.logidx, msg);
         }
@@ -165,14 +160,20 @@ namespace lazebird.rabbit.tftp
                 slog("!E: daemon " + e.ToString());
             }
         }
-        public void start(int port)
+        public void start(int port, int timeout, int maxretry)
         {
+            this.timeout = timeout;
+            this.maxretry = maxretry;
             if (tftpd == null)
             {
                 tftpd = new Thread(() => daemon_task(port));
                 tftpd.IsBackground = true;
                 tftpd.Start();
             }
+        }
+        public void start(int port)
+        {
+            start(port, 200, 30);
         }
         public void stop()
         {

@@ -41,10 +41,10 @@
     <Setting Name="tftp_dir3" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="tftp_dir4" Type="System.String" Scope="User">
+    <Setting Name="tftp_timeout" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="tftp_dir5" Type="System.String" Scope="User">
+    <Setting Name="tftp_retry" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="tftpd_btn" Type="System.String" Scope="User">

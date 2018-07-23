@@ -182,24 +182,24 @@ namespace lazebird.rabbit.rabbit.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftp_dir4 {
+        public string tftp_timeout {
             get {
-                return ((string)(this["tftp_dir4"]));
+                return ((string)(this["tftp_timeout"]));
             }
             set {
-                this["tftp_dir4"] = value;
+                this["tftp_timeout"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftp_dir5 {
+        public string tftp_retry {
             get {
-                return ((string)(this["tftp_dir5"]));
+                return ((string)(this["tftp_retry"]));
             }
             set {
-                this["tftp_dir5"] = value;
+                this["tftp_retry"] = value;
             }
         }
         

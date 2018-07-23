@@ -2,7 +2,6 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 
 namespace lazebird.rabbit.tftp
 {
@@ -18,6 +17,7 @@ namespace lazebird.rabbit.tftp
         public int totalretry;
         public int timeout; // ms
         public string filename;
+        public long len;
         public rqueue q;
         public int starttm;
         public int logidx;
@@ -39,7 +39,7 @@ namespace lazebird.rabbit.tftp
             this.logtm = 0;
         }
 
-        public tftpsession(UdpClient uc, IPEndPoint r, int blkmax, int maxretry, int timeout, string filename, rqueue q):this(uc, r, maxretry, timeout)
+        public tftpsession(UdpClient uc, IPEndPoint r, int blkmax, int maxretry, int timeout, string filename, rqueue q) : this(uc, r, maxretry, timeout)
         {
             this.blkmax = blkmax;
             this.filename = filename;
@@ -47,9 +47,10 @@ namespace lazebird.rabbit.tftp
         }
         public void set_file(string filename, long len, rqueue q)
         {
-            this.blkmax = (int)(len + 512) / 512;   // if len % 512 = 0, an empty data pkt sent at last
             this.filename = filename;
+            this.len = len;
             this.q = q;
+            this.blkmax = (int)(len + 512) / 512;   // if len % 512 = 0, an empty data pkt sent at last
         }
         public void destroy()
         {

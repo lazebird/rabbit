@@ -16,8 +16,6 @@ namespace lazebird.rabbit.rabbit
             tftp_dirbtn1.Click += new EventHandler(tftpd_dir1_click);
             tftp_dirbtn2.Click += new EventHandler(tftpd_dir2_click);
             tftp_dirbtn3.Click += new EventHandler(tftpd_dir3_click);
-            tftp_dirbtn4.Click += new EventHandler(tftpd_dir4_click);
-            tftp_dirbtn5.Click += new EventHandler(tftpd_dir5_click);
             tftpd_btn.Click += new EventHandler(tftpd_click);
         }
         int tftpd_log_func(int id, string msg)
@@ -47,21 +45,13 @@ namespace lazebird.rabbit.rabbit
         {
             tftpd_dir_set(tftp_dirtext3);
         }
-        private void tftpd_dir4_click(object sender, EventArgs e)
-        {
-            tftpd_dir_set(tftp_dirtext4);
-        }
-        private void tftpd_dir5_click(object sender, EventArgs e)
-        {
-            tftpd_dir_set(tftp_dirtext5);
-        }
         private void tftpd_click(object sender, EventArgs e)
         {
             if (((Button)btnhash["tftpd_btn"]).Text == Language.trans("开始"))
             {
                 tftpdlog.clear();
                 ((Button)btnhash["tftpd_btn"]).Text = Language.trans("停止");
-                tftpd.start(69);
+                tftpd.start(69, int.Parse(((TextBox)texthash["tftp_timeout"]).Text), int.Parse(((TextBox)texthash["tftp_retry"]).Text));
                 foreach (string key in texthash.Keys)
                 {
                     if (key.Contains("tftp_dir"))

@@ -63,11 +63,11 @@ namespace lazebird.rabbit.rabbit
             texthash.Add("ping_logfile", text_logpath);
             texthash.Add("http_port", text_http_port);
             texthash.Add("http_dir", text_http_dir);
+            texthash.Add("tftp_timeout", text_tftptout);
+            texthash.Add("tftp_retry", text_tftpretry);
             texthash.Add("tftp_dir1", tftp_dirtext1);
             texthash.Add("tftp_dir2", tftp_dirtext2);
             texthash.Add("tftp_dir3", tftp_dirtext3);
-            texthash.Add("tftp_dir4", tftp_dirtext4);
-            texthash.Add("tftp_dir5", tftp_dirtext5);
             texthash.Add("scan_ipstart", text_scanstart);
             texthash.Add("scan_ipend", text_scanend);
             btnhash.Add("ping_btn", btn_ping);
