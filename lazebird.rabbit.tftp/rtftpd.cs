@@ -130,7 +130,7 @@ namespace lazebird.rabbit.tftp
                     rcvBuffer = s.uc.Receive(ref r);
                     s.curretry = 0;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     if (++s.curretry > s.maxretry) break;
                     retry_data_block(s, s.blkno);

@@ -11,7 +11,7 @@ call:prjpack lazebird.rabbit.tftp
 call:prjpack lazebird.rabbit.fs
 call:prjpack lazebird.rabbit.queue
 popd
-REM pause
+pause
 GOTO:EOF
 
 :prjpack

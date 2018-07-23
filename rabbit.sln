@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.ftp", "laze
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.dhcp", "lazebird.rabbit.dhcp\lazebird.rabbit.dhcp.csproj", "{F722CCC9-3F3C-48BB-B868-9F8F5807F220}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.queue", "lazebird.rabbit.rqueue\lazebird.rabbit.queue.csproj", "{92A8B059-CD4A-4DB6-9E9B-892272540965}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.queue", "lazebird.rabbit.queue\lazebird.rabbit.queue.csproj", "{92A8B059-CD4A-4DB6-9E9B-892272540965}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.fs", "lazebird.rabbit.fs\lazebird.rabbit.fs.csproj", "{9D8C34CF-12BF-4360-9CA3-4D0A7D4D8CBC}"
 EndProject

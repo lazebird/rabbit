@@ -38,10 +38,15 @@
     <Compile Include="rfs.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\lazebird.rabbit.rqueue\lazebird.rabbit.queue.csproj">
+    <ProjectReference Include="..\lazebird.rabbit.queue\lazebird.rabbit.queue.csproj">
       <Project>{92a8b059-cd4a-4db6-9e9b-892272540965}</Project>
       <Name>lazebird.rabbit.queue</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lazebird.rabbit.fs.nuspec">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

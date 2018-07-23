@@ -1,7 +1,7 @@
 # fs
 
 ## Description
-- implement some advanced file system api
+- implement some advance file system api
 
 ## Target
 
