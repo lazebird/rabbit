@@ -63,56 +63,20 @@ namespace lazebird.rabbit.tftp
             msg += s.totalretry + " retries";
             ilog(s.logidx, msg);
         }
-        bool retry_data_block(tftpsession s)
-        {
-            if (s.blkno <= 0 || ++s.curretry > s.maxretry) return false;
-            s.totalretry++;
-            byte[] pkt = new tftppkt(Opcodes.Data, s.blkno, s.blkdata).pack();
-            progress_display(s, s.blkno);
-            //slog("I: retransmit block " + blkno + " current " + s.blkno + " pkt blkno " + (blkno & 0xffff));
-            return s.uc.Send(pkt, pkt.Length, s.r) == pkt.Length;
-        }
-        bool send_data_block(tftpsession s, int blkno)
-        {
-            byte[] data = s.q.consume();
-            if (data == null) data = new byte[0];
-            byte[] pkt = new tftppkt(Opcodes.Data, blkno, data).pack();
-            progress_display(s, blkno);
-            s.blkno = blkno;
-            s.blkdata = data;
-            s.curretry = 0;
-            return s.uc.Send(pkt, pkt.Length, s.r) == pkt.Length;
-        }
-        bool send_err(tftpsession s, Errcodes err, string msg)
-        {
-            byte[] buf = new tftppkt(Opcodes.Error, err, msg).pack();
-            s.uc.Send(buf, buf.Length, s.r);
-            return false;
-        }
         bool pkt_proc(tftppkt pkt, tftpsession s)
         {
             if (pkt.op == Opcodes.Read || pkt.op == Opcodes.Write)
             {
                 if (!fhash.ContainsKey(pkt.filename))
-                    return send_err(s, Errcodes.FileNotFound, pkt.filename);
-                rqueue q = new rqueue(2000, 1000); // 2000 * 512, max memory used 1M, 1000ms timeout
+                    return s.error(Errcodes.FileNotFound, pkt.filename);
+                rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
                 FileStream fs = new FileStream(((rfile)fhash[pkt.filename]).path, FileMode.Open, FileAccess.Read);
-                s.set_file(pkt.filename, fs.Length, q);
-                Thread t = new Thread(() => rfs.readstream(fs, q, 512));    // 10000000, max block size 10M
+                s.set_file(pkt.filename, fs.Length, q, pkt.timeout, pkt.blksize);
+                Thread t = new Thread(() => rfs.readstream(fs, q, pkt.blksize));
                 t.IsBackground = true;
                 t.Start();
-                return send_data_block(s, 1);
             }
-            if (pkt.op == Opcodes.Ack)
-            {
-                if (pkt.blkno == (s.blkno & 0xffff))    // max 2 bytes in pkt
-                    if (s.blkno == s.blkmax)  // over
-                        return false;
-                    else
-                        return send_data_block(s, s.blkno + 1);
-                return true; // expired pkt?
-            }
-            return send_err(s, Errcodes.UnknownTrans, s.r.ToString() + " " + pkt.op.ToString());
+            return s.reply(pkt);
         }
         void session_task(byte[] rcvBuffer, IPEndPoint r)
         {
@@ -135,9 +99,13 @@ namespace lazebird.rabbit.tftp
                     }
                     catch (Exception)
                     {
-                        if (!retry_data_block(s)) break;
+                        if (!s.retry()) break;
+                        //slog("I: retransmit block " + blkno + " current " + s.blkno + " pkt blkno " + (blkno & 0xffff));
                     }
+                    progress_display(s, s.blkno);
                 }
+            if (pkt.errmsg != null)
+                slog("!E: " + pkt.errmsg);
             session_display(s);
             s.destroy();
             chash.Remove(r);
