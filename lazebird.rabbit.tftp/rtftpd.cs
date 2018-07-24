@@ -63,13 +63,14 @@ namespace lazebird.rabbit.tftp
             msg += s.totalretry + " retries";
             ilog(s.logidx, msg);
         }
-        void retry_data_block(tftpsession s, int blkno)
+        bool retry_data_block(tftpsession s, int blkno)
         {
+            if (++s.curretry > s.maxretry) return false;
             s.totalretry++;
             byte[] pkt = new tftppkt(Opcodes.Data, blkno, s.blkdata).pack();
-            s.uc.Send(pkt, pkt.Length, s.r);
             progress_display(s, blkno);
             //slog("I: retransmit block " + blkno + " current " + s.blkno + " pkt blkno " + (blkno & 0xffff));
+            return s.uc.Send(pkt, pkt.Length, s.r) == pkt.Length;
         }
         bool send_data_block(tftpsession s, int blkno)
         {
@@ -129,12 +130,10 @@ namespace lazebird.rabbit.tftp
                 try
                 {
                     rcvBuffer = s.uc.Receive(ref r);
-                    s.curretry = 0;
                 }
                 catch (Exception)
                 {
-                    if (++s.curretry > s.maxretry) break;
-                    retry_data_block(s, s.blkno);
+                    if (!retry_data_block(s, s.blkno)) break;
                 }
             }
             session_display(s);
