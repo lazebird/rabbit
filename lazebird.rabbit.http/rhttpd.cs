@@ -120,7 +120,7 @@ namespace lazebird.rabbit.http
             response.ContentLength64 = fs.Length;
             rqueue q = new rqueue(10); // 10 * 10M, max memory used 100M
             new Thread(() => rfs.readstream(fs, q, 10000000)).Start();    // 10000000, max block size 10M
-            new Thread(() => rfs.writestream(output, q, path, response.ContentLength64)).Start();
+            new Thread(() => rfs.writestream(output, q, fs.Name)).Start();
         }
         string dir_load(string path)
         {

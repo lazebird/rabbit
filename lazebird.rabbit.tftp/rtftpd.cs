@@ -82,7 +82,7 @@ namespace lazebird.rabbit.tftp
                 rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
                 FileStream fs = new FileStream(pkt.filename, FileMode.Open, FileAccess.Write);
                 s.set_file(pkt.filename, fs.Length, q, pkt.timeout, pkt.blksize);
-                Thread t = new Thread(() => rfs.writestream(fs, q, pkt.filename, 0));   // len unknown, how to stop q?
+                Thread t = new Thread(() => rfs.writestream(fs, q, pkt.filename));
                 t.IsBackground = true;
                 t.Start();
             }

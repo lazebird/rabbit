@@ -18,7 +18,6 @@ namespace lazebird.rabbit.tftp
         public rqueue q;
         public int blksize = 512; // default
         public int blkno = 0;
-        public bool blkzero = false;
         public byte[] pkt = null;
         public int curretry = 0;
         public int totalretry = 0;
@@ -49,7 +48,6 @@ namespace lazebird.rabbit.tftp
                 this.blksize = blksize;
             }
             this.maxblkno = (int)(len + this.blksize) / this.blksize;   // if len % blksize = 0, an empty data pkt sent at last
-            this.blkzero = (len % this.blksize == 0);
         }
         public bool reply(tftppkt p)
         {
@@ -77,10 +75,10 @@ namespace lazebird.rabbit.tftp
                     return true;    // ignore expired ack?
                 if (blkno == maxblkno)  // over
                     return false;
-                if (blkno != maxblkno - 1 || !blkzero)
-                    data = q.consume();
-                else
+                if (q.is_stopped())
                     data = new byte[0]; // last empty block
+                else
+                    data = q.consume();
                 pkt = new tftppkt(Opcodes.Data, ++blkno, data).pack();
             }
             else if (p.op == Opcodes.Data)
@@ -92,6 +90,7 @@ namespace lazebird.rabbit.tftp
                 pkt = new tftppkt(Opcodes.Ack, blkno++).pack();
                 if (p.data.Length < blksize) // stop
                 {
+                    q.stop();
                     uc.Send(pkt, pkt.Length, r);
                     return false;
                 }

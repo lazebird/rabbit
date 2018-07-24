@@ -8,6 +8,7 @@ namespace lazebird.rabbit.fs
     public class rfs
     {
         Action<string> log;
+        int totalsize = 0;
         public rfs(Action<string> log)
         {
             this.log = log;
@@ -111,35 +112,25 @@ namespace lazebird.rabbit.fs
             }
             binReader.Close();
             fs.Close();
+            q.stop();
         }
-        public void writestream(Stream output, rqueue q, string path, long length)
+        public void writestream(Stream output, rqueue q, string filename)
         {
-            DateTime starttm;
-            DateTime stoptm;
-            starttm = DateTime.Now;
-            int totalsize = 0;
+            int starttm = Environment.TickCount;
+            byte[] buffer;
             while (true)
             {
-                byte[] buffer = q.consume();
-                if (buffer == null)
-                {
-                    if (totalsize == length)
-                    {
-                        break;
-                    }
-                    continue;
-                }
-                else
+                if ((buffer = q.consume()) != null)
                 {
                     output.Write(buffer, 0, buffer.Length);
-                    totalsize += buffer.Length;
+                    this.totalsize += buffer.Length;
                 }
+                if (q.is_stopped())
+                    break;
             }
             output.Close();
-            stoptm = DateTime.Now;
-            log("I: " + path.Substring(path.Substring(0, path.Length - 1).LastIndexOf('/') + 1) + " "
-                + length + " B/" + (stoptm - starttm).TotalSeconds.ToString("###,###.00") + " s; @"
-                + (length / ((stoptm - starttm).TotalSeconds + 1)).ToString("###,###.00") + " Bps");
+            int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
+            log("I: " + filename + " " + totalsize + " B/" + deltatm.ToString("###,###.00") + " s; @" + (totalsize / deltatm).ToString("###,###.00") + " Bps");
         }
     }
 }
