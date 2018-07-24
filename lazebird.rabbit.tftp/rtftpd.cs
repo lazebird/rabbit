@@ -58,7 +58,8 @@ namespace lazebird.rabbit.tftp
             string msg = "I: " + s.r.ToString() + " " + s.filename + " ";
             msg += (s.blkmax == s.blkno) ? "Succ; " : "Fail; ";
             msg += s.blkmax + "/" + s.blkno + "/" + deltatm.ToString("###,###.0") + "s ";
-            msg += "@" + (s.blkno / deltatm).ToString("###,###.0") + " pps/" + (s.len / deltatm).ToString("###,###.0") + " Bps; ";   // +1 to avoid divide 0
+            long curlen = (s.blkmax == s.blkno) ? s.len : (s.len * s.blkno / (s.blkmax == 0 ? 1 : s.blkmax));
+            msg += "@" + (s.blkno / deltatm).ToString("###,###.0") + " pps/" + (curlen / deltatm).ToString("###,###.0") + " Bps; ";   // +1 to avoid divide 0
             msg += s.totalretry + " retries";
             ilog(s.logidx, msg);
         }
