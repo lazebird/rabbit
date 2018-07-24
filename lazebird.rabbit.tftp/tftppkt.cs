@@ -33,6 +33,7 @@ namespace lazebird.rabbit.tftp
         }
         public Opcodes op = 0;
         public string filename = null;
+        public string filepath = null;
         public string mode = null;
         public int blksize = 0;
         public int timeout = 0;
@@ -107,7 +108,7 @@ namespace lazebird.rabbit.tftp
                         pos = end + 1;
                         parse_opt(optname, optval);
                     }
-                    filename = "/" + filename;
+                    filepath = "/" + filename;
                     return true;
                 }
                 else if (op == Opcodes.Data)

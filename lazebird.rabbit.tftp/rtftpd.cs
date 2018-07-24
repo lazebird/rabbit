@@ -66,10 +66,10 @@ namespace lazebird.rabbit.tftp
         {
             if (pkt.op == Opcodes.Read)
             {
-                if (!fhash.ContainsKey(pkt.filename))
+                if (!fhash.ContainsKey(pkt.filepath))
                     return s.error(Errcodes.FileNotFound, pkt.filename);
                 rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
-                FileStream fs = new FileStream(((rfile)fhash[pkt.filename]).path, FileMode.Open, FileAccess.Read);
+                FileStream fs = new FileStream(((rfile)fhash[pkt.filepath]).path, FileMode.Open, FileAccess.Read);
                 s.set_file(pkt.filename, fs.Length, q, pkt.timeout, pkt.blksize);
                 Thread t = new Thread(() => rfs.readstream(fs, q, s.blksize));
                 t.IsBackground = true;
@@ -77,11 +77,11 @@ namespace lazebird.rabbit.tftp
             }
             else if (pkt.op == Opcodes.Write)
             {
-                if (!fhash.ContainsKey(pkt.filename))
+                if (fhash.ContainsKey(pkt.filepath))
                     return s.error(Errcodes.FileAlreadyExists, pkt.filename);
                 rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
-                FileStream fs = new FileStream(pkt.filename, FileMode.Open, FileAccess.Write);
-                s.set_file(pkt.filename, fs.Length, q, pkt.timeout, pkt.blksize);
+                FileStream fs = new FileStream(pkt.filename, FileMode.Create, FileAccess.Write);
+                s.set_file(pkt.filename, 0, q, pkt.timeout, pkt.blksize);
                 Thread t = new Thread(() => rfs.writestream(fs, q, pkt.filename));
                 t.IsBackground = true;
                 t.Start();

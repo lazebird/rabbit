@@ -66,7 +66,7 @@ namespace lazebird.rabbit.tftp
                 }
                 else
                 {
-                    pkt = new tftppkt(Opcodes.Ack, 0).pack();
+                    pkt = new tftppkt(Opcodes.Ack, blkno++).pack();
                 }
             }
             else if (p.op == Opcodes.Ack)
@@ -85,11 +85,13 @@ namespace lazebird.rabbit.tftp
             {
                 if (p.blkno != blkno)
                     return true;  // ignore expired data?
+                filesize += p.data.Length;
                 if (p.data.Length > 0)
                     while (q.produce(p.data) == 0) ; // infinit produce this data
                 pkt = new tftppkt(Opcodes.Ack, blkno++).pack();
                 if (p.data.Length < blksize) // stop
                 {
+                    maxblkno = --blkno;
                     q.stop();
                     uc.Send(pkt, pkt.Length, r);
                     return false;
