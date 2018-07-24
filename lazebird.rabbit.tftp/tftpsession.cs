@@ -52,17 +52,26 @@ namespace lazebird.rabbit.tftp
         public bool reply(tftppkt p)
         {
             byte[] data;
-            if ((p.op == Opcodes.Read || p.op == tftppkt.Opcodes.Write))
+            if (p.op == Opcodes.Read)
+            {
+                if (p.timeout != 0 || p.blksize != 0)
+                {
+                    p.op = Opcodes.OAck;
+                    pkt = p.pack(); // wait for ack blkno=0
+                }
+                else
+                {
+                    data = q.consume();  //while ((data = q.consume()) == null) ; // may be infinite wait for a new msg here?
+                    pkt = new tftppkt(Opcodes.Data, ++blkno, data).pack();
+                }
+            }
+            else if (p.op == Opcodes.Write)
             {
                 if (p.timeout != 0 || p.blksize != 0)
                 {
                     p.op = Opcodes.OAck;
                     pkt = p.pack();
-                }
-                else if (p.op == Opcodes.Read)
-                {
-                    data = q.consume();  //while ((data = q.consume()) == null) ; // may be infinite wait for a new msg here?
-                    pkt = new tftppkt(Opcodes.Data, ++blkno, data).pack();
+                    blkno++; // wait for data blkno=1
                 }
                 else
                 {
@@ -83,7 +92,7 @@ namespace lazebird.rabbit.tftp
             }
             else if (p.op == Opcodes.Data)
             {
-                if (p.blkno != blkno)
+                if (p.blkno != (blkno & 0xffff))
                     return true;  // ignore expired data?
                 filesize += p.data.Length;
                 if (p.data.Length > 0)
@@ -119,6 +128,8 @@ namespace lazebird.rabbit.tftp
         }
         public void destroy()
         {
+            if (q != null)
+                q.stop();
             uc.Close();
             uc.Dispose();
         }

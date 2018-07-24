@@ -77,14 +77,19 @@ namespace lazebird.rabbit.tftp
             }
             else if (pkt.op == Opcodes.Write)
             {
-                if (fhash.ContainsKey(pkt.filepath))
-                    return s.error(Errcodes.FileAlreadyExists, pkt.filename);
-                rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
-                FileStream fs = new FileStream(pkt.filename, FileMode.Create, FileAccess.Write);
-                s.set_file(pkt.filename, 0, q, pkt.timeout, pkt.blksize);
-                Thread t = new Thread(() => rfs.writestream(fs, q, pkt.filename));
-                t.IsBackground = true;
-                t.Start();
+                try
+                {
+                    FileStream fs = new FileStream(pkt.filename, FileMode.Create, FileAccess.Write);
+                    rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
+                    s.set_file(pkt.filename, 0, q, pkt.timeout, pkt.blksize);
+                    Thread t = new Thread(() => rfs.writestream(fs, q, pkt.filename));
+                    t.IsBackground = true;
+                    t.Start();
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
             }
             return s.reply(pkt);
         }
