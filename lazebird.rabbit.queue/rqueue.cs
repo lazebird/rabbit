@@ -9,12 +9,11 @@ namespace lazebird.rabbit.queue
         object l;
         Semaphore sc;
         Semaphore sp;
-        int maxsize;
-        int timeout;
+        int maxsize = 100;
+        int timeout = 1000;
+        bool stop_flag = false;
         public rqueue()
         {
-            this.maxsize = 100;
-            this.timeout = 1000;
             q = new Queue();
             l = new object();
             sc = new Semaphore(0, this.maxsize);
@@ -53,6 +52,14 @@ namespace lazebird.rabbit.queue
                         len = buf.Length;
                     }
             return len;
+        }
+        public void stop()
+        {
+            stop_flag = true;
+        }
+        public bool is_stopped()
+        {
+            return stop_flag;
         }
     }
 }

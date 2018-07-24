@@ -45,34 +45,44 @@ namespace lazebird.rabbit.tftp
         void progress_display(tftpsession s, int blkno)
         {
             int curtm = Environment.TickCount;
-            if (curtm - s.logtm > 100 || blkno == s.blkmax)
+            if (curtm - s.logtm > 100 || blkno == s.maxblkno)
             {
                 s.logtm = curtm;
-                s.logidx = ilog(s.logidx, "I: " + s.r.ToString() + " " + s.filename + ": " + s.blkmax + "/" + blkno + ((s.curretry == 0) ? "" : (" retry " + s.curretry)));
+                s.logidx = ilog(s.logidx, "I: " + s.r.ToString() + " " + s.filename + ": " + s.maxblkno + "/" + blkno + ((s.curretry == 0) ? "" : (" retry " + s.curretry)));
             }
         }
         void session_display(tftpsession s)
         {
-            int deltatm = (Environment.TickCount - s.starttm) / 1000;
-            if (deltatm == 0) deltatm = 1;
+            int deltatm = Math.Max(1, (Environment.TickCount - s.starttm) / 1000);
+            long curlen = (s.maxblkno == s.blkno) ? s.filesize : (s.filesize * s.blkno / Math.Max(s.maxblkno, 1));
             string msg = "I: " + s.r.ToString() + " " + s.filename + " ";
-            msg += (s.blkmax == s.blkno) ? "Succ; " : "Fail; ";
-            msg += s.blkmax + "/" + s.blkno + "/" + deltatm.ToString("###,###.0") + "s ";
-            long curlen = (s.blkmax == s.blkno) ? s.len : (s.len * s.blkno / (s.blkmax == 0 ? 1 : s.blkmax));
+            msg += (s.maxblkno == s.blkno) ? "Succ; " : "Fail; ";
+            msg += s.maxblkno + "/" + s.blkno + "/" + deltatm.ToString("###,###.0") + "s ";
             msg += "@" + (s.blkno / deltatm).ToString("###,###.0") + " pps/" + (curlen / deltatm).ToString("###,###.0") + " Bps; ";   // +1 to avoid divide 0
             msg += s.totalretry + " retries";
             ilog(s.logidx, msg);
         }
         bool pkt_proc(tftppkt pkt, tftpsession s)
         {
-            if (pkt.op == Opcodes.Read || pkt.op == Opcodes.Write)
+            if (pkt.op == Opcodes.Read)
             {
                 if (!fhash.ContainsKey(pkt.filename))
                     return s.error(Errcodes.FileNotFound, pkt.filename);
                 rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
                 FileStream fs = new FileStream(((rfile)fhash[pkt.filename]).path, FileMode.Open, FileAccess.Read);
                 s.set_file(pkt.filename, fs.Length, q, pkt.timeout, pkt.blksize);
-                Thread t = new Thread(() => rfs.readstream(fs, q, pkt.blksize));
+                Thread t = new Thread(() => rfs.readstream(fs, q, s.blksize));
+                t.IsBackground = true;
+                t.Start();
+            }
+            else if (pkt.op == Opcodes.Write)
+            {
+                if (!fhash.ContainsKey(pkt.filename))
+                    return s.error(Errcodes.FileAlreadyExists, pkt.filename);
+                rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
+                FileStream fs = new FileStream(pkt.filename, FileMode.Open, FileAccess.Write);
+                s.set_file(pkt.filename, fs.Length, q, pkt.timeout, pkt.blksize);
+                Thread t = new Thread(() => rfs.writestream(fs, q, pkt.filename, 0));   // len unknown, how to stop q?
                 t.IsBackground = true;
                 t.Start();
             }
@@ -104,8 +114,7 @@ namespace lazebird.rabbit.tftp
                     }
                     progress_display(s, s.blkno);
                 }
-            if (pkt.errmsg != null)
-                slog("!E: " + pkt.errmsg);
+            if (pkt.errmsg != null) slog("!E: " + pkt.errmsg); // parse error
             session_display(s);
             s.destroy();
             chash.Remove(r);

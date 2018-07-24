@@ -31,52 +31,46 @@ namespace lazebird.rabbit.tftp
             FileAlreadyExists = 6,
             NoSuchUser = 7
         }
-        public Opcodes op;
-        public string filename;
-        public string mode;
-        public int blksize;
-        public int timeout;
-        public int blkno;
-        public byte[] data;
-        public Errcodes errno;
-        public string errmsg;
+        public Opcodes op = 0;
+        public string filename = null;
+        public string mode = null;
+        public int blksize = 0;
+        public int timeout = 0;
+        public int blkno = 0;
+        public byte[] data = null;
+        public Errcodes errno = 0;
+        public string errmsg = null;
         public tftppkt()
         {
-            this.op = 0;
-            this.filename = null;
-            this.mode = null;
-            this.blksize = 0;
-            this.timeout = 0;
-            this.blkno = 0;
-            this.data = null;
-            this.errno = 0;
-            this.errmsg = null;
         }
-        public tftppkt(Opcodes op, string filename, string mode)    // req
+        public tftppkt(Opcodes op, string filename, string mode) : this()    // req
         {
             this.op = op;
             this.filename = filename;
             this.mode = mode;
         }
-
-        public tftppkt(Opcodes op, int blkno, byte[] data)  // data
+        public tftppkt(Opcodes op, int blkno, byte[] data) : this()   // data
         {
             this.op = op;
             this.blkno = blkno;
             this.data = data;
         }
-
-        public tftppkt(Opcodes op, int blkno)   // ack
+        public tftppkt(Opcodes op, int blkno) : this()    // ack
         {
             this.op = op;
             this.blkno = blkno;
         }
-
-        public tftppkt(Opcodes op, Errcodes errno, string errmsg)    // err
+        public tftppkt(Opcodes op, Errcodes errno, string errmsg) : this()   // err
         {
             this.op = op;
             this.errno = errno;
             this.errmsg = errmsg;
+        }
+        public tftppkt(Opcodes op, int timeout, int blksize) : this()    // oack
+        {
+            this.op = op;
+            this.timeout = timeout;
+            this.blksize = blksize;
         }
         bool parse_opt(string name, string val)
         {
@@ -90,56 +84,56 @@ namespace lazebird.rabbit.tftp
         }
         public bool parse(byte[] buf)
         {
-            //try
-            //{
-            op = (Opcodes)buf[1];
-            if (op == Opcodes.Read || op == Opcodes.Write)
+            try
             {
-                int pos = 2;
-                int end;
-                end = Array.FindIndex(buf, pos, (x) => x == 0);
-                filename = Encoding.Default.GetString(buf, pos, end - pos);
-                pos = end + 1;
-                end = Array.FindIndex(buf, pos, (x) => x == 0);
-                mode = Encoding.Default.GetString(buf, pos, end - pos);
-                pos = end + 1;
-                while (pos < buf.Length)
+                op = (Opcodes)buf[1];
+                if (op == Opcodes.Read || op == Opcodes.Write)
                 {
+                    int pos = 2;
+                    int end;
                     end = Array.FindIndex(buf, pos, (x) => x == 0);
-                    string optname = Encoding.Default.GetString(buf, pos, end - pos);
+                    filename = Encoding.Default.GetString(buf, pos, end - pos);
                     pos = end + 1;
                     end = Array.FindIndex(buf, pos, (x) => x == 0);
-                    string optval = Encoding.Default.GetString(buf, pos, end - pos);
+                    mode = Encoding.Default.GetString(buf, pos, end - pos);
                     pos = end + 1;
-                    parse_opt(optname, optval);
+                    while (pos < buf.Length)
+                    {
+                        end = Array.FindIndex(buf, pos, (x) => x == 0);
+                        string optname = Encoding.Default.GetString(buf, pos, end - pos);
+                        pos = end + 1;
+                        end = Array.FindIndex(buf, pos, (x) => x == 0);
+                        string optval = Encoding.Default.GetString(buf, pos, end - pos);
+                        pos = end + 1;
+                        parse_opt(optname, optval);
+                    }
+                    filename = "/" + filename;
+                    return true;
                 }
-                filename = "/" + filename;
+                else if (op == Opcodes.Data)
+                {
+                    blkno = buf[2] << 8 | buf[3];
+                    data = new byte[buf.Length - 4];
+                    Array.Copy(buf, 4, data, 0, buf.Length - 4);
+                }
+                else if (op == Opcodes.Ack)
+                {
+                    blkno = buf[2] << 8 | buf[3];
+                }
+                else if (op == Opcodes.Error)
+                {
+                    errno = (Errcodes)(buf[2] << 8 | buf[3]);
+                    errmsg = Encoding.Default.GetString(buf, 4, buf.Length - 5);
+                }
+                else
+                    return false;
                 return true;
             }
-            else if (op == Opcodes.Data)
+            catch (Exception e)
             {
-                blkno = buf[2] << 8 | buf[3];
-                data = new byte[buf.Length - 4];
-                Array.Copy(buf, 4, data, 0, buf.Length - 4);
-            }
-            else if (op == Opcodes.Ack)
-            {
-                blkno = buf[2] << 8 | buf[3];
-            }
-            else if (op == Opcodes.Error)
-            {
-                errno = (Errcodes)(buf[2] << 8 | buf[3]);
-                errmsg = Encoding.Default.GetString(buf, 4, buf.Length - 5);
-            }
-            else
+                errmsg = e.ToString();
                 return false;
-            return true;
-            //}
-            //catch (Exception e)
-            //{
-            //    errmsg = e.ToString();
-            //    return false;
-            //}
+            }
         }
         public byte[] pack()
         {
