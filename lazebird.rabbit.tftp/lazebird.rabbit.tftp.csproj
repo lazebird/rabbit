@@ -41,7 +41,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="lazebird.rabbit.tftp.nuspec" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lazebird.rabbit.fs\lazebird.rabbit.fs.csproj">
