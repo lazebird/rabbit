@@ -125,10 +125,10 @@
     <value>地址</value>
   </data>
   <data name="text_addr.Location" type="System.Drawing.Point, System.Drawing">
-    <value>80, 14</value>
+    <value>80, 10</value>
   </data>
   <data name="text_addr.Size" type="System.Drawing.Size, System.Drawing">
-    <value>671, 14</value>
+    <value>576, 14</value>
   </data>
   <data name="label_interval.Size" type="System.Drawing.Size, System.Drawing">
     <value>53, 16</value>
@@ -137,10 +137,10 @@
     <value>间隔(ms)</value>
   </data>
   <data name="text_interval.Location" type="System.Drawing.Point, System.Drawing">
-    <value>80, 55</value>
+    <value>80, 40</value>
   </data>
   <data name="text_interval.Size" type="System.Drawing.Size, System.Drawing">
-    <value>671, 14</value>
+    <value>576, 14</value>
   </data>
   <data name="label_count.Size" type="System.Drawing.Size, System.Drawing">
     <value>30, 16</value>
@@ -149,19 +149,19 @@
     <value>次数</value>
   </data>
   <data name="text_count.Location" type="System.Drawing.Point, System.Drawing">
-    <value>80, 96</value>
+    <value>80, 70</value>
   </data>
   <data name="text_count.Size" type="System.Drawing.Size, System.Drawing">
-    <value>671, 14</value>
+    <value>576, 14</value>
   </data>
   <data name="btn_ping_log.Text" xml:space="preserve">
     <value>日志</value>
   </data>
   <data name="text_logpath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>80, 140</value>
+    <value>80, 100</value>
   </data>
   <data name="text_logpath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>671, 14</value>
+    <value>576, 14</value>
   </data>
   <data name="btn_ping.Text" xml:space="preserve">
     <value>开始</value>
@@ -170,7 +170,7 @@
     <value>开始</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 321</value>
+    <value>648, 336</value>
   </data>
   <data name="label_http_port.Text" xml:space="preserve">
     <value>端口</value>
@@ -181,16 +181,16 @@
   <data name="btn_httpd.Text" xml:space="preserve">
     <value>开始</value>
   </data>
-  <data name="label_tftptout.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_tftpdtout.Size" type="System.Drawing.Size, System.Drawing">
     <value>60, 16</value>
   </data>
-  <data name="label_tftptout.Text" xml:space="preserve">
+  <data name="label_tftpdtout.Text" xml:space="preserve">
     <value>超时(毫秒)</value>
   </data>
-  <data name="label_tftpretry.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_tftpdretry.Size" type="System.Drawing.Size, System.Drawing">
     <value>52, 16</value>
   </data>
-  <data name="label_tftpretry.Text" xml:space="preserve">
+  <data name="label_tftpdretry.Text" xml:space="preserve">
     <value>重传次数</value>
   </data>
   <data name="tftp_dirbtn1.Text" xml:space="preserve">
@@ -204,6 +204,39 @@
   </data>
   <data name="tftpd_btn.Text" xml:space="preserve">
     <value>开始</value>
+  </data>
+  <data name="label_tftpctout.Size" type="System.Drawing.Size, System.Drawing">
+    <value>60, 16</value>
+  </data>
+  <data name="label_tftpctout.Text" xml:space="preserve">
+    <value>超时(毫秒)</value>
+  </data>
+  <data name="label_tftpcretry.Size" type="System.Drawing.Size, System.Drawing">
+    <value>52, 16</value>
+  </data>
+  <data name="label_tftpcretry.Text" xml:space="preserve">
+    <value>重传次数</value>
+  </data>
+  <data name="label_tftpcblksize.Size" type="System.Drawing.Size, System.Drawing">
+    <value>41, 16</value>
+  </data>
+  <data name="label_tftpcblksize.Text" xml:space="preserve">
+    <value>块大小</value>
+  </data>
+  <data name="btn_tftpclfile.Text" xml:space="preserve">
+    <value>传文件</value>
+  </data>
+  <data name="label_tftpcrfile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>41, 16</value>
+  </data>
+  <data name="label_tftpcrfile.Text" xml:space="preserve">
+    <value>读文件</value>
+  </data>
+  <data name="btn_tftpcget.Text" xml:space="preserve">
+    <value>读</value>
+  </data>
+  <data name="btn_tftpcput.Text" xml:space="preserve">
+    <value>传</value>
   </data>
   <data name="ftp_dirbtn1.Text" xml:space="preserve">
     <value>目录1</value>

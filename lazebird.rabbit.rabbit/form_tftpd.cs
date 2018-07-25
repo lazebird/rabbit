@@ -9,7 +9,7 @@ namespace lazebird.rabbit.rabbit
     {
         rtftpd tftpd;
         rlog tftpdlog;
-        void init_form_tftp()
+        void init_form_tftpd()
         {
             tftpdlog = new rlog(tftpd_output);
             tftpd = new rtftpd(tftpd_log_func);
@@ -51,7 +51,7 @@ namespace lazebird.rabbit.rabbit
             {
                 tftpdlog.clear();
                 ((Button)btnhash["tftpd_btn"]).Text = Language.trans("停止");
-                tftpd.start(69, int.Parse(((TextBox)texthash["tftp_timeout"]).Text), int.Parse(((TextBox)texthash["tftp_retry"]).Text));
+                tftpd.start(69, int.Parse(((TextBox)texthash["tftpd_timeout"]).Text), int.Parse(((TextBox)texthash["tftpd_retry"]).Text));
                 foreach (string key in texthash.Keys)
                 {
                     if (key.Contains("tftp_dir"))

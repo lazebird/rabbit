@@ -41,10 +41,10 @@
     <Setting Name="tftp_dir3" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="tftp_timeout" Type="System.String" Scope="User">
+    <Setting Name="tftpd_timeout" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="tftp_retry" Type="System.String" Scope="User">
+    <Setting Name="tftpd_retry" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="tftpd_btn" Type="System.String" Scope="User">
@@ -57,6 +57,18 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="lang" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="tftpc_timeout" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="tftpc_retry" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="tftpc_blksize" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="tftpc_addr" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

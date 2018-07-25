@@ -62,8 +62,9 @@ namespace lazebird.rabbit.tftp
                     t.IsBackground = true;
                     t.Start();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    slog("!E: proc " + e.ToString());
                     return false;
                 }
             }
@@ -147,14 +148,21 @@ namespace lazebird.rabbit.tftp
         }
         public void add_dir(string path)
         {
-            if (path == null || path == "")
-                return;
-            if (rootdir == "")
-                rootdir = path + "/";
-            DirectoryInfo dir = new DirectoryInfo(path);
-            foreach (FileInfo f in dir.GetFiles())
+            try
             {
-                rfs.addfile(fhash, "/", f.FullName);
+                if (path == null || path == "")
+                    return;
+                if (rootdir == "")
+                    rootdir = path + "/";
+                DirectoryInfo dir = new DirectoryInfo(path);
+                foreach (FileInfo f in dir.GetFiles())
+                {
+                    rfs.addfile(fhash, "/", f.FullName);
+                }
+            }
+            catch (Exception e)
+            {
+                slog("!E: " + e.Message);
             }
         }
         public void del_dir(string path)

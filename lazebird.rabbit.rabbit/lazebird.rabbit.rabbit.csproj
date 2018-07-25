@@ -114,7 +114,10 @@
     <Compile Include="form_setting.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="form_tftp.cs">
+    <Compile Include="form_tftpc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="form_tftpd.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="lang.cs" />

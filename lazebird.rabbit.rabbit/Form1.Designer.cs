@@ -57,10 +57,10 @@
             this.btn_httpd = new System.Windows.Forms.Button();
             this.httpd_output = new System.Windows.Forms.ListBox();
             this.TFTPD = new System.Windows.Forms.TabPage();
-            this.label_tftptout = new System.Windows.Forms.Label();
-            this.text_tftptout = new System.Windows.Forms.TextBox();
-            this.label_tftpretry = new System.Windows.Forms.Label();
-            this.text_tftpretry = new System.Windows.Forms.TextBox();
+            this.label_tftpdtout = new System.Windows.Forms.Label();
+            this.text_tftpdtout = new System.Windows.Forms.TextBox();
+            this.label_tftpdretry = new System.Windows.Forms.Label();
+            this.text_tftpdretry = new System.Windows.Forms.TextBox();
             this.tftp_dirtext1 = new System.Windows.Forms.TextBox();
             this.tftp_dirbtn1 = new System.Windows.Forms.Button();
             this.tftp_dirtext2 = new System.Windows.Forms.TextBox();
@@ -69,6 +69,22 @@
             this.tftp_dirbtn3 = new System.Windows.Forms.Button();
             this.tftpd_btn = new System.Windows.Forms.Button();
             this.tftpd_output = new System.Windows.Forms.ListBox();
+            this.TFTPC = new System.Windows.Forms.TabPage();
+            this.label_tftpcaddr = new System.Windows.Forms.Label();
+            this.text_tftpcaddr = new System.Windows.Forms.TextBox();
+            this.label_tftpctout = new System.Windows.Forms.Label();
+            this.text_tftpctout = new System.Windows.Forms.TextBox();
+            this.label_tftpcretry = new System.Windows.Forms.Label();
+            this.text_tftpcretry = new System.Windows.Forms.TextBox();
+            this.label_tftpcblksize = new System.Windows.Forms.Label();
+            this.text_tftpcblksize = new System.Windows.Forms.TextBox();
+            this.btn_tftpclfile = new System.Windows.Forms.Button();
+            this.text_tftpclfile = new System.Windows.Forms.TextBox();
+            this.label_tftpcrfile = new System.Windows.Forms.Label();
+            this.text_tftpcrfile = new System.Windows.Forms.TextBox();
+            this.btn_tftpcget = new System.Windows.Forms.Button();
+            this.btn_tftpcput = new System.Windows.Forms.Button();
+            this.tftpc_output = new System.Windows.Forms.ListBox();
             this.FTPD = new System.Windows.Forms.TabPage();
             this.ftp_dirtext1 = new System.Windows.Forms.TextBox();
             this.ftp_dirbtn1 = new System.Windows.Forms.Button();
@@ -106,6 +122,7 @@
             this.Scan.SuspendLayout();
             this.HTTPD.SuspendLayout();
             this.TFTPD.SuspendLayout();
+            this.TFTPC.SuspendLayout();
             this.FTPD.SuspendLayout();
             this.DHCPD.SuspendLayout();
             this.Setting.SuspendLayout();
@@ -131,6 +148,7 @@
             this.tabs.Controls.Add(this.Scan);
             this.tabs.Controls.Add(this.HTTPD);
             this.tabs.Controls.Add(this.TFTPD);
+            this.tabs.Controls.Add(this.TFTPC);
             this.tabs.Controls.Add(this.FTPD);
             this.tabs.Controls.Add(this.DHCPD);
             this.tabs.Controls.Add(this.Setting);
@@ -357,10 +375,10 @@
             // TFTPD
             // 
             this.TFTPD.BackColor = System.Drawing.Color.DimGray;
-            this.TFTPD.Controls.Add(this.label_tftptout);
-            this.TFTPD.Controls.Add(this.text_tftptout);
-            this.TFTPD.Controls.Add(this.label_tftpretry);
-            this.TFTPD.Controls.Add(this.text_tftpretry);
+            this.TFTPD.Controls.Add(this.label_tftpdtout);
+            this.TFTPD.Controls.Add(this.text_tftpdtout);
+            this.TFTPD.Controls.Add(this.label_tftpdretry);
+            this.TFTPD.Controls.Add(this.text_tftpdretry);
             this.TFTPD.Controls.Add(this.tftp_dirtext1);
             this.TFTPD.Controls.Add(this.tftp_dirbtn1);
             this.TFTPD.Controls.Add(this.tftp_dirtext2);
@@ -373,31 +391,31 @@
             resources.ApplyResources(this.TFTPD, "TFTPD");
             this.TFTPD.Name = "TFTPD";
             // 
-            // label_tftptout
+            // label_tftpdtout
             // 
-            resources.ApplyResources(this.label_tftptout, "label_tftptout");
-            this.label_tftptout.Name = "label_tftptout";
+            resources.ApplyResources(this.label_tftpdtout, "label_tftpdtout");
+            this.label_tftpdtout.Name = "label_tftpdtout";
             // 
-            // text_tftptout
+            // text_tftpdtout
             // 
-            resources.ApplyResources(this.text_tftptout, "text_tftptout");
-            this.text_tftptout.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.text_tftptout.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.text_tftptout.ForeColor = System.Drawing.Color.White;
-            this.text_tftptout.Name = "text_tftptout";
+            resources.ApplyResources(this.text_tftpdtout, "text_tftpdtout");
+            this.text_tftpdtout.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_tftpdtout.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_tftpdtout.ForeColor = System.Drawing.Color.White;
+            this.text_tftpdtout.Name = "text_tftpdtout";
             // 
-            // label_tftpretry
+            // label_tftpdretry
             // 
-            resources.ApplyResources(this.label_tftpretry, "label_tftpretry");
-            this.label_tftpretry.Name = "label_tftpretry";
+            resources.ApplyResources(this.label_tftpdretry, "label_tftpdretry");
+            this.label_tftpdretry.Name = "label_tftpdretry";
             // 
-            // text_tftpretry
+            // text_tftpdretry
             // 
-            resources.ApplyResources(this.text_tftpretry, "text_tftpretry");
-            this.text_tftpretry.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.text_tftpretry.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.text_tftpretry.ForeColor = System.Drawing.Color.White;
-            this.text_tftpretry.Name = "text_tftpretry";
+            resources.ApplyResources(this.text_tftpdretry, "text_tftpdretry");
+            this.text_tftpdretry.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_tftpdretry.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_tftpdretry.ForeColor = System.Drawing.Color.White;
+            this.text_tftpdretry.Name = "text_tftpdretry";
             // 
             // tftp_dirtext1
             // 
@@ -463,6 +481,134 @@
             this.tftpd_output.ForeColor = System.Drawing.Color.White;
             this.tftpd_output.FormattingEnabled = true;
             this.tftpd_output.Name = "tftpd_output";
+            // 
+            // TFTPC
+            // 
+            this.TFTPC.BackColor = System.Drawing.Color.DimGray;
+            this.TFTPC.Controls.Add(this.label_tftpcaddr);
+            this.TFTPC.Controls.Add(this.text_tftpcaddr);
+            this.TFTPC.Controls.Add(this.label_tftpctout);
+            this.TFTPC.Controls.Add(this.text_tftpctout);
+            this.TFTPC.Controls.Add(this.label_tftpcretry);
+            this.TFTPC.Controls.Add(this.text_tftpcretry);
+            this.TFTPC.Controls.Add(this.label_tftpcblksize);
+            this.TFTPC.Controls.Add(this.text_tftpcblksize);
+            this.TFTPC.Controls.Add(this.btn_tftpclfile);
+            this.TFTPC.Controls.Add(this.text_tftpclfile);
+            this.TFTPC.Controls.Add(this.label_tftpcrfile);
+            this.TFTPC.Controls.Add(this.text_tftpcrfile);
+            this.TFTPC.Controls.Add(this.btn_tftpcget);
+            this.TFTPC.Controls.Add(this.btn_tftpcput);
+            this.TFTPC.Controls.Add(this.tftpc_output);
+            this.TFTPC.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.TFTPC, "TFTPC");
+            this.TFTPC.Name = "TFTPC";
+            // 
+            // label_tftpcaddr
+            // 
+            resources.ApplyResources(this.label_tftpcaddr, "label_tftpcaddr");
+            this.label_tftpcaddr.Name = "label_tftpcaddr";
+            // 
+            // text_tftpcaddr
+            // 
+            resources.ApplyResources(this.text_tftpcaddr, "text_tftpcaddr");
+            this.text_tftpcaddr.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_tftpcaddr.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_tftpcaddr.ForeColor = System.Drawing.Color.White;
+            this.text_tftpcaddr.Name = "text_tftpcaddr";
+            // 
+            // label_tftpctout
+            // 
+            resources.ApplyResources(this.label_tftpctout, "label_tftpctout");
+            this.label_tftpctout.Name = "label_tftpctout";
+            // 
+            // text_tftpctout
+            // 
+            resources.ApplyResources(this.text_tftpctout, "text_tftpctout");
+            this.text_tftpctout.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_tftpctout.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_tftpctout.ForeColor = System.Drawing.Color.White;
+            this.text_tftpctout.Name = "text_tftpctout";
+            // 
+            // label_tftpcretry
+            // 
+            resources.ApplyResources(this.label_tftpcretry, "label_tftpcretry");
+            this.label_tftpcretry.Name = "label_tftpcretry";
+            // 
+            // text_tftpcretry
+            // 
+            resources.ApplyResources(this.text_tftpcretry, "text_tftpcretry");
+            this.text_tftpcretry.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_tftpcretry.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_tftpcretry.ForeColor = System.Drawing.Color.White;
+            this.text_tftpcretry.Name = "text_tftpcretry";
+            // 
+            // label_tftpcblksize
+            // 
+            resources.ApplyResources(this.label_tftpcblksize, "label_tftpcblksize");
+            this.label_tftpcblksize.Name = "label_tftpcblksize";
+            // 
+            // text_tftpcblksize
+            // 
+            resources.ApplyResources(this.text_tftpcblksize, "text_tftpcblksize");
+            this.text_tftpcblksize.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_tftpcblksize.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_tftpcblksize.ForeColor = System.Drawing.Color.White;
+            this.text_tftpcblksize.Name = "text_tftpcblksize";
+            // 
+            // btn_tftpclfile
+            // 
+            this.btn_tftpclfile.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_tftpclfile.FlatAppearance.BorderSize = 0;
+            resources.ApplyResources(this.btn_tftpclfile, "btn_tftpclfile");
+            this.btn_tftpclfile.Name = "btn_tftpclfile";
+            this.btn_tftpclfile.UseVisualStyleBackColor = false;
+            // 
+            // text_tftpclfile
+            // 
+            resources.ApplyResources(this.text_tftpclfile, "text_tftpclfile");
+            this.text_tftpclfile.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_tftpclfile.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_tftpclfile.ForeColor = System.Drawing.Color.White;
+            this.text_tftpclfile.Name = "text_tftpclfile";
+            // 
+            // label_tftpcrfile
+            // 
+            resources.ApplyResources(this.label_tftpcrfile, "label_tftpcrfile");
+            this.label_tftpcrfile.Name = "label_tftpcrfile";
+            // 
+            // text_tftpcrfile
+            // 
+            resources.ApplyResources(this.text_tftpcrfile, "text_tftpcrfile");
+            this.text_tftpcrfile.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_tftpcrfile.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_tftpcrfile.ForeColor = System.Drawing.Color.White;
+            this.text_tftpcrfile.Name = "text_tftpcrfile";
+            // 
+            // btn_tftpcget
+            // 
+            resources.ApplyResources(this.btn_tftpcget, "btn_tftpcget");
+            this.btn_tftpcget.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_tftpcget.FlatAppearance.BorderSize = 0;
+            this.btn_tftpcget.Name = "btn_tftpcget";
+            this.btn_tftpcget.UseVisualStyleBackColor = false;
+            // 
+            // btn_tftpcput
+            // 
+            resources.ApplyResources(this.btn_tftpcput, "btn_tftpcput");
+            this.btn_tftpcput.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_tftpcput.FlatAppearance.BorderSize = 0;
+            this.btn_tftpcput.Name = "btn_tftpcput";
+            this.btn_tftpcput.UseVisualStyleBackColor = false;
+            // 
+            // tftpc_output
+            // 
+            resources.ApplyResources(this.tftpc_output, "tftpc_output");
+            this.tftpc_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.tftpc_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tftpc_output.ForeColor = System.Drawing.Color.White;
+            this.tftpc_output.FormattingEnabled = true;
+            this.tftpc_output.Name = "tftpc_output";
             // 
             // FTPD
             // 
@@ -718,11 +864,11 @@
             // 
             // setting_output
             // 
+            resources.ApplyResources(this.setting_output, "setting_output");
             this.setting_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.setting_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.setting_output.ForeColor = System.Drawing.Color.White;
             this.setting_output.FormattingEnabled = true;
-            resources.ApplyResources(this.setting_output, "setting_output");
             this.setting_output.Name = "setting_output";
             // 
             // Form1
@@ -746,6 +892,8 @@
             this.HTTPD.PerformLayout();
             this.TFTPD.ResumeLayout(false);
             this.TFTPD.PerformLayout();
+            this.TFTPC.ResumeLayout(false);
+            this.TFTPC.PerformLayout();
             this.FTPD.ResumeLayout(false);
             this.FTPD.PerformLayout();
             this.DHCPD.ResumeLayout(false);
@@ -824,10 +972,26 @@
         private System.Windows.Forms.LinkLabel prjurl;
         private System.Windows.Forms.Label hp_label;
         private System.Windows.Forms.ListBox ftpd_output;
-        private System.Windows.Forms.Label label_tftptout;
-        private System.Windows.Forms.TextBox text_tftptout;
-        private System.Windows.Forms.Label label_tftpretry;
-        private System.Windows.Forms.TextBox text_tftpretry;
+        private System.Windows.Forms.Label label_tftpdtout;
+        private System.Windows.Forms.TextBox text_tftpdtout;
+        private System.Windows.Forms.Label label_tftpdretry;
+        private System.Windows.Forms.TextBox text_tftpdretry;
+        private System.Windows.Forms.TabPage TFTPC;
+        private System.Windows.Forms.Label label_tftpctout;
+        private System.Windows.Forms.TextBox text_tftpctout;
+        private System.Windows.Forms.Label label_tftpcretry;
+        private System.Windows.Forms.TextBox text_tftpcretry;
+        private System.Windows.Forms.TextBox text_tftpcblksize;
+        private System.Windows.Forms.TextBox text_tftpclfile;
+        private System.Windows.Forms.Button btn_tftpclfile;
+        private System.Windows.Forms.TextBox text_tftpcrfile;
+        private System.Windows.Forms.Button btn_tftpcget;
+        private System.Windows.Forms.ListBox tftpc_output;
+        private System.Windows.Forms.Label label_tftpcblksize;
+        private System.Windows.Forms.Label label_tftpcrfile;
+        private System.Windows.Forms.Button btn_tftpcput;
+        private System.Windows.Forms.Label label_tftpcaddr;
+        private System.Windows.Forms.TextBox text_tftpcaddr;
     }
 }
 

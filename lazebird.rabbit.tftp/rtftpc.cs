@@ -42,26 +42,30 @@ namespace lazebird.rabbit.tftp
                     if (pkt.op == Opcodes.OAck) // oack for wrq/rrq
                     {
                         if (oper == "get")
+                        {
                             fs = new FileStream(localFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+                            s.set_file(Path.GetFileName(fs.Name), fs.Length, q, pkt.timeout, pkt.blksize);
+                            t = new Thread(() => rfs.writestream(fs, q, localFile));
+                        }
                         else
                         {
                             pkt.op = Opcodes.Ack; // change code to ack to reply a data pkt; too special
                             fs = new FileStream(localFile, FileMode.Open, FileAccess.Read);
+                            s.set_file(Path.GetFileName(fs.Name), fs.Length, q, pkt.timeout, pkt.blksize);
+                            t = new Thread(() => rfs.readstream(fs, q, s.blksize));
                         }
-                        s.set_file(fs.Name, fs.Length, q, pkt.timeout, pkt.blksize);
-                        t = new Thread(() => rfs.readstream(fs, q, s.blksize));
                     }
                     else if (pkt.op == Opcodes.Data) // ack for rrq
                     {
                         s.blkno = 1; // may be a oack with no blkno, may be a data with blkno 1
                         fs = new FileStream(localFile, FileMode.Create, FileAccess.Write, FileShare.Read);
-                        s.set_file(fs.Name, fs.Length, q, 0, 0);
+                        s.set_file(Path.GetFileName(fs.Name), fs.Length, q, 0, 0);
                         t = new Thread(() => rfs.writestream(fs, q, localFile));
                     }
                     else if (pkt.op == Opcodes.Ack) // ack for wrq
                     {
                         fs = new FileStream(localFile, FileMode.Open, FileAccess.Read);
-                        s.set_file(fs.Name, fs.Length, q, 0, 0);
+                        s.set_file(Path.GetFileName(fs.Name), fs.Length, q, 0, 0);
                         t = new Thread(() => rfs.readstream(fs, q, s.blksize));
                     }
                     if (t != null)
@@ -72,8 +76,9 @@ namespace lazebird.rabbit.tftp
                 }
                 return s.reply(pkt);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                slog("!E: proc " + e.ToString());
                 return false;
             }
 
@@ -81,11 +86,23 @@ namespace lazebird.rabbit.tftp
         public void get(string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)
         {
             this.localFile = localFile;
-            tftpsession s = new tftpsession(new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
-            byte[] buf = new tftppkt(Opcodes.Read, remoteFile, tftpmode.ToString(), timeout, blksize).pack();
-            s.uc.Send(buf, buf.Length, s.r);
-            s.pkt = buf;    // retry rrq
-            tftppkt pkt = new tftppkt();
+            tftpsession s;
+            tftppkt pkt;
+            byte[] buf;
+            try
+            {
+                s = new tftpsession(new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
+                buf = new tftppkt(Opcodes.Read, remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
+                s.uc.Send(buf, buf.Length, s.r);
+                s.pkt = buf;    // retry rrq
+                pkt = new tftppkt();
+            }
+            catch (Exception e)
+            {
+                slog("!E: get " + e.ToString());
+                return;
+            }
+
             while (true)
             {
                 try
@@ -97,18 +114,31 @@ namespace lazebird.rabbit.tftp
                 {
                     if (!s.retry()) break;
                 }
+                s.progress_display(log);
             }
             if (pkt.errmsg != null) slog("!E: " + pkt.errmsg); // parse error
+            s.session_display(log);
             s.destroy();
         }
         public void put(string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)
         {
             this.localFile = localFile;
-            tftpsession s = new tftpsession(new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
-            byte[] buf = new tftppkt(Opcodes.Write, remoteFile, tftpmode.ToString(), timeout, blksize).pack();
-            s.uc.Send(buf, buf.Length, s.r);
-            s.pkt = buf;    // retry wrq
-            tftppkt pkt = new tftppkt();
+            tftpsession s;
+            tftppkt pkt;
+            byte[] buf;
+            try
+            {
+                s = new tftpsession(new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
+                buf = new tftppkt(Opcodes.Write, remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
+                s.uc.Send(buf, buf.Length, s.r);
+                s.pkt = buf;    // retry wrq
+                pkt = new tftppkt();
+            }
+            catch (Exception e)
+            {
+                slog("!E: put " + e.ToString());
+                return;
+            }
             while (true)
             {
                 try

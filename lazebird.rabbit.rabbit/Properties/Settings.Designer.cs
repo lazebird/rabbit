@@ -182,24 +182,24 @@ namespace lazebird.rabbit.rabbit.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftp_timeout {
+        public string tftpd_timeout {
             get {
-                return ((string)(this["tftp_timeout"]));
+                return ((string)(this["tftpd_timeout"]));
             }
             set {
-                this["tftp_timeout"] = value;
+                this["tftpd_timeout"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftp_retry {
+        public string tftpd_retry {
             get {
-                return ((string)(this["tftp_retry"]));
+                return ((string)(this["tftpd_retry"]));
             }
             set {
-                this["tftp_retry"] = value;
+                this["tftpd_retry"] = value;
             }
         }
         
@@ -248,6 +248,54 @@ namespace lazebird.rabbit.rabbit.Properties {
             }
             set {
                 this["lang"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpc_timeout {
+            get {
+                return ((string)(this["tftpc_timeout"]));
+            }
+            set {
+                this["tftpc_timeout"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpc_retry {
+            get {
+                return ((string)(this["tftpc_retry"]));
+            }
+            set {
+                this["tftpc_retry"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpc_blksize {
+            get {
+                return ((string)(this["tftpc_blksize"]));
+            }
+            set {
+                this["tftpc_blksize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpc_addr {
+            get {
+                return ((string)(this["tftpc_addr"]));
+            }
+            set {
+                this["tftpc_addr"] = value;
             }
         }
     }

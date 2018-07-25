@@ -114,7 +114,6 @@ namespace lazebird.rabbit.tftp
                         pos = parse_string(buf, pos, ref optval);
                         parse_opt(optname, optval);
                     }
-                    return true;
                 }
                 else if (op == Opcodes.Data)
                 {
@@ -130,6 +129,18 @@ namespace lazebird.rabbit.tftp
                 {
                     errno = (Errcodes)(buf[2] << 8 | buf[3]);
                     errmsg = Encoding.Default.GetString(buf, 4, buf.Length - 5);
+                }
+                else if (op == Opcodes.OAck)
+                {
+                    int pos = 2;
+                    string optname = null;
+                    string optval = null;
+                    while (pos < buf.Length)
+                    {
+                        pos = parse_string(buf, pos, ref optname);
+                        pos = parse_string(buf, pos, ref optval);
+                        parse_opt(optname, optval);
+                    }
                 }
                 else
                     return false;

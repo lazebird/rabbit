@@ -18,7 +18,8 @@ namespace lazebird.rabbit.rabbit
             init_form_ping();
             init_form_scan();
             init_form_http();
-            init_form_tftp();
+            init_form_tftpd();
+            init_form_tftpc();
             init_form_setting();
             init_hash();
         }
@@ -63,13 +64,17 @@ namespace lazebird.rabbit.rabbit
             texthash.Add("ping_logfile", text_logpath);
             texthash.Add("http_port", text_http_port);
             texthash.Add("http_dir", text_http_dir);
-            texthash.Add("tftp_timeout", text_tftptout);
-            texthash.Add("tftp_retry", text_tftpretry);
+            texthash.Add("tftpd_timeout", text_tftpdtout);
+            texthash.Add("tftpd_retry", text_tftpdretry);
             texthash.Add("tftp_dir1", tftp_dirtext1);
             texthash.Add("tftp_dir2", tftp_dirtext2);
             texthash.Add("tftp_dir3", tftp_dirtext3);
             texthash.Add("scan_ipstart", text_scanstart);
             texthash.Add("scan_ipend", text_scanend);
+            texthash.Add("tftpc_addr", text_tftpcaddr);
+            texthash.Add("tftpc_timeout", text_tftpctout);
+            texthash.Add("tftpc_retry", text_tftpcretry);
+            texthash.Add("tftpc_blksize", text_tftpcblksize);
             btnhash.Add("ping_btn", btn_ping);
             indexhash.Add("ping_btn", 0);
             btnhash.Add("httpd_btn", btn_httpd);

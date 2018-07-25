@@ -628,7 +628,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 324</value>
+    <value>648, 345</value>
   </data>
   <data name="fp_scan.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
@@ -873,106 +873,106 @@
   <data name="&gt;&gt;HTTPD.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="label_tftptout.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_tftpdtout.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label_tftptout.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="label_tftpdtout.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 20</value>
   </data>
-  <data name="label_tftptout.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_tftpdtout.Size" type="System.Drawing.Size, System.Drawing">
     <value>74, 16</value>
   </data>
-  <data name="label_tftptout.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_tftpdtout.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
   </data>
-  <data name="label_tftptout.Text" xml:space="preserve">
+  <data name="label_tftpdtout.Text" xml:space="preserve">
     <value>Timeout(ms)</value>
   </data>
-  <data name="&gt;&gt;label_tftptout.Name" xml:space="preserve">
-    <value>label_tftptout</value>
+  <data name="&gt;&gt;label_tftpdtout.Name" xml:space="preserve">
+    <value>label_tftpdtout</value>
   </data>
-  <data name="&gt;&gt;label_tftptout.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_tftpdtout.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label_tftptout.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_tftpdtout.Parent" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;label_tftptout.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label_tftpdtout.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="text_tftptout.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+  <data name="text_tftpdtout.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="text_tftptout.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="text_tftpdtout.Location" type="System.Drawing.Point, System.Drawing">
     <value>92, 20</value>
   </data>
-  <data name="text_tftptout.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="text_tftpdtout.Size" type="System.Drawing.Size, System.Drawing">
     <value>563, 14</value>
   </data>
-  <data name="text_tftptout.TabIndex" type="System.Int32, mscorlib">
+  <data name="text_tftpdtout.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
   </data>
-  <data name="&gt;&gt;text_tftptout.Name" xml:space="preserve">
-    <value>text_tftptout</value>
+  <data name="&gt;&gt;text_tftpdtout.Name" xml:space="preserve">
+    <value>text_tftpdtout</value>
   </data>
-  <data name="&gt;&gt;text_tftptout.Type" xml:space="preserve">
+  <data name="&gt;&gt;text_tftpdtout.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;text_tftptout.Parent" xml:space="preserve">
+  <data name="&gt;&gt;text_tftpdtout.Parent" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;text_tftptout.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;text_tftpdtout.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="label_tftpretry.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_tftpdretry.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label_tftpretry.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="label_tftpdretry.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 50</value>
   </data>
-  <data name="label_tftpretry.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_tftpdretry.Size" type="System.Drawing.Size, System.Drawing">
     <value>61, 16</value>
   </data>
-  <data name="label_tftpretry.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_tftpdretry.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
   </data>
-  <data name="label_tftpretry.Text" xml:space="preserve">
+  <data name="label_tftpdretry.Text" xml:space="preserve">
     <value>Max Retry</value>
   </data>
-  <data name="&gt;&gt;label_tftpretry.Name" xml:space="preserve">
-    <value>label_tftpretry</value>
+  <data name="&gt;&gt;label_tftpdretry.Name" xml:space="preserve">
+    <value>label_tftpdretry</value>
   </data>
-  <data name="&gt;&gt;label_tftpretry.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_tftpdretry.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label_tftpretry.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_tftpdretry.Parent" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;label_tftpretry.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label_tftpdretry.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="text_tftpretry.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+  <data name="text_tftpdretry.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="text_tftpretry.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="text_tftpdretry.Location" type="System.Drawing.Point, System.Drawing">
     <value>92, 50</value>
   </data>
-  <data name="text_tftpretry.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="text_tftpdretry.Size" type="System.Drawing.Size, System.Drawing">
     <value>563, 14</value>
   </data>
-  <data name="text_tftpretry.TabIndex" type="System.Int32, mscorlib">
+  <data name="text_tftpdretry.TabIndex" type="System.Int32, mscorlib">
     <value>16</value>
   </data>
-  <data name="&gt;&gt;text_tftpretry.Name" xml:space="preserve">
-    <value>text_tftpretry</value>
+  <data name="&gt;&gt;text_tftpdretry.Name" xml:space="preserve">
+    <value>text_tftpdretry</value>
   </data>
-  <data name="&gt;&gt;text_tftpretry.Type" xml:space="preserve">
+  <data name="&gt;&gt;text_tftpdretry.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;text_tftpretry.Parent" xml:space="preserve">
+  <data name="&gt;&gt;text_tftpdretry.Parent" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;text_tftpretry.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;text_tftpdretry.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
   <data name="tftp_dirtext1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
@@ -1235,6 +1235,471 @@
   </data>
   <data name="&gt;&gt;TFTPD.ZOrder" xml:space="preserve">
     <value>3</value>
+  </data>
+  <data name="label_tftpcaddr.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_tftpcaddr.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_tftpcaddr.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 11</value>
+  </data>
+  <data name="label_tftpcaddr.Size" type="System.Drawing.Size, System.Drawing">
+    <value>18, 16</value>
+  </data>
+  <data name="label_tftpcaddr.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="label_tftpcaddr.Text" xml:space="preserve">
+    <value>IP</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcaddr.Name" xml:space="preserve">
+    <value>label_tftpcaddr</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcaddr.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcaddr.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcaddr.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="text_tftpcaddr.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="text_tftpcaddr.Location" type="System.Drawing.Point, System.Drawing">
+    <value>90, 11</value>
+  </data>
+  <data name="text_tftpcaddr.Size" type="System.Drawing.Size, System.Drawing">
+    <value>563, 14</value>
+  </data>
+  <data name="text_tftpcaddr.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcaddr.Name" xml:space="preserve">
+    <value>text_tftpcaddr</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcaddr.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcaddr.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcaddr.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="label_tftpctout.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_tftpctout.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_tftpctout.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 39</value>
+  </data>
+  <data name="label_tftpctout.Size" type="System.Drawing.Size, System.Drawing">
+    <value>74, 16</value>
+  </data>
+  <data name="label_tftpctout.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="label_tftpctout.Text" xml:space="preserve">
+    <value>Timeout(ms)</value>
+  </data>
+  <data name="&gt;&gt;label_tftpctout.Name" xml:space="preserve">
+    <value>label_tftpctout</value>
+  </data>
+  <data name="&gt;&gt;label_tftpctout.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_tftpctout.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;label_tftpctout.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="text_tftpctout.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="text_tftpctout.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 39</value>
+  </data>
+  <data name="text_tftpctout.Size" type="System.Drawing.Size, System.Drawing">
+    <value>563, 14</value>
+  </data>
+  <data name="text_tftpctout.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="&gt;&gt;text_tftpctout.Name" xml:space="preserve">
+    <value>text_tftpctout</value>
+  </data>
+  <data name="&gt;&gt;text_tftpctout.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_tftpctout.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;text_tftpctout.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="label_tftpcretry.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_tftpcretry.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_tftpcretry.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 69</value>
+  </data>
+  <data name="label_tftpcretry.Size" type="System.Drawing.Size, System.Drawing">
+    <value>61, 16</value>
+  </data>
+  <data name="label_tftpcretry.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="label_tftpcretry.Text" xml:space="preserve">
+    <value>Max Retry</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcretry.Name" xml:space="preserve">
+    <value>label_tftpcretry</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcretry.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcretry.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcretry.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="text_tftpcretry.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="text_tftpcretry.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 69</value>
+  </data>
+  <data name="text_tftpcretry.Size" type="System.Drawing.Size, System.Drawing">
+    <value>563, 14</value>
+  </data>
+  <data name="text_tftpcretry.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcretry.Name" xml:space="preserve">
+    <value>text_tftpcretry</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcretry.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcretry.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcretry.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="label_tftpcblksize.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_tftpcblksize.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_tftpcblksize.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 97</value>
+  </data>
+  <data name="label_tftpcblksize.Size" type="System.Drawing.Size, System.Drawing">
+    <value>60, 16</value>
+  </data>
+  <data name="label_tftpcblksize.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="label_tftpcblksize.Text" xml:space="preserve">
+    <value>Block Size</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcblksize.Name" xml:space="preserve">
+    <value>label_tftpcblksize</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcblksize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcblksize.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcblksize.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="text_tftpcblksize.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="text_tftpcblksize.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 99</value>
+  </data>
+  <data name="text_tftpcblksize.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="text_tftpcblksize.Size" type="System.Drawing.Size, System.Drawing">
+    <value>564, 14</value>
+  </data>
+  <data name="text_tftpcblksize.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcblksize.Name" xml:space="preserve">
+    <value>text_tftpcblksize</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcblksize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcblksize.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcblksize.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="btn_tftpclfile.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="btn_tftpclfile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_tftpclfile.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 129</value>
+  </data>
+  <data name="btn_tftpclfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="btn_tftpclfile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 20</value>
+  </data>
+  <data name="btn_tftpclfile.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="btn_tftpclfile.Text" xml:space="preserve">
+    <value>Put File</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpclfile.Name" xml:space="preserve">
+    <value>btn_tftpclfile</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpclfile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpclfile.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpclfile.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="text_tftpclfile.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="text_tftpclfile.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 129</value>
+  </data>
+  <data name="text_tftpclfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="text_tftpclfile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>482, 14</value>
+  </data>
+  <data name="text_tftpclfile.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;text_tftpclfile.Name" xml:space="preserve">
+    <value>text_tftpclfile</value>
+  </data>
+  <data name="&gt;&gt;text_tftpclfile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_tftpclfile.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;text_tftpclfile.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="label_tftpcrfile.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_tftpcrfile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_tftpcrfile.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 159</value>
+  </data>
+  <data name="label_tftpcrfile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 16</value>
+  </data>
+  <data name="label_tftpcrfile.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="label_tftpcrfile.Text" xml:space="preserve">
+    <value>Get File</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcrfile.Name" xml:space="preserve">
+    <value>label_tftpcrfile</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcrfile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcrfile.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;label_tftpcrfile.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="text_tftpcrfile.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="text_tftpcrfile.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 159</value>
+  </data>
+  <data name="text_tftpcrfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="text_tftpcrfile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>482, 14</value>
+  </data>
+  <data name="text_tftpcrfile.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcrfile.Name" xml:space="preserve">
+    <value>text_tftpcrfile</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcrfile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcrfile.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcrfile.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="btn_tftpcget.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="btn_tftpcget.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="btn_tftpcget.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_tftpcget.Location" type="System.Drawing.Point, System.Drawing">
+    <value>589, 157</value>
+  </data>
+  <data name="btn_tftpcget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="btn_tftpcget.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 20</value>
+  </data>
+  <data name="btn_tftpcget.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="btn_tftpcget.Text" xml:space="preserve">
+    <value>Get</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpcget.Name" xml:space="preserve">
+    <value>btn_tftpcget</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpcget.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpcget.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpcget.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="btn_tftpcput.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="btn_tftpcput.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="btn_tftpcput.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_tftpcput.Location" type="System.Drawing.Point, System.Drawing">
+    <value>589, 127</value>
+  </data>
+  <data name="btn_tftpcput.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="btn_tftpcput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 20</value>
+  </data>
+  <data name="btn_tftpcput.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="btn_tftpcput.Text" xml:space="preserve">
+    <value>Put</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpcput.Name" xml:space="preserve">
+    <value>btn_tftpcput</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpcput.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpcput.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;btn_tftpcput.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="tftpc_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="tftpc_output.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="tftpc_output.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 208</value>
+  </data>
+  <data name="tftpc_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="tftpc_output.Size" type="System.Drawing.Size, System.Drawing">
+    <value>648, 144</value>
+  </data>
+  <data name="tftpc_output.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="&gt;&gt;tftpc_output.Name" xml:space="preserve">
+    <value>tftpc_output</value>
+  </data>
+  <data name="&gt;&gt;tftpc_output.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tftpc_output.Parent" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;tftpc_output.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="TFTPC.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 25</value>
+  </data>
+  <data name="TFTPC.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="TFTPC.Size" type="System.Drawing.Size, System.Drawing">
+    <value>663, 353</value>
+  </data>
+  <data name="TFTPC.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="TFTPC.Text" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;TFTPC.Name" xml:space="preserve">
+    <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;TFTPC.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TFTPC.Parent" xml:space="preserve">
+    <value>tabs</value>
+  </data>
+  <data name="&gt;&gt;TFTPC.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="ftp_dirtext1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -1606,7 +2071,7 @@
     <value>tabs</value>
   </data>
   <data name="&gt;&gt;FTPD.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="dhcp_startlabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1939,7 +2404,7 @@
     <value>tabs</value>
   </data>
   <data name="&gt;&gt;DHCPD.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="hp_label.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2049,6 +2514,9 @@
   <data name="&gt;&gt;lang_cb.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="setting_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="setting_output.ItemHeight" type="System.Int32, mscorlib">
     <value>16</value>
   </data>
@@ -2101,7 +2569,7 @@
     <value>tabs</value>
   </data>
   <data name="&gt;&gt;Setting.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="tabs.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
