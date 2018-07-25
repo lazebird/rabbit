@@ -3,7 +3,7 @@ using System.Text;
 
 namespace lazebird.rabbit.tftp
 {
-    class tftppkt
+    public class tftppkt
     {
         public enum Opcodes
         {
@@ -50,6 +50,11 @@ namespace lazebird.rabbit.tftp
             this.filename = filename;
             this.mode = mode;
         }
+        public tftppkt(Opcodes op, string filename, string mode, int timeout, int blksize) : this(op, filename, mode)    // req + opt
+        {
+            this.timeout = timeout;
+            this.blksize = blksize;
+        }
         public tftppkt(Opcodes op, int blkno, byte[] data) : this()   // data
         {
             this.op = op;
@@ -73,6 +78,12 @@ namespace lazebird.rabbit.tftp
             this.timeout = timeout;
             this.blksize = blksize;
         }
+        int parse_string(byte[] buf, int pos, ref string val)
+        {
+            int end = Array.FindIndex(buf, pos, (x) => x == 0);
+            val = Encoding.Default.GetString(buf, pos, end - pos);
+            return end + 1;
+        }
         bool parse_opt(string name, string val)
         {
             if (name == "timeout")
@@ -87,28 +98,22 @@ namespace lazebird.rabbit.tftp
         {
             try
             {
+                this.timeout = this.blksize = 0; // reset 
                 op = (Opcodes)buf[1];
                 if (op == Opcodes.Read || op == Opcodes.Write)
                 {
                     int pos = 2;
-                    int end;
-                    end = Array.FindIndex(buf, pos, (x) => x == 0);
-                    filename = Encoding.Default.GetString(buf, pos, end - pos);
-                    pos = end + 1;
-                    end = Array.FindIndex(buf, pos, (x) => x == 0);
-                    mode = Encoding.Default.GetString(buf, pos, end - pos);
-                    pos = end + 1;
+                    pos = parse_string(buf, pos, ref filename);
+                    filepath = "/" + filename;
+                    pos = parse_string(buf, pos, ref mode);
+                    string optname = null;
+                    string optval = null;
                     while (pos < buf.Length)
                     {
-                        end = Array.FindIndex(buf, pos, (x) => x == 0);
-                        string optname = Encoding.Default.GetString(buf, pos, end - pos);
-                        pos = end + 1;
-                        end = Array.FindIndex(buf, pos, (x) => x == 0);
-                        string optval = Encoding.Default.GetString(buf, pos, end - pos);
-                        pos = end + 1;
+                        pos = parse_string(buf, pos, ref optname);
+                        pos = parse_string(buf, pos, ref optval);
                         parse_opt(optname, optval);
                     }
-                    filepath = "/" + filename;
                     return true;
                 }
                 else if (op == Opcodes.Data)
@@ -136,78 +141,75 @@ namespace lazebird.rabbit.tftp
                 return false;
             }
         }
+        int pack_string(ref byte[] buf, int pos, string s)
+        {
+            pos += Encoding.ASCII.GetBytes(s, 0, s.Length, buf, pos);
+            buf[pos++] = 0;
+            return s.Length + 1;
+        }
+        int pack_string(ref byte[] buf, int pos, string s1, string s2)
+        {
+            int len = pack_string(ref buf, pos, s1);
+            len += pack_string(ref buf, pos + len, s2);
+            return len;
+        }
         public byte[] pack()
         {
             byte[] buf = null;
+            int pos = 0;
             if (op == Opcodes.Read || op == Opcodes.Write)
             {
-                buf = new byte[mode.Length + filename.Length + 4];
-                int pos = 0;
+                int len = mode.Length + filename.Length + 4;
+                string timeoutstr = timeout.ToString();
+                if (timeout > 0) len += 7 + 1 + timeoutstr.Length + 1;
+                string blksizestr = blksize.ToString();
+                if (blksize > 0) len += 7 + 1 + blksizestr.Length + 1;
+                buf = new byte[len];
                 buf[pos++] = 0;
                 buf[pos++] = (byte)op;
-                pos += Encoding.ASCII.GetBytes(filename, 0, filename.Length, buf, pos);
-                buf[pos++] = 0;
-                pos += Encoding.ASCII.GetBytes(mode, 0, mode.Length, buf, pos);
-                buf[pos] = 0;
+                pos += pack_string(ref buf, pos, filename);
+                pos += pack_string(ref buf, pos, mode);
+                if (timeout > 0) pos += pack_string(ref buf, pos, "timeout", timeoutstr);
+                if (blksize > 0) pos += pack_string(ref buf, pos, "blksize", blksizestr);
             }
             else if (op == Opcodes.Data)
             {
                 buf = new byte[4 + data.Length];
-                buf[0] = 0;
-                buf[1] = (byte)Opcodes.Data;
-                buf[2] = (byte)((blkno >> 8) & 0xff);
-                buf[3] = (byte)(blkno & 0xff);
-                Array.Copy(data, 0, buf, 4, data.Length);
+                buf[pos++] = 0;
+                buf[pos++] = (byte)Opcodes.Data;
+                buf[pos++] = (byte)((blkno >> 8) & 0xff);
+                buf[pos++] = (byte)(blkno & 0xff);
+                Array.Copy(data, 0, buf, pos++, data.Length);
             }
             else if (op == Opcodes.Ack)
             {
                 buf = new byte[4];
-                buf[0] = 0;
-                buf[1] = (byte)Opcodes.Ack;
-                buf[2] = (byte)((blkno >> 8) & 0xff);
-                buf[3] = (byte)(blkno & 0xff);
+                buf[pos++] = 0;
+                buf[pos++] = (byte)Opcodes.Ack;
+                buf[pos++] = (byte)((blkno >> 8) & 0xff);
+                buf[pos++] = (byte)(blkno & 0xff);
             }
             else if (op == Opcodes.Error)
             {
                 buf = new byte[5 + errmsg.Length];
-                buf[0] = 0;
-                buf[1] = (byte)Opcodes.Error;
-                buf[2] = 0;
-                buf[3] = (byte)errno;
-                Encoding.ASCII.GetBytes(errmsg, 0, errmsg.Length, buf, 4);
-                buf[4 + errmsg.Length] = 0;
+                buf[pos++] = 0;
+                buf[pos++] = (byte)Opcodes.Error;
+                buf[pos++] = 0;
+                buf[pos++] = (byte)errno;
+                pos += pack_string(ref buf, pos, errmsg);
             }
             else if (op == Opcodes.OAck)
             {
                 int len = 2;
                 string timeoutstr = timeout.ToString();
-                if (timeout > 0)
-                {
-                    len += 7 + 1 + timeoutstr.Length + 1;
-                }
+                if (timeout > 0) len += 7 + 1 + timeoutstr.Length + 1;
                 string blksizestr = blksize.ToString();
-                if (blksize > 0)
-                {
-                    len += 7 + 1 + blksizestr.Length + 1;
-                }
+                if (blksize > 0) len += 7 + 1 + blksizestr.Length + 1;
                 buf = new byte[len];
-                int pos = 0;
                 buf[pos++] = 0;
                 buf[pos++] = (byte)Opcodes.OAck;
-                if (timeout > 0)
-                {
-                    pos += Encoding.ASCII.GetBytes("timeout", 0, 7, buf, pos);
-                    buf[pos++] = 0;
-                    pos += Encoding.ASCII.GetBytes(timeoutstr, 0, timeoutstr.Length, buf, pos);
-                    buf[pos++] = 0;
-                }
-                if (blksize > 0)
-                {
-                    pos += Encoding.ASCII.GetBytes("blksize", 0, 7, buf, pos);
-                    buf[pos++] = 0;
-                    pos += Encoding.ASCII.GetBytes(blksizestr, 0, blksizestr.Length, buf, pos);
-                    buf[pos++] = 0;
-                }
+                if (timeout > 0) pos += pack_string(ref buf, pos, "timeout", timeoutstr);
+                if (blksize > 0) pos += pack_string(ref buf, pos, "blksize", blksizestr);
             }
             return buf;
         }

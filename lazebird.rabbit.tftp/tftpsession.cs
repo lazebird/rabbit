@@ -84,10 +84,8 @@ namespace lazebird.rabbit.tftp
                     return true;    // ignore expired ack?
                 if (blkno == maxblkno)  // over
                     return false;
-                if (q.is_stopped())
-                    data = new byte[0]; // last empty block
-                else
-                    data = q.consume();
+                if ((data = q.consume()) == null)
+                    data = new byte[0]; // srv send last empty block; client write last block
                 pkt = new tftppkt(Opcodes.Data, ++blkno, data).pack();
             }
             else if (p.op == Opcodes.Data)
@@ -105,6 +103,10 @@ namespace lazebird.rabbit.tftp
                     uc.Send(pkt, pkt.Length, r);
                     return false;
                 }
+            }
+            else if (p.op == Opcodes.OAck)
+            {
+                pkt = new tftppkt(Opcodes.Ack, blkno++).pack();
             }
             else
             {
@@ -126,6 +128,28 @@ namespace lazebird.rabbit.tftp
             uc.Send(pkt, pkt.Length, r);
             return false;
         }
+        public void progress_display(Func<int, string, int> log)
+        {
+            int curtm = Environment.TickCount;
+            if (curtm - logtm > 100 || blkno == maxblkno)
+            {
+                logtm = curtm;
+                logidx = log(logidx, "I: " + r.ToString() + " " + filename + ": " + maxblkno + "/" + blkno + ((curretry == 0) ? "" : (" retry " + curretry)));
+            }
+        }
+        public void session_display(Func<int, string, int> log)
+        {
+            int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
+            long curlen = (maxblkno == blkno) ? filesize : (filesize * blkno / Math.Max(maxblkno, 1));
+            string msg = "I: " + r.ToString() + " " + filename + " ";
+            msg += (maxblkno == blkno) ? "Succ; " : "Fail; ";
+            msg += maxblkno + "/" + blkno + "/" + deltatm.ToString("###,###.0") + "s ";
+            msg += "@" + (blkno / deltatm).ToString("###,###.0") + " pps/" + (curlen / deltatm).ToString("###,###.0") + " Bps; ";
+            msg += totalretry + " retries";
+            log(logidx, msg);
+            //if (q != null) log(0, "I: produce " + q.stat_produce + " consume " + q.stat_consume + " stopped " + q.is_stopped());
+        }
+
         public void destroy()
         {
             if (q != null)

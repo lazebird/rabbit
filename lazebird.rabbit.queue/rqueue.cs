@@ -12,6 +12,8 @@ namespace lazebird.rabbit.queue
         int maxsize = 100;
         int timeout = 1000;
         bool stop_flag = false;
+        public int stat_produce = 0;
+        public int stat_consume = 0;
         public rqueue()
         {
             q = new Queue();
@@ -36,6 +38,7 @@ namespace lazebird.rabbit.queue
                     if (q.Count > 0)
                     {
                         buf = (byte[])q.Dequeue();
+                        stat_consume++;
                         sp.Release(1);
                     }
             return buf;
@@ -48,6 +51,7 @@ namespace lazebird.rabbit.queue
                     if (q.Count < maxsize)
                     {
                         q.Enqueue(buf);
+                        stat_produce++;
                         sc.Release(1);
                         len = buf.Length;
                     }

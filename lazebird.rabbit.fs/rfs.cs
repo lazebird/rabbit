@@ -125,7 +125,7 @@ namespace lazebird.rabbit.fs
                     output.Write(buffer, 0, buffer.Length);
                     this.totalsize += buffer.Length;
                 }
-                if (q.is_stopped())
+                else if (q.is_stopped())
                     break;
             }
             output.Close();

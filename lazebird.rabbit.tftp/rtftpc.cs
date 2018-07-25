@@ -1,82 +1,130 @@
-﻿using System.IO;
+﻿using lazebird.rabbit.fs;
+using lazebird.rabbit.queue;
+using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using static lazebird.rabbit.tftp.tftppkt;
 
 namespace lazebird.rabbit.tftp
 {
-    class rtftpc
+    public class rtftpc
     {
-        int timeout = 1000;
+        Func<int, string, int> log;
+        rfs rfs;
+        int timeout = 200;
+        int maxretry = 10;
+        int blksize = 1024;
+        string localFile = null;
+
+        public rtftpc(Func<int, string, int> log)
+        {
+            this.log = log;
+            this.rfs = new rfs(slog);
+        }
+        public rtftpc(Func<int, string, int> log, int timeout, int maxretry, int blksize) : this(log)
+        {
+            this.timeout = timeout;
+            this.maxretry = maxretry;
+            this.blksize = blksize;
+        }
+        void slog(string msg) { log(0, msg); }
+        bool pkt_proc(tftppkt pkt, tftpsession s, string oper)
+        {
+            try
+            {
+                if (s.blkno == 0)   // proc the first pkt recvd
+                {
+                    rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
+                    FileStream fs = null;
+                    Thread t = null;
+                    if (pkt.op == Opcodes.OAck) // oack for wrq/rrq
+                    {
+                        if (oper == "get")
+                            fs = new FileStream(localFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+                        else
+                        {
+                            pkt.op = Opcodes.Ack; // change code to ack to reply a data pkt; too special
+                            fs = new FileStream(localFile, FileMode.Open, FileAccess.Read);
+                        }
+                        s.set_file(fs.Name, fs.Length, q, pkt.timeout, pkt.blksize);
+                        t = new Thread(() => rfs.readstream(fs, q, s.blksize));
+                    }
+                    else if (pkt.op == Opcodes.Data) // ack for rrq
+                    {
+                        s.blkno = 1; // may be a oack with no blkno, may be a data with blkno 1
+                        fs = new FileStream(localFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+                        s.set_file(fs.Name, fs.Length, q, 0, 0);
+                        t = new Thread(() => rfs.writestream(fs, q, localFile));
+                    }
+                    else if (pkt.op == Opcodes.Ack) // ack for wrq
+                    {
+                        fs = new FileStream(localFile, FileMode.Open, FileAccess.Read);
+                        s.set_file(fs.Name, fs.Length, q, 0, 0);
+                        t = new Thread(() => rfs.readstream(fs, q, s.blksize));
+                    }
+                    if (t != null)
+                    {
+                        t.IsBackground = true;
+                        t.Start();
+                    }
+                }
+                return s.reply(pkt);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+        }
         public void get(string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)
         {
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse(srvip), srvport);
-            byte[] sndBuffer = new tftppkt(Opcodes.Read, remoteFile, tftpmode.ToString()).pack();
-            byte[] rcvBuffer = new byte[516];
-            BinaryWriter fileStream = new BinaryWriter(new FileStream(localFile, FileMode.Create, FileAccess.Write, FileShare.Read));
-            EndPoint dataEP = (EndPoint)serverEP;
-            Socket tftpSocket = new Socket(serverEP.Address.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-            tftpSocket.SendTo(sndBuffer, sndBuffer.Length, SocketFlags.None, serverEP);
-            tftpSocket.ReceiveTimeout = timeout;
-            int blkno = 1;
+            this.localFile = localFile;
+            tftpsession s = new tftpsession(new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
+            byte[] buf = new tftppkt(Opcodes.Read, remoteFile, tftpmode.ToString(), timeout, blksize).pack();
+            s.uc.Send(buf, buf.Length, s.r);
+            s.pkt = buf;    // retry rrq
+            tftppkt pkt = new tftppkt();
             while (true)
             {
-                int len = tftpSocket.ReceiveFrom(rcvBuffer, ref dataEP);
-                serverEP.Port = ((IPEndPoint)dataEP).Port;
-                if (((Opcodes)rcvBuffer[1]) == Opcodes.Error)
+                try
                 {
-                    break;
+                    buf = s.uc.Receive(ref s.r);   // change remote port automatically
+                    if (!pkt.parse(buf) || !pkt_proc(pkt, s, "get")) break;
                 }
-                if ((((rcvBuffer[2] << 8) & 0xff00) | rcvBuffer[3]) == blkno)
+                catch (Exception)
                 {
-                    fileStream.Write(rcvBuffer, 4, len - 4);
-                    sndBuffer = new tftppkt(Opcodes.Ack, blkno++).pack();
-                    tftpSocket.SendTo(sndBuffer, sndBuffer.Length, SocketFlags.None, serverEP);
-                }
-                if (len < 516)
-                {
-                    break;
+                    if (!s.retry()) break;
                 }
             }
-            tftpSocket.Close();
-            fileStream.Close();
+            if (pkt.errmsg != null) slog("!E: " + pkt.errmsg); // parse error
+            s.destroy();
         }
-        public void put(string srvip, int srvport, string remoteFile, string localFile, string tftpMode)
+        public void put(string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)
         {
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse(srvip), srvport);
-            byte[] sndBuffer = new tftppkt(Opcodes.Write, remoteFile, tftpMode).pack();
-            byte[] rcvBuffer = new byte[516];
-            BinaryReader fileStream = new BinaryReader(new FileStream(localFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
-            EndPoint dataEP = (EndPoint)serverEP;
-            Socket tftpSocket = new Socket(serverEP.Address.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-            tftpSocket.SendTo(sndBuffer, sndBuffer.Length, SocketFlags.None, serverEP);
-            tftpSocket.ReceiveTimeout = timeout;
-            int len = tftpSocket.ReceiveFrom(rcvBuffer, ref dataEP);
-            serverEP.Port = ((IPEndPoint)dataEP).Port;
-            int blkno = 0;
+            this.localFile = localFile;
+            tftpsession s = new tftpsession(new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
+            byte[] buf = new tftppkt(Opcodes.Write, remoteFile, tftpmode.ToString(), timeout, blksize).pack();
+            s.uc.Send(buf, buf.Length, s.r);
+            s.pkt = buf;    // retry wrq
+            tftppkt pkt = new tftppkt();
             while (true)
             {
-                if (((Opcodes)rcvBuffer[1]) == Opcodes.Error)
+                try
                 {
-                    fileStream.Close();
-                    tftpSocket.Close();
+                    buf = s.uc.Receive(ref s.r);   // change remote port automatically
+                    if (!pkt.parse(buf) || !pkt_proc(pkt, s, "put")) break;
                 }
-                if ((((Opcodes)rcvBuffer[1]) == Opcodes.Ack) && (((rcvBuffer[2] << 8) & 0xff00) | rcvBuffer[3]) == blkno)
+                catch (Exception)
                 {
-                    sndBuffer = new tftppkt(Opcodes.Data, ++blkno, fileStream.ReadBytes(512)).pack();
-                    tftpSocket.SendTo(sndBuffer, sndBuffer.Length, SocketFlags.None, serverEP);
+                    if (!s.retry()) break;
                 }
-                if (sndBuffer.Length < 516)
-                {
-                    break;
-                }
-                else
-                {
-                    len = tftpSocket.ReceiveFrom(rcvBuffer, ref dataEP);
-                }
+                s.progress_display(log);
             }
-            tftpSocket.Close();
-            fileStream.Close();
+            if (pkt.errmsg != null) slog("!E: " + pkt.errmsg); // parse error
+            s.session_display(log);
+            s.destroy();
         }
     }
 }

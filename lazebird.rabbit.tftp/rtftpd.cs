@@ -17,6 +17,7 @@ namespace lazebird.rabbit.tftp
         UdpClient uc;
         Hashtable chash;
         Hashtable fhash;
+        string rootdir = "";    // used for wrq, set the first non-empty dir added as root dir
         rfs rfs;
         int timeout;
         int maxretry;
@@ -33,35 +34,10 @@ namespace lazebird.rabbit.tftp
         {
             int ret;
             lock (obj)
-            {
                 ret = log(line, msg);
-            }
             return ret;
         }
-        void slog(string msg)
-        {
-            log(0, msg);
-        }
-        void progress_display(tftpsession s, int blkno)
-        {
-            int curtm = Environment.TickCount;
-            if (curtm - s.logtm > 100 || blkno == s.maxblkno)
-            {
-                s.logtm = curtm;
-                s.logidx = ilog(s.logidx, "I: " + s.r.ToString() + " " + s.filename + ": " + s.maxblkno + "/" + blkno + ((s.curretry == 0) ? "" : (" retry " + s.curretry)));
-            }
-        }
-        void session_display(tftpsession s)
-        {
-            int deltatm = Math.Max(1, (Environment.TickCount - s.starttm) / 1000);
-            long curlen = (s.maxblkno == s.blkno) ? s.filesize : (s.filesize * s.blkno / Math.Max(s.maxblkno, 1));
-            string msg = "I: " + s.r.ToString() + " " + s.filename + " ";
-            msg += (s.maxblkno == s.blkno) ? "Succ; " : "Fail; ";
-            msg += s.maxblkno + "/" + s.blkno + "/" + deltatm.ToString("###,###.0") + "s ";
-            msg += "@" + (s.blkno / deltatm).ToString("###,###.0") + " pps/" + (curlen / deltatm).ToString("###,###.0") + " Bps; ";   // +1 to avoid divide 0
-            msg += s.totalretry + " retries";
-            ilog(s.logidx, msg);
-        }
+        void slog(string msg) { log(0, msg); }
         bool pkt_proc(tftppkt pkt, tftpsession s)
         {
             if (pkt.op == Opcodes.Read)
@@ -79,7 +55,7 @@ namespace lazebird.rabbit.tftp
             {
                 try
                 {
-                    FileStream fs = new FileStream(pkt.filename, FileMode.Create, FileAccess.Write);
+                    FileStream fs = new FileStream(rootdir + pkt.filename, FileMode.Create, FileAccess.Write, FileShare.Read);
                     rqueue q = new rqueue(2000, 1000); // 2000 * pkt.blksize, max memory used 2M, 1000ms timeout
                     s.set_file(pkt.filename, 0, q, pkt.timeout, pkt.blksize);
                     Thread t = new Thread(() => rfs.writestream(fs, q, pkt.filename));
@@ -95,14 +71,9 @@ namespace lazebird.rabbit.tftp
         }
         void session_task(byte[] rcvBuffer, IPEndPoint r)
         {
-            tftpsession s;
-            if (!chash.ContainsKey(r))
-            {
-                s = new tftpsession(new UdpClient(), r, maxretry, timeout);
-                chash.Add(r, s);
-            }
-            else
-                s = (tftpsession)chash[r];
+            if (chash.ContainsKey(r)) chash.Remove(r);
+            tftpsession s = new tftpsession(new UdpClient(), r, maxretry, timeout);
+            chash.Add(r, s);
             tftppkt pkt = new tftppkt();
             if (pkt.parse(rcvBuffer) && pkt_proc(pkt, s))
                 while (true)
@@ -117,10 +88,10 @@ namespace lazebird.rabbit.tftp
                         if (!s.retry()) break;
                         //slog("I: retransmit block " + blkno + " current " + s.blkno + " pkt blkno " + (blkno & 0xffff));
                     }
-                    progress_display(s, s.blkno);
+                    s.progress_display(ilog);
                 }
             if (pkt.errmsg != null) slog("!E: " + pkt.errmsg); // parse error
-            session_display(s);
+            s.session_display(ilog);
             s.destroy();
             chash.Remove(r);
         }
@@ -177,9 +148,9 @@ namespace lazebird.rabbit.tftp
         public void add_dir(string path)
         {
             if (path == null || path == "")
-            {
                 return;
-            }
+            if (rootdir == "")
+                rootdir = path + "/";
             DirectoryInfo dir = new DirectoryInfo(path);
             foreach (FileInfo f in dir.GetFiles())
             {
@@ -189,9 +160,9 @@ namespace lazebird.rabbit.tftp
         public void del_dir(string path)
         {
             if (path == null || path == "")
-            {
                 return;
-            }
+            if (rootdir == path || rootdir == path + "/")
+                rootdir = "";
             DirectoryInfo dir = new DirectoryInfo(path);
             foreach (FileInfo f in dir.GetFiles())
             {
