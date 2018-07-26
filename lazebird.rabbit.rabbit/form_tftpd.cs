@@ -135,10 +135,12 @@ namespace lazebird.rabbit.rabbit
                     tftpd_set_dir(tftpd_add_dir(), path);
             }
             int index = int.Parse(rconf.get("tftpd_dir_index"));
-            tftpd_set_active((Button)tftpd_dirs[index]);
+            if (index >= 0 && index < tftpd_dirs.Count)
+                tftpd_set_active((Button)tftpd_dirs[index]);
         }
         void tftpd_saveconf()
         {
+            if (onloading) return;
             rconf.set("tftpd_dir_index", curtftpd_dir.ToString());
             string dirs = "";
             foreach (string path in tftpd_dirhash.Values)
