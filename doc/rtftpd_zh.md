@@ -1,34 +1,34 @@
 # rtftpd
 
-## Description
+## 描述
 
-## Target
+## 目标
 
 ## API
-1. public rtftpd(Func<int, string, int> log)  public rtftpd(Func<int, string, int> log, int maxretry, int timeout)
+1. public rtftpd(Func<int, string, int> log)
     - 构造函数
-    - log：log输出接口;第一个参数为输出位置，0表示自动占位置，第二个参数为待输出字符串，返回值为输出位置；该接口最初用于ListBox的同行进度更新。
+    - log：log输出接口;第一个参数为输出位置，-1表示新行输出，第二个参数为待输出字符串，返回值为输出位置；该接口最初用于ListBox的同行进度更新。
 
-2. public void add_dir(string dir)  
-    - 添加文件夹到根目录中
+2. public void set_cwd(string path)
+    - 设置工作路径
     - path：文件夹路径
 
-3. public void del_dir(string path)  
-    - 从根目录中删除文件夹
-    - path：文件夹路径
-
-4. public void start(int port)  
+3. public void start(int port, int timeout, int maxretry)
     - 启动服务器
+    - port: UDP端口，建议 69
+    - timeout: 收包超时，建议 200 ms
+    - maxretry: 报文重传次数，建议 10
 
-5. public void stop()  
-    - 停止服务器，同时清空侦听的文件夹
+4. public void stop()  
+    - 停止服务器
 
-## Sample
+## 示例
     ```
     rtftpd rtftpd = new rtftpd(rtftpd_log_func);
-    rtftpd.add_dir(t.Text);
+    rtftpd.set_cwd(t.Text);
     int rtftpd_log_func(int line, string msg)
     {
         return rtftpdlog.write(line, msg);
     }
+    tftpd.start(69, 200, 30);
     ```

@@ -1,8 +1,8 @@
 # rtaskbar
 
-## Description
+## 描述
 
-## Target
+## 目标
 
 ## API
 1. public rtaskbar(Action<string> log)  
@@ -15,7 +15,7 @@
     - cur：当前进度
     - total：总体进度
 
-## Sample
+## 示例
     ```
     rtaskbar rtaskbar = new rtaskbar(rtaskbar_log_func);
     rtaskbar.set(2, 2, 5);

@@ -41,12 +41,11 @@
     - q: 资源队列，用于保存读取的数据
     - maxblksz: 读取/保存的块大小
 
-7. public void writestream(Stream output, rqueue q, string path, long length)
+7. public void writestream(Stream output, rqueue q, string path)
     - 将队列数据写入到输出流
     - output: 输出流
     - q: 资源队列，保存了数据
     - path: 文件路径/输出流信息，仅用作打印显示
-    - length: 文件/输出总长度，用于检查写入是否完成
 
 
 ## 示例
@@ -59,7 +58,7 @@
         FileStream fs = new FileStream((string)((rfile)fhash[path]).path, FileMode.Open, FileAccess.Read);
         response.ContentLength64 = fs.Length;
         rqueue q = new rqueue(10); // 10 * 10M, max memory used 100M
-        new Thread(() => rfs.readfile(fs, q, 10000000)).Start();    // 10000000, max block size 10M
-        new Thread(() => rfs.writefile(output, q, path, response.ContentLength64)).Start();
+        new Thread(() => rfs.readstream(fs, q, 10000000)).Start();    // 10000000, max block size 10M
+        new Thread(() => rfs.writestream(output, q, fs.Name)).Start();
     }
     ```

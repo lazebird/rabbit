@@ -9,26 +9,26 @@
     - Constructor
     - Log: log output interface; the first parameter is the output position, 0 means automatic position, the second parameter is the string to be output, and the return value is the output position; the interface is initially used for peer progress update of ListBox.
 
-2. public void add_dir(string dir)  
-    - Add a folder to the root directory
+2. public void set_cwd(string path)
+    - set current work directory
     - Path: folder path
 
-3. public void del_dir(string path)  
-    - Delete a folder from the root directory
-    - Path: folder path
-
-4. public void start(int port)  
+3. public void start(int port, int timeout, int maxretry)
     - Start the server
+    - port: udp port, recommend 69
+    - timeout: receive timeout, recommend 200 ms
+    - maxretry: packet retransimition times, recommend 10
 
-5. public void stop()  
+4. public void stop()  
     - Stop the server while emptying the listening folder
 
 ## Sample
     ```
     rtftpd rtftpd = new rtftpd(rtftpd_log_func);
-    rtftpd.add_dir(t.Text);
+    rtftpd.set_cwd(t.Text);
     int rtftpd_log_func(int line, string msg)
     {
         return rtftpdlog.write(line, msg);
     }
+    tftpd.start(69, 200, 30);
     ```

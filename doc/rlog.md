@@ -15,7 +15,7 @@
 
 3. public void write(string msg)/public int write(int line, string msg)   
     - Print log
-    - Line: specifies the number of log write lines (the current write position can be obtained by the return value)
+    - Line: specifies the number of log write lines (the current write position can be obtained by the return value), -1 to print on a new line
     - Msg: log information
 
 4. public void clear()  

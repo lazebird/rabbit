@@ -14,8 +14,8 @@ namespace lazebird.rabbit.tftp
         Thread tftpd;
         UdpClient uc;
         string cwd = "";    // used for wrq, set the first non-empty dir added as root dir
-        int timeout;
-        int maxretry;
+        int timeout = 200;
+        int maxretry = 30;
         object obj;
         public rtftpd(Func<int, string, int> log)
         {
@@ -100,10 +100,6 @@ namespace lazebird.rabbit.tftp
                 tftpd.IsBackground = true;
                 tftpd.Start();
             }
-        }
-        public void start(int port)
-        {
-            start(port, 200, 30);
         }
         public void stop()
         {

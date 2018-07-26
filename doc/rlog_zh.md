@@ -15,7 +15,7 @@
 
 3. public void write(string msg)/public int write(int line, string msg)   
     - 打印log
-    - line：指定log写入行数(通过返回值可以获得当前写入的位置)
+    - line：指定log写入行数(通过返回值可以获得当前写入的位置), -1为自动在新行打印
     - msg：log信息
 
 4. public void clear()  

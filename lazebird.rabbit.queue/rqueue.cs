@@ -61,7 +61,7 @@ namespace lazebird.rabbit.queue
         {
             stop_flag = true;
         }
-        public bool is_stopped()
+        public bool has_stopped()
         {
             return stop_flag;
         }

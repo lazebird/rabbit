@@ -6,9 +6,10 @@
 ## Target
 
 ## API
-1. public rqueue(int maxsize)  
+1. public rqueue() / public rqueue(int maxsize) / public rqueue(int maxsize, int timeout)
     - Constructor
-    - maxsize: queue size
+    - maxsize: queue size, default 100
+    - timeout: timeout, default 1000 ms
 
 2. public byte[] consume()  
     - consume a resource
@@ -18,55 +19,51 @@
     - produce a resource
     - buf: resource data
 
+4. public void stop()
+    - stop this queue, means the producer has finished
+
+5. public bool has_stopped()
+    - judge if a queue has stopped
+
 ## Sample
     ```
-    public void readfile(Stream fs, rqueue q, int maxblksz)
-    {
-        byte[] buffer = null;
-        BinaryReader binReader = new BinaryReader(fs);
-        long left = fs.Length;
-        long size = Math.Min(maxblksz, fs.Length);
-        while (left > size)
+    public void readstream(Stream fs, rqueue q, int maxblksz)
         {
-            buffer = binReader.ReadBytes((int)size);
-            while (q.produce(buffer) == 0) ;
-            left -= size;
-        }
-        if (left > 0)
-        {
-            buffer = binReader.ReadBytes((int)left);
-            while (q.produce(buffer) == 0) ;
-        }
-        binReader.Close();
-        fs.Close();
-    }
-    public void writefile(Stream output, rqueue q, string path, long length)
-    {
-        DateTime starttm;
-        DateTime stoptm;
-        starttm = DateTime.Now;
-        int totalsize = 0;
-        while (true)
-        {
-            byte[] buffer = q.consume();
-            if (buffer == null)
+            byte[] buffer = null;
+            BinaryReader binReader = new BinaryReader(fs);
+            long left = fs.Length;
+            long size = Math.Min(maxblksz, fs.Length);
+            while (left > size)
             {
-                if (totalsize == length)
+                buffer = binReader.ReadBytes((int)size);
+                while (q.produce(buffer) == 0) ;
+                left -= size;
+            }
+            if (left > 0)
+            {
+                buffer = binReader.ReadBytes((int)left);
+                while (q.produce(buffer) == 0) ;
+            }
+            binReader.Close();
+            fs.Close();
+            q.stop();
+        }
+        public void writestream(Stream output, rqueue q, string filename)
+        {
+            int starttm = Environment.TickCount;
+            byte[] buffer;
+            while (true)
+            {
+                if ((buffer = q.consume()) != null)
                 {
-                    break;
+                    output.Write(buffer, 0, buffer.Length);
+                    this.totalsize += buffer.Length;
                 }
-                continue;
+                else if (q.has_stopped())
+                    break;
             }
-            else
-            {
-                output.Write(buffer, 0, buffer.Length);
-                totalsize += buffer.Length;
-            }
+            output.Close();
+            int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
+            log("I: " + filename + " " + totalsize + " B/" + deltatm.ToString("###,###.00") + " s; @" + (totalsize / deltatm).ToString("###,###.00") + " Bps");
         }
-        output.Close();
-        stoptm = DateTime.Now;
-        log("I: " + path.Substring(path.Substring(0, path.Length - 1).LastIndexOf('/') + 1) + " "
-            + length + " B/" + (stoptm - starttm).TotalSeconds.ToString("###,###.00") + " s; @"
-            + (length / ((stoptm - starttm).TotalSeconds + 1)).ToString("###,###.00") + " Bps");
-    }
     ```

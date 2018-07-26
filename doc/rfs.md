@@ -41,12 +41,11 @@
     - q: resource queue, to store file data
     - maxblksz: max block size read and saved
 
-7. public void writestream(Stream output, rqueue q, string path, long length)
+7. public void writestream(Stream output, rqueue q, string path)
     - write queue data to stream
     - output: file stream
     - q: resource queue, stored file data
     - path: file path or name, used for log view
-    - length: file total length, used to stop proc
 
 
 ## Sample
@@ -59,7 +58,7 @@
         FileStream fs = new FileStream((string)((rfile)fhash[path]).path, FileMode.Open, FileAccess.Read);
         response.ContentLength64 = fs.Length;
         rqueue q = new rqueue(10); // 10 * 10M, max memory used 100M
-        new Thread(() => rfs.readfile(fs, q, 10000000)).Start();    // 10000000, max block size 10M
-        new Thread(() => rfs.writefile(output, q, path, response.ContentLength64)).Start();
+        new Thread(() => rfs.readstream(fs, q, 10000000)).Start();    // 10000000, max block size 10M
+        new Thread(() => rfs.writestream(output, q, fs.Name)).Start();
     }
     ```
