@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
+using static lazebird.rabbit.tftp.pkt;
 
 namespace lazebird.rabbit.rabbit
 {
@@ -53,14 +54,14 @@ namespace lazebird.rabbit.rabbit
         void tftpc_get_click(object sender, EventArgs e)
         {
             tftpc_read_args();
-            Thread t = new Thread(() => tftpc.get(tftpc_ip, 69, tftpc_rfile, tftpc_rfile, tftppkt.Modes.octet));
+            Thread t = new Thread(() => tftpc.get(tftpc_ip, 69, tftpc_rfile, tftpc_rfile, Modes.octet));
             t.IsBackground = true;
             t.Start();
         }
         void tftpc_put_click(object sender, EventArgs e)
         {
             tftpc_read_args();
-            Thread t = new Thread(() => tftpc.put(tftpc_ip, 69, Path.GetFileName(tftpc_lfile), tftpc_lfile, tftppkt.Modes.octet));
+            Thread t = new Thread(() => tftpc.put(tftpc_ip, 69, Path.GetFileName(tftpc_lfile), tftpc_lfile, Modes.octet));
             t.IsBackground = true;
             t.Start();
         }

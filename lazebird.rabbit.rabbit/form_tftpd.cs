@@ -29,7 +29,7 @@ namespace lazebird.rabbit.rabbit
             dialog.Description = "请选择文件路径";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                tftpd.del_dir(t.Text);
+                tftpd.set_cwd(t.Text);
                 t.Text = dialog.SelectedPath;
             }
         }
@@ -54,9 +54,9 @@ namespace lazebird.rabbit.rabbit
                 tftpd.start(69, int.Parse(((TextBox)texthash["tftpd_timeout"]).Text), int.Parse(((TextBox)texthash["tftpd_retry"]).Text));
                 foreach (string key in texthash.Keys)
                 {
-                    if (key.Contains("tftp_dir"))
+                    if (key.Contains("tftp_dir") && ((TextBox)texthash[key]).Text != "")
                     {
-                        tftpd.add_dir(((TextBox)texthash[key]).Text);
+                        tftpd.set_cwd(((TextBox)texthash[key]).Text);
                     }
                 }
             }
