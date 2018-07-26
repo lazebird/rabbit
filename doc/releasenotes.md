@@ -1,8 +1,13 @@
 # Release Notes
 
+## 2018-07-26
+### New
+1. support tftp client
+2. tftp server add dir change to set cwd(current work directory), support dynamic amount of dirs added
+
 ## 2018-07-22
 ### New
-1. Rewrite tftp 
+1. rewrite tftp 
 2. add rqueue to improve performance
 ### Fix
 1. minor fixes
