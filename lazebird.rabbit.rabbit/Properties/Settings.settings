@@ -32,15 +32,6 @@
     <Setting Name="mime" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="tftp_dir1" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="tftp_dir2" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="tftp_dir3" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="tftpd_timeout" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
@@ -69,6 +60,12 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="tftpc_addr" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="tftpd_dir_index" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="tftpd_dirs" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

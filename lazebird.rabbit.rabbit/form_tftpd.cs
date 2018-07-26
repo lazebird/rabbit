@@ -1,6 +1,9 @@
 ﻿using lazebird.rabbit.common;
 using lazebird.rabbit.tftp;
 using System;
+using System.Collections;
+using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace lazebird.rabbit.rabbit
@@ -9,56 +12,110 @@ namespace lazebird.rabbit.rabbit
     {
         rtftpd tftpd;
         rlog tftpdlog;
+        Hashtable tftpd_dirhash;
+        int curtftpd_dir = -1;
+        ArrayList tftpd_dirs;
+        Timer tftpd_tmr;
+        Button lastclicked = null;  // donot support two different dir clicked at the same time
         void init_form_tftpd()
         {
+            tftpd_dirs = new ArrayList();
+            tftpd_tmr = new Timer();
+            tftpd_tmr.Interval = 200; // 200ms
+            tftpd_tmr.Tick += new EventHandler(tftpd_dir_tick);
+            tftpd_dirhash = new Hashtable();
             tftpdlog = new rlog(tftpd_output);
             tftpd = new rtftpd(tftpd_log_func);
-            tftp_dirbtn1.Click += new EventHandler(tftpd_dir1_click);
-            tftp_dirbtn2.Click += new EventHandler(tftpd_dir2_click);
-            tftp_dirbtn3.Click += new EventHandler(tftpd_dir3_click);
+            tftpd_adddir.Click += new EventHandler(tftpd_adddir_click);
+            tftpd_deldir.Click += new EventHandler(tftpd_deldir_click);
             tftpd_btn.Click += new EventHandler(tftpd_click);
         }
         int tftpd_log_func(int id, string msg)
         {
             return tftpdlog.write(id, msg);
         }
-        private void tftpd_dir_set(TextBox t)
+        void tftpd_set_dir(Button b, string path)
+        {
+            path = Path.GetFullPath(path);
+            b.Text = (path.Length < 8) ? path : path.Substring(path.Length - 8);
+            if (tftpd_dirhash.ContainsKey(b)) tftpd_dirhash.Remove(b);
+            tftpd_dirhash.Add(b, path);
+            tftpd_set_active(b);    // auto active after select
+        }
+        void tftpd_set_active(Button b)
+        {
+            int newidx = tftpd_dirs.IndexOf(b);
+            if (newidx != curtftpd_dir && curtftpd_dir >= 0)
+            {
+                Button old = (Button)tftpd_dirs[curtftpd_dir];
+                old.BackColor = Color.Blue;
+            }
+            b.BackColor = Color.YellowGreen;
+            curtftpd_dir = newidx;
+            tftpd.set_cwd((string)tftpd_dirhash[b]);
+            tftpd_saveconf(); // auto save when conf changed
+            //tftpd_log_func(0, "I: Activate " + tftpd_dirhash[b]);
+        }
+        void tftpd_dir_select(Button b)
         {
             FolderBrowserDialog dialog = new FolderBrowserDialog();
-            dialog.SelectedPath = t.Text;
-            dialog.Description = "请选择文件路径";
+            dialog.SelectedPath = b.Text;
+            dialog.Description = "请选择文件夹";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                tftpd.set_cwd(t.Text);
-                t.Text = dialog.SelectedPath;
+                tftpd_set_dir(b, dialog.SelectedPath);
             }
         }
-        private void tftpd_dir1_click(object sender, EventArgs e)
+        void tftpd_dir_click(object sender, MouseEventArgs e)
         {
-            tftpd_dir_set(tftp_dirtext1);
+            if (tftpd_tmr.Enabled)  // double click
+            {
+                tftpd_tmr.Stop();
+                tftpd_dir_select((Button)sender);
+            }
+            else
+            {
+                lastclicked = (Button)sender;
+                tftpd_tmr.Start();
+            }
         }
-        private void tftpd_dir2_click(object sender, EventArgs e)
+        void tftpd_dir_tick(object sender, EventArgs e) // single click
         {
-            tftpd_dir_set(tftp_dirtext2);
+            tftpd_tmr.Stop();
+            if (lastclicked == null) return;
+            tftpd_set_active(lastclicked);
         }
-        private void tftpd_dir3_click(object sender, EventArgs e)
+        Button tftpd_add_dir()
         {
-            tftpd_dir_set(tftp_dirtext3);
+            Button b = new Button();
+            b.BackColor = Color.Blue;
+            b.FlatAppearance.BorderSize = 0;
+            b.FlatStyle = FlatStyle.Flat;
+            tftpd_set_dir(b, Environment.CurrentDirectory);
+            b.MouseDown += tftpd_dir_click;
+            tftpd_fp.Controls.Add(b);
+            tftpd_dirs.Add(b);
+            return b;
         }
-        private void tftpd_click(object sender, EventArgs e)
+        void tftpd_adddir_click(object sender, EventArgs e)
+        {
+            tftpd_add_dir();
+        }
+        void tftpd_deldir_click(object sender, EventArgs e)
+        {
+            if (tftpd_dirs.Count == 0) return;
+            int index = tftpd_dirs.Count - 1;
+            Button b = (Button)tftpd_dirs[index];
+            tftpd_fp.Controls.Remove(b);
+            tftpd_dirs.Remove(b);
+        }
+        void tftpd_click(object sender, EventArgs e)
         {
             if (((Button)btnhash["tftpd_btn"]).Text == Language.trans("开始"))
             {
                 tftpdlog.clear();
                 ((Button)btnhash["tftpd_btn"]).Text = Language.trans("停止");
                 tftpd.start(69, int.Parse(((TextBox)texthash["tftpd_timeout"]).Text), int.Parse(((TextBox)texthash["tftpd_retry"]).Text));
-                foreach (string key in texthash.Keys)
-                {
-                    if (key.Contains("tftp_dir") && ((TextBox)texthash[key]).Text != "")
-                    {
-                        tftpd.set_cwd(((TextBox)texthash[key]).Text);
-                    }
-                }
             }
             else
             {
@@ -66,6 +123,27 @@ namespace lazebird.rabbit.rabbit
                 tftpd.stop();
             }
             saveconf();
+        }
+        void tftpd_readconf()
+        {
+            string[] dirs = rconf.get("tftpd_dirs").Split(';');
+            foreach (string path in dirs)
+            {
+                if (path != "")
+                    tftpd_set_dir(tftpd_add_dir(), path);
+            }
+            int index = int.Parse(rconf.get("tftpd_dir_index"));
+            tftpd_set_active((Button)tftpd_dirs[index]);
+        }
+        void tftpd_saveconf()
+        {
+            rconf.set("tftpd_dir_index", curtftpd_dir.ToString());
+            string dirs = "";
+            foreach (string path in tftpd_dirhash.Values)
+            {
+                dirs += path + ";";
+            }
+            rconf.set("tftpd_dirs", dirs);
         }
     }
 }

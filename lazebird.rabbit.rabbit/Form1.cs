@@ -66,9 +66,6 @@ namespace lazebird.rabbit.rabbit
             texthash.Add("http_dir", text_http_dir);
             texthash.Add("tftpd_timeout", text_tftpdtout);
             texthash.Add("tftpd_retry", text_tftpdretry);
-            texthash.Add("tftp_dir1", tftp_dirtext1);
-            texthash.Add("tftp_dir2", tftp_dirtext2);
-            texthash.Add("tftp_dir3", tftp_dirtext3);
             texthash.Add("scan_ipstart", text_scanstart);
             texthash.Add("scan_ipend", text_scanend);
             texthash.Add("tftpc_addr", text_tftpcaddr);
@@ -105,6 +102,7 @@ namespace lazebird.rabbit.rabbit
             }
             conf_log("G: " + "tabs" + " - " + rconf.get("tabs"));
             tabs.SelectedIndex = int.Parse(rconf.get("tabs"));
+            tftpd_readconf();
         }
         void saveconf()
         {
@@ -124,6 +122,7 @@ namespace lazebird.rabbit.rabbit
                 rconf.set(key, ((Button)btnhash[key]).Text);
                 conf_log("S: " + key + " - " + ((Button)btnhash[key]).Text);
             }
+            tftpd_saveconf();
         }
     }
 }

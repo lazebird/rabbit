@@ -56,7 +56,7 @@ namespace lazebird.rabbit.rabbit
             lbhash.Clear();
             fp_scan.Controls.Clear();
         }
-        private void scan_click(object sender, EventArgs e)
+         void scan_click(object sender, EventArgs e)
         {
             stop_scan();
             start_scan();

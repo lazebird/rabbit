@@ -21,7 +21,7 @@ namespace lazebird.rabbit.rabbit
         {
             httpdlog.write(msg);
         }
-        private void httpd_click(object sender, EventArgs evt)
+         void httpd_click(object sender, EventArgs evt)
         {
             if (((Button)btnhash["httpd_btn"]).Text == Language.trans("开始"))
             {
@@ -36,7 +36,7 @@ namespace lazebird.rabbit.rabbit
             }
             saveconf(); // save empty config to restore default config
         }
-        private void httpd_dir_click(object sender, EventArgs e)
+         void httpd_dir_click(object sender, EventArgs e)
         {
             FolderBrowserDialog dialog = new FolderBrowserDialog();
             dialog.SelectedPath = Environment.CurrentDirectory;

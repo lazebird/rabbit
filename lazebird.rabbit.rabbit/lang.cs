@@ -62,7 +62,7 @@ namespace lazebird.rabbit.rabbit
         /// </summary>
         /// <param name="control"></param>
         /// <param name="resources"></param>
-        private static void AppLang(Control control, System.ComponentModel.ComponentResourceManager resources)
+         static void AppLang(Control control, System.ComponentModel.ComponentResourceManager resources)
         {
             if (control is MenuStrip)
             {
@@ -88,7 +88,7 @@ namespace lazebird.rabbit.rabbit
         /// </summary>
         /// <param name="item"></param>
         /// <param name="resources"></param>
-        private static void AppLang(ToolStripMenuItem item, System.ComponentModel.ComponentResourceManager resources)
+         static void AppLang(ToolStripMenuItem item, System.ComponentModel.ComponentResourceManager resources)
         {
             if (item is ToolStripMenuItem)
             {

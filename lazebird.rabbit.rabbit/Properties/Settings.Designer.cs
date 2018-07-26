@@ -146,42 +146,6 @@ namespace lazebird.rabbit.rabbit.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftp_dir1 {
-            get {
-                return ((string)(this["tftp_dir1"]));
-            }
-            set {
-                this["tftp_dir1"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftp_dir2 {
-            get {
-                return ((string)(this["tftp_dir2"]));
-            }
-            set {
-                this["tftp_dir2"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftp_dir3 {
-            get {
-                return ((string)(this["tftp_dir3"]));
-            }
-            set {
-                this["tftp_dir3"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string tftpd_timeout {
             get {
                 return ((string)(this["tftpd_timeout"]));
@@ -296,6 +260,30 @@ namespace lazebird.rabbit.rabbit.Properties {
             }
             set {
                 this["tftpc_addr"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpd_dir_index {
+            get {
+                return ((string)(this["tftpd_dir_index"]));
+            }
+            set {
+                this["tftpd_dir_index"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpd_dirs {
+            get {
+                return ((string)(this["tftpd_dirs"]));
+            }
+            set {
+                this["tftpd_dirs"] = value;
             }
         }
     }

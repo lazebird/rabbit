@@ -628,7 +628,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 345</value>
+    <value>648, 348</value>
   </data>
   <data name="fp_scan.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
@@ -877,7 +877,7 @@
     <value>True</value>
   </data>
   <data name="label_tftpdtout.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 20</value>
+    <value>10, 10</value>
   </data>
   <data name="label_tftpdtout.Size" type="System.Drawing.Size, System.Drawing">
     <value>74, 16</value>
@@ -904,7 +904,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpdtout.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 20</value>
+    <value>92, 10</value>
   </data>
   <data name="text_tftpdtout.Size" type="System.Drawing.Size, System.Drawing">
     <value>563, 14</value>
@@ -928,7 +928,7 @@
     <value>True</value>
   </data>
   <data name="label_tftpdretry.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 50</value>
+    <value>10, 40</value>
   </data>
   <data name="label_tftpdretry.Size" type="System.Drawing.Size, System.Drawing">
     <value>61, 16</value>
@@ -955,7 +955,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpdretry.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 50</value>
+    <value>92, 40</value>
   </data>
   <data name="text_tftpdretry.Size" type="System.Drawing.Size, System.Drawing">
     <value>563, 14</value>
@@ -975,176 +975,95 @@
   <data name="&gt;&gt;text_tftpdretry.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="tftp_dirtext1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+  <data name="tftpd_fp.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="tftp_dirtext1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 80</value>
+  <data name="tftpd_fp.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 70</value>
   </data>
-  <data name="tftp_dirtext1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
+  <data name="tftpd_fp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>645, 120</value>
   </data>
-  <data name="tftp_dirtext1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>564, 14</value>
+  <data name="tftpd_fp.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
   </data>
-  <data name="tftp_dirtext1.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+  <data name="&gt;&gt;tftpd_fp.Name" xml:space="preserve">
+    <value>tftpd_fp</value>
   </data>
-  <data name="&gt;&gt;tftp_dirtext1.Name" xml:space="preserve">
-    <value>tftp_dirtext1</value>
+  <data name="&gt;&gt;tftpd_fp.Type" xml:space="preserve">
+    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;tftp_dirtext1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirtext1.Parent" xml:space="preserve">
+  <data name="&gt;&gt;tftpd_fp.Parent" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;tftp_dirtext1.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;tftpd_fp.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="tftp_dirbtn1.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+  <data name="tftpd_adddir.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
-  <data name="tftp_dirbtn1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 80</value>
+  <data name="tftpd_adddir.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft YaHei UI, 8.25pt, style=Bold</value>
   </data>
-  <data name="tftp_dirbtn1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="tftpd_adddir.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 200</value>
+  </data>
+  <data name="tftpd_adddir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="tftp_dirbtn1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 20</value>
+  <data name="tftpd_adddir.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
   </data>
-  <data name="tftp_dirbtn1.TabIndex" type="System.Int32, mscorlib">
+  <data name="tftpd_adddir.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
   </data>
-  <data name="tftp_dirbtn1.Text" xml:space="preserve">
-    <value>Directory 1</value>
+  <data name="tftpd_adddir.Text" xml:space="preserve">
+    <value>+</value>
   </data>
-  <data name="&gt;&gt;tftp_dirbtn1.Name" xml:space="preserve">
-    <value>tftp_dirbtn1</value>
+  <data name="&gt;&gt;tftpd_adddir.Name" xml:space="preserve">
+    <value>tftpd_adddir</value>
   </data>
-  <data name="&gt;&gt;tftp_dirbtn1.Type" xml:space="preserve">
+  <data name="&gt;&gt;tftpd_adddir.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;tftp_dirbtn1.Parent" xml:space="preserve">
+  <data name="&gt;&gt;tftpd_adddir.Parent" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;tftp_dirbtn1.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;tftpd_adddir.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="tftp_dirtext2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="tftp_dirtext2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 110</value>
-  </data>
-  <data name="tftp_dirtext2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="tftp_dirtext2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>564, 14</value>
-  </data>
-  <data name="tftp_dirtext2.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirtext2.Name" xml:space="preserve">
-    <value>tftp_dirtext2</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirtext2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirtext2.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirtext2.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="tftp_dirbtn2.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+  <data name="tftpd_deldir.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
-  <data name="tftp_dirbtn2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 110</value>
+  <data name="tftpd_deldir.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft YaHei UI, 8.25pt, style=Bold</value>
   </data>
-  <data name="tftp_dirbtn2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="tftpd_deldir.Location" type="System.Drawing.Point, System.Drawing">
+    <value>40, 200</value>
+  </data>
+  <data name="tftpd_deldir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="tftp_dirbtn2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 20</value>
+  <data name="tftpd_deldir.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
   </data>
-  <data name="tftp_dirbtn2.TabIndex" type="System.Int32, mscorlib">
+  <data name="tftpd_deldir.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
   </data>
-  <data name="tftp_dirbtn2.Text" xml:space="preserve">
-    <value>Directory 2</value>
+  <data name="tftpd_deldir.Text" xml:space="preserve">
+    <value>-</value>
   </data>
-  <data name="&gt;&gt;tftp_dirbtn2.Name" xml:space="preserve">
-    <value>tftp_dirbtn2</value>
+  <data name="&gt;&gt;tftpd_deldir.Name" xml:space="preserve">
+    <value>tftpd_deldir</value>
   </data>
-  <data name="&gt;&gt;tftp_dirbtn2.Type" xml:space="preserve">
+  <data name="&gt;&gt;tftpd_deldir.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;tftp_dirbtn2.Parent" xml:space="preserve">
+  <data name="&gt;&gt;tftpd_deldir.Parent" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;tftp_dirbtn2.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="tftp_dirtext3.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="tftp_dirtext3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 140</value>
-  </data>
-  <data name="tftp_dirtext3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="tftp_dirtext3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>564, 14</value>
-  </data>
-  <data name="tftp_dirtext3.TabIndex" type="System.Int32, mscorlib">
+  <data name="&gt;&gt;tftpd_deldir.ZOrder" xml:space="preserve">
     <value>6</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirtext3.Name" xml:space="preserve">
-    <value>tftp_dirtext3</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirtext3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirtext3.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirtext3.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="tftp_dirbtn3.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
-  </data>
-  <data name="tftp_dirbtn3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 140</value>
-  </data>
-  <data name="tftp_dirbtn3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="tftp_dirbtn3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 20</value>
-  </data>
-  <data name="tftp_dirbtn3.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="tftp_dirbtn3.Text" xml:space="preserve">
-    <value>Directory 3</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirbtn3.Name" xml:space="preserve">
-    <value>tftp_dirbtn3</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirbtn3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirbtn3.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;tftp_dirbtn3.ZOrder" xml:space="preserve">
-    <value>9</value>
   </data>
   <data name="tftpd_btn.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -1153,13 +1072,13 @@
     <value>Flat</value>
   </data>
   <data name="tftpd_btn.Location" type="System.Drawing.Point, System.Drawing">
-    <value>591, 170</value>
+    <value>590, 200</value>
   </data>
   <data name="tftpd_btn.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="tftpd_btn.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 20</value>
+    <value>65, 20</value>
   </data>
   <data name="tftpd_btn.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
@@ -1177,7 +1096,7 @@
     <value>TFTPD</value>
   </data>
   <data name="&gt;&gt;tftpd_btn.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>7</value>
   </data>
   <data name="tftpd_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
@@ -1186,13 +1105,13 @@
     <value>16</value>
   </data>
   <data name="tftpd_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 208</value>
+    <value>10, 230</value>
   </data>
   <data name="tftpd_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="tftpd_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 144</value>
+    <value>645, 112</value>
   </data>
   <data name="tftpd_output.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -1207,7 +1126,7 @@
     <value>TFTPD</value>
   </data>
   <data name="&gt;&gt;tftpd_output.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>8</value>
   </data>
   <data name="TFTPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>

@@ -25,7 +25,7 @@ namespace lazebird.rabbit.ping
             ping_thread.Start();
             return id;
         }
-        private void ping_process(int id, string addr, int timeout, Action<int, PingReply> callback)
+         void ping_process(int id, string addr, int timeout, Action<int, PingReply> callback)
         {
             Ping pingSender = new Ping();
             PingReply reply;

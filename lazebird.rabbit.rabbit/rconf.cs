@@ -15,7 +15,7 @@ namespace lazebird.rabbit.rabbit
             Properties.Settings.Default.Save();
             Properties.Settings.Default.Upgrade();
         }
-        private static string get_default(string key) // effective only when settings have been set to ""
+         static string get_default(string key) // effective only when settings have been set to ""
         {
             Hashtable cfg = new Hashtable();
             string mime = "";
@@ -27,6 +27,8 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("scan_ipend", "254");
             cfg.Add("tftpd_timeout", "200");
             cfg.Add("tftpd_retry", "30");
+            cfg.Add("tftpd_dir_index", "0");
+            cfg.Add("tftpd_dirs", ".;");
             cfg.Add("tftpc_addr", "127.0.0.1");
             cfg.Add("tftpc_timeout", "200");
             cfg.Add("tftpc_retry", "10");
