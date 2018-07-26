@@ -23,7 +23,7 @@ namespace lazebird.rabbit.tftp
             this.maxretry = maxretry;
             this.blksize = blksize;
         }
-        void slog(string msg) { log(0, msg); }
+        void slog(string msg) { log(-1, msg); }
         void oper(Opcodes oper, string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)
         {
             try

@@ -25,7 +25,7 @@ namespace lazebird.rabbit.tftp
         public int curretry = 0;
         public int totalretry = 0;
         public int starttm = Environment.TickCount;
-        public int logidx = 0;
+        public int logidx = -1;
         public int logtm = 0;
         public byte[] pktbuf = null;
         public ss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout)
@@ -91,7 +91,7 @@ namespace lazebird.rabbit.tftp
             msg += "@" + (blkno / deltatm).ToString("###,###.0") + " pps/" + (curlen / deltatm).ToString("###,###.0") + " Bps; ";
             msg += totalretry + " retries";
             log(logidx, msg);
-            //if (q != null) log(0, "I: produce " + q.stat_produce + " consume " + q.stat_consume + " stopped " + q.is_stopped());
+            //if (q != null) log(-1, "I: produce " + q.stat_produce + " consume " + q.stat_consume + " stopped " + q.is_stopped());
         }
 
         public void destroy(Func<int, string, int> log)
@@ -100,7 +100,7 @@ namespace lazebird.rabbit.tftp
             if (t != null) t.Join();
             uc.Close();
             uc.Dispose();
-            log(0, "I: Destroy session: " + r.ToString());
+            log(-1, "I: Destroy session: " + r.ToString());
         }
     }
 }

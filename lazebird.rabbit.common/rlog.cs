@@ -51,9 +51,9 @@ namespace lazebird.rabbit.common
         {
             if (logview == null)
             {
-                return 0;
+                return -1;
             }
-            if (line == 0)
+            if (line < 0)
             {
                 line = logview.Items.Add(msg);
                 logview.TopIndex = logview.Items.Count - (int)(logview.Height / logview.ItemHeight);

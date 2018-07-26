@@ -29,7 +29,7 @@ namespace lazebird.rabbit.tftp
                 ret = log(line, msg);
             return ret;
         }
-        void slog(string msg) { log(0, msg); }
+        void slog(string msg) { log(-1, msg); }
         public void set_cwd(string path)
         {
             cwd = path + "/";

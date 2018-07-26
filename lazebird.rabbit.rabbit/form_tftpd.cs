@@ -59,7 +59,7 @@ namespace lazebird.rabbit.rabbit
         void tftpd_dir_select(Button b)
         {
             FolderBrowserDialog dialog = new FolderBrowserDialog();
-            dialog.SelectedPath = b.Text;
+            dialog.SelectedPath = (string)tftpd_dirhash[b];
             dialog.Description = "请选择文件夹";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
@@ -91,10 +91,10 @@ namespace lazebird.rabbit.rabbit
             b.BackColor = Color.Blue;
             b.FlatAppearance.BorderSize = 0;
             b.FlatStyle = FlatStyle.Flat;
-            tftpd_set_dir(b, Environment.CurrentDirectory);
             b.MouseDown += tftpd_dir_click;
             tftpd_fp.Controls.Add(b);
             tftpd_dirs.Add(b);
+            tftpd_set_dir(b, Environment.CurrentDirectory);
             return b;
         }
         void tftpd_adddir_click(object sender, EventArgs e)
@@ -104,10 +104,12 @@ namespace lazebird.rabbit.rabbit
         void tftpd_deldir_click(object sender, EventArgs e)
         {
             if (tftpd_dirs.Count == 0) return;
-            int index = tftpd_dirs.Count - 1;
-            Button b = (Button)tftpd_dirs[index];
+            Button b = (Button)tftpd_dirs[tftpd_dirs.Count - 1];
             tftpd_fp.Controls.Remove(b);
             tftpd_dirs.Remove(b);
+            tftpd_dirhash.Remove(b);
+            curtftpd_dir = -1;  // reset cur index, to avoid problems
+            tftpd_saveconf(); // auto save when conf changed
         }
         void tftpd_click(object sender, EventArgs e)
         {
