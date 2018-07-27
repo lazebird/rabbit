@@ -8,7 +8,7 @@ namespace lazebird.rabbit.tftp
 {
     class cwss : ss // client write session
     {
-        public cwss(string localfile, UdpClient uc, IPEndPoint r, int maxretry, int timeout) : base(Path.GetDirectoryName(localfile), uc, r, maxretry, timeout)
+        public cwss(string localfile, UdpClient uc, IPEndPoint r, int maxretry, int timeout) : base(Path.GetDirectoryName(localfile) + "/", uc, r, maxretry, timeout)
         {
             this.filename = Path.GetFileName(localfile);
         }
