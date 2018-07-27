@@ -61,6 +61,7 @@
             this.text_tftpdtout = new System.Windows.Forms.TextBox();
             this.label_tftpdretry = new System.Windows.Forms.Label();
             this.text_tftpdretry = new System.Windows.Forms.TextBox();
+            this.tftpd_fp = new System.Windows.Forms.FlowLayoutPanel();
             this.tftpd_adddir = new System.Windows.Forms.Button();
             this.tftpd_deldir = new System.Windows.Forms.Button();
             this.tftpd_btn = new System.Windows.Forms.Button();
@@ -106,12 +107,15 @@
             this.dhcp_btn = new System.Windows.Forms.Button();
             this.dhcp_logmsg = new System.Windows.Forms.ListBox();
             this.Setting = new System.Windows.Forms.TabPage();
-            this.hp_label = new System.Windows.Forms.Label();
-            this.prjurl = new System.Windows.Forms.LinkLabel();
-            this.lang_label = new System.Windows.Forms.Label();
+            this.label_lang = new System.Windows.Forms.Label();
             this.lang_cb = new System.Windows.Forms.ComboBox();
+            this.label_ver = new System.Windows.Forms.Label();
+            this.link_ver = new System.Windows.Forms.LinkLabel();
+            this.label_prj = new System.Windows.Forms.Label();
+            this.link_prj = new System.Windows.Forms.LinkLabel();
+            this.label_prof = new System.Windows.Forms.Label();
+            this.link_prof = new System.Windows.Forms.LinkLabel();
             this.setting_output = new System.Windows.Forms.ListBox();
-            this.tftpd_fp = new System.Windows.Forms.FlowLayoutPanel();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -410,6 +414,11 @@
             this.text_tftpdretry.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.text_tftpdretry.ForeColor = System.Drawing.Color.White;
             this.text_tftpdretry.Name = "text_tftpdretry";
+            // 
+            // tftpd_fp
+            // 
+            resources.ApplyResources(this.tftpd_fp, "tftpd_fp");
+            this.tftpd_fp.Name = "tftpd_fp";
             // 
             // tftpd_adddir
             // 
@@ -791,30 +800,23 @@
             // Setting
             // 
             this.Setting.BackColor = System.Drawing.Color.DimGray;
-            this.Setting.Controls.Add(this.hp_label);
-            this.Setting.Controls.Add(this.prjurl);
-            this.Setting.Controls.Add(this.lang_label);
+            this.Setting.Controls.Add(this.label_lang);
             this.Setting.Controls.Add(this.lang_cb);
+            this.Setting.Controls.Add(this.label_ver);
+            this.Setting.Controls.Add(this.link_ver);
+            this.Setting.Controls.Add(this.label_prj);
+            this.Setting.Controls.Add(this.link_prj);
+            this.Setting.Controls.Add(this.label_prof);
+            this.Setting.Controls.Add(this.link_prof);
             this.Setting.Controls.Add(this.setting_output);
             this.Setting.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
             // 
-            // hp_label
+            // label_lang
             // 
-            resources.ApplyResources(this.hp_label, "hp_label");
-            this.hp_label.Name = "hp_label";
-            // 
-            // prjurl
-            // 
-            resources.ApplyResources(this.prjurl, "prjurl");
-            this.prjurl.Name = "prjurl";
-            this.prjurl.TabStop = true;
-            // 
-            // lang_label
-            // 
-            resources.ApplyResources(this.lang_label, "lang_label");
-            this.lang_label.Name = "lang_label";
+            resources.ApplyResources(this.label_lang, "label_lang");
+            this.label_lang.Name = "label_lang";
             // 
             // lang_cb
             // 
@@ -824,6 +826,37 @@
             this.lang_cb.FormattingEnabled = true;
             this.lang_cb.Name = "lang_cb";
             // 
+            // label_ver
+            // 
+            resources.ApplyResources(this.label_ver, "label_ver");
+            this.label_ver.Name = "label_ver";
+            // 
+            // link_ver
+            // 
+            resources.ApplyResources(this.link_ver, "link_ver");
+            this.link_ver.Name = "link_ver";
+            // 
+            // label_prj
+            // 
+            resources.ApplyResources(this.label_prj, "label_prj");
+            this.label_prj.Name = "label_prj";
+            // 
+            // link_prj
+            // 
+            resources.ApplyResources(this.link_prj, "link_prj");
+            this.link_prj.Name = "link_prj";
+            this.link_prj.TabStop = true;
+            // 
+            // label_prof
+            // 
+            resources.ApplyResources(this.label_prof, "label_prof");
+            this.label_prof.Name = "label_prof";
+            // 
+            // link_prof
+            // 
+            resources.ApplyResources(this.link_prof, "link_prof");
+            this.link_prof.Name = "link_prof";
+            // 
             // setting_output
             // 
             resources.ApplyResources(this.setting_output, "setting_output");
@@ -832,11 +865,6 @@
             this.setting_output.ForeColor = System.Drawing.Color.White;
             this.setting_output.FormattingEnabled = true;
             this.setting_output.Name = "setting_output";
-            // 
-            // tftpd_fp
-            // 
-            resources.ApplyResources(this.tftpd_fp, "tftpd_fp");
-            this.tftpd_fp.Name = "tftpd_fp";
             // 
             // Form1
             // 
@@ -907,7 +935,7 @@
          System.Windows.Forms.TabPage TFTPD;
          System.Windows.Forms.Button tftpd_adddir;
          System.Windows.Forms.Button tftpd_deldir;
-         System.Windows.Forms.Label lang_label;
+         System.Windows.Forms.Label label_lang;
          System.Windows.Forms.ComboBox lang_cb;
          System.Windows.Forms.ListBox httpd_output;
          System.Windows.Forms.TabPage DHCPD;
@@ -932,8 +960,8 @@
          System.Windows.Forms.Button btn_scan;
          System.Windows.Forms.FlowLayoutPanel fp_scan;
          System.Windows.Forms.ListBox setting_output;
-         System.Windows.Forms.LinkLabel prjurl;
-         System.Windows.Forms.Label hp_label;
+         System.Windows.Forms.LinkLabel link_prj;
+         System.Windows.Forms.Label label_prj;
          System.Windows.Forms.ListBox ftpd_output;
          System.Windows.Forms.Label label_tftpdtout;
          System.Windows.Forms.TextBox text_tftpdtout;
@@ -956,6 +984,10 @@
          System.Windows.Forms.Label label_tftpcaddr;
          System.Windows.Forms.TextBox text_tftpcaddr;
          System.Windows.Forms.FlowLayoutPanel tftpd_fp;
+        private System.Windows.Forms.Label label_ver;
+        private System.Windows.Forms.LinkLabel link_ver;
+        private System.Windows.Forms.Label label_prof;
+        private System.Windows.Forms.LinkLabel link_prof;
     }
 }
 

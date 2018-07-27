@@ -29,7 +29,8 @@ namespace lazebird.rabbit.rabbit
             language = rconf.get("lang");
             if (language != "中文" && language != "English")
             {
-                language = (System.Threading.Thread.CurrentThread.CurrentUICulture.Name == "zh-CN") ? "中文" : "English";
+                //language = (System.Threading.Thread.CurrentThread.CurrentUICulture.Name == "zh-CN") ? "中文" : "English";
+                language = "English";   // default use english
             }
             return (language == "中文") ? "zh-CN" : "";
         }
@@ -62,7 +63,7 @@ namespace lazebird.rabbit.rabbit
         /// </summary>
         /// <param name="control"></param>
         /// <param name="resources"></param>
-         static void AppLang(Control control, System.ComponentModel.ComponentResourceManager resources)
+        static void AppLang(Control control, System.ComponentModel.ComponentResourceManager resources)
         {
             if (control is MenuStrip)
             {
@@ -88,7 +89,7 @@ namespace lazebird.rabbit.rabbit
         /// </summary>
         /// <param name="item"></param>
         /// <param name="resources"></param>
-         static void AppLang(ToolStripMenuItem item, System.ComponentModel.ComponentResourceManager resources)
+        static void AppLang(ToolStripMenuItem item, System.ComponentModel.ComponentResourceManager resources)
         {
             if (item is ToolStripMenuItem)
             {

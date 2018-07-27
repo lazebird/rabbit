@@ -40,7 +40,6 @@ namespace lazebird.rabbit.rabbit
             b.Text = (path.Length < 8) ? path : path.Substring(path.Length - 8);
             if (tftpd_dirhash.ContainsKey(b)) tftpd_dirhash.Remove(b);
             tftpd_dirhash.Add(b, path);
-            tftpd_set_active(b);    // auto active after select
         }
         void tftpd_set_active(Button b)
         {
@@ -72,6 +71,7 @@ namespace lazebird.rabbit.rabbit
             {
                 tftpd_tmr.Stop();
                 tftpd_dir_select((Button)sender);
+                tftpd_set_active((Button)sender);    // auto active after select
             }
             else
             {
@@ -109,7 +109,6 @@ namespace lazebird.rabbit.rabbit
             tftpd_dirs.Remove(b);
             tftpd_dirhash.Remove(b);
             curtftpd_dir = -1;  // reset cur index, to avoid problems
-            tftpd_saveconf(); // auto save when conf changed
         }
         void tftpd_click(object sender, EventArgs e)
         {

@@ -170,7 +170,7 @@
     <value>开始</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 336</value>
+    <value>648, 351</value>
   </data>
   <data name="label_http_port.Text" xml:space="preserve">
     <value>端口</value>
@@ -192,15 +192,6 @@
   </data>
   <data name="label_tftpdretry.Text" xml:space="preserve">
     <value>重传次数</value>
-  </data>
-  <data name="tftp_dirbtn1.Text" xml:space="preserve">
-    <value>目录1</value>
-  </data>
-  <data name="tftp_dirbtn2.Text" xml:space="preserve">
-    <value>目录2</value>
-  </data>
-  <data name="tftp_dirbtn3.Text" xml:space="preserve">
-    <value>目录3</value>
   </data>
   <data name="tftpd_btn.Text" xml:space="preserve">
     <value>开始</value>
@@ -280,17 +271,29 @@
   <data name="dhcp_btn.Text" xml:space="preserve">
     <value>开始</value>
   </data>
-  <data name="hp_label.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_lang.Size" type="System.Drawing.Size, System.Drawing">
     <value>30, 16</value>
   </data>
-  <data name="hp_label.Text" xml:space="preserve">
+  <data name="label_lang.Text" xml:space="preserve">
+    <value>语言</value>
+  </data>
+  <data name="label_ver.Size" type="System.Drawing.Size, System.Drawing">
+    <value>30, 16</value>
+  </data>
+  <data name="label_ver.Text" xml:space="preserve">
+    <value>版本</value>
+  </data>
+  <data name="label_prj.Size" type="System.Drawing.Size, System.Drawing">
+    <value>30, 16</value>
+  </data>
+  <data name="label_prj.Text" xml:space="preserve">
     <value>主页</value>
   </data>
-  <data name="lang_label.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_prof.Size" type="System.Drawing.Size, System.Drawing">
     <value>30, 16</value>
   </data>
-  <data name="lang_label.Text" xml:space="preserve">
-    <value>语言</value>
+  <data name="label_prof.Text" xml:space="preserve">
+    <value>配置</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

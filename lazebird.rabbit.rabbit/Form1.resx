@@ -628,7 +628,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 348</value>
+    <value>648, 363</value>
   </data>
   <data name="fp_scan.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
@@ -2325,92 +2325,38 @@
   <data name="&gt;&gt;DHCPD.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="hp_label.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_lang.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="hp_label.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 12</value>
+  <data name="label_lang.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 10</value>
   </data>
-  <data name="hp_label.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 16</value>
-  </data>
-  <data name="hp_label.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="hp_label.Text" xml:space="preserve">
-    <value>Homepage</value>
-  </data>
-  <data name="&gt;&gt;hp_label.Name" xml:space="preserve">
-    <value>hp_label</value>
-  </data>
-  <data name="&gt;&gt;hp_label.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;hp_label.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;hp_label.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="prjurl.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="prjurl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>88, 12</value>
-  </data>
-  <data name="prjurl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>191, 16</value>
-  </data>
-  <data name="prjurl.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="prjurl.Text" xml:space="preserve">
-    <value>https://github.com/lazebird/rabbit</value>
-  </data>
-  <data name="&gt;&gt;prjurl.Name" xml:space="preserve">
-    <value>prjurl</value>
-  </data>
-  <data name="&gt;&gt;prjurl.Type" xml:space="preserve">
-    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;prjurl.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;prjurl.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="lang_label.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="lang_label.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 44</value>
-  </data>
-  <data name="lang_label.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_lang.Size" type="System.Drawing.Size, System.Drawing">
     <value>60, 16</value>
   </data>
-  <data name="lang_label.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_lang.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
-  <data name="lang_label.Text" xml:space="preserve">
+  <data name="label_lang.Text" xml:space="preserve">
     <value>Language</value>
   </data>
-  <data name="&gt;&gt;lang_label.Name" xml:space="preserve">
-    <value>lang_label</value>
+  <data name="&gt;&gt;label_lang.Name" xml:space="preserve">
+    <value>label_lang</value>
   </data>
-  <data name="&gt;&gt;lang_label.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_lang.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;lang_label.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_lang.Parent" xml:space="preserve">
     <value>Setting</value>
   </data>
-  <data name="&gt;&gt;lang_label.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="&gt;&gt;label_lang.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="lang_cb.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
   <data name="lang_cb.Location" type="System.Drawing.Point, System.Drawing">
-    <value>91, 44</value>
+    <value>90, 10</value>
   </data>
   <data name="lang_cb.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -2431,7 +2377,175 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;lang_cb.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="label_ver.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_ver.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_ver.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 50</value>
+  </data>
+  <data name="label_ver.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 16</value>
+  </data>
+  <data name="label_ver.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="label_ver.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="&gt;&gt;label_ver.Name" xml:space="preserve">
+    <value>label_ver</value>
+  </data>
+  <data name="&gt;&gt;label_ver.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_ver.Parent" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="&gt;&gt;label_ver.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="link_ver.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="link_ver.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="link_ver.Location" type="System.Drawing.Point, System.Drawing">
+    <value>90, 50</value>
+  </data>
+  <data name="link_ver.Size" type="System.Drawing.Size, System.Drawing">
+    <value>0, 16</value>
+  </data>
+  <data name="link_ver.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;link_ver.Name" xml:space="preserve">
+    <value>link_ver</value>
+  </data>
+  <data name="&gt;&gt;link_ver.Type" xml:space="preserve">
+    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;link_ver.Parent" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="&gt;&gt;link_ver.ZOrder" xml:space="preserve">
     <value>3</value>
+  </data>
+  <data name="label_prj.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_prj.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 90</value>
+  </data>
+  <data name="label_prj.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 16</value>
+  </data>
+  <data name="label_prj.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="label_prj.Text" xml:space="preserve">
+    <value>Homepage</value>
+  </data>
+  <data name="&gt;&gt;label_prj.Name" xml:space="preserve">
+    <value>label_prj</value>
+  </data>
+  <data name="&gt;&gt;label_prj.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_prj.Parent" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="&gt;&gt;label_prj.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="link_prj.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="link_prj.Location" type="System.Drawing.Point, System.Drawing">
+    <value>90, 90</value>
+  </data>
+  <data name="link_prj.Size" type="System.Drawing.Size, System.Drawing">
+    <value>191, 16</value>
+  </data>
+  <data name="link_prj.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="link_prj.Text" xml:space="preserve">
+    <value>https://github.com/lazebird/rabbit</value>
+  </data>
+  <data name="&gt;&gt;link_prj.Name" xml:space="preserve">
+    <value>link_prj</value>
+  </data>
+  <data name="&gt;&gt;link_prj.Type" xml:space="preserve">
+    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;link_prj.Parent" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="&gt;&gt;link_prj.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="label_prof.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_prof.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_prof.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 130</value>
+  </data>
+  <data name="label_prof.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 16</value>
+  </data>
+  <data name="label_prof.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="label_prof.Text" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="&gt;&gt;label_prof.Name" xml:space="preserve">
+    <value>label_prof</value>
+  </data>
+  <data name="&gt;&gt;label_prof.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_prof.Parent" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="&gt;&gt;label_prof.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="link_prof.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="link_prof.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="link_prof.Location" type="System.Drawing.Point, System.Drawing">
+    <value>90, 130</value>
+  </data>
+  <data name="link_prof.Size" type="System.Drawing.Size, System.Drawing">
+    <value>0, 16</value>
+  </data>
+  <data name="link_prof.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;link_prof.Name" xml:space="preserve">
+    <value>link_prof</value>
+  </data>
+  <data name="&gt;&gt;link_prof.Type" xml:space="preserve">
+    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;link_prof.Parent" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="&gt;&gt;link_prof.ZOrder" xml:space="preserve">
+    <value>7</value>
   </data>
   <data name="setting_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
@@ -2461,7 +2575,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;setting_output.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>8</value>
   </data>
   <data name="Setting.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
