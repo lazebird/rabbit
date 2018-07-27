@@ -1,6 +1,5 @@
 ﻿using lazebird.rabbit.ping;
 using System;
-using System.Collections;
 using System.Drawing;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -11,21 +10,19 @@ namespace lazebird.rabbit.rabbit
     public partial class Form1 : Form
     {
         rping scan;
-        Hashtable lbhash;
         void init_form_scan()
         {
             scan = new rping(scan_log_func);
-            lbhash = new Hashtable();
             btn_scan.Click += new EventHandler(scan_click);
         }
         void scan_log_func(string msg)
         {
         }
-        void scan_reply(int id, PingReply reply)
+        void scan_reply(PingReply reply, object data)
         {
-            if (reply == null || reply.Status != IPStatus.Success)
+            if (reply != null && reply.Status == IPStatus.Success)
             {
-                ((Label)lbhash[id]).BackColor = Color.Red;
+                ((Label)data).BackColor = Color.Green;
             }
         }
         void start_scan()
@@ -41,22 +38,20 @@ namespace lazebird.rabbit.rabbit
                     lb.Text = i.ToString();
                     lb.Width = lb.Height = 28;
                     lb.TextAlign = ContentAlignment.MiddleCenter;
-                    lb.BackColor = Color.Green;
+                    lb.BackColor = Color.FromArgb(64, 64, 64);
                     lb.ForeColor = Color.White;
                     fp_scan.Controls.Add(lb);
                     ipbytes[3] = (Byte)i;
-                    int id = scan.start_async((new IPAddress(ipbytes)).ToString(), 1000, scan_reply);
-                    lbhash.Add(id, lb);
+                    scan.start_async((new IPAddress(ipbytes)).ToString(), 1000, scan_reply, lb);
                 }
             }
             catch (Exception) { }
         }
         void stop_scan()
         {
-            lbhash.Clear();
             fp_scan.Controls.Clear();
         }
-         void scan_click(object sender, EventArgs e)
+        void scan_click(object sender, EventArgs e)
         {
             stop_scan();
             start_scan();

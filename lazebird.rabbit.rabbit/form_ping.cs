@@ -35,7 +35,7 @@ namespace lazebird.rabbit.rabbit
             pinglog.write(msg);
         }
         long RoundtripTime;
-        void ping_cb(int id, PingReply reply)
+        void ping_cb(PingReply reply, object data)
         {
             if (reply == null)  // exception
             {
@@ -73,7 +73,7 @@ namespace lazebird.rabbit.rabbit
             maxtm = totaltm = 0;
             while (stop_unset && (count < 0 || count-- > 0))
             {
-                ping.start(addr, timeout, ping_cb);
+                ping.start(addr, timeout, ping_cb, null);
                 txcnt++;
                 if (timeout > (int)RoundtripTime)
                 {

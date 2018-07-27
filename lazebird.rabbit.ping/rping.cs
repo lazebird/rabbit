@@ -7,38 +7,35 @@ namespace lazebird.rabbit.ping
     public class rping
     {
         Action<string> log;
-        int reqid = 0;
 
         public rping(Action<string> log)
         {
             this.log = log;
         }
-        public void start(string addr, int timeout, Action<int, PingReply> callback)
+        public void start(string addr, int timeout, Action<PingReply, object> callback, object data)
         {
-            ping_process(++reqid, addr, timeout, callback);
+            ping_process(addr, timeout, callback, null);
         }
-        public int start_async(string addr, int timeout, Action<int, PingReply> callback)
+        public void start_async(string addr, int timeout, Action<PingReply, object> callback, object data)
         {
-            int id = ++reqid;
-            Thread ping_thread = new Thread(() => ping_process(id, addr, timeout, callback));
+            Thread ping_thread = new Thread(() => ping_process(addr, timeout, callback, data));
             ping_thread.IsBackground = true;
             ping_thread.Start();
-            return id;
         }
-         void ping_process(int id, string addr, int timeout, Action<int, PingReply> callback)
+        void ping_process(string addr, int timeout, Action<PingReply, object> callback, object data)
         {
             Ping pingSender = new Ping();
             PingReply reply;
             try
             {
                 reply = pingSender.Send(addr, timeout);
-                callback(id, reply);
+                callback(reply, data);
                 pingSender.Dispose();
             }
             catch (Exception e)
             {
                 log("Error: " + e.Message);
-                callback(id, null);
+                callback(null, data);
             }
         }
     }
