@@ -48,6 +48,7 @@ namespace lazebird.rabbit.tftp
                     return false;
                 }
             }
+            curretry = 0;   // reset retry cnt
             return uc.Send(pktbuf, pktbuf.Length, r) == pktbuf.Length;
         }
     }

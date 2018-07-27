@@ -56,6 +56,7 @@ namespace lazebird.rabbit.tftp
                     data = new byte[0]; // srv send last empty block; client write last block
                 pktbuf = new data_pkt(++blkno, data).pack();
             }
+            curretry = 0;   // reset retry cnt
             return uc.Send(pktbuf, pktbuf.Length, r) == pktbuf.Length;
         }
     }
