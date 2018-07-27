@@ -4,10 +4,10 @@ using System.Windows.Forms;
 
 namespace lazebird.rabbit.common
 {
-    public class rlog
+    public class rlog : IDisposable
     {
         ListBox logview = null;
-        StreamWriter file;
+        StreamWriter file = null;
 
         public rlog(ListBox logview)
         {
@@ -66,6 +66,18 @@ namespace lazebird.rabbit.common
             }
             logview.Refresh();
             return line;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (file != null) file.Dispose();
+            file = null;
+            if (!disposing) return;
+            logview = null;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace lazebird.rabbit.tftp
 {
-    class ss // session
+    class ss : IDisposable // session
     {
         public string cwd; // current work directory
         public UdpClient uc;
@@ -96,11 +96,25 @@ namespace lazebird.rabbit.tftp
 
         public void destroy(Func<int, string, int> log)
         {
-            if (q != null) q.stop();
+            if (q != null)
+                q.stop();
             if (t != null) t.Join();
-            uc.Close();
-            uc.Dispose();
+            Dispose(true);
             log(-1, "I: Destroy session: " + r.ToString());
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (q != null) q.Dispose();
+            if (uc != null) uc.Dispose();
+            q = null;
+            uc = null;
+            if (!disposing) return;
+            r = null;
+            pktbuf = null;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

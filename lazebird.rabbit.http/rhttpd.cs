@@ -10,10 +10,10 @@ using System.Threading;
 
 namespace lazebird.rabbit.http
 {
-    public class rhttpd
+    public class rhttpd : IDisposable
     {
         Action<string> log;
-        HttpListener httpListener;
+        HttpListener httpListener = null;
         Hashtable mimehash;
         Hashtable fhash;
         rfs rfs;
@@ -59,7 +59,7 @@ namespace lazebird.rabbit.http
         }
         public void stop()
         {
-            httpListener.Close();
+            Dispose();
         }
         string get_suffix(string fname)
         {
@@ -88,7 +88,9 @@ namespace lazebird.rabbit.http
 
                 if (fhash.ContainsKey(uri) && ((rfile)fhash[uri]).type == "file")
                 {
-                    file_load(response, uri);
+                    Thread t = new Thread(() => file_load(response, uri));
+                    t.IsBackground = true;
+                    t.Start();
                 }
                 else if (!fhash.ContainsKey(uri))
                 {
@@ -119,8 +121,12 @@ namespace lazebird.rabbit.http
             FileStream fs = new FileStream((string)((rfile)fhash[path]).path, FileMode.Open, FileAccess.Read);
             response.ContentLength64 = fs.Length;
             rqueue q = new rqueue(10); // 10 * 10M, max memory used 100M
-            new Thread(() => rfs.readstream(fs, q, 10000000)).Start();    // 10000000, max block size 10M
-            new Thread(() => rfs.writestream(output, q, fs.Name)).Start();
+            Thread t1 = new Thread(() => rfs.readstream(fs, q, 10000000));    // 10000000, max block size 10M
+            t1.IsBackground = true;
+            t1.Start();
+            rfs.writestream(output, q, fs.Name);
+            t1.Abort();
+            q.Dispose();
         }
         string dir_load(string path)
         {
@@ -188,6 +194,20 @@ namespace lazebird.rabbit.http
         public void del_file(string path)
         {
             rfs.delfile(fhash, "/", path);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (httpListener != null) httpListener.Close();
+            httpListener = null;
+            if (!disposing) return;
+            mimehash = null;
+            fhash = null;
+            rfs = null;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

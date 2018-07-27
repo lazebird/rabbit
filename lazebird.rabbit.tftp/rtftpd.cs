@@ -8,7 +8,7 @@ using static lazebird.rabbit.tftp.pkt;
 
 namespace lazebird.rabbit.tftp
 {
-    public class rtftpd
+    public class rtftpd : IDisposable
     {
         Func<int, string, int> log;
         Thread tftpd;
@@ -105,15 +105,24 @@ namespace lazebird.rabbit.tftp
         {
             try
             {
-                tftpd.Abort();
-                tftpd = null;
-                uc.Close();
-                uc.Dispose();
+                Dispose();
             }
             catch (Exception e)
             {
                 slog("!E: " + e.Message);
             }
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (uc != null) uc.Dispose();
+            if (tftpd != null) tftpd.Abort();
+            uc = null;
+            tftpd = null;
+            if (!disposing) return;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

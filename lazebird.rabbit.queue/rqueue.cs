@@ -1,14 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Threading;
 
 namespace lazebird.rabbit.queue
 {
-    public class rqueue
+    public class rqueue : IDisposable
     {
         Queue q;
         object l;
-        Semaphore sc;
-        Semaphore sp;
+        Semaphore sc = null;
+        Semaphore sp = null;
         int maxsize = 100;
         int timeout = 1000;
         bool stop_flag = false;
@@ -64,6 +65,19 @@ namespace lazebird.rabbit.queue
         public bool has_stopped()
         {
             return stop_flag;
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (sc != null) sc.Dispose();
+            if (sp != null) sp.Dispose();
+            sc = null;
+            sp = null;
+            if (!disposing) return;
+            q = null;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

@@ -5,7 +5,7 @@
         /// <summary>
         /// 必需的设计器变量。
         /// </summary>
-         System.ComponentModel.IContainer components = null;
+        System.ComponentModel.IContainer components = null;
 
         /// <summary>
         /// 清理所有正在使用的资源。
@@ -18,6 +18,13 @@
                 components.Dispose();
             }
             base.Dispose(disposing);
+            httpd.Dispose();
+            httpdlog.Dispose();
+            pinglog.Dispose();
+            setlog.Dispose();
+            tftpclog.Dispose();
+            tftpd.Dispose();
+            tftpdlog.Dispose();
         }
 
         #region Windows 窗体设计器生成的代码
@@ -26,7 +33,7 @@
         /// 设计器支持所需的方法 - 不要修改
         /// 使用代码编辑器修改此方法的内容。
         /// </summary>
-         void InitializeComponent()
+        void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
@@ -901,89 +908,89 @@
 
         #endregion
 
-         System.Windows.Forms.Label label_interval;
-         System.Windows.Forms.Label label_count;
-         System.Windows.Forms.TextBox text_addr;
-         System.Windows.Forms.TextBox text_interval;
-         System.Windows.Forms.ToolStripContainer toolStripContainer1;
-         System.Windows.Forms.Button btn_ping;
-         System.Windows.Forms.Button btn_ping_log;
-         System.Windows.Forms.TextBox text_count;
-         System.Windows.Forms.Label label_addr;
-         System.Windows.Forms.TextBox text_logpath;
-         System.Windows.Forms.TabControl tabs;
-         System.Windows.Forms.TabPage Ping;
-         System.Windows.Forms.TabPage HTTPD;
-         System.Windows.Forms.ListBox ping_output;
-         System.Windows.Forms.TabPage FTPD;
-         System.Windows.Forms.TabPage Setting;
-         System.Windows.Forms.Label label_http_port;
-         System.Windows.Forms.TextBox text_http_port;
-         System.Windows.Forms.TextBox text_http_dir;
-         System.Windows.Forms.Button btn_httpd;
-         System.Windows.Forms.TextBox ftp_dirtext1;
-         System.Windows.Forms.Button ftp_dirbtn1;
-         System.Windows.Forms.TextBox ftp_dirtext2;
-         System.Windows.Forms.Button ftp_dirbtn2;
-         System.Windows.Forms.TextBox ftp_dirtext3;
-         System.Windows.Forms.Button ftp_dirbtn3;
-         System.Windows.Forms.TextBox ftp_dirtext4;
-         System.Windows.Forms.Button ftp_dirbtn4;
-         System.Windows.Forms.TextBox ftp_dirtext5;
-         System.Windows.Forms.Button ftp_dirbtn5;
-         System.Windows.Forms.Button btn_ftp;
-         System.Windows.Forms.TabPage TFTPD;
-         System.Windows.Forms.Button tftpd_adddir;
-         System.Windows.Forms.Button tftpd_deldir;
-         System.Windows.Forms.Label label_lang;
-         System.Windows.Forms.ComboBox lang_cb;
-         System.Windows.Forms.ListBox httpd_output;
-         System.Windows.Forms.TabPage DHCPD;
-         System.Windows.Forms.Label dhcp_startlabel;
-         System.Windows.Forms.TextBox dhcp_starttext;
-         System.Windows.Forms.Label dhcp_endlabel;
-         System.Windows.Forms.TextBox dhcp_endtext;
-         System.Windows.Forms.Label dhcp_gatewaylabel;
-         System.Windows.Forms.TextBox dhcp_gatewaytext;
-         System.Windows.Forms.Button dhcp_logbtn;
-         System.Windows.Forms.TextBox dhcp_logtext;
-         System.Windows.Forms.Button dhcp_btn;
-         System.Windows.Forms.ListBox dhcp_logmsg;
-         System.Windows.Forms.Button btn_http_dir;
-         System.Windows.Forms.ListBox tftpd_output;
-         System.Windows.Forms.Button tftpd_btn;
-         System.Windows.Forms.TabPage Scan;
-         System.Windows.Forms.Label label_scanip;
-         System.Windows.Forms.TextBox text_scanstart;
-         System.Windows.Forms.Label label_scanend;
-         System.Windows.Forms.TextBox text_scanend;
-         System.Windows.Forms.Button btn_scan;
-         System.Windows.Forms.FlowLayoutPanel fp_scan;
-         System.Windows.Forms.ListBox setting_output;
-         System.Windows.Forms.LinkLabel link_prj;
-         System.Windows.Forms.Label label_prj;
-         System.Windows.Forms.ListBox ftpd_output;
-         System.Windows.Forms.Label label_tftpdtout;
-         System.Windows.Forms.TextBox text_tftpdtout;
-         System.Windows.Forms.Label label_tftpdretry;
-         System.Windows.Forms.TextBox text_tftpdretry;
-         System.Windows.Forms.TabPage TFTPC;
-         System.Windows.Forms.Label label_tftpctout;
-         System.Windows.Forms.TextBox text_tftpctout;
-         System.Windows.Forms.Label label_tftpcretry;
-         System.Windows.Forms.TextBox text_tftpcretry;
-         System.Windows.Forms.TextBox text_tftpcblksize;
-         System.Windows.Forms.TextBox text_tftpclfile;
-         System.Windows.Forms.Button btn_tftpclfile;
-         System.Windows.Forms.TextBox text_tftpcrfile;
-         System.Windows.Forms.Button btn_tftpcget;
-         System.Windows.Forms.ListBox tftpc_output;
-         System.Windows.Forms.Label label_tftpcblksize;
-         System.Windows.Forms.Label label_tftpcrfile;
-         System.Windows.Forms.Button btn_tftpcput;
-         System.Windows.Forms.Label label_tftpcaddr;
-         System.Windows.Forms.TextBox text_tftpcaddr;
-         System.Windows.Forms.FlowLayoutPanel tftpd_fp;
+        System.Windows.Forms.Label label_interval;
+        System.Windows.Forms.Label label_count;
+        System.Windows.Forms.TextBox text_addr;
+        System.Windows.Forms.TextBox text_interval;
+        System.Windows.Forms.ToolStripContainer toolStripContainer1;
+        System.Windows.Forms.Button btn_ping;
+        System.Windows.Forms.Button btn_ping_log;
+        System.Windows.Forms.TextBox text_count;
+        System.Windows.Forms.Label label_addr;
+        System.Windows.Forms.TextBox text_logpath;
+        System.Windows.Forms.TabControl tabs;
+        System.Windows.Forms.TabPage Ping;
+        System.Windows.Forms.TabPage HTTPD;
+        System.Windows.Forms.ListBox ping_output;
+        System.Windows.Forms.TabPage FTPD;
+        System.Windows.Forms.TabPage Setting;
+        System.Windows.Forms.Label label_http_port;
+        System.Windows.Forms.TextBox text_http_port;
+        System.Windows.Forms.TextBox text_http_dir;
+        System.Windows.Forms.Button btn_httpd;
+        System.Windows.Forms.TextBox ftp_dirtext1;
+        System.Windows.Forms.Button ftp_dirbtn1;
+        System.Windows.Forms.TextBox ftp_dirtext2;
+        System.Windows.Forms.Button ftp_dirbtn2;
+        System.Windows.Forms.TextBox ftp_dirtext3;
+        System.Windows.Forms.Button ftp_dirbtn3;
+        System.Windows.Forms.TextBox ftp_dirtext4;
+        System.Windows.Forms.Button ftp_dirbtn4;
+        System.Windows.Forms.TextBox ftp_dirtext5;
+        System.Windows.Forms.Button ftp_dirbtn5;
+        System.Windows.Forms.Button btn_ftp;
+        System.Windows.Forms.TabPage TFTPD;
+        System.Windows.Forms.Button tftpd_adddir;
+        System.Windows.Forms.Button tftpd_deldir;
+        System.Windows.Forms.Label label_lang;
+        System.Windows.Forms.ComboBox lang_cb;
+        System.Windows.Forms.ListBox httpd_output;
+        System.Windows.Forms.TabPage DHCPD;
+        System.Windows.Forms.Label dhcp_startlabel;
+        System.Windows.Forms.TextBox dhcp_starttext;
+        System.Windows.Forms.Label dhcp_endlabel;
+        System.Windows.Forms.TextBox dhcp_endtext;
+        System.Windows.Forms.Label dhcp_gatewaylabel;
+        System.Windows.Forms.TextBox dhcp_gatewaytext;
+        System.Windows.Forms.Button dhcp_logbtn;
+        System.Windows.Forms.TextBox dhcp_logtext;
+        System.Windows.Forms.Button dhcp_btn;
+        System.Windows.Forms.ListBox dhcp_logmsg;
+        System.Windows.Forms.Button btn_http_dir;
+        System.Windows.Forms.ListBox tftpd_output;
+        System.Windows.Forms.Button tftpd_btn;
+        System.Windows.Forms.TabPage Scan;
+        System.Windows.Forms.Label label_scanip;
+        System.Windows.Forms.TextBox text_scanstart;
+        System.Windows.Forms.Label label_scanend;
+        System.Windows.Forms.TextBox text_scanend;
+        System.Windows.Forms.Button btn_scan;
+        System.Windows.Forms.FlowLayoutPanel fp_scan;
+        System.Windows.Forms.ListBox setting_output;
+        System.Windows.Forms.LinkLabel link_prj;
+        System.Windows.Forms.Label label_prj;
+        System.Windows.Forms.ListBox ftpd_output;
+        System.Windows.Forms.Label label_tftpdtout;
+        System.Windows.Forms.TextBox text_tftpdtout;
+        System.Windows.Forms.Label label_tftpdretry;
+        System.Windows.Forms.TextBox text_tftpdretry;
+        System.Windows.Forms.TabPage TFTPC;
+        System.Windows.Forms.Label label_tftpctout;
+        System.Windows.Forms.TextBox text_tftpctout;
+        System.Windows.Forms.Label label_tftpcretry;
+        System.Windows.Forms.TextBox text_tftpcretry;
+        System.Windows.Forms.TextBox text_tftpcblksize;
+        System.Windows.Forms.TextBox text_tftpclfile;
+        System.Windows.Forms.Button btn_tftpclfile;
+        System.Windows.Forms.TextBox text_tftpcrfile;
+        System.Windows.Forms.Button btn_tftpcget;
+        System.Windows.Forms.ListBox tftpc_output;
+        System.Windows.Forms.Label label_tftpcblksize;
+        System.Windows.Forms.Label label_tftpcrfile;
+        System.Windows.Forms.Button btn_tftpcput;
+        System.Windows.Forms.Label label_tftpcaddr;
+        System.Windows.Forms.TextBox text_tftpcaddr;
+        System.Windows.Forms.FlowLayoutPanel tftpd_fp;
         private System.Windows.Forms.Label label_ver;
         private System.Windows.Forms.LinkLabel link_ver;
         private System.Windows.Forms.Label label_prof;

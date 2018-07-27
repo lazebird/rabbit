@@ -111,7 +111,7 @@ namespace lazebird.rabbit.fs
                 while (q.produce(buffer) == 0) ;
             }
             binReader.Close();
-            fs.Close();
+            //fs.Close(); // binReader disposed?
             q.stop();
         }
         public void writestream(Stream output, rqueue q, string filename)
