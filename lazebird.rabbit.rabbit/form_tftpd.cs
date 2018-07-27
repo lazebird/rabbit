@@ -17,6 +17,7 @@ namespace lazebird.rabbit.rabbit
         ArrayList tftpd_dirs;
         Timer tftpd_tmr;
         Button lastclicked = null;  // donot support two different dir clicked at the same time
+        string lastpath = Environment.CurrentDirectory;
         void init_form_tftpd()
         {
             tftpd_dirs = new ArrayList();
@@ -57,12 +58,14 @@ namespace lazebird.rabbit.rabbit
         }
         void tftpd_dir_select(Button b)
         {
-            FolderBrowserDialog dialog = new FolderBrowserDialog();
-            dialog.SelectedPath = (string)tftpd_dirhash[b];
-            dialog.Description = "请选择文件夹";
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.InitialDirectory = (string)tftpd_dirhash[b];
+            dialog.RestoreDirectory = true;
+            dialog.FileName = "Choose Here";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                tftpd_set_dir(b, dialog.SelectedPath);
+                lastpath = Path.GetDirectoryName(dialog.FileName);
+                tftpd_set_dir(b, lastpath);
             }
         }
         void tftpd_dir_click(object sender, MouseEventArgs e)
@@ -94,7 +97,7 @@ namespace lazebird.rabbit.rabbit
             b.MouseDown += tftpd_dir_click;
             tftpd_fp.Controls.Add(b);
             tftpd_dirs.Add(b);
-            tftpd_set_dir(b, Environment.CurrentDirectory);
+            tftpd_set_dir(b, lastpath);
             return b;
         }
         void tftpd_adddir_click(object sender, EventArgs e)
