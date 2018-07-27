@@ -1,5 +1,7 @@
 # Release Notes
 
+## Latest Version: 2.0.0.0
+
 ## 2018-07-26
 ### New
 1. support tftp client
