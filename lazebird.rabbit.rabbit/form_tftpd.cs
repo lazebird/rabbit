@@ -48,7 +48,7 @@ namespace lazebird.rabbit.rabbit
             if (newidx != curtftpd_dir && curtftpd_dir >= 0)
             {
                 Button old = (Button)tftpd_dirs[curtftpd_dir];
-                old.BackColor = Color.Blue;
+                old.BackColor = Color.FromArgb(64, 64, 64);
             }
             b.BackColor = Color.YellowGreen;
             curtftpd_dir = newidx;
@@ -88,7 +88,7 @@ namespace lazebird.rabbit.rabbit
         Button tftpd_add_dir()
         {
             Button b = new Button();
-            b.BackColor = Color.Blue;
+            b.BackColor = Color.FromArgb(64, 64, 64);
             b.FlatAppearance.BorderSize = 0;
             b.FlatStyle = FlatStyle.Flat;
             b.MouseDown += tftpd_dir_click;
