@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using static lazebird.rabbit.tftp.pkt;
 
@@ -20,6 +21,7 @@ namespace lazebird.rabbit.tftp
                 {
                     rrq_pkt pkt = new rrq_pkt();
                     if (!pkt.parse(buf)) return false;
+                    set_param(pkt.timeout * 1000 / Math.Max(maxretry, 1), pkt.blksize);
                     read_file(pkt.filename);
                     if (pkt.has_opt())
                     {

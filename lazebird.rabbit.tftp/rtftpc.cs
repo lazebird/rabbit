@@ -32,14 +32,12 @@ namespace lazebird.rabbit.tftp
                 byte[] buf;
                 if (oper == Opcodes.Read) // get
                 {
-                    s = new crss(Path.GetDirectoryName(localFile), new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
-                    s.write_file(Path.GetFileName(localFile));
+                    s = new crss(localFile, new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
                     buf = new rrq_pkt(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
                 }
                 else // put
                 {
-                    s = new cwss(Path.GetDirectoryName(localFile), new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
-                    s.read_file(Path.GetFileName(localFile));
+                    s = new cwss(localFile, new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
                     buf = new wrq_pkt(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
                 }
                 s.uc.Send(buf, buf.Length, s.r);
