@@ -43,10 +43,5 @@
       <Name>lazebird.rabbit.queue</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="lazebird.rabbit.fs.nuspec">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

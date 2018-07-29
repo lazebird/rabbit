@@ -38,9 +38,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="lazebird.rabbit.http.nuspec" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\lazebird.rabbit.fs\lazebird.rabbit.fs.csproj">
       <Project>{9d8c34cf-12bf-4360-9ca3-4d0a7d4d8cbc}</Project>
       <Name>lazebird.rabbit.fs</Name>
