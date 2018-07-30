@@ -96,11 +96,11 @@ namespace lazebird.rabbit.tftp
 
         public void destroy(Func<int, string, int> log)
         {
+            log(-1, "I: Destroy session: " + r.ToString());
             if (q != null)
                 q.stop();
             if (t != null) t.Join();
             Dispose(true);
-            log(-1, "I: Destroy session: " + r.ToString());
         }
         protected virtual void Dispose(bool disposing)
         {
