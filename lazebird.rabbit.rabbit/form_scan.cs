@@ -14,6 +14,7 @@ namespace lazebird.rabbit.rabbit
         {
             scan = new rping(scan_log_func);
             btn_scan.Click += new EventHandler(scan_click);
+            fp_scan.AutoScroll = true;
         }
         void scan_log_func(string msg)
         {
