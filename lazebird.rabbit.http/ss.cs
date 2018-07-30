@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace lazebird.rabbit.http
 {
-    class ss
+    class ss : IDisposable
     {
         Action<string> log;
         HttpListenerRequest request;
@@ -119,12 +119,21 @@ namespace lazebird.rabbit.http
         }
         public void destroy()
         {
+            Dispose(true);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
             if (q != null) q.Dispose();
             if (t != null) t.Abort();
             q = null;
             t = null;
+            if (!disposing) return;
             request = null;
             response = null;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }
