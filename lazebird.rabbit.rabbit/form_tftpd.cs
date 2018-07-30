@@ -30,6 +30,7 @@ namespace lazebird.rabbit.rabbit
             tftpd_adddir.Click += new EventHandler(tftpd_adddir_click);
             tftpd_deldir.Click += new EventHandler(tftpd_deldir_click);
             tftpd_btn.Click += new EventHandler(tftpd_click);
+            tftpd_fp.AutoScroll = true;
         }
         int tftpd_log_func(int id, string msg)
         {
