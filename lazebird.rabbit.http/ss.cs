@@ -38,17 +38,15 @@ namespace lazebird.rabbit.http
         string uri2filepath(string uri)
         {
             if (rfs.fhash.ContainsKey(uri)) return (string)rfs.fhash[uri];
-            string dname = uri;
-            string fname = "";
-            while (dname != null) // longest match
+            string firstname = uri;
+            string lastname = "";
+            while (firstname != null) // longest match
             {
-                log("I: uri " + uri + " search " + dname + "//" + fname);
-                if (rfs.dhash.ContainsKey(dname)) return (string)rfs.dhash[dname];
-                fname = Path.GetFileName(dname) + "/" + fname;
-                dname = Path.GetDirectoryName(dname);
+                log("I: uri " + uri + " search " + firstname + " + " + lastname);
+                if (rfs.dhash.ContainsKey(firstname)) return (string)rfs.dhash[firstname];
+                lastname = Path.GetFileName(firstname) + "/" + lastname;
+                firstname = Path.GetDirectoryName(firstname);
             }
-            if (rfs.dhash.ContainsKey(uri)) return (string)rfs.dhash[uri];
-            if (rfs.dhash.ContainsKey(Path.GetDirectoryName(uri))) return (string)rfs.dhash[Path.GetDirectoryName(uri)] + Path.GetFileName(uri);
             return null;
         }
         string uri2mime(Hashtable mimehash, string uri)
@@ -83,20 +81,20 @@ namespace lazebird.rabbit.http
                 "<th>Last Modified</th>" +
                 "</tr>";
             index += "<tr>" +
-              "<td><a href=" + Uri.EscapeUriString(path.Substring(0, path.Substring(0, path.Length - 1).LastIndexOf('/') + 1)) + ">" + ".." + " </a></td>" +
+              "<td><a href=" + Uri.EscapeUriString(uri.Substring(0, uri.Substring(0, uri.Length - 1).LastIndexOf('/') + 1)) + ">" + ".." + " </a></td>" +
               "<td>" + "</td>" +
               "<td>" + "</td>" +
               "</tr>";
             DirectoryInfo dir = new DirectoryInfo(path);
             foreach (FileInfo f in dir.GetFiles())
                 index += "<tr>" +
-                 "<td><a href=" + Uri.EscapeUriString(f.FullName) + ">" + f.Name + " </a></td>" +
+                 "<td><a href=" + Uri.EscapeUriString(uri + f.Name) + ">" + f.Name + " </a></td>" +
                  "<td>" + f.Length.ToString("###,###") + "</td>" +
                  "<td>" + f.LastWriteTime + "</td>" +
                  "</tr>";
             foreach (DirectoryInfo d in dir.GetDirectories())
                 index += "<tr>" +
-                 "<td><a href=" + Uri.EscapeUriString(d.FullName) + ">" + d.Name + " </a></td>" +
+                 "<td><a href=" + Uri.EscapeUriString(uri + d.Name) + ">" + d.Name + " </a></td>" +
                  "<td>" + "-" + "</td>" +
                  "<td>" + d.LastWriteTime + "</td>" +
                  "</tr>";
