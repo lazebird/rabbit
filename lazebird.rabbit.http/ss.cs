@@ -117,5 +117,14 @@ namespace lazebird.rabbit.http
             else
                 loaderror(path, 404);
         }
+        public void destroy()
+        {
+            if (q != null) q.Dispose();
+            if (t != null) t.Abort();
+            q = null;
+            t = null;
+            request = null;
+            response = null;
+        }
     }
 }

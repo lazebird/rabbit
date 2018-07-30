@@ -55,6 +55,7 @@ namespace lazebird.rabbit.http
         {
             ss s = new ss(log, request, response, rfs);
             s.proc_req(mimehash);
+            s.destroy();
         }
         void dispatcher(IAsyncResult ar)
         {
