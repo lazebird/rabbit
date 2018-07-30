@@ -35,17 +35,18 @@ namespace lazebird.rabbit.http
             this.log = log;
         }
         void log_func(string msg) { }
-        string uri2filepath(string uri)
+        string uri2rpath(string uri)
         {
             if (rfs.fhash.ContainsKey(uri)) return (string)rfs.fhash[uri];
             string firstname = uri;
-            string lastname = "";
+            string lastname = null;
             while (firstname != null) // longest match
             {
-                log("I: uri " + uri + " search " + firstname + " + " + lastname);
-                if (rfs.dhash.ContainsKey(firstname)) return (string)rfs.dhash[firstname];
-                lastname = Path.GetFileName(firstname) + "/" + lastname;
-                firstname = Path.GetDirectoryName(firstname);
+                //log("I: uri " + uri + " search " + firstname + " + " + lastname);
+                if (rfs.dhash.ContainsKey(firstname)) return (string)rfs.dhash[firstname] + (lastname == null ? "" : ("/" + lastname));
+                if (lastname == null) lastname = Path.GetFileName(firstname);
+                else lastname = Path.GetFileName(firstname) + "/" + lastname;
+                firstname = Path.GetDirectoryName(firstname).Replace(@"\", @"/");
             }
             return null;
         }
@@ -72,32 +73,25 @@ namespace lazebird.rabbit.http
             t.Abort();
             q.Dispose();
         }
-        void loaddir(string path)
+        string create_th(string s1, string s2, string s3)
         {
+            return "<tr><th>" + s1 + "</th>" + "<th>" + s2 + "</th>" + "<th>" + s3 + "</th></tr>";
+        }
+        string create_td(string s1, string s2, string s3)
+        {
+            return "<tr><td>" + s1 + "</td>" + "<td>" + s2 + "</td>" + "<td>" + s3 + "</td></tr>";
+        }
+        void loaddir(string rdir)
+        {
+            if (uri[uri.Length - 1] != '/') uri += "/"; // fix uri ending
             string index = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><table><tbody>";
-            index += "<tr>" +
-                "<th>Name</th>" +
-                "<th>Size (Bytes)</th>" +
-                "<th>Last Modified</th>" +
-                "</tr>";
-            index += "<tr>" +
-              "<td><a href=" + Uri.EscapeUriString(uri.Substring(0, uri.Substring(0, uri.Length - 1).LastIndexOf('/') + 1)) + ">" + ".." + " </a></td>" +
-              "<td>" + "</td>" +
-              "<td>" + "</td>" +
-              "</tr>";
-            DirectoryInfo dir = new DirectoryInfo(path);
+            index += create_th("Name", "Size (Bytes)", "Last Modified");
+            if (uri != "/") index += create_td("<a href=" + Uri.EscapeUriString(Path.GetDirectoryName(uri + "../").Replace(@"\", @"/")) + ">" + ".." + " </a>", "-", "-");
+            DirectoryInfo dir = new DirectoryInfo(rdir);
             foreach (FileInfo f in dir.GetFiles())
-                index += "<tr>" +
-                 "<td><a href=" + Uri.EscapeUriString(uri + f.Name) + ">" + f.Name + " </a></td>" +
-                 "<td>" + f.Length.ToString("###,###") + "</td>" +
-                 "<td>" + f.LastWriteTime + "</td>" +
-                 "</tr>";
+                index += create_td("<a href=" + Uri.EscapeUriString(uri + f.Name) + ">" + f.Name + " </a>", f.Length.ToString("###,###"), f.LastWriteTime.ToString());
             foreach (DirectoryInfo d in dir.GetDirectories())
-                index += "<tr>" +
-                 "<td><a href=" + Uri.EscapeUriString(uri + d.Name) + ">" + d.Name + " </a></td>" +
-                 "<td>" + "-" + "</td>" +
-                 "<td>" + d.LastWriteTime + "</td>" +
-                 "</tr>";
+                index += create_td("<a href=" + Uri.EscapeUriString(uri + d.Name + "/") + ">" + d.Name + " </a>", "-", d.LastWriteTime.ToString());
             index += "</tbody></table></body></html>";
             byte[] buf = Encoding.UTF8.GetBytes(index);
             response.ContentLength64 = buf.Length;
@@ -113,8 +107,10 @@ namespace lazebird.rabbit.http
         }
         public void proc_req(Hashtable mimehash)
         {
-            string path = uri2filepath(uri);
-            if (File.Exists(path)) // file
+            string path = uri2rpath(uri);
+            if (path == null)
+                loaderror(path, 404);
+            else if (File.Exists(path)) // file
                 loadfile(mimehash, path);
             else if (Directory.Exists(path)) // dir
                 loaddir(path);
