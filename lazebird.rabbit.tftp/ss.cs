@@ -30,6 +30,7 @@ namespace lazebird.rabbit.tftp
         public byte[] pktbuf = null;
         public ss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout)
         {
+            if (cwd.Length > 0 && cwd[cwd.Length - 1] != '/') cwd += "/"; // fix dir ending
             this.cwd = cwd;
             this.uc = uc;
             this.r = r;
@@ -96,7 +97,7 @@ namespace lazebird.rabbit.tftp
 
         public void destroy(Func<int, string, int> log)
         {
-            log(-1, "I: Destroy session: " + r.ToString());
+            log(-1, "I: Destroy session: " + r.ToString() + " " + cwd + filename);
             if (q != null)
                 q.stop();
             if (t != null) t.Join();
