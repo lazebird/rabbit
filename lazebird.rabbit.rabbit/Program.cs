@@ -12,12 +12,11 @@ namespace lazebird.rabbit.rabbit
         /// <summary>
         /// 应用程序的主入口点。
         /// </summary>
+        static Mutex mutex = new Mutex(true, "lazebird.rabbit.rabbit");
         [STAThread]
         static void Main(string[] args)
         {
-            bool createdNew;
-            Mutex instance = new Mutex(true, "lazebird.rabbit.rabbit", out createdNew);
-            if (createdNew)
+            if (mutex.WaitOne(TimeSpan.Zero, true))
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
@@ -25,6 +24,7 @@ namespace lazebird.rabbit.rabbit
                 Language.SetLang(Language.Getsetting(), f, typeof(Form1));
                 new Thread(() => httpd_shell_proc(args, true)).Start();
                 Application.Run(f);
+                mutex.ReleaseMutex();
             }
             else
             {
