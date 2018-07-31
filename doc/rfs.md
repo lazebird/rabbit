@@ -9,39 +9,34 @@
 1. public rfs(Action<string> log)
     - Constructor
     - log: log print function
+    - fhash: file hash for virtual file system
+    - dhash: directory hash for virtual file system
 
-2. public int addfile(Hashtable hs, string vpath, string rpath)
-    - add a file to virtual file system in hashtable
-    - hs: file system hashtable
-    - vpath: file path in virtual file system
-    - rpath: real path in file system
+2. public int addfile(string vdir, string rfile)
+    - add a file to virtual file system
+    - vdir: virtual directory path to be added to
+    - rfile: real file path in file system
 
-3. public int delfile(Hashtable hs, string vpath, string rpath)
+3. public int delfile(string vfile)
     - delete a file from virtual file system
-    - hs: file system hashtable
-    - vpath: file path in virtual file system
-    - rpath: real path in file system
+    - vfile: file path in virtual file system
 
-4. public int adddir(Hashtable hs, string vpath, string rpath, bool recursive)
-    - add a directory to virtual file system in hashtable
-    - hs: file system hashtable
-    - vpath: file path in virtual file system
-    - rpath: real path in file system
-    - recursive: recursive to add sub-directories
+4. public int adddir(string vdir, string rdir)
+    - add a directory to virtual file system
+    - vdir: directory path in virtual file system
+    - rdir: directory path in file system
 
-5. public int deldir(Hashtable hs, string vpath, string rpath)
-    - delete a directory to virtual file system in hashtable
-    - hs: file system hashtable
-    - vpath: file path in virtual file system
-    - rpath: real path in file system
+5. public int deldir(string vdir)
+    - delete a directory in virtual file system
+    - vdir: directory path in virtual file system
 
-6. public void readstream(Stream fs, rqueue q, int maxblksz)
+6. public static void readstream(Stream fs, rqueue q, int maxblksz)
     - read a stream and save to queue
     - fs: input file stream
     - q: resource queue, to store file data
     - maxblksz: max block size read and saved
 
-7. public void writestream(Stream output, rqueue q, string path)
+7. public static void writestream(Stream output, rqueue q, string filename)
     - write queue data to stream
     - output: file stream
     - q: resource queue, stored file data

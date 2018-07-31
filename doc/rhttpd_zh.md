@@ -39,8 +39,9 @@
 4. public void stop()  
     - 停止rhttpd
 
-5. public void set_root(string path)  
+5. public void set_root(string path)  已删除
     - 设置服务器根目录，默认为空目录
+    - 通过将根目录下的文件/子目录全部添加进来的方式来替代旧的实现
 
 6. public void add_dir(string path)  
     - 添加文件夹到根目录中

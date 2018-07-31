@@ -22,13 +22,13 @@ namespace lazebird.rabbit.rabbit
                 Application.SetCompatibleTextRenderingDefault(false);
                 Form1 f = new Form1();
                 Language.SetLang(Language.Getsetting(), f, typeof(Form1));
-                new Thread(() => httpd_shell_proc(args, true)).Start();
+                if (args.Length > 0) new Thread(() => httpd_shell_proc(args, true)).Start();
                 Application.Run(f);
                 mutex.ReleaseMutex();
             }
             else
             {
-                if (args.Length > 0) httpd_shell_proc(args, false);
+                if (args.Length > 0) new Thread(() => httpd_shell_proc(args, false)).Start();
                 Application.Exit();
             }
         }
@@ -43,6 +43,7 @@ namespace lazebird.rabbit.rabbit
                 byte[] buf;
                 foreach (var path in args)
                 {
+                    if (path.Length <= 0) continue;
                     buf = Encoding.Default.GetBytes(path);
                     uc.SendAsync(buf, buf.Length, r);
                 }

@@ -141,7 +141,6 @@ namespace lazebird.rabbit.rabbit
             if (File.Exists(p)) httpd.add_file(p);
             else if (Directory.Exists(p)) httpd.add_dir(p);
             httpd_saveconf();
-            httpd_log_func("I: add path " + p);
         }
         void httpd_readconf()
         {
