@@ -95,7 +95,7 @@ namespace lazebird.rabbit.http
                 foreach (FileInfo f in dir.GetFiles())
                     index += create_td("<a href=" + Uri.EscapeUriString(uri + f.Name) + ">" + f.Name + " </a>", f.Length.ToString("###,###"), f.LastWriteTime.ToString());
                 foreach (DirectoryInfo d in dir.GetDirectories())
-                    index += create_td("<a href=" + Uri.EscapeUriString(uri + d.Name + "/") + ">" + d.Name + " </a>", "-", d.LastWriteTime.ToString());
+                    index += create_td("<a href=" + Uri.EscapeUriString(uri + d.Name + "/") + ">" + d.Name + "/" + " </a>", "-", d.LastWriteTime.ToString());
             }
             Regex rgright = new Regex("^" + uri + ".");
             Regex rgwrong = new Regex("^" + uri + ".+/.");
@@ -111,7 +111,7 @@ namespace lazebird.rabbit.http
                 if (!rgright.IsMatch(key) || rgwrong.IsMatch(key))
                     continue;
                 DirectoryInfo d = new DirectoryInfo((string)rfs.dhash[key]);
-                index += create_td("<a href=" + Uri.EscapeUriString(uri + d.Name + "/") + ">" + d.Name + " </a>", "-", d.LastWriteTime.ToString());
+                index += create_td("<a href=" + Uri.EscapeUriString(uri + d.Name + "/") + ">" + d.Name + "/" + " </a>", "-", d.LastWriteTime.ToString());
             }
             index += "</tbody></table></body></html>";
             byte[] buf = Encoding.UTF8.GetBytes(index);

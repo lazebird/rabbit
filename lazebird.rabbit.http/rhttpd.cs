@@ -84,11 +84,11 @@ namespace lazebird.rabbit.http
         }
         public void add_dir(string path)
         {
-            rfs.adddir("/" + Path.GetDirectoryName(path), path);
+            rfs.adddir("/" + Path.GetFileName(path), path);
         }
         public void del_dir(string path)
         {
-            rfs.deldir("/" + Path.GetDirectoryName(path));
+            rfs.deldir("/" + Path.GetFileName(path));
         }
         public void add_file(string path)
         {
