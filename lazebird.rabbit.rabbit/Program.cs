@@ -44,7 +44,7 @@ namespace lazebird.rabbit.rabbit
                 foreach (var path in args)
                 {
                     buf = Encoding.Default.GetBytes(path);
-                    uc.Send(buf, buf.Length, r);
+                    uc.SendAsync(buf, buf.Length, r);
                 }
                 uc.Close();
             }

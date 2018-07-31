@@ -29,6 +29,7 @@ namespace lazebird.rabbit.rabbit
             btn_httpd.Click += new EventHandler(httpd_click);
             btn_http_reg.Click += new EventHandler(http_reg_shell);
             btn_http_dereg.Click += new EventHandler(http_dereg_shell);
+            fp_httpd.AutoScroll = true;
             init_comsrv();
         }
         void httpd_log_func(string msg)
