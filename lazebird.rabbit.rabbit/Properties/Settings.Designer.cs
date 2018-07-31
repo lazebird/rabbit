@@ -86,12 +86,12 @@ namespace lazebird.rabbit.rabbit.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string http_dir {
+        public string http_dirs {
             get {
-                return ((string)(this["http_dir"]));
+                return ((string)(this["http_dirs"]));
             }
             set {
-                this["http_dir"] = value;
+                this["http_dirs"] = value;
             }
         }
         

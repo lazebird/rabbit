@@ -18,6 +18,7 @@ namespace lazebird.rabbit.fs
         }
         public int addfile(string vdir, string rfile)  // vdir: virtual path, rfile: real path
         {
+            if (!dhash.ContainsKey(vdir)) adddir(vdir, ""); // add an empty vdir
             string vfile = vdir + Path.GetFileName(rfile);
             log("+F: " + vfile + (fhash.ContainsKey(vfile) ? " (exists)" : "" + " -- " + rfile));
             if (!fhash.ContainsKey(vfile)) fhash.Add(vfile, rfile);
@@ -32,6 +33,7 @@ namespace lazebird.rabbit.fs
         public int adddir(string vdir, string rdir)
         {
             log("+D: " + vdir + (dhash.ContainsKey(vdir) ? " (exists)" : "" + " -- " + rdir));
+            if (dhash.ContainsKey(vdir) && vdir != "") dhash.Remove(vdir); // replace
             if (!dhash.ContainsKey(vdir)) dhash.Add(vdir, rdir);
             return 1;
         }

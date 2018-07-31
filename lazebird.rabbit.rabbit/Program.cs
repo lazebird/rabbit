@@ -1,6 +1,8 @@
 ﻿using System;
-using System.IO;
-using System.IO.Pipes;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace lazebird.rabbit.rabbit
@@ -14,31 +16,37 @@ namespace lazebird.rabbit.rabbit
         static void Main(string[] args)
         {
             bool createdNew;
-            System.Threading.Mutex instance = new System.Threading.Mutex(true, "lazebird.rabbit.rabbit", out createdNew);
+            Mutex instance = new Mutex(true, "lazebird.rabbit.rabbit", out createdNew);
             if (createdNew)
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Form1 f = new Form1();
                 Language.SetLang(Language.Getsetting(), f, typeof(Form1));
+                new Thread(() => httpd_shell_proc(args, true)).Start();
                 Application.Run(f);
             }
             else
             {
-                //MessageBox.Show("Program is already running");
+                if (args.Length > 0) httpd_shell_proc(args, false);
+                Application.Exit();
             }
-            if (args.Length > 0) httpd_shell_proc(args);
-            Application.Exit();
         }
-        static void httpd_shell_proc(string[] args)
+        static void httpd_shell_proc(string[] args, bool delay)
         {
+            if (delay) Thread.Sleep(1000);
+            int port = 2222; // internal com udp port
             try
             {
-                NamedPipeClientStream pipeClient = new NamedPipeClientStream("localhost", "lazebird.rabbit.rabbit", PipeDirection.Out);
-                pipeClient.Connect(3000);
-                StreamWriter sw = new StreamWriter(pipeClient);
-                foreach (var path in args) sw.WriteLine(path);
-                sw.Close();                //pipeClient.Close();    // disposed by sw?
+                IPEndPoint r = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
+                UdpClient uc = new UdpClient();
+                byte[] buf;
+                foreach (var path in args)
+                {
+                    buf = Encoding.Default.GetBytes(path);
+                    uc.Send(buf, buf.Length, r);
+                }
+                uc.Close();
             }
             catch (Exception e)
             {

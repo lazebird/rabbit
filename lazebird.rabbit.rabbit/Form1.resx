@@ -628,7 +628,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 366</value>
+    <value>648, 381</value>
   </data>
   <data name="fp_scan.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
@@ -709,7 +709,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="text_http_port.Size" type="System.Drawing.Size, System.Drawing">
-    <value>577, 14</value>
+    <value>313, 14</value>
   </data>
   <data name="text_http_port.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -726,63 +726,6 @@
   <data name="&gt;&gt;text_http_port.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="btn_http_dir.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
-  </data>
-  <data name="btn_http_dir.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 44</value>
-  </data>
-  <data name="btn_http_dir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="btn_http_dir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 20</value>
-  </data>
-  <data name="btn_http_dir.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="btn_http_dir.Text" xml:space="preserve">
-    <value>Directory</value>
-  </data>
-  <data name="&gt;&gt;btn_http_dir.Name" xml:space="preserve">
-    <value>btn_http_dir</value>
-  </data>
-  <data name="&gt;&gt;btn_http_dir.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_http_dir.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;btn_http_dir.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="text_http_dir.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="text_http_dir.Location" type="System.Drawing.Point, System.Drawing">
-    <value>80, 44</value>
-  </data>
-  <data name="text_http_dir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="text_http_dir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>577, 14</value>
-  </data>
-  <data name="text_http_dir.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;text_http_dir.Name" xml:space="preserve">
-    <value>text_http_dir</value>
-  </data>
-  <data name="&gt;&gt;text_http_dir.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_http_dir.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;text_http_dir.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
   <data name="btn_http_reg.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
   </data>
@@ -793,7 +736,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_http_reg.Location" type="System.Drawing.Point, System.Drawing">
-    <value>409, 76</value>
+    <value>408, 9</value>
   </data>
   <data name="btn_http_reg.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -817,7 +760,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;btn_http_reg.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>2</value>
   </data>
   <data name="btn_http_dereg.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -829,7 +772,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_http_dereg.Location" type="System.Drawing.Point, System.Drawing">
-    <value>500, 76</value>
+    <value>499, 9</value>
   </data>
   <data name="btn_http_dereg.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -853,7 +796,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;btn_http_dereg.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>3</value>
   </data>
   <data name="btn_httpd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -862,7 +805,7 @@
     <value>Flat</value>
   </data>
   <data name="btn_httpd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>591, 76</value>
+    <value>590, 9</value>
   </data>
   <data name="btn_httpd.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -886,22 +829,46 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;btn_httpd.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>4</value>
+  </data>
+  <data name="fp_httpd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="fp_httpd.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 36</value>
+  </data>
+  <data name="fp_httpd.Size" type="System.Drawing.Size, System.Drawing">
+    <value>648, 224</value>
+  </data>
+  <data name="fp_httpd.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;fp_httpd.Name" xml:space="preserve">
+    <value>fp_httpd</value>
+  </data>
+  <data name="&gt;&gt;fp_httpd.Type" xml:space="preserve">
+    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;fp_httpd.Parent" xml:space="preserve">
+    <value>HTTPD</value>
+  </data>
+  <data name="&gt;&gt;fp_httpd.ZOrder" xml:space="preserve">
+    <value>5</value>
   </data>
   <data name="httpd_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+    <value>Bottom, Left, Right</value>
   </data>
   <data name="httpd_output.ItemHeight" type="System.Int32, mscorlib">
     <value>16</value>
   </data>
   <data name="httpd_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 112</value>
+    <value>9, 268</value>
   </data>
   <data name="httpd_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="httpd_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 240</value>
+    <value>648, 96</value>
   </data>
   <data name="httpd_output.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -916,7 +883,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;httpd_output.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>6</value>
   </data>
   <data name="HTTPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>

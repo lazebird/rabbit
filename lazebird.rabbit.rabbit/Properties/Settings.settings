@@ -17,7 +17,7 @@
     <Setting Name="http_port" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="http_dir" Type="System.String" Scope="User">
+    <Setting Name="http_dirs" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="tabs" Type="System.String" Scope="User">

@@ -2,8 +2,12 @@
 using lazebird.rabbit.http;
 using Microsoft.Win32;
 using System;
+using System.Collections;
+using System.Drawing;
 using System.IO;
-using System.IO.Pipes;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -13,18 +17,19 @@ namespace lazebird.rabbit.rabbit
     {
         rhttpd httpd;
         rlog httpdlog;
+        Hashtable httpd_phash;
         void init_form_http()
         {
-            httpd_output.HorizontalScrollbar = true;
-            httpd_output.HorizontalExtent = 5000;
+            httpd_phash = new Hashtable();
+            //httpd_output.HorizontalScrollbar = true;
+            //httpd_output.HorizontalExtent = 5000;
             httpdlog = new rlog(httpd_output);
             httpd = new rhttpd(httpd_log_func);
             httpd.init_mime(rconf.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);
-            btn_http_dir.Click += new EventHandler(httpd_dir_click);
             btn_http_reg.Click += new EventHandler(http_reg_shell);
             btn_http_dereg.Click += new EventHandler(http_dereg_shell);
-            init_pipeserver();
+            init_comsrv();
         }
         void httpd_log_func(string msg)
         {
@@ -35,7 +40,6 @@ namespace lazebird.rabbit.rabbit
             if (((Button)btnhash["httpd_btn"]).Text == Language.trans("开始"))
             {
                 ((Button)btnhash["httpd_btn"]).Text = Language.trans("停止");
-                httpd.set_root(((TextBox)texthash["http_dir"]).Text);
                 httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
             }
             else
@@ -45,34 +49,24 @@ namespace lazebird.rabbit.rabbit
             }
             saveconf(); // save empty config to restore default config
         }
-        void httpd_dir_click(object sender, EventArgs e)
+        void init_comsrv()
         {
-            FolderBrowserDialog dialog = new FolderBrowserDialog();
-            dialog.SelectedPath = Environment.CurrentDirectory;
-            dialog.Description = "请选择文件路径";
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                text_http_dir.Text = dialog.SelectedPath;
-            }
-        }
-        void init_pipeserver()
-        {
-            Thread t = new Thread(pipesrv_task);
+            Thread t = new Thread(com_task);
             t.IsBackground = true;
             t.Start();
         }
-        void pipesrv_task()
+        void com_task()
         {
+            int port = 2222; // internal com udp port
             try
             {
-                NamedPipeServerStream pipeServer = new NamedPipeServerStream("lazebird.rabbit.rabbit", PipeDirection.In, 1, PipeTransmissionMode.Message);
+                IPEndPoint r = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
+                UdpClient uc = new UdpClient(r);
+                byte[] rcvBuffer;
                 while (true)
                 {
-                    pipeServer.WaitForConnection();
-                    StreamReader sr = new StreamReader(pipeServer);
-                    string msg = sr.ReadLine();
-                    if (string.IsNullOrEmpty(msg)) continue;
-                    httpd_log_func("I: Read pipe " + msg);
+                    rcvBuffer = uc.Receive(ref r);
+                    httpd_add_path(Encoding.Default.GetString(rcvBuffer));
                 }
             }
             catch (Exception e)
@@ -112,6 +106,56 @@ namespace lazebird.rabbit.rabbit
             shell = Registry.ClassesRoot.OpenSubKey(@"Directory\shell", true);
             dereg_shell(shell);
             shell.Close();
+        }
+        void httpd_dir_click(object sender, EventArgs evt)
+        {
+            TextBox tb = (TextBox)sender;
+            string p = tb.Text;
+            if (File.Exists(p)) httpd.del_file(p);
+            else if (Directory.Exists(p)) httpd.del_dir(p);
+            httpd_phash.Remove(tb);
+            fp_httpd.Controls.Remove(tb);
+            httpd_saveconf();
+        }
+        void httpd_add_path(string p)
+        {
+            p = Path.GetFullPath(p);
+            if (httpd_phash.ContainsValue(p)) return;
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new MethodInvoker(delegate { httpd_add_path(p); }));
+                return;
+            }
+            TextBox tb = new TextBox();
+            tb.ReadOnly = true;
+            tb.BackColor = Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            tb.BorderStyle = BorderStyle.None;
+            tb.ForeColor = Color.White;
+            tb.Text = p;
+            tb.Width = fp_httpd.Width - 5;
+            tb.Anchor = (AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right);
+            tb.DoubleClick += new EventHandler(httpd_dir_click);
+            fp_httpd.Controls.Add(tb);
+            httpd_phash.Add(tb, p);
+            if (File.Exists(p)) httpd.add_file(p);
+            else if (Directory.Exists(p)) httpd.add_dir(p);
+            httpd_saveconf();
+            httpd_log_func("I: add path " + p);
+        }
+        void httpd_readconf()
+        {
+            string[] paths = rconf.get("http_dirs").Split(';');
+            foreach (string path in paths) if (path != "") httpd_add_path(path);
+        }
+        void httpd_saveconf()
+        {
+            if (onloading) return;
+            string dirs = "";
+            foreach (string path in httpd_phash.Values)
+            {
+                dirs += path + ";";
+            }
+            rconf.set("http_dirs", dirs);
         }
     }
 }

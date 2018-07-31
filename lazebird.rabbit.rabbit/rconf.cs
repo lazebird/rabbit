@@ -23,6 +23,7 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("ping_timeout", "1000");
             cfg.Add("ping_times", "-1");
             cfg.Add("http_port", "8000");
+            cfg.Add("http_dirs", ".;..;");
             cfg.Add("scan_ipstart", "192.168.1.1");
             cfg.Add("scan_ipend", "254");
             cfg.Add("tftpd_timeout", "200");

@@ -5,6 +5,7 @@ using System.Collections;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace lazebird.rabbit.http
@@ -42,11 +43,12 @@ namespace lazebird.rabbit.http
             string lastname = null;
             while (firstname != null) // longest match
             {
+                firstname = firstname.Replace(@"\", @"/"); // fix format problem
                 //log("I: uri " + uri + " search " + firstname + " + " + lastname);
                 if (rfs.dhash.ContainsKey(firstname)) return (string)rfs.dhash[firstname] + (lastname == null ? "" : ("/" + lastname));
                 if (lastname == null) lastname = Path.GetFileName(firstname);
                 else lastname = Path.GetFileName(firstname) + "/" + lastname;
-                firstname = Path.GetDirectoryName(firstname).Replace(@"\", @"/");
+                firstname = Path.GetDirectoryName(firstname);
             }
             return null;
         }
@@ -87,11 +89,30 @@ namespace lazebird.rabbit.http
             string index = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><table><tbody>";
             index += create_th("Name", "Size (Bytes)", "Last Modified");
             if (uri != "/") index += create_td("<a href=" + Uri.EscapeUriString(Path.GetDirectoryName(uri + "../").Replace(@"\", @"/")) + ">" + ".." + " </a>", "-", "-");
-            DirectoryInfo dir = new DirectoryInfo(rdir);
-            foreach (FileInfo f in dir.GetFiles())
+            if (rdir != "")
+            {
+                DirectoryInfo dir = new DirectoryInfo(rdir);
+                foreach (FileInfo f in dir.GetFiles())
+                    index += create_td("<a href=" + Uri.EscapeUriString(uri + f.Name) + ">" + f.Name + " </a>", f.Length.ToString("###,###"), f.LastWriteTime.ToString());
+                foreach (DirectoryInfo d in dir.GetDirectories())
+                    index += create_td("<a href=" + Uri.EscapeUriString(uri + d.Name + "/") + ">" + d.Name + " </a>", "-", d.LastWriteTime.ToString());
+            }
+            Regex rgright = new Regex("^" + uri + ".");
+            Regex rgwrong = new Regex("^" + uri + ".+/.");
+            foreach (string key in rfs.fhash.Keys)
+            {
+                if (!rgright.IsMatch(key) || rgwrong.IsMatch(key))
+                    continue;
+                FileInfo f = new FileInfo((string)rfs.fhash[key]);
                 index += create_td("<a href=" + Uri.EscapeUriString(uri + f.Name) + ">" + f.Name + " </a>", f.Length.ToString("###,###"), f.LastWriteTime.ToString());
-            foreach (DirectoryInfo d in dir.GetDirectories())
+            }
+            foreach (string key in rfs.dhash.Keys)
+            {
+                if (!rgright.IsMatch(key) || rgwrong.IsMatch(key))
+                    continue;
+                DirectoryInfo d = new DirectoryInfo((string)rfs.dhash[key]);
                 index += create_td("<a href=" + Uri.EscapeUriString(uri + d.Name + "/") + ">" + d.Name + " </a>", "-", d.LastWriteTime.ToString());
+            }
             index += "</tbody></table></body></html>";
             byte[] buf = Encoding.UTF8.GetBytes(index);
             response.ContentLength64 = buf.Length;
@@ -100,7 +121,7 @@ namespace lazebird.rabbit.http
         }
         void loaderror(string path, int errno)
         {
-            byte[] buffer = Encoding.UTF8.GetBytes(errno + ": " + path);
+            byte[] buffer = Encoding.UTF8.GetBytes(errno + ": path " + path + " uri " + uri);
             response.ContentLength64 = buffer.Length;
             response.OutputStream.Write(buffer, 0, buffer.Length);
             response.OutputStream.Close();
@@ -115,7 +136,7 @@ namespace lazebird.rabbit.http
             else if (Directory.Exists(path)) // dir
                 loaddir(path);
             else
-                loaderror(path, 404);
+                loaddir(path); // v dir
         }
         public void destroy()
         {
