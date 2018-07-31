@@ -170,7 +170,7 @@
     <value>开始</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 354</value>
+    <value>648, 311</value>
   </data>
   <data name="label_http_port.Text" xml:space="preserve">
     <value>端口</value>
@@ -185,10 +185,10 @@
     <value>开始</value>
   </data>
   <data name="fp_httpd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 218</value>
+    <value>648, 221</value>
   </data>
   <data name="httpd_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 259</value>
+    <value>9, 262</value>
   </data>
   <data name="label_tftpdtout.Size" type="System.Drawing.Size, System.Drawing">
     <value>60, 16</value>
