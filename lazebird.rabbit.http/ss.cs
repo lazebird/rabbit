@@ -135,8 +135,10 @@ namespace lazebird.rabbit.http
                 loadfile(mimehash, path);
             else if (Directory.Exists(path)) // dir
                 loaddir(path);
-            else
+            else if (path == "" && rfs.dhash.ContainsKey(uri))
                 loaddir(path); // v dir
+            else
+                loaderror(path, 404);
         }
         public void destroy()
         {
