@@ -1,6 +1,6 @@
 # Release Notes
 
-## Latest Version: 2.0.6782
+## Latest Version: 2.0.6786
 
 ## 2018-07-26
 ### New
