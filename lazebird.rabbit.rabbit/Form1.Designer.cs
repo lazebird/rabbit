@@ -59,9 +59,10 @@
             this.HTTPD = new System.Windows.Forms.TabPage();
             this.label_http_port = new System.Windows.Forms.Label();
             this.text_http_port = new System.Windows.Forms.TextBox();
-            this.btn_http_dir = new System.Windows.Forms.Button();
-            this.text_http_dir = new System.Windows.Forms.TextBox();
+            this.btn_http_reg = new System.Windows.Forms.Button();
+            this.btn_http_dereg = new System.Windows.Forms.Button();
             this.btn_httpd = new System.Windows.Forms.Button();
+            this.fp_httpd = new System.Windows.Forms.FlowLayoutPanel();
             this.httpd_output = new System.Windows.Forms.ListBox();
             this.TFTPD = new System.Windows.Forms.TabPage();
             this.label_tftpdtout = new System.Windows.Forms.Label();
@@ -343,9 +344,10 @@
             this.HTTPD.BackColor = System.Drawing.Color.DimGray;
             this.HTTPD.Controls.Add(this.label_http_port);
             this.HTTPD.Controls.Add(this.text_http_port);
-            this.HTTPD.Controls.Add(this.btn_http_dir);
-            this.HTTPD.Controls.Add(this.text_http_dir);
+            this.HTTPD.Controls.Add(this.btn_http_reg);
+            this.HTTPD.Controls.Add(this.btn_http_dereg);
             this.HTTPD.Controls.Add(this.btn_httpd);
+            this.HTTPD.Controls.Add(this.fp_httpd);
             this.HTTPD.Controls.Add(this.httpd_output);
             this.HTTPD.ForeColor = System.Drawing.Color.White;
             this.HTTPD.Name = "HTTPD";
@@ -363,21 +365,21 @@
             this.text_http_port.ForeColor = System.Drawing.Color.White;
             this.text_http_port.Name = "text_http_port";
             // 
-            // btn_http_dir
+            // btn_http_reg
             // 
-            resources.ApplyResources(this.btn_http_dir, "btn_http_dir");
-            this.btn_http_dir.BackColor = System.Drawing.Color.YellowGreen;
-            this.btn_http_dir.FlatAppearance.BorderSize = 0;
-            this.btn_http_dir.Name = "btn_http_dir";
-            this.btn_http_dir.UseVisualStyleBackColor = false;
+            resources.ApplyResources(this.btn_http_reg, "btn_http_reg");
+            this.btn_http_reg.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_http_reg.FlatAppearance.BorderSize = 0;
+            this.btn_http_reg.Name = "btn_http_reg";
+            this.btn_http_reg.UseVisualStyleBackColor = false;
             // 
-            // text_http_dir
+            // btn_http_dereg
             // 
-            resources.ApplyResources(this.text_http_dir, "text_http_dir");
-            this.text_http_dir.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.text_http_dir.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.text_http_dir.ForeColor = System.Drawing.Color.White;
-            this.text_http_dir.Name = "text_http_dir";
+            resources.ApplyResources(this.btn_http_dereg, "btn_http_dereg");
+            this.btn_http_dereg.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_http_dereg.FlatAppearance.BorderSize = 0;
+            this.btn_http_dereg.Name = "btn_http_dereg";
+            this.btn_http_dereg.UseVisualStyleBackColor = false;
             // 
             // btn_httpd
             // 
@@ -386,6 +388,11 @@
             this.btn_httpd.FlatAppearance.BorderSize = 0;
             this.btn_httpd.Name = "btn_httpd";
             this.btn_httpd.UseVisualStyleBackColor = false;
+            // 
+            // fp_httpd
+            // 
+            resources.ApplyResources(this.fp_httpd, "fp_httpd");
+            this.fp_httpd.Name = "fp_httpd";
             // 
             // httpd_output
             // 
@@ -942,7 +949,6 @@
         System.Windows.Forms.TabPage Setting;
         System.Windows.Forms.Label label_http_port;
         System.Windows.Forms.TextBox text_http_port;
-        System.Windows.Forms.TextBox text_http_dir;
         System.Windows.Forms.Button btn_httpd;
         System.Windows.Forms.TextBox ftp_dirtext1;
         System.Windows.Forms.Button ftp_dirbtn1;
@@ -972,7 +978,6 @@
         System.Windows.Forms.TextBox dhcp_logtext;
         System.Windows.Forms.Button dhcp_btn;
         System.Windows.Forms.ListBox dhcp_logmsg;
-        System.Windows.Forms.Button btn_http_dir;
         System.Windows.Forms.ListBox tftpd_output;
         System.Windows.Forms.Button tftpd_btn;
         System.Windows.Forms.TabPage Scan;
@@ -1011,6 +1016,9 @@
         private System.Windows.Forms.LinkLabel link_ver;
         private System.Windows.Forms.Label label_prof;
         private System.Windows.Forms.LinkLabel link_prof;
+        private System.Windows.Forms.Button btn_http_reg;
+        private System.Windows.Forms.Button btn_http_dereg;
+        private System.Windows.Forms.FlowLayoutPanel fp_httpd;
     }
 }
 

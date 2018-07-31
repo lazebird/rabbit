@@ -170,16 +170,25 @@
     <value>开始</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 314</value>
+    <value>648, 311</value>
   </data>
   <data name="label_http_port.Text" xml:space="preserve">
     <value>端口</value>
   </data>
-  <data name="btn_http_dir.Text" xml:space="preserve">
-    <value>根目录</value>
+  <data name="btn_http_reg.Text" xml:space="preserve">
+    <value>注册</value>
+  </data>
+  <data name="btn_http_dereg.Text" xml:space="preserve">
+    <value>解除</value>
   </data>
   <data name="btn_httpd.Text" xml:space="preserve">
     <value>开始</value>
+  </data>
+  <data name="fp_httpd.Size" type="System.Drawing.Size, System.Drawing">
+    <value>648, 221</value>
+  </data>
+  <data name="httpd_output.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 262</value>
   </data>
   <data name="label_tftpdtout.Size" type="System.Drawing.Size, System.Drawing">
     <value>60, 16</value>

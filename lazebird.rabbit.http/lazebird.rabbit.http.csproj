@@ -36,9 +36,7 @@
   <ItemGroup>
     <Compile Include="rhttpd.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="lazebird.rabbit.http.nuspec" />
+    <Compile Include="ss.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lazebird.rabbit.fs\lazebird.rabbit.fs.csproj">

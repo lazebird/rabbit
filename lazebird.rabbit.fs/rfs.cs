@@ -8,92 +8,43 @@ namespace lazebird.rabbit.fs
     public class rfs
     {
         Action<string> log;
-        int totalsize = 0;
+        public Hashtable fhash;
+        public Hashtable dhash;
         public rfs(Action<string> log)
         {
             this.log = log;
+            fhash = new Hashtable();
+            dhash = new Hashtable();
+            adddir("/", ""); // add root automatically
         }
-        public int addfile(Hashtable hs, string vpath, string rpath)  // vpath: virtual path, rpath: real path
+        public int addfile(string vdir, string rfile)  // vdir: virtual path, rfile: real path
         {
-            FileInfo f = new FileInfo(rpath);
-            if (!f.Exists || f.Attributes.HasFlag(FileAttributes.System))
-            {
-                log("!F: " + f.FullName + ", A: " + f.Attributes.ToString());
-                return 0;
-            }
-            vpath = vpath + f.Name;
-            if (hs.ContainsKey(vpath))
-            {
-                log("!F: " + f.FullName + " exists");
-                return 0;
-            }
-            hs.Add(vpath, new rfile("file", f.FullName, f.Length, f.LastWriteTime));
-            log("+F: " + vpath);
+            if (!dhash.ContainsKey(vdir)) adddir(vdir, ""); // add an empty vdir
+            string vfile = vdir + Path.GetFileName(rfile);
+            log("+F: " + vfile + (fhash.ContainsKey(vfile) ? " (exists)" : "" + " -- " + rfile));
+            if (!fhash.ContainsKey(vfile)) fhash.Add(vfile, rfile);
             return 1;
         }
-        public int delfile(Hashtable hs, string vpath, string rpath)  // vpath: virtual path, rpath: real path
+        public int delfile(string vfile)  // vfile: virtual path
         {
-            FileInfo f = new FileInfo(rpath);
-            if (!f.Exists || f.Attributes.HasFlag(FileAttributes.System))
-            {
-                log("!F: " + f.FullName + ", A: " + f.Attributes.ToString());
-                return 0;
-            }
-            vpath = vpath + f.Name;
-            hs.Remove(vpath);
-            log("-F: " + vpath);
+            if (fhash.ContainsKey(vfile)) fhash.Remove(vfile);
+            log("-F: " + vfile);
             return 1;
         }
-        public int adddir(Hashtable hs, string vpath, string rpath, bool recursive) // vpath: virtual path, rpath: real path
+        public int adddir(string vdir, string rdir)
         {
-            DirectoryInfo dir = new DirectoryInfo(rpath);
-            if (!dir.Exists || dir.Attributes.HasFlag(FileAttributes.System)) // fix crash bug for select a dir E:
-            {
-                log("!D: " + dir.FullName + ", A: " + dir.Attributes.ToString());
-                return 0;
-            }
-            vpath = vpath + dir.Name + "/";
-            if (hs.ContainsKey(vpath))
-            {
-                log("!D: " + dir.FullName + " exists");
-                return 0;
-            }
-            hs.Add(vpath, new rfile("dir", dir.FullName, 0, dir.LastWriteTime));
-            log("+D: " + vpath);
-            int count = 1;
-            foreach (FileInfo f in dir.GetFiles())
-                count += addfile(hs, vpath, f.FullName);
-            if (recursive)
-                foreach (DirectoryInfo d in dir.GetDirectories())
-                    count += adddir(hs, vpath, d.FullName, recursive);
-            return count;
+            log("+D: " + vdir + (dhash.ContainsKey(vdir) ? " (exists)" : "" + " -- " + rdir));
+            if (dhash.ContainsKey(vdir) && vdir != "") dhash.Remove(vdir); // replace
+            if (!dhash.ContainsKey(vdir)) dhash.Add(vdir, rdir);
+            return 1;
         }
-        public int deldir(Hashtable hs, string vpath, string rpath) // vpath: virtual path, rpath: real path
+        public int deldir(string vdir)
         {
-            DirectoryInfo dir = new DirectoryInfo(rpath);
-            if (!dir.Exists || dir.Attributes.HasFlag(FileAttributes.System)) // fix crash bug for select a dir E:
-            {
-                log("!D: " + dir.FullName + ", A: " + dir.Attributes.ToString());
-                return 0;
-            }
-            vpath = vpath + dir.Name + "/";
-            ArrayList list = new ArrayList();
-            foreach (string f in hs.Keys)
-            {
-                if (f.Length >= vpath.Length && f.Substring(0, vpath.Length) == vpath)
-                {
-                    list.Add(f);
-                }
-            }
-            int count = list.Count;
-            foreach (string f in list)
-            {
-                log("-" + ((((rfile)hs[f]).type == "dir") ? "D" : "F") + ": " + f);
-                hs.Remove(f);
-            }
-            return count;
+            log("-D: " + vdir);
+            if (dhash.ContainsKey(vdir)) dhash.Remove(vdir);
+            return 1;
         }
-        public void readstream(Stream fs, rqueue q, int maxblksz)
+        public static void readstream(Stream fs, rqueue q, int maxblksz)
         {
             byte[] buffer = null;
             BinaryReader binReader = new BinaryReader(fs);
@@ -110,12 +61,12 @@ namespace lazebird.rabbit.fs
                 buffer = binReader.ReadBytes((int)left);
                 while (q.produce(buffer) == 0) ;
             }
-            binReader.Close();
-            //fs.Close(); // binReader disposed?
+            binReader.Close();  //fs.Close(); // binReader disposed?
             q.stop();
         }
-        public void writestream(Stream output, rqueue q, string filename)
+        public static void writestream(Stream output, rqueue q, string filename)
         {
+            int totalsize = 0;
             int starttm = Environment.TickCount;
             byte[] buffer;
             while (true)
@@ -123,14 +74,14 @@ namespace lazebird.rabbit.fs
                 if ((buffer = q.consume()) != null)
                 {
                     output.Write(buffer, 0, buffer.Length);
-                    this.totalsize += buffer.Length;
+                    totalsize += buffer.Length;
                 }
                 else if (q.has_stopped())
                     break;
             }
             output.Close();
             int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
-            log("I: " + filename + " " + totalsize + " B/" + deltatm.ToString("###,###.00") + " s; @" + (totalsize / deltatm).ToString("###,###.00") + " Bps");
+            //log("I: " + filename + " " + totalsize + " B/" + deltatm.ToString("###,###.00") + " s; @" + (totalsize / deltatm).ToString("###,###.00") + " Bps");
         }
     }
 }

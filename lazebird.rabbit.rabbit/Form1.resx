@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Parent" xml:space="preserve">
-    <value>toolStripContainer1</value>
-  </data>
   <data name="&gt;&gt;btn_ping_log.Parent" xml:space="preserve">
     <value>Ping</value>
   </data>
@@ -137,8 +134,14 @@
   <data name="btn_tftpclfile.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 129</value>
   </data>
-  <data name="label_count.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 70</value>
+  <data name="&gt;&gt;ftp_dirbtn2.Parent" xml:space="preserve">
+    <value>FTPD</value>
+  </data>
+  <data name="&gt;&gt;ping_output.Parent" xml:space="preserve">
+    <value>Ping</value>
+  </data>
+  <data name="label_prof.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 16</value>
   </data>
   <data name="&gt;&gt;text_tftpclfile.Parent" xml:space="preserve">
     <value>TFTPC</value>
@@ -149,8 +152,8 @@
   <data name="btn_ping_log.Size" type="System.Drawing.Size, System.Drawing">
     <value>46, 26</value>
   </data>
-  <data name="&gt;&gt;text_scanend.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="&gt;&gt;dhcp_btn.Name" xml:space="preserve">
+    <value>dhcp_btn</value>
   </data>
   <data name="ftp_dirbtn1.Text" xml:space="preserve">
     <value>Directory 1</value>
@@ -164,11 +167,8 @@
   <data name="&gt;&gt;label_tftpcaddr.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="dhcp_logtext.Size" type="System.Drawing.Size, System.Drawing">
-    <value>586, 14</value>
-  </data>
-  <data name="label_prof.Size" type="System.Drawing.Size, System.Drawing">
-    <value>42, 16</value>
+  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Parent" xml:space="preserve">
+    <value>toolStripContainer1</value>
   </data>
   <data name="dhcp_startlabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -192,26 +192,20 @@
   <data name="TFTPD.Text" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="label_lang.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 10</value>
-  </data>
   <data name="label_count.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;label_ver.Name" xml:space="preserve">
-    <value>label_ver</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcretry.Parent" xml:space="preserve">
-    <value>TFTPC</value>
+  <data name="&gt;&gt;Setting.Parent" xml:space="preserve">
+    <value>tabs</value>
   </data>
   <data name="label_prof.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
   </data>
   <data name="httpd_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+    <value>Bottom, Left, Right</value>
   </data>
-  <data name="&gt;&gt;btn_ping.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;dhcp_logtext.ZOrder" xml:space="preserve">
+    <value>7</value>
   </data>
   <data name="label_tftpdretry.Text" xml:space="preserve">
     <value>Max Retry</value>
@@ -219,17 +213,14 @@
   <data name="label_tftpctout.Size" type="System.Drawing.Size, System.Drawing">
     <value>74, 16</value>
   </data>
-  <data name="text_interval.Location" type="System.Drawing.Point, System.Drawing">
-    <value>90, 40</value>
-  </data>
-  <data name="dhcp_startlabel.Text" xml:space="preserve">
-    <value>Start IP</value>
-  </data>
-  <data name="&gt;&gt;dhcp_gatewaylabel.ZOrder" xml:space="preserve">
-    <value>4</value>
+  <data name="tftpd_fp.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
   </data>
   <data name="btn_ping_log.Text" xml:space="preserve">
     <value>Log</value>
+  </data>
+  <data name="label_tftpdtout.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
   </data>
   <data name="Setting.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
@@ -239,6 +230,9 @@
   </data>
   <data name="&gt;&gt;FTPD.Parent" xml:space="preserve">
     <value>tabs</value>
+  </data>
+  <data name="&gt;&gt;label_count.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="label_tftpdretry.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 40</value>
@@ -264,8 +258,8 @@
   <data name="label_scanend.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
-  <data name="text_tftpclfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 129</value>
+  <data name="btn_scan.Location" type="System.Drawing.Point, System.Drawing">
+    <value>591, 12</value>
   </data>
   <data name="&gt;&gt;text_tftpdtout.Parent" xml:space="preserve">
     <value>TFTPD</value>
@@ -273,26 +267,20 @@
   <data name="fp_scan.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 40</value>
   </data>
-  <data name="toolStripContainer1.ContentPanel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
-  </data>
   <data name="&gt;&gt;dhcp_endlabel.Parent" xml:space="preserve">
     <value>DHCPD</value>
   </data>
-  <data name="&gt;&gt;dhcp_logmsg.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
   <data name="text_http_port.Size" type="System.Drawing.Size, System.Drawing">
-    <value>577, 14</value>
+    <value>313, 14</value>
+  </data>
+  <data name="btn_http_reg.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="dhcp_logmsg.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 188</value>
   </data>
   <data name="&gt;&gt;text_tftpcrfile.ZOrder" xml:space="preserve">
     <value>11</value>
-  </data>
-  <data name="&gt;&gt;label_interval.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="ftp_dirtext3.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -303,17 +291,17 @@
   <data name="btn_ftp.Location" type="System.Drawing.Point, System.Drawing">
     <value>591, 172</value>
   </data>
-  <data name="ftp_dirbtn5.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+  <data name="ftpd_output.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
   </data>
-  <data name="TFTPC.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+  <data name="text_logpath.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
   </data>
-  <data name="&gt;&gt;ftp_dirtext5.ZOrder" xml:space="preserve">
-    <value>8</value>
+  <data name="TFTPC.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 25</value>
   </data>
-  <data name="text_tftpcretry.Size" type="System.Drawing.Size, System.Drawing">
-    <value>563, 14</value>
+  <data name="tftpd_btn.Location" type="System.Drawing.Point, System.Drawing">
+    <value>590, 200</value>
   </data>
   <data name="label_scanip.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 12</value>
@@ -321,14 +309,8 @@
   <data name="&gt;&gt;btn_httpd.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;btn_http_dir.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
   <data name="tftpc_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpclfile.Name" xml:space="preserve">
-    <value>btn_tftpclfile</value>
   </data>
   <data name="&gt;&gt;btn_tftpcput.Parent" xml:space="preserve">
     <value>TFTPC</value>
@@ -336,8 +318,8 @@
   <data name="&gt;&gt;btn_tftpcget.Parent" xml:space="preserve">
     <value>TFTPC</value>
   </data>
-  <data name="&gt;&gt;text_tftpcblksize.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;label_lang.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;httpd_output.Type" xml:space="preserve">
     <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -345,8 +327,8 @@
   <data name="&gt;&gt;dhcp_logtext.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;ftpd_output.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="dhcp_btn.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
   </data>
   <data name="btn_ftp.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 18</value>
@@ -356,6 +338,9 @@
   </data>
   <data name="dhcp_startlabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
+  </data>
+  <data name="&gt;&gt;ping_output.Name" xml:space="preserve">
+    <value>ping_output</value>
   </data>
   <data name="dhcp_logbtn.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>None</value>
@@ -378,8 +363,8 @@
   <data name="&gt;&gt;text_scanstart.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="ftp_dirbtn4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
+  <data name="&gt;&gt;dhcp_logmsg.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="label_tftpcretry.Size" type="System.Drawing.Size, System.Drawing">
     <value>61, 16</value>
@@ -387,11 +372,11 @@
   <data name="&gt;&gt;text_http_port.Name" xml:space="preserve">
     <value>text_http_port</value>
   </data>
+  <data name="&gt;&gt;ftp_dirtext3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;label_scanend.Parent" xml:space="preserve">
     <value>Scan</value>
-  </data>
-  <data name="&gt;&gt;btn_ftp.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="tftpd_adddir.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft YaHei UI, 8.25pt, style=Bold</value>
@@ -399,14 +384,14 @@
   <data name="btn_ftp.Text" xml:space="preserve">
     <value>Start</value>
   </data>
-  <data name="text_tftpcblksize.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+  <data name="&gt;&gt;label_tftpcblksize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;fp_scan.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
   <data name="&gt;&gt;httpd_output.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="text_tftpdtout.Size" type="System.Drawing.Size, System.Drawing">
     <value>563, 14</value>
@@ -426,20 +411,14 @@
   <data name="label_addr.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="text_http_port.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="dhcp_logmsg.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
   </data>
   <data name="dhcp_starttext.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
   </data>
-  <data name="$this.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
-    <value>Zoom</value>
-  </data>
   <data name="TFTPC.Text" xml:space="preserve">
     <value>TFTPC</value>
-  </data>
-  <data name="ftpd_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 208</value>
   </data>
   <data name="text_count.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -456,14 +435,17 @@
   <data name="btn_tftpclfile.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 20</value>
   </data>
+  <data name="btn_http_dereg.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
   <data name="&gt;&gt;HTTPD.Parent" xml:space="preserve">
     <value>tabs</value>
   </data>
   <data name="Scan.Size" type="System.Drawing.Size, System.Drawing">
     <value>663, 353</value>
   </data>
-  <data name="&gt;&gt;text_tftpcrfile.Name" xml:space="preserve">
-    <value>text_tftpcrfile</value>
+  <data name="&gt;&gt;btn_http_reg.Name" xml:space="preserve">
+    <value>btn_http_reg</value>
   </data>
   <data name="ftp_dirbtn3.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 18</value>
@@ -471,11 +453,14 @@
   <data name="&gt;&gt;label_tftpdretry.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="&gt;&gt;dhcp_logmsg.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="text_tftpcrfile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>482, 14</value>
   </data>
-  <data name="label_tftpdtout.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
+  <data name="dhcp_gatewaylabel.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="text_scanend.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
   </data>
   <data name="label_tftpcblksize.TabIndex" type="System.Int32, mscorlib">
     <value>17</value>
@@ -483,14 +468,17 @@
   <data name="label_tftpcrfile.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 16</value>
   </data>
-  <data name="text_logpath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>90, 100</value>
+  <data name="ftpd_output.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 208</value>
   </data>
   <data name="ftp_dirtext2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
   <data name="link_ver.Location" type="System.Drawing.Point, System.Drawing">
     <value>90, 50</value>
+  </data>
+  <data name="btn_http_reg.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 22</value>
   </data>
   <data name="httpd_output.ItemHeight" type="System.Int32, mscorlib">
     <value>16</value>
@@ -501,11 +489,8 @@
   <data name="&gt;&gt;text_tftpclfile.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="dhcp_btn.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label_scanip.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 0, 2, 0</value>
   </data>
   <data name="label_http_port.Size" type="System.Drawing.Size, System.Drawing">
     <value>30, 16</value>
@@ -516,11 +501,11 @@
   <data name="ftp_dirbtn1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="&gt;&gt;DHCPD.ZOrder" xml:space="preserve">
-    <value>6</value>
+  <data name="FTPD.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
   </data>
-  <data name="&gt;&gt;toolStripContainer1.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;ftpd_output.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="label_tftpcblksize.Text" xml:space="preserve">
     <value>Block Size</value>
@@ -537,14 +522,14 @@
   <data name="tabs.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="&gt;&gt;ftp_dirtext3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="btn_httpd.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="lang_cb.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
-  <data name="btn_ftp.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>Form1</value>
   </data>
   <data name="&gt;&gt;text_http_port.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -555,8 +540,8 @@
   <data name="dhcp_gatewaytext.Location" type="System.Drawing.Point, System.Drawing">
     <value>70, 76</value>
   </data>
-  <data name="&gt;&gt;ftp_dirbtn2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;btn_ping.Parent" xml:space="preserve">
+    <value>Ping</value>
   </data>
   <data name="&gt;&gt;ftp_dirtext4.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -567,8 +552,8 @@
   <data name="ping_output.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
   </data>
-  <data name="&gt;&gt;HTTPD.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="&gt;&gt;dhcp_gatewaytext.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;Scan.Parent" xml:space="preserve">
     <value>tabs</value>
@@ -594,23 +579,20 @@
   <data name="label_tftpcaddr.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;btn_http_dir.Type" xml:space="preserve">
+  <data name="&gt;&gt;tftpd_adddir.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="label_prj.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 16</value>
+  <data name="&gt;&gt;toolStripContainer1.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="btn_tftpcput.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
   </data>
-  <data name="&gt;&gt;label_count.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="ftp_dirtext1.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
   </data>
   <data name="ftp_dirbtn4.Text" xml:space="preserve">
     <value>Directory 4</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.Name" xml:space="preserve">
-    <value>toolStripContainer1</value>
   </data>
   <data name="ftp_dirtext3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -624,11 +606,14 @@
   <data name="text_tftpclfile.Size" type="System.Drawing.Size, System.Drawing">
     <value>482, 14</value>
   </data>
+  <data name="label_count.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 70</value>
+  </data>
+  <data name="btn_httpd.Text" xml:space="preserve">
+    <value>Start</value>
+  </data>
   <data name="&gt;&gt;text_tftpcaddr.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="HTTPD.Size" type="System.Drawing.Size, System.Drawing">
-    <value>663, 353</value>
   </data>
   <data name="label_ver.Text" xml:space="preserve">
     <value>Version</value>
@@ -645,23 +630,20 @@
   <data name="&gt;&gt;TFTPD.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;dhcp_gatewaytext.Parent" xml:space="preserve">
-    <value>DHCPD</value>
+  <data name="&gt;&gt;text_tftpdtout.Name" xml:space="preserve">
+    <value>text_tftpdtout</value>
   </data>
   <data name="label_scanend.Size" type="System.Drawing.Size, System.Drawing">
     <value>13, 16</value>
   </data>
-  <data name="HTTPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
+  <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft YaHei UI, 8.25pt</value>
   </data>
-  <data name="&gt;&gt;toolStripContainer1.BottomToolStripPanel.ZOrder" xml:space="preserve">
-    <value>4</value>
+  <data name="btn_tftpclfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="&gt;&gt;btn_scan.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="tftpd_adddir.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
   </data>
   <data name="text_count.Size" type="System.Drawing.Size, System.Drawing">
     <value>567, 14</value>
@@ -690,6 +672,9 @@
   <data name="label_tftpcrfile.TabIndex" type="System.Int32, mscorlib">
     <value>18</value>
   </data>
+  <data name="fp_httpd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="tftpd_fp.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
@@ -702,14 +687,14 @@
   <data name="&gt;&gt;text_tftpdtout.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="text_tftpcrfile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>482, 14</value>
+  <data name="&gt;&gt;fp_httpd.Name" xml:space="preserve">
+    <value>fp_httpd</value>
+  </data>
+  <data name="&gt;&gt;dhcp_gatewaytext.Parent" xml:space="preserve">
+    <value>DHCPD</value>
   </data>
   <data name="tftpd_deldir.Size" type="System.Drawing.Size, System.Drawing">
     <value>20, 20</value>
-  </data>
-  <data name="text_http_dir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>577, 14</value>
   </data>
   <data name="&gt;&gt;btn_scan.Name" xml:space="preserve">
     <value>btn_scan</value>
@@ -723,8 +708,8 @@
   <data name="btn_tftpcput.Location" type="System.Drawing.Point, System.Drawing">
     <value>589, 127</value>
   </data>
-  <data name="link_prof.Size" type="System.Drawing.Size, System.Drawing">
-    <value>0, 16</value>
+  <data name="btn_tftpcget.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
   </data>
   <data name="ftpd_output.Size" type="System.Drawing.Size, System.Drawing">
     <value>648, 144</value>
@@ -732,20 +717,14 @@
   <data name="text_count.Location" type="System.Drawing.Point, System.Drawing">
     <value>90, 70</value>
   </data>
-  <data name="Ping.Text" xml:space="preserve">
-    <value>Ping</value>
-  </data>
   <data name="tftpd_deldir.Text" xml:space="preserve">
     <value>-</value>
   </data>
-  <data name="&gt;&gt;btn_tftpclfile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="dhcp_gatewaytext.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
   </data>
   <data name="tftpd_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
-  </data>
-  <data name="&gt;&gt;dhcp_starttext.Name" xml:space="preserve">
-    <value>dhcp_starttext</value>
   </data>
   <data name="btn_ping.Text" xml:space="preserve">
     <value>Start</value>
@@ -753,11 +732,11 @@
   <data name="label_tftpcrfile.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="&gt;&gt;btn_http_dereg.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
   <data name="label_scanend.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
-  </data>
-  <data name="text_count.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
   </data>
   <data name="Scan.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
@@ -771,11 +750,20 @@
   <data name="Ping.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
   </data>
+  <data name="TFTPC.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>7, 16</value>
   </data>
   <data name="&gt;&gt;label_tftpctout.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="tftpc_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="&gt;&gt;ftpd_output.Name" xml:space="preserve">
+    <value>ftpd_output</value>
   </data>
   <data name="&gt;&gt;Ping.Name" xml:space="preserve">
     <value>Ping</value>
@@ -783,11 +771,14 @@
   <data name="&gt;&gt;link_prj.Name" xml:space="preserve">
     <value>link_prj</value>
   </data>
+  <data name="&gt;&gt;text_count.Parent" xml:space="preserve">
+    <value>Ping</value>
+  </data>
   <data name="btn_httpd.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
   </data>
-  <data name="tftpc_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+  <data name="dhcp_logtext.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
   </data>
   <data name="label_interval.Text" xml:space="preserve">
     <value>Interval(ms)</value>
@@ -807,8 +798,8 @@
   <data name="label_prof.Text" xml:space="preserve">
     <value>Profile</value>
   </data>
-  <data name="tftpd_deldir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
+  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="text_count.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -831,17 +822,14 @@
   <data name="text_tftpcaddr.Location" type="System.Drawing.Point, System.Drawing">
     <value>90, 11</value>
   </data>
-  <data name="Setting.Text" xml:space="preserve">
-    <value>Setting</value>
-  </data>
   <data name="text_addr.Location" type="System.Drawing.Point, System.Drawing">
     <value>90, 10</value>
   </data>
   <data name="label_ver.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 16</value>
   </data>
-  <data name="dhcp_endtext.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+  <data name="&gt;&gt;label_ver.Parent" xml:space="preserve">
+    <value>Setting</value>
   </data>
   <data name="dhcp_gatewaylabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -861,11 +849,14 @@
   <data name="text_tftpcrfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;fp_httpd.Type" xml:space="preserve">
+    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="text_tftpclfile.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
+  </data>
+  <data name="tftpd_adddir.Size" type="System.Drawing.Size, System.Drawing">
+    <value>20, 20</value>
   </data>
   <data name="&gt;&gt;label_prj.Parent" xml:space="preserve">
     <value>Setting</value>
@@ -876,8 +867,14 @@
   <data name="TFTPC.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
+  <data name="&gt;&gt;label_interval.Parent" xml:space="preserve">
+    <value>Ping</value>
+  </data>
   <data name="ftp_dirtext3.Size" type="System.Drawing.Size, System.Drawing">
     <value>577, 14</value>
+  </data>
+  <data name="btn_http_dereg.Location" type="System.Drawing.Point, System.Drawing">
+    <value>499, 9</value>
   </data>
   <data name="&gt;&gt;lang_cb.Name" xml:space="preserve">
     <value>lang_cb</value>
@@ -885,11 +882,11 @@
   <data name="&gt;&gt;text_interval.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Rabbit</value>
+  <data name="text_logpath.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
   </data>
-  <data name="&gt;&gt;text_tftpcblksize.ZOrder" xml:space="preserve">
-    <value>7</value>
+  <data name="text_scanend.Size" type="System.Drawing.Size, System.Drawing">
+    <value>69, 14</value>
   </data>
   <data name="btn_scan.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
@@ -897,11 +894,11 @@
   <data name="&gt;&gt;text_tftpcblksize.Name" xml:space="preserve">
     <value>text_tftpcblksize</value>
   </data>
+  <data name="&gt;&gt;label_ver.Name" xml:space="preserve">
+    <value>label_ver</value>
+  </data>
   <data name="&gt;&gt;text_tftpcaddr.Parent" xml:space="preserve">
     <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;dhcp_btn.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;btn_scan.Parent" xml:space="preserve">
     <value>Scan</value>
@@ -921,29 +918,26 @@
   <data name="&gt;&gt;text_count.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;dhcp_logtext.Name" xml:space="preserve">
-    <value>dhcp_logtext</value>
-  </data>
   <data name="text_tftpcrfile.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
   </data>
   <data name="&gt;&gt;dhcp_startlabel.Name" xml:space="preserve">
     <value>dhcp_startlabel</value>
   </data>
-  <data name="&gt;&gt;link_ver.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="label_prof.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="&gt;&gt;label_prj.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="&gt;&gt;text_tftpclfile.Name" xml:space="preserve">
     <value>text_tftpclfile</value>
   </data>
+  <data name="&gt;&gt;btn_http_reg.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
   <data name="ftp_dirtext5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="dhcp_logbtn.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 108</value>
+  <data name="fp_httpd.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 36</value>
   </data>
   <data name="&gt;&gt;text_scanstart.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -951,11 +945,8 @@
   <data name="&gt;&gt;btn_tftpcget.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="tftpd_output.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
-  </data>
-  <data name="dhcp_gatewaylabel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>53, 16</value>
+  <data name="btn_http_reg.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
   </data>
   <data name="&gt;&gt;text_tftpcaddr.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -972,20 +963,14 @@
   <data name="DHCPD.Size" type="System.Drawing.Size, System.Drawing">
     <value>663, 353</value>
   </data>
-  <data name="btn_tftpclfile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
   <data name="dhcp_endlabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;text_tftpcretry.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;btn_tftpclfile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="btn_tftpcget.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
-  </data>
-  <data name="btn_ping.Size" type="System.Drawing.Size, System.Drawing">
-    <value>64, 30</value>
   </data>
   <data name="ping_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -996,11 +981,14 @@
   <data name="&gt;&gt;text_tftpctout.Parent" xml:space="preserve">
     <value>TFTPC</value>
   </data>
+  <data name="btn_http_dereg.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
   <data name="tftpd_deldir.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
   </data>
-  <data name="&gt;&gt;text_http_dir.Name" xml:space="preserve">
-    <value>text_http_dir</value>
+  <data name="tftpd_deldir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="tftpc_output.Size" type="System.Drawing.Size, System.Drawing">
     <value>648, 144</value>
@@ -1008,8 +996,8 @@
   <data name="Setting.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
   </data>
-  <data name="&gt;&gt;label_addr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;dhcp_logtext.Name" xml:space="preserve">
+    <value>dhcp_logtext</value>
   </data>
   <data name="&gt;&gt;tftpd_adddir.Parent" xml:space="preserve">
     <value>TFTPD</value>
@@ -1029,32 +1017,35 @@
   <data name="btn_ftp.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
+  <data name="&gt;&gt;label_addr.Name" xml:space="preserve">
+    <value>label_addr</value>
+  </data>
+  <data name="text_addr.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
   <data name="DHCPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="&gt;&gt;label_prj.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Setting.Size" type="System.Drawing.Size, System.Drawing">
-    <value>663, 353</value>
+  <data name="toolStripContainer1.Text" xml:space="preserve">
+    <value>toolStripContainer1</value>
   </data>
-  <data name="btn_http_dir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 20</value>
-  </data>
-  <data name="tftpd_btn.Location" type="System.Drawing.Point, System.Drawing">
-    <value>590, 200</value>
+  <data name="&gt;&gt;setting_output.ZOrder" xml:space="preserve">
+    <value>8</value>
   </data>
   <data name="ftp_dirtext1.Size" type="System.Drawing.Size, System.Drawing">
     <value>577, 14</value>
   </data>
-  <data name="&gt;&gt;ftp_dirbtn4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label_prj.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
   </data>
   <data name="&gt;&gt;btn_tftpclfile.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
-  <data name="&gt;&gt;label_tftpcretry.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="HTTPD.Size" type="System.Drawing.Size, System.Drawing">
+    <value>663, 353</value>
   </data>
   <data name="&gt;&gt;tftpd_fp.ZOrder" xml:space="preserve">
     <value>4</value>
@@ -1074,8 +1065,8 @@
   <data name="label_lang.Text" xml:space="preserve">
     <value>Language</value>
   </data>
-  <data name="link_prof.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="label_scanip.Text" xml:space="preserve">
+    <value>IP</value>
   </data>
   <data name="&gt;&gt;btn_tftpcget.Name" xml:space="preserve">
     <value>btn_tftpcget</value>
@@ -1089,8 +1080,11 @@
   <data name="label_tftpcblksize.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;text_http_dir.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label_tftpcaddr.Size" type="System.Drawing.Size, System.Drawing">
+    <value>18, 16</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;text_addr.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -1116,6 +1110,9 @@
   <data name="text_tftpclfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
+  <data name="fp_httpd.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
   <data name="ping_output.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 180</value>
   </data>
@@ -1131,29 +1128,23 @@
   <data name="&gt;&gt;tftpd_output.Type" xml:space="preserve">
     <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="btn_tftpcput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 20</value>
-  </data>
   <data name="Scan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
-  </data>
-  <data name="ftp_dirtext4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>577, 14</value>
   </data>
   <data name="&gt;&gt;ftp_dirbtn5.Name" xml:space="preserve">
     <value>ftp_dirbtn5</value>
   </data>
-  <data name="&gt;&gt;toolStripContainer1.ContentPanel.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="ftp_dirtext2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>577, 14</value>
+  </data>
+  <data name="&gt;&gt;text_scanend.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="text_interval.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
   <data name="link_prj.Text" xml:space="preserve">
     <value>https://github.com/lazebird/rabbit</value>
-  </data>
-  <data name="&gt;&gt;btn_http_dir.Name" xml:space="preserve">
-    <value>btn_http_dir</value>
   </data>
   <data name="&gt;&gt;text_addr.Parent" xml:space="preserve">
     <value>Ping</value>
@@ -1170,11 +1161,8 @@
   <data name="&gt;&gt;ping_output.Type" xml:space="preserve">
     <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="text_http_dir.Location" type="System.Drawing.Point, System.Drawing">
-    <value>80, 44</value>
-  </data>
-  <data name="&gt;&gt;text_http_dir.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="btn_http_dereg.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 22</value>
   </data>
   <data name="label_prj.Text" xml:space="preserve">
     <value>Homepage</value>
@@ -1194,9 +1182,6 @@
   <data name="&gt;&gt;btn_scan.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="btn_http_dir.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
-  </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>671, 382</value>
   </data>
@@ -1205,9 +1190,6 @@
   </data>
   <data name="Ping.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
-  </data>
-  <data name="text_logpath.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
   </data>
   <data name="tftpd_adddir.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
@@ -1218,9 +1200,6 @@
   <data name="dhcp_startlabel.Size" type="System.Drawing.Size, System.Drawing">
     <value>45, 16</value>
   </data>
-  <data name="ftp_dirtext4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>80, 108</value>
-  </data>
   <data name="&gt;&gt;link_prof.Type" xml:space="preserve">
     <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -1230,20 +1209,20 @@
   <data name="dhcp_logmsg.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
   </data>
-  <data name="DHCPD.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
   <data name="Ping.Size" type="System.Drawing.Size, System.Drawing">
     <value>663, 353</value>
   </data>
   <data name="&gt;&gt;text_tftpcblksize.Parent" xml:space="preserve">
     <value>TFTPC</value>
   </data>
+  <data name="&gt;&gt;label_tftpctout.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;text_tftpdretry.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;toolStripContainer1.Name" xml:space="preserve">
+    <value>toolStripContainer1</value>
   </data>
   <data name="&gt;&gt;fp_scan.Parent" xml:space="preserve">
     <value>Scan</value>
@@ -1251,23 +1230,23 @@
   <data name="tabs.Size" type="System.Drawing.Size, System.Drawing">
     <value>671, 382</value>
   </data>
+  <data name="btn_ping_log.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
   <data name="ftp_dirtext3.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
   </data>
   <data name="HTTPD.Text" xml:space="preserve">
     <value>HTTPD</value>
   </data>
-  <data name="text_http_dir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
   <data name="&gt;&gt;ftp_dirtext4.Parent" xml:space="preserve">
     <value>FTPD</value>
   </data>
-  <data name="&gt;&gt;Setting.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
   <data name="ftp_dirbtn5.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 140</value>
+  </data>
+  <data name="dhcp_endtext.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
   </data>
   <data name="&gt;&gt;dhcp_endlabel.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1302,14 +1281,14 @@
   <data name="dhcp_starttext.Size" type="System.Drawing.Size, System.Drawing">
     <value>586, 14</value>
   </data>
-  <data name="&gt;&gt;link_ver.Type" xml:space="preserve">
-    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label_count.Size" type="System.Drawing.Size, System.Drawing">
+    <value>40, 16</value>
   </data>
-  <data name="label_ver.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+  <data name="btn_http_reg.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
   </data>
-  <data name="&gt;&gt;label_tftpcaddr.Name" xml:space="preserve">
-    <value>label_tftpcaddr</value>
+  <data name="&gt;&gt;tabs.Parent" xml:space="preserve">
+    <value>toolStripContainer1.ContentPanel</value>
   </data>
   <data name="&gt;&gt;text_scanend.Name" xml:space="preserve">
     <value>text_scanend</value>
@@ -1323,17 +1302,14 @@
   <data name="&gt;&gt;text_tftpcaddr.Name" xml:space="preserve">
     <value>text_tftpcaddr</value>
   </data>
-  <data name="&gt;&gt;ftpd_output.ZOrder" xml:space="preserve">
-    <value>11</value>
+  <data name="&gt;&gt;dhcp_gatewaylabel.Parent" xml:space="preserve">
+    <value>DHCPD</value>
   </data>
   <data name="TFTPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
   </data>
-  <data name="httpd_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="tftpd_fp.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
+  <data name="text_http_port.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpdretry.Location" type="System.Drawing.Point, System.Drawing">
     <value>92, 40</value>
@@ -1350,32 +1326,35 @@
   <data name="dhcp_starttext.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
-  <data name="&gt;&gt;toolStripContainer1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripContainer, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;link_prj.Parent" xml:space="preserve">
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;label_tftpdtout.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="text_tftpcretry.Size" type="System.Drawing.Size, System.Drawing">
+    <value>563, 14</value>
+  </data>
   <data name="ftp_dirtext4.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="label_scanend.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 0, 2, 0</value>
+  <data name="&gt;&gt;dhcp_gatewaylabel.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="&gt;&gt;label_tftpdretry.Name" xml:space="preserve">
     <value>label_tftpdretry</value>
   </data>
-  <data name="btn_tftpcget.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+  <data name="dhcp_gatewaylabel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>53, 16</value>
   </data>
   <data name="Scan.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
   </data>
   <data name="toolStripContainer1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
+  </data>
+  <data name="&gt;&gt;ftp_dirtext5.ZOrder" xml:space="preserve">
+    <value>8</value>
   </data>
   <data name="&gt;&gt;label_scanip.Parent" xml:space="preserve">
     <value>Scan</value>
@@ -1392,14 +1371,11 @@
   <data name="dhcp_starttext.Location" type="System.Drawing.Point, System.Drawing">
     <value>70, 12</value>
   </data>
-  <data name="&gt;&gt;dhcp_gatewaytext.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="dhcp_endtext.Location" type="System.Drawing.Point, System.Drawing">
     <value>70, 44</value>
   </data>
-  <data name="&gt;&gt;btn_http_dir.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="&gt;&gt;tftpd_fp.Type" xml:space="preserve">
+    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="label_tftpcaddr.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 11</value>
@@ -1416,11 +1392,11 @@
   <data name="ftp_dirbtn5.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
-  <data name="&gt;&gt;text_count.Parent" xml:space="preserve">
-    <value>Ping</value>
+  <data name="dhcp_btn.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft YaHei UI, 7.8pt</value>
   </data>
-  <data name="&gt;&gt;Scan.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="&gt;&gt;dhcp_starttext.Parent" xml:space="preserve">
+    <value>DHCPD</value>
   </data>
   <data name="text_interval.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -1428,20 +1404,17 @@
   <data name="dhcp_btn.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
   </data>
-  <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Microsoft YaHei UI, 8.25pt</value>
+  <data name="HTTPD.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
   </data>
   <data name="ftp_dirbtn3.Text" xml:space="preserve">
     <value>Directory 3</value>
   </data>
-  <data name="dhcp_endtext.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="dhcp_logbtn.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
-  </data>
   <data name="label_tftpcretry.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 69</value>
+  </data>
+  <data name="Setting.Size" type="System.Drawing.Size, System.Drawing">
+    <value>663, 353</value>
   </data>
   <data name="btn_scan.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
@@ -1449,23 +1422,20 @@
   <data name="link_prj.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="text_tftpctout.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
   <data name="&gt;&gt;label_http_port.Name" xml:space="preserve">
     <value>label_http_port</value>
   </data>
-  <data name="&gt;&gt;label_lang.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="btn_http_dereg.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="text_logpath.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="btn_tftpcput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 20</value>
   </data>
-  <data name="dhcp_logtext.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
-  </data>
-  <data name="&gt;&gt;label_ver.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="tftpd_deldir.Location" type="System.Drawing.Point, System.Drawing">
-    <value>40, 200</value>
+  <data name="&gt;&gt;DHCPD.ZOrder" xml:space="preserve">
+    <value>6</value>
   </data>
   <data name="label_tftpdtout.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1494,11 +1464,11 @@
   <data name="&gt;&gt;toolStripContainer1.BottomToolStripPanel.Name" xml:space="preserve">
     <value>toolStripContainer1.BottomToolStripPanel</value>
   </data>
-  <data name="TFTPC.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 25</value>
+  <data name="&gt;&gt;label_interval.Name" xml:space="preserve">
+    <value>label_interval</value>
   </data>
-  <data name="&gt;&gt;label_interval.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="tftpc_output.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
   </data>
   <data name="&gt;&gt;label_tftpcrfile.ZOrder" xml:space="preserve">
     <value>10</value>
@@ -1512,26 +1482,26 @@
   <data name="ftp_dirbtn2.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 44</value>
   </data>
-  <data name="toolStripContainer1.ContentPanel.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
-    <value>Stretch</value>
-  </data>
   <data name="&gt;&gt;ftp_dirtext3.Name" xml:space="preserve">
     <value>ftp_dirtext3</value>
   </data>
   <data name="&gt;&gt;link_prj.Type" xml:space="preserve">
     <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;tftpd_btn.Name" xml:space="preserve">
+    <value>tftpd_btn</value>
+  </data>
   <data name="FTPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
-  <data name="&gt;&gt;dhcp_starttext.Parent" xml:space="preserve">
-    <value>DHCPD</value>
+  <data name="text_tftpctout.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
   </data>
-  <data name="&gt;&gt;ftp_dirbtn1.Name" xml:space="preserve">
-    <value>ftp_dirbtn1</value>
+  <data name="&gt;&gt;text_logpath.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;ping_output.Name" xml:space="preserve">
-    <value>ping_output</value>
+  <data name="dhcp_logtext.Size" type="System.Drawing.Size, System.Drawing">
+    <value>586, 14</value>
   </data>
   <data name="&gt;&gt;text_count.Name" xml:space="preserve">
     <value>text_count</value>
@@ -1542,14 +1512,14 @@
   <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Parent" xml:space="preserve">
     <value>toolStripContainer1</value>
   </data>
-  <data name="ftp_dirtext1.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
-  </data>
   <data name="dhcp_logbtn.Text" xml:space="preserve">
     <value>Log</value>
   </data>
   <data name="label_tftpcaddr.TabIndex" type="System.Int32, mscorlib">
     <value>20</value>
+  </data>
+  <data name="label_tftpctout.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
   </data>
   <data name="label_tftpdtout.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 10</value>
@@ -1572,8 +1542,8 @@
   <data name="&gt;&gt;Ping.Parent" xml:space="preserve">
     <value>tabs</value>
   </data>
-  <data name="ftp_dirbtn2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 18</value>
+  <data name="&gt;&gt;tftpd_adddir.Name" xml:space="preserve">
+    <value>tftpd_adddir</value>
   </data>
   <data name="tftpd_output.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 230</value>
@@ -1587,14 +1557,11 @@
   <data name="link_prj.Location" type="System.Drawing.Point, System.Drawing">
     <value>90, 90</value>
   </data>
-  <data name="btn_http_dir.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+  <data name="btn_ping.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft YaHei UI, 7.8pt</value>
   </data>
   <data name="dhcp_logbtn.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
-  </data>
-  <data name="&gt;&gt;ping_output.Parent" xml:space="preserve">
-    <value>Ping</value>
   </data>
   <data name="text_tftpdtout.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
@@ -1611,6 +1578,9 @@
   <data name="&gt;&gt;dhcp_endlabel.Name" xml:space="preserve">
     <value>dhcp_endlabel</value>
   </data>
+  <data name="label_http_port.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 12</value>
+  </data>
   <data name="dhcp_endlabel.Text" xml:space="preserve">
     <value>End IP</value>
   </data>
@@ -1620,11 +1590,8 @@
   <data name="lang_cb.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
-  <data name="btn_httpd.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="dhcp_btn.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Microsoft YaHei UI, 7.8pt</value>
+  <data name="&gt;&gt;ftp_dirtext2.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <data name="&gt;&gt;label_tftpctout.Parent" xml:space="preserve">
     <value>TFTPC</value>
@@ -1632,8 +1599,8 @@
   <data name="btn_tftpcput.TabIndex" type="System.Int32, mscorlib">
     <value>19</value>
   </data>
-  <data name="&gt;&gt;text_tftpdtout.Name" xml:space="preserve">
-    <value>text_tftpdtout</value>
+  <data name="&gt;&gt;btn_http_dereg.Parent" xml:space="preserve">
+    <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;DHCPD.Parent" xml:space="preserve">
     <value>tabs</value>
@@ -1644,17 +1611,14 @@
   <data name="btn_scan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
   </data>
-  <data name="&gt;&gt;label_prj.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
   <data name="&gt;&gt;btn_tftpcget.ZOrder" xml:space="preserve">
     <value>12</value>
   </data>
-  <data name="&gt;&gt;text_http_dir.Parent" xml:space="preserve">
-    <value>HTTPD</value>
+  <data name="text_interval.Location" type="System.Drawing.Point, System.Drawing">
+    <value>90, 40</value>
   </data>
-  <data name="&gt;&gt;label_interval.Parent" xml:space="preserve">
-    <value>Ping</value>
+  <data name="ftp_dirbtn2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 18</value>
   </data>
   <data name="&gt;&gt;ftp_dirbtn3.Name" xml:space="preserve">
     <value>ftp_dirbtn3</value>
@@ -1671,14 +1635,14 @@
   <data name="&gt;&gt;tftpd_btn.Parent" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="toolStripContainer1.Text" xml:space="preserve">
-    <value>toolStripContainer1</value>
-  </data>
   <data name="ftp_dirbtn4.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 108</value>
   </data>
   <data name="TFTPD.Size" type="System.Drawing.Size, System.Drawing">
     <value>663, 353</value>
+  </data>
+  <data name="btn_http_reg.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
   </data>
   <data name="toolStripContainer1.ContentPanel.AutoScroll" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1695,14 +1659,17 @@
   <data name="setting_output.Size" type="System.Drawing.Size, System.Drawing">
     <value>648, 128</value>
   </data>
-  <data name="btn_tftpcget.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
+  <data name="label_ver.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
   </data>
-  <data name="ftpd_output.ItemHeight" type="System.Int32, mscorlib">
-    <value>16</value>
+  <data name="fp_httpd.Size" type="System.Drawing.Size, System.Drawing">
+    <value>648, 227</value>
   </data>
   <data name="&gt;&gt;text_tftpclfile.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="dhcp_logbtn.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 108</value>
   </data>
   <data name="&gt;&gt;text_logpath.Parent" xml:space="preserve">
     <value>Ping</value>
@@ -1716,17 +1683,20 @@
   <data name="&gt;&gt;text_interval.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="&gt;&gt;tftpd_btn.Name" xml:space="preserve">
-    <value>tftpd_btn</value>
+  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Name" xml:space="preserve">
+    <value>toolStripContainer1.RightToolStripPanel</value>
   </data>
-  <data name="&gt;&gt;ftp_dirtext2.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;label_interval.Name" xml:space="preserve">
-    <value>label_interval</value>
+  <data name="&gt;&gt;ftp_dirbtn2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label_scanend.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="label_tftpcretry.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="&gt;&gt;ftp_dirbtn1.Parent" xml:space="preserve">
+    <value>FTPD</value>
   </data>
   <data name="&gt;&gt;lang_cb.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -1736,9 +1706,6 @@
   </data>
   <data name="&gt;&gt;label_tftpcaddr.Parent" xml:space="preserve">
     <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;setting_output.ZOrder" xml:space="preserve">
-    <value>8</value>
   </data>
   <data name="text_http_port.Location" type="System.Drawing.Point, System.Drawing">
     <value>80, 12</value>
@@ -1755,8 +1722,8 @@
   <data name="label_http_port.Text" xml:space="preserve">
     <value>Port</value>
   </data>
-  <data name="&gt;&gt;ftp_dirbtn2.Parent" xml:space="preserve">
-    <value>FTPD</value>
+  <data name="HTTPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
   </data>
   <data name="label_tftpcblksize.Size" type="System.Drawing.Size, System.Drawing">
     <value>60, 16</value>
@@ -1764,11 +1731,11 @@
   <data name="label_tftpdtout.Text" xml:space="preserve">
     <value>Timeout(ms)</value>
   </data>
-  <data name="btn_http_dir.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 44</value>
+  <data name="&gt;&gt;btn_httpd.Name" xml:space="preserve">
+    <value>btn_httpd</value>
   </data>
-  <data name="tftpd_adddir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>20, 20</value>
+  <data name="&gt;&gt;ftp_dirbtn4.Name" xml:space="preserve">
+    <value>ftp_dirbtn4</value>
   </data>
   <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.ZOrder" xml:space="preserve">
     <value>2</value>
@@ -1780,7 +1747,7 @@
     <value>1</value>
   </data>
   <data name="httpd_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 240</value>
+    <value>648, 80</value>
   </data>
   <data name="dhcp_logbtn.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft YaHei UI, 7.8pt</value>
@@ -1788,14 +1755,17 @@
   <data name="btn_ping_log.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>None</value>
   </data>
-  <data name="ftp_dirtext2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>577, 14</value>
+  <data name="dhcp_btn.Text" xml:space="preserve">
+    <value>Start</value>
   </data>
-  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Parent" xml:space="preserve">
-    <value>toolStripContainer1</value>
+  <data name="ftp_dirtext4.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
   </data>
   <data name="&gt;&gt;lang_cb.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="label_interval.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
   </data>
   <data name="tftpd_btn.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
@@ -1803,17 +1773,14 @@
   <data name="FTPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
   </data>
-  <data name="&gt;&gt;ftp_dirbtn4.Name" xml:space="preserve">
-    <value>ftp_dirbtn4</value>
-  </data>
   <data name="ftp_dirbtn4.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 18</value>
   </data>
   <data name="btn_httpd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>591, 76</value>
+    <value>590, 9</value>
   </data>
-  <data name="ftp_dirtext4.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+  <data name="text_tftpctout.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 39</value>
   </data>
   <data name="&gt;&gt;label_ver.ZOrder" xml:space="preserve">
     <value>2</value>
@@ -1821,14 +1788,14 @@
   <data name="label_tftpdretry.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;dhcp_btn.Name" xml:space="preserve">
-    <value>dhcp_btn</value>
+  <data name="btn_http_reg.Text" xml:space="preserve">
+    <value>Reg</value>
+  </data>
+  <data name="tftpd_adddir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="dhcp_logmsg.Size" type="System.Drawing.Size, System.Drawing">
     <value>648, 160</value>
-  </data>
-  <data name="ftpd_output.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
   </data>
   <data name="label_tftpcretry.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -1836,8 +1803,8 @@
   <data name="label_interval.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 40</value>
   </data>
-  <data name="&gt;&gt;label_tftpcblksize.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="dhcp_endtext.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
   </data>
   <data name="label_prof.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 130</value>
@@ -1845,17 +1812,17 @@
   <data name="setting_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
-  <data name="&gt;&gt;tftpc_output.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
   <data name="btn_scan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="FTPD.Size" type="System.Drawing.Size, System.Drawing">
     <value>663, 353</value>
   </data>
-  <data name="&gt;&gt;text_addr.Name" xml:space="preserve">
-    <value>text_addr</value>
+  <data name="btn_http_dereg.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="btn_ping_log.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
   </data>
   <data name="&gt;&gt;label_scanend.Name" xml:space="preserve">
     <value>label_scanend</value>
@@ -1866,17 +1833,26 @@
   <data name="tftpd_btn.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
+  <data name="btn_ping_log.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
   <data name="&gt;&gt;tabs.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="&gt;&gt;dhcp_gatewaylabel.Parent" xml:space="preserve">
-    <value>DHCPD</value>
+  <data name="label_prof.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="&gt;&gt;label_prof.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="text_scanstart.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="btn_tftpcget.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="&gt;&gt;label_addr.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_interval.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <data name="text_tftpctout.Size" type="System.Drawing.Size, System.Drawing">
     <value>563, 14</value>
@@ -1896,14 +1872,17 @@
   <data name="TFTPC.Size" type="System.Drawing.Size, System.Drawing">
     <value>663, 353</value>
   </data>
+  <data name="dhcp_startlabel.Text" xml:space="preserve">
+    <value>Start IP</value>
+  </data>
   <data name="ftp_dirtext1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="&gt;&gt;dhcp_starttext.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="btn_httpd.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
+  <data name="dhcp_logbtn.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
   </data>
   <data name="label_tftpctout.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 39</value>
@@ -1914,11 +1893,11 @@
   <data name="text_scanend.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
   </data>
-  <data name="dhcp_logtext.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+  <data name="&gt;&gt;dhcp_starttext.Name" xml:space="preserve">
+    <value>dhcp_starttext</value>
   </data>
-  <data name="text_scanend.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
+  <data name="ftp_dirtext3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>80, 76</value>
   </data>
   <data name="tabs.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
@@ -1935,8 +1914,8 @@
   <data name="&gt;&gt;dhcp_endtext.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="label_tftpcretry.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+  <data name="$this.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+    <value>Zoom</value>
   </data>
   <data name="&gt;&gt;ftp_dirtext4.Name" xml:space="preserve">
     <value>ftp_dirtext4</value>
@@ -1947,14 +1926,26 @@
   <data name="toolStripContainer1.Size" type="System.Drawing.Size, System.Drawing">
     <value>671, 382</value>
   </data>
+  <data name="text_logpath.Location" type="System.Drawing.Point, System.Drawing">
+    <value>90, 100</value>
+  </data>
   <data name="ping_output.Size" type="System.Drawing.Size, System.Drawing">
     <value>648, 160</value>
   </data>
-  <data name="btn_ping_log.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
+  <data name="&gt;&gt;HTTPD.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="toolStripContainer1.ContentPanel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
+  </data>
+  <data name="text_scanstart.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
   </data>
   <data name="&gt;&gt;label_tftpcaddr.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="ftpd_output.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
   </data>
   <data name="text_addr.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -1971,17 +1962,17 @@
   <data name="label_tftpcblksize.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="tftpc_output.ItemHeight" type="System.Int32, mscorlib">
-    <value>16</value>
-  </data>
   <data name="ping_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="&gt;&gt;tftpd_fp.Parent" xml:space="preserve">
     <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;ftp_dirbtn1.Parent" xml:space="preserve">
-    <value>FTPD</value>
+  <data name="&gt;&gt;Setting.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="dhcp_logmsg.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
   </data>
   <data name="HTTPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
@@ -1989,8 +1980,11 @@
   <data name="&gt;&gt;dhcp_startlabel.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;tftpd_adddir.Name" xml:space="preserve">
-    <value>tftpd_adddir</value>
+  <data name="&gt;&gt;label_ver.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="text_tftpcaddr.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
   </data>
   <data name="&gt;&gt;text_logpath.Name" xml:space="preserve">
     <value>text_logpath</value>
@@ -2001,23 +1995,23 @@
   <data name="text_tftpcblksize.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
+  <data name="&gt;&gt;btn_ftp.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="label_addr.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
-  </data>
-  <data name="&gt;&gt;tftpd_btn.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="setting_output.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
   </data>
-  <data name="&gt;&gt;label_tftpctout.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;dhcp_btn.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="text_addr.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Parent" xml:space="preserve">
+    <value>toolStripContainer1</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 309</value>
+    <value>648, 306</value>
   </data>
   <data name="text_addr.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -2025,8 +2019,11 @@
   <data name="&gt;&gt;ftp_dirbtn3.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="btn_tftpclfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
+  <data name="label_tftpcaddr.Text" xml:space="preserve">
+    <value>IP</value>
+  </data>
+  <data name="DHCPD.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
   </data>
   <data name="&gt;&gt;label_tftpcretry.Name" xml:space="preserve">
     <value>label_tftpcretry</value>
@@ -2040,8 +2037,8 @@
   <data name="btn_scan.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 20</value>
   </data>
-  <data name="&gt;&gt;label_scanend.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="&gt;&gt;ftp_dirbtn1.Name" xml:space="preserve">
+    <value>ftp_dirbtn1</value>
   </data>
   <data name="&gt;&gt;link_prj.ZOrder" xml:space="preserve">
     <value>5</value>
@@ -2049,17 +2046,17 @@
   <data name="text_tftpcblksize.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="&gt;&gt;dhcp_logtext.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
   <data name="&gt;&gt;ftp_dirbtn3.Parent" xml:space="preserve">
     <value>FTPD</value>
   </data>
   <data name="&gt;&gt;dhcp_logbtn.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="text_tftpctout.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+  <data name="&gt;&gt;tftpd_btn.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Scan.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="link_prof.Location" type="System.Drawing.Point, System.Drawing">
     <value>90, 130</value>
@@ -2067,17 +2064,20 @@
   <data name="tftpd_adddir.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 200</value>
   </data>
-  <data name="tftpd_output.ItemHeight" type="System.Int32, mscorlib">
-    <value>16</value>
-  </data>
   <data name="&gt;&gt;text_http_port.Parent" xml:space="preserve">
     <value>HTTPD</value>
+  </data>
+  <data name="label_addr.Size" type="System.Drawing.Size, System.Drawing">
+    <value>50, 16</value>
   </data>
   <data name="&gt;&gt;ftp_dirbtn5.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="btn_httpd.Text" xml:space="preserve">
-    <value>Start</value>
+  <data name="text_count.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcblksize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;link_prof.ZOrder" xml:space="preserve">
     <value>7</value>
@@ -2091,8 +2091,8 @@
   <data name="text_tftpdretry.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="label_scanip.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="&gt;&gt;tftpc_output.Parent" xml:space="preserve">
+    <value>TFTPC</value>
   </data>
   <data name="tftpd_deldir.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft YaHei UI, 8.25pt, style=Bold</value>
@@ -2106,14 +2106,14 @@
   <data name="dhcp_endtext.Size" type="System.Drawing.Size, System.Drawing">
     <value>586, 14</value>
   </data>
-  <data name="ftp_dirbtn1.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+  <data name="ftp_dirbtn4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="btn_ping_log.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 100</value>
   </data>
-  <data name="text_http_dir.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+  <data name="&gt;&gt;label_tftpcaddr.Name" xml:space="preserve">
+    <value>label_tftpcaddr</value>
   </data>
   <data name="ftp_dirbtn3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -5794,8 +5794,8 @@
         /D8AAPw/AAD8PwAA8R8AAMGDAACDwQAAx+MAAP//AAA=
 </value>
   </data>
-  <data name="HTTPD.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+  <data name="link_prof.Size" type="System.Drawing.Size, System.Drawing">
+    <value>0, 16</value>
   </data>
   <data name="&gt;&gt;Setting.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -5806,11 +5806,14 @@
   <data name="&gt;&gt;link_ver.Name" xml:space="preserve">
     <value>link_ver</value>
   </data>
+  <data name="text_tftpclfile.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 129</value>
+  </data>
   <data name="label_lang.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
-  <data name="label_scanip.Text" xml:space="preserve">
-    <value>IP</value>
+  <data name="label_lang.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 10</value>
   </data>
   <data name="httpd_output.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -5818,32 +5821,29 @@
   <data name="tftpd_deldir.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
-  <data name="&gt;&gt;toolStripContainer1.BottomToolStripPanel.Type" xml:space="preserve">
+  <data name="link_prof.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="dhcp_gatewaylabel.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;ftpd_output.Name" xml:space="preserve">
-    <value>ftpd_output</value>
+  <data name="tftpd_output.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
   </data>
   <data name="dhcp_logmsg.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft YaHei UI, 7.8pt</value>
   </data>
-  <data name="&gt;&gt;tftpd_adddir.Type" xml:space="preserve">
+  <data name="btn_httpd.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="&gt;&gt;ftp_dirbtn4.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="text_tftpcrfile.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="dhcp_gatewaytext.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;label_ver.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="dhcp_logmsg.ItemHeight" type="System.Int32, mscorlib">
-    <value>16</value>
+  <data name="label_prj.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 16</value>
   </data>
   <data name="&gt;&gt;text_scanstart.Parent" xml:space="preserve">
     <value>Scan</value>
@@ -5866,11 +5866,17 @@
   <data name="label_ver.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
+  <data name="&gt;&gt;btn_http_dereg.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_http_reg.Parent" xml:space="preserve">
+    <value>HTTPD</value>
+  </data>
   <data name="label_scanend.Text" xml:space="preserve">
     <value>-</value>
   </data>
-  <data name="ftp_dirbtn2.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+  <data name="&gt;&gt;text_tftpcrfile.Name" xml:space="preserve">
+    <value>text_tftpcrfile</value>
   </data>
   <data name="&gt;&gt;label_tftpdtout.Parent" xml:space="preserve">
     <value>TFTPD</value>
@@ -5890,8 +5896,14 @@
   <data name="&gt;&gt;setting_output.Parent" xml:space="preserve">
     <value>Setting</value>
   </data>
-  <data name="btn_ping.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Microsoft YaHei UI, 7.8pt</value>
+  <data name="btn_http_reg.Location" type="System.Drawing.Point, System.Drawing">
+    <value>408, 9</value>
+  </data>
+  <data name="&gt;&gt;text_addr.Name" xml:space="preserve">
+    <value>text_addr</value>
+  </data>
+  <data name="&gt;&gt;label_interval.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;text_tftpcrfile.Parent" xml:space="preserve">
     <value>TFTPC</value>
@@ -5899,11 +5911,17 @@
   <data name="&gt;&gt;label_http_port.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="label_count.Size" type="System.Drawing.Size, System.Drawing">
-    <value>40, 16</value>
+  <data name="&gt;&gt;link_ver.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="fp_scan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
+  </data>
+  <data name="btn_http_dereg.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;btn_ping.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="btn_tftpcget.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -5932,14 +5950,8 @@
   <data name="text_scanend.Location" type="System.Drawing.Point, System.Drawing">
     <value>497, 12</value>
   </data>
-  <data name="ftp_dirbtn2.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
-  </data>
   <data name="&gt;&gt;dhcp_logbtn.ZOrder" xml:space="preserve">
     <value>6</value>
-  </data>
-  <data name="text_tftpctout.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 39</value>
   </data>
   <data name="&gt;&gt;text_tftpcretry.Parent" xml:space="preserve">
     <value>TFTPC</value>
@@ -5947,14 +5959,14 @@
   <data name="&gt;&gt;setting_output.Name" xml:space="preserve">
     <value>setting_output</value>
   </data>
-  <data name="text_tftpcrfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 159</value>
+  <data name="btn_ping.Size" type="System.Drawing.Size, System.Drawing">
+    <value>64, 30</value>
   </data>
   <data name="dhcp_starttext.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
-  <data name="tftpd_adddir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
+  <data name="&gt;&gt;toolStripContainer1.BottomToolStripPanel.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="label_lang.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -5989,14 +6001,17 @@
   <data name="&gt;&gt;dhcp_btn.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
-  <data name="FTPD.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+  <data name="&gt;&gt;btn_http_reg.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;tftpd_fp.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;fp_httpd.Parent" xml:space="preserve">
+    <value>HTTPD</value>
   </data>
-  <data name="label_prj.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+  <data name="dhcp_gatewaytext.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="&gt;&gt;ftp_dirtext1.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;text_tftpctout.Name" xml:space="preserve">
     <value>text_tftpctout</value>
@@ -6004,8 +6019,8 @@
   <data name="ftp_dirbtn5.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 18</value>
   </data>
-  <data name="label_interval.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+  <data name="ftp_dirbtn5.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
   </data>
   <data name="text_tftpcretry.Location" type="System.Drawing.Point, System.Drawing">
     <value>92, 69</value>
@@ -6018,6 +6033,9 @@
   </data>
   <data name="text_tftpdretry.TabIndex" type="System.Int32, mscorlib">
     <value>16</value>
+  </data>
+  <data name="&gt;&gt;ftpd_output.ZOrder" xml:space="preserve">
+    <value>11</value>
   </data>
   <data name="&gt;&gt;Ping.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -6034,26 +6052,26 @@
   <data name="&gt;&gt;toolStripContainer1.BottomToolStripPanel.Parent" xml:space="preserve">
     <value>toolStripContainer1</value>
   </data>
-  <data name="&gt;&gt;Setting.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="btn_http_dir.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="btn_ftp.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
-  </data>
-  <data name="&gt;&gt;btn_ping_log.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="ftpd_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="&gt;&gt;tftpd_deldir.Name" xml:space="preserve">
-    <value>tftpd_deldir</value>
+  <data name="&gt;&gt;fp_scan.Type" xml:space="preserve">
+    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tftpd_deldir.Location" type="System.Drawing.Point, System.Drawing">
+    <value>40, 200</value>
   </data>
   <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="text_tftpctout.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="&gt;&gt;Scan.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.ContentPanel.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;Setting.Name" xml:space="preserve">
     <value>Setting</value>
@@ -6061,14 +6079,17 @@
   <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="&gt;&gt;dhcp_gatewaylabel.Name" xml:space="preserve">
-    <value>dhcp_gatewaylabel</value>
+  <data name="&gt;&gt;text_tftpcretry.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;ftp_dirtext1.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;label_scanend.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
-  <data name="label_http_port.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 12</value>
+  <data name="tftpd_adddir.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="ftp_dirtext4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>80, 108</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -6076,14 +6097,17 @@
   <data name="&gt;&gt;tftpc_output.ZOrder" xml:space="preserve">
     <value>14</value>
   </data>
-  <data name="dhcp_btn.Text" xml:space="preserve">
-    <value>Start</value>
+  <data name="btn_http_reg.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="label_tftpcretry.Text" xml:space="preserve">
     <value>Max Retry</value>
   </data>
-  <data name="&gt;&gt;Scan.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;link_ver.Type" xml:space="preserve">
+    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="httpd_output.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 271</value>
   </data>
   <data name="dhcp_endlabel.Size" type="System.Drawing.Size, System.Drawing">
     <value>41, 16</value>
@@ -6091,17 +6115,23 @@
   <data name="ftp_dirbtn1.Location" type="System.Drawing.Point, System.Drawing">
     <value>9, 12</value>
   </data>
+  <data name="text_tftpcaddr.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
+  </data>
   <data name="&gt;&gt;dhcp_starttext.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
   <data name="&gt;&gt;link_prof.Name" xml:space="preserve">
     <value>link_prof</value>
   </data>
-  <data name="&gt;&gt;fp_scan.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="ftp_dirbtn2.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
   </data>
   <data name="&gt;&gt;label_tftpcrfile.Parent" xml:space="preserve">
     <value>TFTPC</value>
+  </data>
+  <data name="&gt;&gt;text_tftpcblksize.ZOrder" xml:space="preserve">
+    <value>7</value>
   </data>
   <data name="&gt;&gt;btn_tftpcput.ZOrder" xml:space="preserve">
     <value>13</value>
@@ -6133,11 +6163,14 @@
   <data name="&gt;&gt;lang_cb.Parent" xml:space="preserve">
     <value>Setting</value>
   </data>
-  <data name="&gt;&gt;btn_ping.Parent" xml:space="preserve">
-    <value>Ping</value>
+  <data name="&gt;&gt;btn_http_dereg.Name" xml:space="preserve">
+    <value>btn_http_dereg</value>
   </data>
   <data name="&gt;&gt;text_count.ZOrder" xml:space="preserve">
     <value>5</value>
+  </data>
+  <data name="&gt;&gt;HTTPD.Name" xml:space="preserve">
+    <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;ftp_dirbtn1.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -6145,17 +6178,14 @@
   <data name="lang_cb.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="label_tftpcaddr.Text" xml:space="preserve">
-    <value>IP</value>
+  <data name="httpd_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="ping_output.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft YaHei UI, 7.8pt</value>
   </data>
   <data name="&gt;&gt;ftp_dirbtn5.Parent" xml:space="preserve">
     <value>FTPD</value>
-  </data>
-  <data name="&gt;&gt;text_logpath.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="dhcp_logtext.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -6166,26 +6196,26 @@
   <data name="ftp_dirtext2.Location" type="System.Drawing.Point, System.Drawing">
     <value>80, 44</value>
   </data>
+  <data name="&gt;&gt;btn_ping_log.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="label_count.Text" xml:space="preserve">
     <value>Count</value>
   </data>
   <data name="ftp_dirtext4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="&gt;&gt;HTTPD.Name" xml:space="preserve">
-    <value>HTTPD</value>
+  <data name="&gt;&gt;btn_tftpclfile.Name" xml:space="preserve">
+    <value>btn_tftpclfile</value>
   </data>
   <data name="&gt;&gt;ftp_dirtext3.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="&gt;&gt;Ping.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;toolStripContainer1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripContainer, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label_tftpdtout.Name" xml:space="preserve">
     <value>label_tftpdtout</value>
-  </data>
-  <data name="&gt;&gt;$this.Name" xml:space="preserve">
-    <value>Form1</value>
   </data>
   <data name="&gt;&gt;Scan.Name" xml:space="preserve">
     <value>Scan</value>
@@ -6196,17 +6226,17 @@
   <data name="&gt;&gt;tftpd_btn.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
-  <data name="text_tftpcaddr.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="btn_http_dir.Text" xml:space="preserve">
-    <value>Directory</value>
+  <data name="label_scanend.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 0, 2, 0</value>
   </data>
   <data name="&gt;&gt;label_tftpcretry.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="label_tftpcaddr.Size" type="System.Drawing.Size, System.Drawing">
-    <value>18, 16</value>
+  <data name="btn_tftpclfile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="&gt;&gt;dhcp_gatewaylabel.Name" xml:space="preserve">
+    <value>dhcp_gatewaylabel</value>
   </data>
   <data name="&gt;&gt;btn_tftpcput.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -6238,11 +6268,11 @@
   <data name="dhcp_logbtn.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>TopLeft</value>
   </data>
-  <data name="label_addr.Size" type="System.Drawing.Size, System.Drawing">
-    <value>50, 16</value>
+  <data name="text_tftpcrfile.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 159</value>
   </data>
-  <data name="label_tftpctout.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
+  <data name="&gt;&gt;tftpd_deldir.Name" xml:space="preserve">
+    <value>tftpd_deldir</value>
   </data>
   <data name="dhcp_gatewaytext.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -6253,14 +6283,17 @@
   <data name="label_tftpctout.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="dhcp_logmsg.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+  <data name="ftp_dirbtn2.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="btn_http_dereg.Text" xml:space="preserve">
+    <value>Dereg</value>
   </data>
   <data name="&gt;&gt;text_tftpcrfile.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="ftp_dirtext3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>80, 76</value>
+  <data name="ftp_dirtext4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>577, 14</value>
   </data>
   <data name="&gt;&gt;label_tftpdtout.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -6277,29 +6310,32 @@
   <data name="link_prof.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
+  <data name="&gt;&gt;fp_httpd.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
   <data name="Setting.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="&gt;&gt;ftp_dirbtn5.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="text_tftpcaddr.TabIndex" type="System.Int32, mscorlib">
-    <value>21</value>
+  <data name="&gt;&gt;Ping.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="dhcp_btn.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
   </data>
-  <data name="&gt;&gt;tabs.Parent" xml:space="preserve">
-    <value>toolStripContainer1.ContentPanel</value>
+  <data name="ftp_dirbtn1.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
   </data>
   <data name="ftp_dirbtn3.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
-  <data name="label_scanip.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 0, 2, 0</value>
+  <data name="&gt;&gt;label_tftpcretry.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="text_scanend.Size" type="System.Drawing.Size, System.Drawing">
-    <value>69, 14</value>
+  <data name="toolStripContainer1.ContentPanel.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+    <value>Stretch</value>
   </data>
   <data name="&gt;&gt;link_prof.Parent" xml:space="preserve">
     <value>Setting</value>
@@ -6307,11 +6343,17 @@
   <data name="&gt;&gt;text_scanend.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="label_scanip.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
   <data name="&gt;&gt;ftp_dirtext1.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label_http_port.Parent" xml:space="preserve">
     <value>HTTPD</value>
+  </data>
+  <data name="&gt;&gt;btn_ftp.Parent" xml:space="preserve">
+    <value>FTPD</value>
   </data>
   <data name="&gt;&gt;label_tftpcblksize.Parent" xml:space="preserve">
     <value>TFTPC</value>
@@ -6319,8 +6361,8 @@
   <data name="text_http_port.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
-  <data name="&gt;&gt;label_addr.Name" xml:space="preserve">
-    <value>label_addr</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Rabbit</value>
   </data>
   <data name="label_tftpcblksize.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 97</value>
@@ -6340,14 +6382,14 @@
   <data name="&gt;&gt;label_scanip.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="httpd_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 112</value>
+  <data name="Ping.Text" xml:space="preserve">
+    <value>Ping</value>
   </data>
   <data name="ftp_dirtext5.Size" type="System.Drawing.Size, System.Drawing">
     <value>577, 14</value>
   </data>
-  <data name="text_http_dir.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="Setting.Text" xml:space="preserve">
+    <value>Setting</value>
   </data>
   <data name="&gt;&gt;FTPD.ZOrder" xml:space="preserve">
     <value>5</value>
@@ -6367,35 +6409,32 @@
   <data name="&gt;&gt;ftp_dirbtn4.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
-  <data name="&gt;&gt;btn_httpd.Name" xml:space="preserve">
-    <value>btn_httpd</value>
+  <data name="tftpd_output.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
   </data>
-  <data name="dhcp_gatewaytext.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="dhcp_logtext.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
   </data>
   <data name="dhcp_gatewaylabel.Text" xml:space="preserve">
     <value>Gateway</value>
   </data>
-  <data name="btn_ping_log.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+  <data name="&gt;&gt;label_tftpcretry.Parent" xml:space="preserve">
+    <value>TFTPC</value>
   </data>
   <data name="Scan.Text" xml:space="preserve">
     <value>Scan</value>
   </data>
-  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Name" xml:space="preserve">
-    <value>toolStripContainer1.RightToolStripPanel</value>
+  <data name="&gt;&gt;toolStripContainer1.BottomToolStripPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="btn_ping_log.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
+  <data name="&gt;&gt;dhcp_logmsg.Parent" xml:space="preserve">
+    <value>DHCPD</value>
   </data>
   <data name="&gt;&gt;tftpc_output.Name" xml:space="preserve">
     <value>tftpc_output</value>
   </data>
-  <data name="btn_scan.Location" type="System.Drawing.Point, System.Drawing">
-    <value>591, 12</value>
-  </data>
-  <data name="&gt;&gt;btn_ftp.Parent" xml:space="preserve">
-    <value>FTPD</value>
+  <data name="text_tftpcblksize.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
   </data>
   <data name="&gt;&gt;ftp_dirtext5.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

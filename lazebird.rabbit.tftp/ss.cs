@@ -51,7 +51,7 @@ namespace lazebird.rabbit.tftp
             this.filesize = fs.Length;
             this.q = new rqueue(2000, 1000);
             this.maxblkno = (int)(this.filesize + this.blksize) / this.blksize;   // if len % blksize = 0, an empty data pkt sent at last
-            t = new Thread(() => (new rfs(rfs_log)).readstream(fs, this.q, this.blksize));
+            t = new Thread(() => rfs.readstream(fs, this.q, this.blksize));
             t.IsBackground = true;
             t.Start();
         }
@@ -60,7 +60,7 @@ namespace lazebird.rabbit.tftp
             FileStream fs = new FileStream(cwd + filename, FileMode.Create, FileAccess.Write, FileShare.Read);
             this.filename = filename;
             this.q = new rqueue(2000, 1000);
-            t = new Thread(() => (new rfs(rfs_log)).writestream(fs, this.q, this.filename));
+            t = new Thread(() => rfs.writestream(fs, this.q, this.filename));
             t.IsBackground = true;
             t.Start();
         }
