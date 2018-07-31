@@ -15,6 +15,7 @@ namespace lazebird.rabbit.fs
             this.log = log;
             fhash = new Hashtable();
             dhash = new Hashtable();
+            adddir("/", ""); // add root automatically
         }
         public int addfile(string vdir, string rfile)  // vdir: virtual path, rfile: real path
         {
