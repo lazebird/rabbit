@@ -5,4 +5,4 @@ echo %cd%
 set pwd=%cd%
 ..\..\..\tools\ILMerge.exe /targetplatform:v4 /ndebug /target:winexe /out:../../../release/sRabbit.exe lazebird.rabbit.rabbit.exe /wildcards *.dll zh-CN/lazebird.rabbit.rabbit.resources.dll
 popd
-pause
+REM pause
