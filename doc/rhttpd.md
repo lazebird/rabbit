@@ -39,8 +39,9 @@
 4. public void stop()  
     - Stop rhttpd
 
-5. public void set_root(string path)  
+5. public void set_root(string path)  deleted
     - Set the server root directory, the default is empty directory
+    - use add_file/add_dir instead for all files/subdirs in root
 
 6. public void add_dir(string path)  
     - Add a folder to the root directory

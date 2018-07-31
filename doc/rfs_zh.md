@@ -9,39 +9,34 @@
 1. public rfs(Action<string> log)
     - 构造函数
     - log: log打印接口
+    - fhash: 虚拟系统文件哈希表
+    - dhash: 虚拟系统目录哈希表
 
-2. public int addfile(Hashtable hs, string vpath, string rpath)
-    - 添加一个文件到虚拟文件系统，虚拟系统信息保存在哈希表中
-    - hs: 虚拟系统哈希表
-    - vpath: 虚拟系统文件路径
-    - rpath: 文件真实路径
+2. public int addfile(string vdir, string rfile)
+    - 添加一个文件到虚拟文件系统
+    - vdir: 虚拟系统目录路径
+    - rfile: 文件真实路径
 
-3. public int delfile(Hashtable hs, string vpath, string rpath)
+3. public int delfile(string vfile)
     - 从虚拟文件系统中删除一个文件
-    - hs: 虚拟系统哈希表
-    - vpath: 虚拟系统文件路径
-    - rpath: 文件真实路径
+    - vfile: 虚拟系统文件路径
 
-4. public int adddir(Hashtable hs, string vpath, string rpath, bool recursive)
-    - 添加一个目录到虚拟文件系统，虚拟系统信息保存在哈希表中
-    - hs: 虚拟系统哈希表
-    - vpath: 虚拟系统文件路径
-    - rpath: 文件真实路径
-    - recursive: 是否递归遍历添加子目录
+4. public int adddir(string vdir, string rdir)
+    - 添加一个目录到虚拟文件系统
+    - vdir: 虚拟系统目录路径
+    - rdir: 目录真实路径
 
-5. public int deldir(Hashtable hs, string vpath, string rpath)
+5. public int deldir(string vdir)
     - 从虚拟文件系统中删除一个目录
-    - hs: 虚拟系统哈希表
-    - vpath: 虚拟系统文件路径
-    - rpath: 文件真实路径
+    - vdir: 虚拟系统目录路径
 
-6. public void readstream(Stream fs, rqueue q, int maxblksz)
+6. public static void readstream(Stream fs, rqueue q, int maxblksz)
     - 读输入流并保存到队列
     - fs: 输入流
     - q: 资源队列，用于保存读取的数据
     - maxblksz: 读取/保存的块大小
 
-7. public void writestream(Stream output, rqueue q, string path)
+7. public static void writestream(Stream output, rqueue q, string filename)
     - 将队列数据写入到输出流
     - output: 输出流
     - q: 资源队列，保存了数据
