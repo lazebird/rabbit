@@ -1,5 +1,6 @@
 ﻿using lazebird.rabbit.common;
 using lazebird.rabbit.http;
+using Microsoft.Win32;
 using System;
 using System.IO;
 using System.IO.Pipes;
@@ -14,11 +15,15 @@ namespace lazebird.rabbit.rabbit
         rlog httpdlog;
         void init_form_http()
         {
+            httpd_output.HorizontalScrollbar = true;
+            httpd_output.HorizontalExtent = 5000;
             httpdlog = new rlog(httpd_output);
             httpd = new rhttpd(httpd_log_func);
             httpd.init_mime(rconf.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);
             btn_http_dir.Click += new EventHandler(httpd_dir_click);
+            btn_http_reg.Click += new EventHandler(http_reg_shell);
+            btn_http_dereg.Click += new EventHandler(http_dereg_shell);
             init_pipeserver();
         }
         void httpd_log_func(string msg)
@@ -60,14 +65,13 @@ namespace lazebird.rabbit.rabbit
         {
             try
             {
-                NamedPipeServerStream pipeServer = new NamedPipeServerStream("lazebird.rabbit.rabbit", PipeDirection.In);
-                pipeServer.WaitForConnection();
-                pipeServer.ReadMode = PipeTransmissionMode.Byte;
-                StreamReader Reader = new StreamReader(pipeServer);
+                NamedPipeServerStream pipeServer = new NamedPipeServerStream("lazebird.rabbit.rabbit", PipeDirection.In, 1, PipeTransmissionMode.Message);
                 while (true)
                 {
-                    string msg = Reader.ReadLine();
-                    if (string.IsNullOrEmpty(msg)) break;
+                    pipeServer.WaitForConnection();
+                    StreamReader sr = new StreamReader(pipeServer);
+                    string msg = sr.ReadLine();
+                    if (string.IsNullOrEmpty(msg)) continue;
                     httpd_log_func("I: Read pipe " + msg);
                 }
             }
@@ -76,9 +80,38 @@ namespace lazebird.rabbit.rabbit
                 httpd_log_func("!E: " + e.ToString());
             }
         }
-        void reg_shell()
+        string shellname = "Rabbit";
+        string menuname = "Add to Rabbit.http";
+        void reg_shell(RegistryKey shell)
         {
-            httpshell hs = new httpshell();
+            RegistryKey custom = shell.CreateSubKey(shellname);
+            custom.SetValue("", menuname);
+            RegistryKey cmd = custom.CreateSubKey("command");
+            cmd.SetValue("", Application.ExecutablePath + " %1");
+            cmd.Close();
+            custom.Close();
+        }
+        void dereg_shell(RegistryKey shell)
+        {
+            shell.DeleteSubKeyTree(shellname);
+        }
+        void http_reg_shell(object sender, EventArgs e)
+        {
+            RegistryKey shell = Registry.ClassesRoot.OpenSubKey(@"*\shell", true);
+            reg_shell(shell);
+            shell.Close();
+            shell = Registry.ClassesRoot.OpenSubKey(@"Directory\shell", true);
+            reg_shell(shell);
+            shell.Close();
+        }
+        void http_dereg_shell(object sender, EventArgs e)
+        {
+            RegistryKey shell = Registry.ClassesRoot.OpenSubKey(@"*\shell", true);
+            dereg_shell(shell);
+            shell.Close();
+            shell = Registry.ClassesRoot.OpenSubKey(@"Directory\shell", true);
+            dereg_shell(shell);
+            shell.Close();
         }
     }
 }

@@ -123,6 +123,8 @@
             this.label_prof = new System.Windows.Forms.Label();
             this.link_prof = new System.Windows.Forms.LinkLabel();
             this.setting_output = new System.Windows.Forms.ListBox();
+            this.btn_http_dereg = new System.Windows.Forms.Button();
+            this.btn_http_reg = new System.Windows.Forms.Button();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -328,6 +330,8 @@
             this.HTTPD.Controls.Add(this.text_http_port);
             this.HTTPD.Controls.Add(this.btn_http_dir);
             this.HTTPD.Controls.Add(this.text_http_dir);
+            this.HTTPD.Controls.Add(this.btn_http_reg);
+            this.HTTPD.Controls.Add(this.btn_http_dereg);
             this.HTTPD.Controls.Add(this.btn_httpd);
             this.HTTPD.Controls.Add(this.httpd_output);
             this.HTTPD.ForeColor = System.Drawing.Color.White;
@@ -873,6 +877,22 @@
             this.setting_output.FormattingEnabled = true;
             this.setting_output.Name = "setting_output";
             // 
+            // btn_http_dereg
+            // 
+            resources.ApplyResources(this.btn_http_dereg, "btn_http_dereg");
+            this.btn_http_dereg.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_http_dereg.FlatAppearance.BorderSize = 0;
+            this.btn_http_dereg.Name = "btn_http_dereg";
+            this.btn_http_dereg.UseVisualStyleBackColor = false;
+            // 
+            // btn_http_reg
+            // 
+            resources.ApplyResources(this.btn_http_reg, "btn_http_reg");
+            this.btn_http_reg.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_http_reg.FlatAppearance.BorderSize = 0;
+            this.btn_http_reg.Name = "btn_http_reg";
+            this.btn_http_reg.UseVisualStyleBackColor = false;
+            // 
             // Form1
             // 
             resources.ApplyResources(this, "$this");
@@ -995,6 +1015,8 @@
         private System.Windows.Forms.LinkLabel link_ver;
         private System.Windows.Forms.Label label_prof;
         private System.Windows.Forms.LinkLabel link_prof;
+        private System.Windows.Forms.Button btn_http_reg;
+        private System.Windows.Forms.Button btn_http_dereg;
     }
 }
 

@@ -628,7 +628,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>648, 363</value>
+    <value>648, 366</value>
   </data>
   <data name="fp_scan.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
@@ -783,6 +783,78 @@
   <data name="&gt;&gt;text_http_dir.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="btn_http_reg.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="btn_http_reg.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="btn_http_reg.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_http_reg.Location" type="System.Drawing.Point, System.Drawing">
+    <value>409, 76</value>
+  </data>
+  <data name="btn_http_reg.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="btn_http_reg.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 22</value>
+  </data>
+  <data name="btn_http_reg.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="btn_http_reg.Text" xml:space="preserve">
+    <value>Reg</value>
+  </data>
+  <data name="&gt;&gt;btn_http_reg.Name" xml:space="preserve">
+    <value>btn_http_reg</value>
+  </data>
+  <data name="&gt;&gt;btn_http_reg.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_http_reg.Parent" xml:space="preserve">
+    <value>HTTPD</value>
+  </data>
+  <data name="&gt;&gt;btn_http_reg.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="btn_http_dereg.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="btn_http_dereg.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="btn_http_dereg.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_http_dereg.Location" type="System.Drawing.Point, System.Drawing">
+    <value>500, 76</value>
+  </data>
+  <data name="btn_http_dereg.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="btn_http_dereg.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 22</value>
+  </data>
+  <data name="btn_http_dereg.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="btn_http_dereg.Text" xml:space="preserve">
+    <value>Dereg</value>
+  </data>
+  <data name="&gt;&gt;btn_http_dereg.Name" xml:space="preserve">
+    <value>btn_http_dereg</value>
+  </data>
+  <data name="&gt;&gt;btn_http_dereg.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_http_dereg.Parent" xml:space="preserve">
+    <value>HTTPD</value>
+  </data>
+  <data name="&gt;&gt;btn_http_dereg.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
   <data name="btn_httpd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
   </data>
@@ -814,7 +886,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;btn_httpd.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>6</value>
   </data>
   <data name="httpd_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
@@ -844,7 +916,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;httpd_output.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>7</value>
   </data>
   <data name="HTTPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
