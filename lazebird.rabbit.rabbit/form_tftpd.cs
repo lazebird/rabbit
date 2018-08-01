@@ -36,10 +36,11 @@ namespace lazebird.rabbit.rabbit
         {
             return tftpdlog.write(id, msg);
         }
+        int tftpd_dir_len = 10; // max 10 charactors shown in dir button
         void tftpd_set_dir(Button b, string path)
         {
             path = Path.GetFullPath(path);
-            b.Text = (path.Length < 8) ? path : path.Substring(path.Length - 8);
+            b.Text = (path.Length <= tftpd_dir_len) ? path : ("~" + path.Substring(path.Length - tftpd_dir_len + 1));
             if (tftpd_dirhash.ContainsKey(b)) tftpd_dirhash.Remove(b);
             tftpd_dirhash.Add(b, path);
         }
@@ -95,6 +96,7 @@ namespace lazebird.rabbit.rabbit
             b.BackColor = Color.FromArgb(64, 64, 64);
             b.FlatAppearance.BorderSize = 0;
             b.FlatStyle = FlatStyle.Flat;
+            b.Width = (tftpd_dir_len + 1) << 3;
             b.MouseDown += tftpd_dir_click;
             tftpd_fp.Controls.Add(b);
             tftpd_dirs.Add(b);
