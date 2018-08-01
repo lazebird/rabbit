@@ -1,7 +1,6 @@
 ﻿using lazebird.rabbit.common;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -17,8 +16,9 @@ namespace lazebird.rabbit.rabbit
         {
             setlog = new rlog(setting_output);
             pver = Assembly.GetExecutingAssembly().GetName().Version;
-            link_ver.Text = pver.ToString();
+            link_ver.Text = pver.ToString() + " (" + GitInfo.datestr + " " + GitInfo.branch + " " + GitInfo.HeadShaShort + ")";
             link_ver.LinkClicked += ver_click;
+            link_prj.Text = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
             link_prj.LinkClicked += url_click;
             link_prof.Text = @"%userprofile%\appdata\local";
             link_prof.LinkClicked += path_click;
@@ -70,9 +70,8 @@ namespace lazebird.rabbit.rabbit
         {
             try
             {
-                string s = getbyuri("https://raw.githubusercontent.com/lazebird/rabbit/master/doc/releasenotes.md", "## Latest Version: ");
-                Version newver = new Version(s);
-                if (pver.CompareTo(newver) < 0)
+                string s = getbyuri("https://code.aliyun.com/lazebird/rabbit/raw/master/release/version.txt", "");
+                if (s.CompareTo(GitInfo.datestr) > 0)
                     setlog.write("The newest version is " + s + ", click the homepage to download it.");
                 else
                     setlog.write("Version is up to date!");

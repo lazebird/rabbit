@@ -1,6 +1,10 @@
 # Release Notes
 
-## Latest Version: 2.0.6786
+## 2018-08-01
+### New
+1. Cured version number to 2.1.0.0, add compile date and git infos to version control
+### Fix
+1. fix http crash problem when user select language chinese by fault
 
 ## 2018-07-31
 ### New
