@@ -45,11 +45,12 @@ namespace lazebird.rabbit.http
             {
                 log("!E: " + e.Message);
                 hl.Close();
+                hl = null;
             }
         }
         public void stop()
         {
-            Dispose();
+            Dispose(false);
         }
         void session_task(HttpListenerRequest request, HttpListenerResponse response)
         {
