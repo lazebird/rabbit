@@ -133,8 +133,8 @@ namespace lazebird.rabbit.rabbit
             tb.BorderStyle = BorderStyle.None;
             tb.ForeColor = Color.White;
             tb.Text = p;
-            tb.Width = fp_httpd.Width - 5;
-            tb.Anchor = (AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right);
+            tb.Width = 640;
+            //tb.Anchor = (AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right);
             tb.DoubleClick += new EventHandler(httpd_dir_click);
             fp_httpd.Controls.Add(tb);
             httpd_phash.Add(tb, p);
