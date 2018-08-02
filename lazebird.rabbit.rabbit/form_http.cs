@@ -1,7 +1,6 @@
 ﻿using lazebird.rabbit.common;
 using lazebird.rabbit.http;
 using lazebird.rabbit.shell;
-using Microsoft.Win32;
 using System;
 using System.Collections;
 using System.Drawing;
