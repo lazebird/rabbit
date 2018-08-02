@@ -70,7 +70,7 @@ namespace lazebird.rabbit.rabbit
                 string s = getbyuri("https://code.aliyun.com/lazebird/rabbit/raw/master/release/version.txt");
                 verinfo v = new verinfo(s);
                 if (string.Compare(v.HeadShaShort, appver.HeadShaShort) != 0)
-                    setlog.write("The newest version is " + v.ToString().Replace('\n', ' ') + ", click the homepage to download it.");
+                    setlog.write("The newest version is " + v.ToString() + ", click the homepage to download it.");
                 else
                     setlog.write("Version is up to date!");
             }
