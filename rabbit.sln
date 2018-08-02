@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.queue", "la
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.fs", "lazebird.rabbit.fs\lazebird.rabbit.fs.csproj", "{9D8C34CF-12BF-4360-9CA3-4D0A7D4D8CBC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.shell", "lazebird.rabbit.shell\lazebird.rabbit.shell.csproj", "{F438DC8F-0D0F-4BBC-9849-D25585C9A097}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,14 @@ Global
 		{9D8C34CF-12BF-4360-9CA3-4D0A7D4D8CBC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9D8C34CF-12BF-4360-9CA3-4D0A7D4D8CBC}.Release|x64.ActiveCfg = Release|Any CPU
 		{9D8C34CF-12BF-4360-9CA3-4D0A7D4D8CBC}.Release|x64.Build.0 = Release|Any CPU
+		{F438DC8F-0D0F-4BBC-9849-D25585C9A097}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F438DC8F-0D0F-4BBC-9849-D25585C9A097}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F438DC8F-0D0F-4BBC-9849-D25585C9A097}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F438DC8F-0D0F-4BBC-9849-D25585C9A097}.Debug|x64.Build.0 = Debug|Any CPU
+		{F438DC8F-0D0F-4BBC-9849-D25585C9A097}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F438DC8F-0D0F-4BBC-9849-D25585C9A097}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F438DC8F-0D0F-4BBC-9849-D25585C9A097}.Release|x64.ActiveCfg = Release|Any CPU
+		{F438DC8F-0D0F-4BBC-9849-D25585C9A097}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

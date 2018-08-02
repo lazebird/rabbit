@@ -20,6 +20,7 @@ namespace lazebird.rabbit.http
         string uri;
         rqueue q;
         Thread t;
+        bool auto_index;
 
         public ss(HttpListenerRequest request, HttpListenerResponse response, rfs rfs)
         {
@@ -34,6 +35,10 @@ namespace lazebird.rabbit.http
         public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs) : this(request, response, rfs)
         {
             this.log = log;
+        }
+        public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs, bool auto_index) : this(log, request, response, rfs)
+        {
+            this.auto_index = auto_index;
         }
         void log_func(string msg) { }
         string uri2rpath(string uri)
@@ -64,7 +69,8 @@ namespace lazebird.rabbit.http
         void loadfile(Hashtable mimehash, string path)
         {
             Stream output = response.OutputStream;
-            response.ContentType = uri2mime(mimehash, uri);
+            response.ContentType = uri2mime(mimehash, path);
+            log("I: file " + path + " mime " + response.ContentType);
             FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
             response.ContentLength64 = fs.Length;
             q = new rqueue(10); // 10 * 10M, max memory used 100M
@@ -83,9 +89,27 @@ namespace lazebird.rabbit.http
         {
             return "<tr><td>" + s1 + "</td>" + "<td>" + s2 + "</td>" + "<td>" + s3 + "</td></tr>";
         }
-        void loaddir(string rdir)
+        bool loadindex(Hashtable mimehash, string rdir)
+        {
+            string indexpath;
+            if (!auto_index) return false;
+            if (rdir != "")
+            {
+                indexpath = rdir + "index.html";
+                if (File.Exists(indexpath)) { loadfile(mimehash, indexpath); return true; }
+                indexpath = rdir + "index.htm";
+                if (File.Exists(indexpath)) { loadfile(mimehash, indexpath); return true; }
+            }
+            indexpath = uri + "index.html";
+            if (rfs.fhash.ContainsKey(indexpath)) { loadfile(mimehash, (string)rfs.fhash[indexpath]); return true; }
+            indexpath = uri + "index.htm";
+            if (rfs.fhash.ContainsKey(indexpath)) { loadfile(mimehash, (string)rfs.fhash[indexpath]); return true; }
+            return false;
+        }
+        void loaddir(Hashtable mimehash, string rdir)
         {
             if (uri[uri.Length - 1] != '/') uri += "/"; // fix uri ending
+            if (loadindex(mimehash, rdir)) return;    // auto index
             string index = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><table><tbody>";
             index += create_th("Name", "Size (Bytes)", "Last Modified");
             if (uri != "/") index += create_td("<a href=" + Uri.EscapeUriString(Path.GetDirectoryName(uri + "../").Replace(@"\", @"/")) + ">" + ".." + " </a>", "-", "-");
@@ -134,9 +158,9 @@ namespace lazebird.rabbit.http
             else if (File.Exists(path)) // file
                 loadfile(mimehash, path);
             else if (Directory.Exists(path)) // dir
-                loaddir(path);
+                loaddir(mimehash, path);
             else if (path == "" && rfs.dhash.ContainsKey(uri))
-                loaddir(path); // v dir
+                loaddir(mimehash, path); // v dir
             else
                 loaderror(path, 404);
         }

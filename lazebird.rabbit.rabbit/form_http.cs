@@ -1,5 +1,6 @@
 ﻿using lazebird.rabbit.common;
 using lazebird.rabbit.http;
+using lazebird.rabbit.shell;
 using Microsoft.Win32;
 using System;
 using System.Collections;
@@ -17,9 +18,11 @@ namespace lazebird.rabbit.rabbit
     {
         rhttpd httpd;
         rlog httpdlog;
+        rshell sh;
         Hashtable httpd_phash;
         void init_form_http()
         {
+            sh = new rshell("Rabbit", Application.ExecutablePath, "Add to Rabbit.http");
             httpd_phash = new Hashtable();
             //httpd_output.HorizontalScrollbar = true;
             //httpd_output.HorizontalExtent = 5000;
@@ -27,8 +30,9 @@ namespace lazebird.rabbit.rabbit
             httpd = new rhttpd(httpd_log_func);
             httpd.init_mime(rconf.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);
-            btn_http_reg.Click += new EventHandler(http_reg_shell);
-            btn_http_dereg.Click += new EventHandler(http_dereg_shell);
+            if (sh.file_exist()) cb_http_shell.Checked = true;
+            cb_http_shell.CheckedChanged += new EventHandler(http_shell_click);
+            cb_http_index.CheckedChanged += new EventHandler(http_index_click);
             fp_httpd.AutoScroll = true;
             init_comsrv();
         }
@@ -75,38 +79,18 @@ namespace lazebird.rabbit.rabbit
                 httpd_log_func("!E: " + e.ToString());
             }
         }
-        string shellname = "Rabbit";
-        string menuname = "Add to Rabbit.http";
-        void reg_shell(RegistryKey shell)
+        void http_shell_click(object sender, EventArgs e)
         {
-            RegistryKey custom = shell.CreateSubKey(shellname);
-            custom.SetValue("", menuname);
-            RegistryKey cmd = custom.CreateSubKey("command");
-            cmd.SetValue("", Application.ExecutablePath + " %1");
-            cmd.Close();
-            custom.Close();
+            CheckBox cb = (CheckBox)sender;
+            //httpd_log_func("I: current checked " + cb.Checked + " exist " + sh.file_exist());
+            if (cb.Checked) { sh.reg_file(); sh.reg_dir(); }
+            else { sh.dereg_file(); sh.dereg_dir(); }
         }
-        void dereg_shell(RegistryKey shell)
+        void http_index_click(object sender, EventArgs e)
         {
-            shell.DeleteSubKeyTree(shellname);
-        }
-        void http_reg_shell(object sender, EventArgs e)
-        {
-            RegistryKey shell = Registry.ClassesRoot.OpenSubKey(@"*\shell", true);
-            reg_shell(shell);
-            shell.Close();
-            shell = Registry.ClassesRoot.OpenSubKey(@"Directory\shell", true);
-            reg_shell(shell);
-            shell.Close();
-        }
-        void http_dereg_shell(object sender, EventArgs e)
-        {
-            RegistryKey shell = Registry.ClassesRoot.OpenSubKey(@"*\shell", true);
-            dereg_shell(shell);
-            shell.Close();
-            shell = Registry.ClassesRoot.OpenSubKey(@"Directory\shell", true);
-            dereg_shell(shell);
-            shell.Close();
+            CheckBox cb = (CheckBox)sender;
+            httpd.set_auto_index(cb.Checked);
+            httpd_saveconf();
         }
         void httpd_dir_click(object sender, EventArgs evt)
         {
@@ -146,6 +130,11 @@ namespace lazebird.rabbit.rabbit
         {
             string[] paths = rconf.get("http_dirs").Split(';');
             foreach (string path in paths) if (path != "") httpd_add_path(path);
+            if (rconf.get("http_auto_index") != "")
+            {
+                cb_http_index.Checked = true;
+                httpd.set_auto_index(cb_http_index.Checked);
+            }
         }
         void httpd_saveconf()
         {
@@ -156,6 +145,7 @@ namespace lazebird.rabbit.rabbit
                 dirs += path + ";";
             }
             rconf.set("http_dirs", dirs);
+            if (cb_http_index.Checked) rconf.set("http_auto_index", "true");
         }
     }
 }

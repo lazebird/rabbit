@@ -169,6 +169,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.config" />
     <None Include="app.manifest" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -219,6 +220,10 @@
     <ProjectReference Include="..\lazebird.rabbit.ping\lazebird.rabbit.ping.csproj">
       <Project>{3fb652a4-a6d7-40d1-907d-33f0e6d78b63}</Project>
       <Name>lazebird.rabbit.ping</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lazebird.rabbit.shell\lazebird.rabbit.shell.csproj">
+      <Project>{F438DC8F-0D0F-4BBC-9849-D25585C9A097}</Project>
+      <Name>lazebird.rabbit.shell</Name>
     </ProjectReference>
     <ProjectReference Include="..\lazebird.rabbit.tftp\lazebird.rabbit.tftp.csproj">
       <Project>{6d969711-be11-48ec-8f9c-af8aa185d032}</Project>

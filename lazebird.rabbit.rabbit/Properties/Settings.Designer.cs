@@ -286,5 +286,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["tftpd_dirs"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string http_auto_index {
+            get {
+                return ((string)(this["http_auto_index"]));
+            }
+            set {
+                this["http_auto_index"] = value;
+            }
+        }
     }
 }
