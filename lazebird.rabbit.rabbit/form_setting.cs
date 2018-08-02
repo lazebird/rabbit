@@ -1,5 +1,5 @@
-﻿using lazebird.git;
-using lazebird.rabbit.common;
+﻿using lazebird.rabbit.common;
+using lazebird.vgen.ver;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -17,7 +17,7 @@ namespace lazebird.rabbit.rabbit
         {
             setlog = new rlog(setting_output);
             pver = Assembly.GetExecutingAssembly().GetName().Version;
-            link_ver.Text = pver.ToString() + " (" + GitInfo.datestr + " " + GitInfo.branch + " " + GitInfo.HeadShaShort + ")";
+            link_ver.Text = pver.ToString() + " (" + appver.combine() + ")";
             link_ver.LinkClicked += ver_click;
             link_prj.Text = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
             link_prj.LinkClicked += url_click;
@@ -56,24 +56,21 @@ namespace lazebird.rabbit.rabbit
             string path = Environment.ExpandEnvironmentVariables(((LinkLabel)sender).Text);
             System.Diagnostics.Process.Start(path);
         }
-        string getbyuri(string uri, string prefix)
+        string getbyuri(string uri)
         {
             WebClient wc = new WebClient();
             string data = wc.DownloadString(uri);
             wc.Dispose();
-            int start = data.IndexOf(prefix);
-            if (start < 0) return "";
-            data = data.Substring(start + prefix.Length);
-            int end = data.IndexOf("#");
-            return (end < 0) ? data : data.Substring(0, end);
+            return data;
         }
         void ver_check()
         {
             try
             {
-                string s = getbyuri("https://code.aliyun.com/lazebird/rabbit/raw/master/release/version.txt", "").Trim();
-                if (string.Compare(s, GitInfo.datestr) > 0)
-                    setlog.write("The newest version is " + s + ", click the homepage to download it.");
+                string s = getbyuri("https://code.aliyun.com/lazebird/rabbit/raw/master/release/version.txt");
+                verinfo v = new verinfo(s);
+                if (string.Compare(v.HeadShaShort, appver.HeadShaShort) != 0)
+                    setlog.write("The newest version is " + v.ToString().Replace('\n', ' ') + ", click the homepage to download it.");
                 else
                     setlog.write("Version is up to date!");
             }
@@ -84,6 +81,7 @@ namespace lazebird.rabbit.rabbit
         }
         void ver_click(object sender, LinkLabelLinkClickedEventArgs evt)
         {
+            Clipboard.SetDataObject(link_ver.Text);
             Thread t = new Thread(ver_check);
             t.IsBackground = true;
             t.Start();

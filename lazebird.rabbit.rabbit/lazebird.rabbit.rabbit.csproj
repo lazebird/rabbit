@@ -119,6 +119,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="ver, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\lazebird.vgen.version.1.0.0\lib\net461\ver.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="form_http.cs">
@@ -167,6 +170,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.manifest" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -226,7 +230,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>$(SolutionDir)tools\setver.exe $(SolutionDir) $(ProjectDir)version.auto.cs</PreBuildEvent>
+    <PreBuildEvent>$(SolutionDir)tools\svgen.exe $(SolutionDir) $(ProjectDir)version.auto.cs $(ConfigurationName)</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>$(SolutionDir)tools\releasepack.bat $(ConfigurationName)</PostBuildEvent>

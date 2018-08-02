@@ -3,4 +3,4 @@ obj/
 bin/
 packages/
 *.tt.cs
-*.auto.cs
+*.auto.*

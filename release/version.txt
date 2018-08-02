@@ -1,1 +1,5 @@
-2018/08/02 
+date=2018/08/02
+time=21:22:24
+branch=master
+sha=8085829
+extra=Release
