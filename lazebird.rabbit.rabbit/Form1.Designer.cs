@@ -92,6 +92,8 @@
             this.tftpc_output = new System.Windows.Forms.ListBox();
             this.PLAN = new System.Windows.Forms.TabPage();
             this.fp_plan = new System.Windows.Forms.FlowLayoutPanel();
+            this.dt1_plan = new System.Windows.Forms.DateTimePicker();
+            this.dt2_plan = new System.Windows.Forms.DateTimePicker();
             this.btn_planadd = new System.Windows.Forms.Button();
             this.plan_output = new System.Windows.Forms.ListBox();
             this.DHCPD = new System.Windows.Forms.TabPage();
@@ -115,7 +117,9 @@
             this.label_prof = new System.Windows.Forms.Label();
             this.link_prof = new System.Windows.Forms.LinkLabel();
             this.setting_output = new System.Windows.Forms.ListBox();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.text_plancycle = new System.Windows.Forms.TextBox();
+            this.text_planduration = new System.Windows.Forms.TextBox();
+            this.text_planmsg = new System.Windows.Forms.TextBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -586,9 +590,13 @@
             // PLAN
             // 
             this.PLAN.BackColor = System.Drawing.Color.DimGray;
-            this.PLAN.Controls.Add(this.dateTimePicker1);
-            this.PLAN.Controls.Add(this.btn_planadd);
             this.PLAN.Controls.Add(this.fp_plan);
+            this.PLAN.Controls.Add(this.dt1_plan);
+            this.PLAN.Controls.Add(this.dt2_plan);
+            this.PLAN.Controls.Add(this.text_plancycle);
+            this.PLAN.Controls.Add(this.text_planduration);
+            this.PLAN.Controls.Add(this.text_planmsg);
+            this.PLAN.Controls.Add(this.btn_planadd);
             this.PLAN.Controls.Add(this.plan_output);
             this.PLAN.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.PLAN, "PLAN");
@@ -598,6 +606,18 @@
             // 
             resources.ApplyResources(this.fp_plan, "fp_plan");
             this.fp_plan.Name = "fp_plan";
+            // 
+            // dt1_plan
+            // 
+            resources.ApplyResources(this.dt1_plan, "dt1_plan");
+            this.dt1_plan.Name = "dt1_plan";
+            // 
+            // dt2_plan
+            // 
+            resources.ApplyResources(this.dt2_plan, "dt2_plan");
+            this.dt2_plan.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.dt2_plan.Name = "dt2_plan";
+            this.dt2_plan.ShowUpDown = true;
             // 
             // btn_planadd
             // 
@@ -784,10 +804,20 @@
             this.setting_output.FormattingEnabled = true;
             this.setting_output.Name = "setting_output";
             // 
-            // dateTimePicker1
+            // text_plancycle
             // 
-            resources.ApplyResources(this.dateTimePicker1, "dateTimePicker1");
-            this.dateTimePicker1.Name = "dateTimePicker1";
+            resources.ApplyResources(this.text_plancycle, "text_plancycle");
+            this.text_plancycle.Name = "text_plancycle";
+            // 
+            // text_planduration
+            // 
+            resources.ApplyResources(this.text_planduration, "text_planduration");
+            this.text_planduration.Name = "text_planduration";
+            // 
+            // text_planmsg
+            // 
+            resources.ApplyResources(this.text_planmsg, "text_planmsg");
+            this.text_planmsg.Name = "text_planmsg";
             // 
             // Form1
             // 
@@ -813,6 +843,7 @@
             this.TFTPC.ResumeLayout(false);
             this.TFTPC.PerformLayout();
             this.PLAN.ResumeLayout(false);
+            this.PLAN.PerformLayout();
             this.DHCPD.ResumeLayout(false);
             this.DHCPD.PerformLayout();
             this.Setting.ResumeLayout(false);
@@ -902,7 +933,11 @@
         private System.Windows.Forms.CheckBox cb_http_shell;
         private System.Windows.Forms.Button btn_planadd;
         private System.Windows.Forms.FlowLayoutPanel fp_plan;
-        private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.DateTimePicker dt1_plan;
+        private System.Windows.Forms.DateTimePicker dt2_plan;
+        private System.Windows.Forms.TextBox text_planmsg;
+        private System.Windows.Forms.TextBox text_planduration;
+        private System.Windows.Forms.TextBox text_plancycle;
     }
 }
 

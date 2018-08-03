@@ -137,364 +137,10 @@
   <data name="toolStripContainer1.ContentPanel.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
   </data>
-  <data name="&gt;&gt;Ping.Name" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;Ping.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Ping.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;Ping.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;Scan.Name" xml:space="preserve">
-    <value>Scan</value>
-  </data>
-  <data name="&gt;&gt;Scan.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Scan.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;Scan.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;HTTPD.Name" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;HTTPD.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;HTTPD.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;HTTPD.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;TFTPD.Name" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;TFTPD.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TFTPD.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;TFTPD.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;TFTPC.Name" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;TFTPC.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TFTPC.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;TFTPC.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;PLAN.Name" xml:space="preserve">
-    <value>PLAN</value>
-  </data>
-  <data name="&gt;&gt;PLAN.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;PLAN.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;PLAN.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;DHCPD.Name" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;DHCPD.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;DHCPD.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;DHCPD.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;Setting.Name" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;Setting.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Setting.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;Setting.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="tabs.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="tabs.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="tabs.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="tabs.Size" type="System.Drawing.Size, System.Drawing">
-    <value>767, 478</value>
-  </data>
-  <data name="tabs.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;tabs.Name" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;tabs.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabs.Parent" xml:space="preserve">
-    <value>toolStripContainer1.ContentPanel</value>
-  </data>
-  <data name="&gt;&gt;tabs.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="toolStripContainer1.ContentPanel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
-  </data>
-  <data name="toolStripContainer1.ContentPanel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>767, 478</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.ContentPanel.Name" xml:space="preserve">
-    <value>toolStripContainer1.ContentPanel</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.ContentPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripContentPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.ContentPanel.Parent" xml:space="preserve">
-    <value>toolStripContainer1</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.ContentPanel.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="toolStripContainer1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Name" xml:space="preserve">
-    <value>toolStripContainer1.LeftToolStripPanel</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Parent" xml:space="preserve">
-    <value>toolStripContainer1</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="toolStripContainer1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="toolStripContainer1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Name" xml:space="preserve">
-    <value>toolStripContainer1.RightToolStripPanel</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Parent" xml:space="preserve">
-    <value>toolStripContainer1</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="toolStripContainer1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>767, 478</value>
-  </data>
-  <data name="toolStripContainer1.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="toolStripContainer1.Text" xml:space="preserve">
-    <value>toolStripContainer1</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Name" xml:space="preserve">
-    <value>toolStripContainer1.TopToolStripPanel</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Parent" xml:space="preserve">
-    <value>toolStripContainer1</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.Name" xml:space="preserve">
-    <value>toolStripContainer1</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripContainer, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;toolStripContainer1.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;label_addr.Name" xml:space="preserve">
-    <value>label_addr</value>
-  </data>
-  <data name="&gt;&gt;label_addr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_addr.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;label_addr.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;text_addr.Name" xml:space="preserve">
-    <value>text_addr</value>
-  </data>
-  <data name="&gt;&gt;text_addr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_addr.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;text_addr.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;label_interval.Name" xml:space="preserve">
-    <value>label_interval</value>
-  </data>
-  <data name="&gt;&gt;label_interval.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_interval.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;label_interval.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;text_interval.Name" xml:space="preserve">
-    <value>text_interval</value>
-  </data>
-  <data name="&gt;&gt;text_interval.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_interval.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;text_interval.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;label_count.Name" xml:space="preserve">
-    <value>label_count</value>
-  </data>
-  <data name="&gt;&gt;label_count.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_count.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;label_count.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;text_count.Name" xml:space="preserve">
-    <value>text_count</value>
-  </data>
-  <data name="&gt;&gt;text_count.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_count.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;text_count.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;btn_ping_log.Name" xml:space="preserve">
-    <value>btn_ping_log</value>
-  </data>
-  <data name="&gt;&gt;btn_ping_log.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_ping_log.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;btn_ping_log.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;text_logpath.Name" xml:space="preserve">
-    <value>text_logpath</value>
-  </data>
-  <data name="&gt;&gt;text_logpath.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_logpath.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;text_logpath.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;btn_ping.Name" xml:space="preserve">
-    <value>btn_ping</value>
-  </data>
-  <data name="&gt;&gt;btn_ping.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_ping.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;btn_ping.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;ping_output.Name" xml:space="preserve">
-    <value>ping_output</value>
-  </data>
-  <data name="&gt;&gt;ping_output.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ping_output.Parent" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;ping_output.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="Ping.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 29</value>
-  </data>
-  <data name="Ping.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="Ping.Size" type="System.Drawing.Size, System.Drawing">
-    <value>759, 445</value>
-  </data>
-  <data name="Ping.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="Ping.Text" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;Ping.Name" xml:space="preserve">
-    <value>Ping</value>
-  </data>
-  <data name="&gt;&gt;Ping.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Ping.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;Ping.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
   <data name="label_addr.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="label_addr.Location" type="System.Drawing.Point, System.Drawing">
     <value>11, 12</value>
   </data>
@@ -798,104 +444,32 @@
   <data name="&gt;&gt;ping_output.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="&gt;&gt;label_scanip.Name" xml:space="preserve">
-    <value>label_scanip</value>
-  </data>
-  <data name="&gt;&gt;label_scanip.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_scanip.Parent" xml:space="preserve">
-    <value>Scan</value>
-  </data>
-  <data name="&gt;&gt;label_scanip.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;text_scanstart.Name" xml:space="preserve">
-    <value>text_scanstart</value>
-  </data>
-  <data name="&gt;&gt;text_scanstart.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_scanstart.Parent" xml:space="preserve">
-    <value>Scan</value>
-  </data>
-  <data name="&gt;&gt;text_scanstart.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;label_scanend.Name" xml:space="preserve">
-    <value>label_scanend</value>
-  </data>
-  <data name="&gt;&gt;label_scanend.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_scanend.Parent" xml:space="preserve">
-    <value>Scan</value>
-  </data>
-  <data name="&gt;&gt;label_scanend.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;text_scanend.Name" xml:space="preserve">
-    <value>text_scanend</value>
-  </data>
-  <data name="&gt;&gt;text_scanend.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_scanend.Parent" xml:space="preserve">
-    <value>Scan</value>
-  </data>
-  <data name="&gt;&gt;text_scanend.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;btn_scan.Name" xml:space="preserve">
-    <value>btn_scan</value>
-  </data>
-  <data name="&gt;&gt;btn_scan.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_scan.Parent" xml:space="preserve">
-    <value>Scan</value>
-  </data>
-  <data name="&gt;&gt;btn_scan.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;fp_scan.Name" xml:space="preserve">
-    <value>fp_scan</value>
-  </data>
-  <data name="&gt;&gt;fp_scan.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;fp_scan.Parent" xml:space="preserve">
-    <value>Scan</value>
-  </data>
-  <data name="&gt;&gt;fp_scan.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="Scan.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="Ping.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 29</value>
   </data>
-  <data name="Scan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="Ping.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
-  <data name="Scan.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="Ping.Size" type="System.Drawing.Size, System.Drawing">
     <value>759, 445</value>
   </data>
-  <data name="Scan.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+  <data name="Ping.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
   </data>
-  <data name="Scan.Text" xml:space="preserve">
-    <value>Scan</value>
+  <data name="Ping.Text" xml:space="preserve">
+    <value>Ping</value>
   </data>
-  <data name="&gt;&gt;Scan.Name" xml:space="preserve">
-    <value>Scan</value>
+  <data name="&gt;&gt;Ping.Name" xml:space="preserve">
+    <value>Ping</value>
   </data>
-  <data name="&gt;&gt;Scan.Type" xml:space="preserve">
+  <data name="&gt;&gt;Ping.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Scan.Parent" xml:space="preserve">
+  <data name="&gt;&gt;Ping.Parent" xml:space="preserve">
     <value>tabs</value>
   </data>
-  <data name="&gt;&gt;Scan.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="&gt;&gt;Ping.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="label_scanip.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1054,7 +628,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>741, 398</value>
+    <value>741, 406</value>
   </data>
   <data name="fp_scan.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
@@ -1071,116 +645,32 @@
   <data name="&gt;&gt;fp_scan.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="&gt;&gt;label_http_port.Name" xml:space="preserve">
-    <value>label_http_port</value>
-  </data>
-  <data name="&gt;&gt;label_http_port.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_http_port.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;label_http_port.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;text_http_port.Name" xml:space="preserve">
-    <value>text_http_port</value>
-  </data>
-  <data name="&gt;&gt;text_http_port.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_http_port.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;text_http_port.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;cb_http_shell.Name" xml:space="preserve">
-    <value>cb_http_shell</value>
-  </data>
-  <data name="&gt;&gt;cb_http_shell.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;cb_http_shell.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;cb_http_shell.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;cb_http_index.Name" xml:space="preserve">
-    <value>cb_http_index</value>
-  </data>
-  <data name="&gt;&gt;cb_http_index.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;cb_http_index.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;cb_http_index.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;btn_httpd.Name" xml:space="preserve">
-    <value>btn_httpd</value>
-  </data>
-  <data name="&gt;&gt;btn_httpd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_httpd.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;btn_httpd.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;fp_httpd.Name" xml:space="preserve">
-    <value>fp_httpd</value>
-  </data>
-  <data name="&gt;&gt;fp_httpd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;fp_httpd.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;fp_httpd.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;httpd_output.Name" xml:space="preserve">
-    <value>httpd_output</value>
-  </data>
-  <data name="&gt;&gt;httpd_output.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;httpd_output.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;httpd_output.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="HTTPD.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="Scan.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 29</value>
   </data>
-  <data name="HTTPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="Scan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
-  <data name="HTTPD.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="Scan.Size" type="System.Drawing.Size, System.Drawing">
     <value>759, 445</value>
   </data>
-  <data name="HTTPD.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+  <data name="Scan.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
   </data>
-  <data name="HTTPD.Text" xml:space="preserve">
-    <value>HTTPD</value>
+  <data name="Scan.Text" xml:space="preserve">
+    <value>Scan</value>
   </data>
-  <data name="&gt;&gt;HTTPD.Name" xml:space="preserve">
-    <value>HTTPD</value>
+  <data name="&gt;&gt;Scan.Name" xml:space="preserve">
+    <value>Scan</value>
   </data>
-  <data name="&gt;&gt;HTTPD.Type" xml:space="preserve">
+  <data name="&gt;&gt;Scan.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;HTTPD.Parent" xml:space="preserve">
+  <data name="&gt;&gt;Scan.Parent" xml:space="preserve">
     <value>tabs</value>
   </data>
-  <data name="&gt;&gt;HTTPD.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="&gt;&gt;Scan.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="label_http_port.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1333,7 +823,7 @@
     <value>3, 4, 3, 4</value>
   </data>
   <data name="fp_httpd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>741, 300</value>
+    <value>741, 308</value>
   </data>
   <data name="fp_httpd.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -1357,7 +847,7 @@
     <value>20</value>
   </data>
   <data name="httpd_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 354</value>
+    <value>10, 362</value>
   </data>
   <data name="httpd_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1380,140 +870,32 @@
   <data name="&gt;&gt;httpd_output.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="&gt;&gt;label_tftpdtout.Name" xml:space="preserve">
-    <value>label_tftpdtout</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdtout.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdtout.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdtout.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdtout.Name" xml:space="preserve">
-    <value>text_tftpdtout</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdtout.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdtout.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdtout.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdretry.Name" xml:space="preserve">
-    <value>label_tftpdretry</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdretry.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdretry.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdretry.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdretry.Name" xml:space="preserve">
-    <value>text_tftpdretry</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdretry.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdretry.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdretry.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;tftpd_fp.Name" xml:space="preserve">
-    <value>tftpd_fp</value>
-  </data>
-  <data name="&gt;&gt;tftpd_fp.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftpd_fp.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;tftpd_fp.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;tftpd_adddir.Name" xml:space="preserve">
-    <value>tftpd_adddir</value>
-  </data>
-  <data name="&gt;&gt;tftpd_adddir.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftpd_adddir.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;tftpd_adddir.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;tftpd_deldir.Name" xml:space="preserve">
-    <value>tftpd_deldir</value>
-  </data>
-  <data name="&gt;&gt;tftpd_deldir.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftpd_deldir.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;tftpd_deldir.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;tftpd_btn.Name" xml:space="preserve">
-    <value>tftpd_btn</value>
-  </data>
-  <data name="&gt;&gt;tftpd_btn.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftpd_btn.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;tftpd_btn.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;tftpd_output.Name" xml:space="preserve">
-    <value>tftpd_output</value>
-  </data>
-  <data name="&gt;&gt;tftpd_output.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftpd_output.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;tftpd_output.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="TFTPD.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="HTTPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 29</value>
   </data>
-  <data name="TFTPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="HTTPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
-  <data name="TFTPD.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="HTTPD.Size" type="System.Drawing.Size, System.Drawing">
     <value>759, 445</value>
   </data>
-  <data name="TFTPD.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+  <data name="HTTPD.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
   </data>
-  <data name="TFTPD.Text" xml:space="preserve">
-    <value>TFTPD</value>
+  <data name="HTTPD.Text" xml:space="preserve">
+    <value>HTTPD</value>
   </data>
-  <data name="&gt;&gt;TFTPD.Name" xml:space="preserve">
-    <value>TFTPD</value>
+  <data name="&gt;&gt;HTTPD.Name" xml:space="preserve">
+    <value>HTTPD</value>
   </data>
-  <data name="&gt;&gt;TFTPD.Type" xml:space="preserve">
+  <data name="&gt;&gt;HTTPD.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;TFTPD.Parent" xml:space="preserve">
+  <data name="&gt;&gt;HTTPD.Parent" xml:space="preserve">
     <value>tabs</value>
   </data>
-  <data name="&gt;&gt;TFTPD.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="&gt;&gt;HTTPD.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <data name="label_tftpdtout.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1779,212 +1161,32 @@
   <data name="&gt;&gt;tftpd_output.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
-  <data name="&gt;&gt;label_tftpcaddr.Name" xml:space="preserve">
-    <value>label_tftpcaddr</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcaddr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcaddr.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcaddr.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcaddr.Name" xml:space="preserve">
-    <value>text_tftpcaddr</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcaddr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcaddr.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcaddr.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;label_tftpctout.Name" xml:space="preserve">
-    <value>label_tftpctout</value>
-  </data>
-  <data name="&gt;&gt;label_tftpctout.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_tftpctout.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;label_tftpctout.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;text_tftpctout.Name" xml:space="preserve">
-    <value>text_tftpctout</value>
-  </data>
-  <data name="&gt;&gt;text_tftpctout.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_tftpctout.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;text_tftpctout.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcretry.Name" xml:space="preserve">
-    <value>label_tftpcretry</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcretry.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcretry.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcretry.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcretry.Name" xml:space="preserve">
-    <value>text_tftpcretry</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcretry.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcretry.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcretry.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcblksize.Name" xml:space="preserve">
-    <value>label_tftpcblksize</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcblksize.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcblksize.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcblksize.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcblksize.Name" xml:space="preserve">
-    <value>text_tftpcblksize</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcblksize.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcblksize.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcblksize.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpclfile.Name" xml:space="preserve">
-    <value>btn_tftpclfile</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpclfile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpclfile.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpclfile.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;text_tftpclfile.Name" xml:space="preserve">
-    <value>text_tftpclfile</value>
-  </data>
-  <data name="&gt;&gt;text_tftpclfile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_tftpclfile.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;text_tftpclfile.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcrfile.Name" xml:space="preserve">
-    <value>label_tftpcrfile</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcrfile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcrfile.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcrfile.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcrfile.Name" xml:space="preserve">
-    <value>text_tftpcrfile</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcrfile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcrfile.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;text_tftpcrfile.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpcget.Name" xml:space="preserve">
-    <value>btn_tftpcget</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpcget.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpcget.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpcget.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpcput.Name" xml:space="preserve">
-    <value>btn_tftpcput</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpcput.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpcput.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpcput.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;tftpc_output.Name" xml:space="preserve">
-    <value>tftpc_output</value>
-  </data>
-  <data name="&gt;&gt;tftpc_output.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftpc_output.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;tftpc_output.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="TFTPC.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="TFTPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 29</value>
   </data>
-  <data name="TFTPC.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="TFTPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
-  <data name="TFTPC.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="TFTPD.Size" type="System.Drawing.Size, System.Drawing">
     <value>759, 445</value>
   </data>
-  <data name="TFTPC.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+  <data name="TFTPD.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
   </data>
-  <data name="TFTPC.Text" xml:space="preserve">
-    <value>TFTPC</value>
+  <data name="TFTPD.Text" xml:space="preserve">
+    <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;TFTPC.Name" xml:space="preserve">
-    <value>TFTPC</value>
+  <data name="&gt;&gt;TFTPD.Name" xml:space="preserve">
+    <value>TFTPD</value>
   </data>
-  <data name="&gt;&gt;TFTPC.Type" xml:space="preserve">
+  <data name="&gt;&gt;TFTPD.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;TFTPC.Parent" xml:space="preserve">
+  <data name="&gt;&gt;TFTPD.Parent" xml:space="preserve">
     <value>tabs</value>
   </data>
-  <data name="&gt;&gt;TFTPC.ZOrder" xml:space="preserve">
-    <value>4</value>
+  <data name="&gt;&gt;TFTPD.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="label_tftpcaddr.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2433,29 +1635,44 @@
   <data name="&gt;&gt;tftpc_output.ZOrder" xml:space="preserve">
     <value>14</value>
   </data>
-  <data name="&gt;&gt;dateTimePicker1.Name" xml:space="preserve">
-    <value>dateTimePicker1</value>
+  <data name="TFTPC.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 29</value>
   </data>
-  <data name="&gt;&gt;dateTimePicker1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.DateTimePicker, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="TFTPC.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
   </data>
-  <data name="&gt;&gt;dateTimePicker1.Parent" xml:space="preserve">
-    <value>PLAN</value>
+  <data name="TFTPC.Size" type="System.Drawing.Size, System.Drawing">
+    <value>759, 445</value>
   </data>
-  <data name="&gt;&gt;dateTimePicker1.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="TFTPC.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
   </data>
-  <data name="&gt;&gt;btn_planadd.Name" xml:space="preserve">
-    <value>btn_planadd</value>
+  <data name="TFTPC.Text" xml:space="preserve">
+    <value>TFTPC</value>
   </data>
-  <data name="&gt;&gt;btn_planadd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;TFTPC.Name" xml:space="preserve">
+    <value>TFTPC</value>
   </data>
-  <data name="&gt;&gt;btn_planadd.Parent" xml:space="preserve">
-    <value>PLAN</value>
+  <data name="&gt;&gt;TFTPC.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;btn_planadd.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="&gt;&gt;TFTPC.Parent" xml:space="preserve">
+    <value>tabs</value>
+  </data>
+  <data name="&gt;&gt;TFTPC.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="fp_plan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="fp_plan.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 13</value>
+  </data>
+  <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
+    <value>741, 208</value>
+  </data>
+  <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
   </data>
   <data name="&gt;&gt;fp_plan.Name" xml:space="preserve">
     <value>fp_plan</value>
@@ -2467,7 +1684,187 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;fp_plan.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="dt1_plan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
+  <data name="dt1_plan.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 235</value>
+  </data>
+  <data name="dt1_plan.Size" type="System.Drawing.Size, System.Drawing">
+    <value>200, 25</value>
+  </data>
+  <data name="dt1_plan.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="&gt;&gt;dt1_plan.Name" xml:space="preserve">
+    <value>dt1_plan</value>
+  </data>
+  <data name="&gt;&gt;dt1_plan.Type" xml:space="preserve">
+    <value>System.Windows.Forms.DateTimePicker, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;dt1_plan.Parent" xml:space="preserve">
+    <value>PLAN</value>
+  </data>
+  <data name="&gt;&gt;dt1_plan.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="dt2_plan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
+  <data name="dt2_plan.CustomFormat" xml:space="preserve">
+    <value>HH:mm</value>
+  </data>
+  <data name="dt2_plan.Location" type="System.Drawing.Point, System.Drawing">
+    <value>216, 235</value>
+  </data>
+  <data name="dt2_plan.Size" type="System.Drawing.Size, System.Drawing">
+    <value>73, 25</value>
+  </data>
+  <data name="dt2_plan.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="&gt;&gt;dt2_plan.Name" xml:space="preserve">
+    <value>dt2_plan</value>
+  </data>
+  <data name="&gt;&gt;dt2_plan.Type" xml:space="preserve">
+    <value>System.Windows.Forms.DateTimePicker, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;dt2_plan.Parent" xml:space="preserve">
+    <value>PLAN</value>
+  </data>
+  <data name="&gt;&gt;dt2_plan.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="text_plancycle.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
+  <data name="text_plancycle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>296, 235</value>
+  </data>
+  <data name="text_plancycle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>49, 25</value>
+  </data>
+  <data name="text_plancycle.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="&gt;&gt;text_plancycle.Name" xml:space="preserve">
+    <value>text_plancycle</value>
+  </data>
+  <data name="&gt;&gt;text_plancycle.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_plancycle.Parent" xml:space="preserve">
+    <value>PLAN</value>
+  </data>
+  <data name="&gt;&gt;text_plancycle.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="text_planduration.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
+  <data name="text_planduration.Location" type="System.Drawing.Point, System.Drawing">
+    <value>351, 235</value>
+  </data>
+  <data name="text_planduration.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 25</value>
+  </data>
+  <data name="text_planduration.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="&gt;&gt;text_planduration.Name" xml:space="preserve">
+    <value>text_planduration</value>
+  </data>
+  <data name="&gt;&gt;text_planduration.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_planduration.Parent" xml:space="preserve">
+    <value>PLAN</value>
+  </data>
+  <data name="&gt;&gt;text_planduration.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="text_planmsg.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left, Right</value>
+  </data>
+  <data name="text_planmsg.Location" type="System.Drawing.Point, System.Drawing">
+    <value>399, 235</value>
+  </data>
+  <data name="text_planmsg.Size" type="System.Drawing.Size, System.Drawing">
+    <value>323, 25</value>
+  </data>
+  <data name="text_planmsg.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="&gt;&gt;text_planmsg.Name" xml:space="preserve">
+    <value>text_planmsg</value>
+  </data>
+  <data name="&gt;&gt;text_planmsg.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_planmsg.Parent" xml:space="preserve">
+    <value>PLAN</value>
+  </data>
+  <data name="&gt;&gt;text_planmsg.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="btn_planadd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Right</value>
+  </data>
+  <data name="btn_planadd.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="btn_planadd.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft YaHei UI, 8.25pt, style=Bold</value>
+  </data>
+  <data name="btn_planadd.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_planadd.Location" type="System.Drawing.Point, System.Drawing">
+    <value>728, 235</value>
+  </data>
+  <data name="btn_planadd.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="btn_planadd.Size" type="System.Drawing.Size, System.Drawing">
+    <value>23, 25</value>
+  </data>
+  <data name="btn_planadd.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="btn_planadd.Text" xml:space="preserve">
+    <value>+</value>
+  </data>
+  <data name="&gt;&gt;btn_planadd.Name" xml:space="preserve">
+    <value>btn_planadd</value>
+  </data>
+  <data name="&gt;&gt;btn_planadd.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_planadd.Parent" xml:space="preserve">
+    <value>PLAN</value>
+  </data>
+  <data name="&gt;&gt;btn_planadd.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="plan_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left, Right</value>
+  </data>
+  <data name="plan_output.ItemHeight" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="plan_output.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 276</value>
+  </data>
+  <data name="plan_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="plan_output.Size" type="System.Drawing.Size, System.Drawing">
+    <value>741, 180</value>
+  </data>
+  <data name="plan_output.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
   </data>
   <data name="&gt;&gt;plan_output.Name" xml:space="preserve">
     <value>plan_output</value>
@@ -2479,7 +1876,7 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;plan_output.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>7</value>
   </data>
   <data name="PLAN.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 29</value>
@@ -2507,246 +1904,6 @@
   </data>
   <data name="&gt;&gt;PLAN.ZOrder" xml:space="preserve">
     <value>5</value>
-  </data>
-  <data name="fp_plan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
-  </data>
-  <data name="fp_plan.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 13</value>
-  </data>
-  <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>741, 200</value>
-  </data>
-  <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;fp_plan.Name" xml:space="preserve">
-    <value>fp_plan</value>
-  </data>
-  <data name="&gt;&gt;fp_plan.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;fp_plan.Parent" xml:space="preserve">
-    <value>PLAN</value>
-  </data>
-  <data name="&gt;&gt;fp_plan.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="btn_planadd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Bottom</value>
-  </data>
-  <data name="btn_planadd.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
-  </data>
-  <data name="btn_planadd.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Microsoft YaHei UI, 8.25pt, style=Bold</value>
-  </data>
-  <data name="btn_planadd.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="btn_planadd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>728, 230</value>
-  </data>
-  <data name="btn_planadd.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="btn_planadd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>23, 25</value>
-  </data>
-  <data name="btn_planadd.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
-  </data>
-  <data name="btn_planadd.Text" xml:space="preserve">
-    <value>+</value>
-  </data>
-  <data name="&gt;&gt;btn_planadd.Name" xml:space="preserve">
-    <value>btn_planadd</value>
-  </data>
-  <data name="&gt;&gt;btn_planadd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_planadd.Parent" xml:space="preserve">
-    <value>PLAN</value>
-  </data>
-  <data name="&gt;&gt;btn_planadd.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="plan_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Bottom, Left, Right</value>
-  </data>
-  <data name="plan_output.ItemHeight" type="System.Int32, mscorlib">
-    <value>20</value>
-  </data>
-  <data name="plan_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 268</value>
-  </data>
-  <data name="plan_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="plan_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>741, 180</value>
-  </data>
-  <data name="plan_output.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;plan_output.Name" xml:space="preserve">
-    <value>plan_output</value>
-  </data>
-  <data name="&gt;&gt;plan_output.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;plan_output.Parent" xml:space="preserve">
-    <value>PLAN</value>
-  </data>
-  <data name="&gt;&gt;plan_output.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;dhcp_startlabel.Name" xml:space="preserve">
-    <value>dhcp_startlabel</value>
-  </data>
-  <data name="&gt;&gt;dhcp_startlabel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_startlabel.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_startlabel.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;dhcp_starttext.Name" xml:space="preserve">
-    <value>dhcp_starttext</value>
-  </data>
-  <data name="&gt;&gt;dhcp_starttext.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_starttext.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_starttext.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;dhcp_endlabel.Name" xml:space="preserve">
-    <value>dhcp_endlabel</value>
-  </data>
-  <data name="&gt;&gt;dhcp_endlabel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_endlabel.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_endlabel.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;dhcp_endtext.Name" xml:space="preserve">
-    <value>dhcp_endtext</value>
-  </data>
-  <data name="&gt;&gt;dhcp_endtext.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_endtext.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_endtext.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;dhcp_gatewaylabel.Name" xml:space="preserve">
-    <value>dhcp_gatewaylabel</value>
-  </data>
-  <data name="&gt;&gt;dhcp_gatewaylabel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_gatewaylabel.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_gatewaylabel.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;dhcp_gatewaytext.Name" xml:space="preserve">
-    <value>dhcp_gatewaytext</value>
-  </data>
-  <data name="&gt;&gt;dhcp_gatewaytext.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_gatewaytext.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_gatewaytext.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logbtn.Name" xml:space="preserve">
-    <value>dhcp_logbtn</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logbtn.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logbtn.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logbtn.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logtext.Name" xml:space="preserve">
-    <value>dhcp_logtext</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logtext.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logtext.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logtext.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;dhcp_btn.Name" xml:space="preserve">
-    <value>dhcp_btn</value>
-  </data>
-  <data name="&gt;&gt;dhcp_btn.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_btn.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_btn.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logmsg.Name" xml:space="preserve">
-    <value>dhcp_logmsg</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logmsg.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logmsg.Parent" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;dhcp_logmsg.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="DHCPD.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 29</value>
-  </data>
-  <data name="DHCPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
-  </data>
-  <data name="DHCPD.Size" type="System.Drawing.Size, System.Drawing">
-    <value>759, 445</value>
-  </data>
-  <data name="DHCPD.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="DHCPD.Text" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;DHCPD.Name" xml:space="preserve">
-    <value>DHCPD</value>
-  </data>
-  <data name="&gt;&gt;DHCPD.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;DHCPD.Parent" xml:space="preserve">
-    <value>tabs</value>
-  </data>
-  <data name="&gt;&gt;DHCPD.ZOrder" xml:space="preserve">
-    <value>6</value>
   </data>
   <data name="dhcp_startlabel.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -3054,140 +2211,32 @@
   <data name="&gt;&gt;dhcp_logmsg.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="&gt;&gt;label_lang.Name" xml:space="preserve">
-    <value>label_lang</value>
-  </data>
-  <data name="&gt;&gt;label_lang.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_lang.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;label_lang.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;lang_cb.Name" xml:space="preserve">
-    <value>lang_cb</value>
-  </data>
-  <data name="&gt;&gt;lang_cb.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;lang_cb.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;lang_cb.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;label_ver.Name" xml:space="preserve">
-    <value>label_ver</value>
-  </data>
-  <data name="&gt;&gt;label_ver.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_ver.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;label_ver.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;link_ver.Name" xml:space="preserve">
-    <value>link_ver</value>
-  </data>
-  <data name="&gt;&gt;link_ver.Type" xml:space="preserve">
-    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;link_ver.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;link_ver.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;label_prj.Name" xml:space="preserve">
-    <value>label_prj</value>
-  </data>
-  <data name="&gt;&gt;label_prj.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_prj.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;label_prj.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;link_prj.Name" xml:space="preserve">
-    <value>link_prj</value>
-  </data>
-  <data name="&gt;&gt;link_prj.Type" xml:space="preserve">
-    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;link_prj.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;link_prj.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;label_prof.Name" xml:space="preserve">
-    <value>label_prof</value>
-  </data>
-  <data name="&gt;&gt;label_prof.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_prof.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;label_prof.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;link_prof.Name" xml:space="preserve">
-    <value>link_prof</value>
-  </data>
-  <data name="&gt;&gt;link_prof.Type" xml:space="preserve">
-    <value>System.Windows.Forms.LinkLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;link_prof.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;link_prof.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;setting_output.Name" xml:space="preserve">
-    <value>setting_output</value>
-  </data>
-  <data name="&gt;&gt;setting_output.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;setting_output.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;setting_output.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="Setting.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="DHCPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 29</value>
   </data>
-  <data name="Setting.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="DHCPD.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
-  <data name="Setting.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="DHCPD.Size" type="System.Drawing.Size, System.Drawing">
     <value>759, 445</value>
   </data>
-  <data name="Setting.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+  <data name="DHCPD.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
   </data>
-  <data name="Setting.Text" xml:space="preserve">
-    <value>Setting</value>
+  <data name="DHCPD.Text" xml:space="preserve">
+    <value>DHCPD</value>
   </data>
-  <data name="&gt;&gt;Setting.Name" xml:space="preserve">
-    <value>Setting</value>
+  <data name="&gt;&gt;DHCPD.Name" xml:space="preserve">
+    <value>DHCPD</value>
   </data>
-  <data name="&gt;&gt;Setting.Type" xml:space="preserve">
+  <data name="&gt;&gt;DHCPD.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Setting.Parent" xml:space="preserve">
+  <data name="&gt;&gt;DHCPD.Parent" xml:space="preserve">
     <value>tabs</value>
   </data>
-  <data name="&gt;&gt;Setting.ZOrder" xml:space="preserve">
-    <value>7</value>
+  <data name="&gt;&gt;DHCPD.ZOrder" xml:space="preserve">
+    <value>6</value>
   </data>
   <data name="label_lang.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -3438,25 +2487,142 @@
   <data name="&gt;&gt;setting_output.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
-  <data name="dateTimePicker1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 230</value>
+  <data name="Setting.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 29</value>
   </data>
-  <data name="dateTimePicker1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>200, 25</value>
+  <data name="Setting.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
   </data>
-  <data name="dateTimePicker1.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+  <data name="Setting.Size" type="System.Drawing.Size, System.Drawing">
+    <value>759, 445</value>
   </data>
-  <data name="&gt;&gt;dateTimePicker1.Name" xml:space="preserve">
-    <value>dateTimePicker1</value>
+  <data name="Setting.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
   </data>
-  <data name="&gt;&gt;dateTimePicker1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.DateTimePicker, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Setting.Text" xml:space="preserve">
+    <value>Setting</value>
   </data>
-  <data name="&gt;&gt;dateTimePicker1.Parent" xml:space="preserve">
-    <value>PLAN</value>
+  <data name="&gt;&gt;Setting.Name" xml:space="preserve">
+    <value>Setting</value>
   </data>
-  <data name="&gt;&gt;dateTimePicker1.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;Setting.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Setting.Parent" xml:space="preserve">
+    <value>tabs</value>
+  </data>
+  <data name="&gt;&gt;Setting.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="tabs.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="tabs.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="tabs.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="tabs.Size" type="System.Drawing.Size, System.Drawing">
+    <value>767, 478</value>
+  </data>
+  <data name="tabs.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="&gt;&gt;tabs.Name" xml:space="preserve">
+    <value>tabs</value>
+  </data>
+  <data name="&gt;&gt;tabs.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabs.Parent" xml:space="preserve">
+    <value>toolStripContainer1.ContentPanel</value>
+  </data>
+  <data name="&gt;&gt;tabs.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="toolStripContainer1.ContentPanel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
+  </data>
+  <data name="toolStripContainer1.ContentPanel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>767, 478</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.ContentPanel.Name" xml:space="preserve">
+    <value>toolStripContainer1.ContentPanel</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.ContentPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripContentPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.ContentPanel.Parent" xml:space="preserve">
+    <value>toolStripContainer1</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.ContentPanel.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="toolStripContainer1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Name" xml:space="preserve">
+    <value>toolStripContainer1.LeftToolStripPanel</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.Parent" xml:space="preserve">
+    <value>toolStripContainer1</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.LeftToolStripPanel.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="toolStripContainer1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="toolStripContainer1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Name" xml:space="preserve">
+    <value>toolStripContainer1.RightToolStripPanel</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.Parent" xml:space="preserve">
+    <value>toolStripContainer1</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.RightToolStripPanel.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="toolStripContainer1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>767, 478</value>
+  </data>
+  <data name="toolStripContainer1.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="toolStripContainer1.Text" xml:space="preserve">
+    <value>toolStripContainer1</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Name" xml:space="preserve">
+    <value>toolStripContainer1.TopToolStripPanel</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.Parent" xml:space="preserve">
+    <value>toolStripContainer1</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.TopToolStripPanel.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.Name" xml:space="preserve">
+    <value>toolStripContainer1</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripContainer, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;toolStripContainer1.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
