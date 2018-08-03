@@ -17,7 +17,7 @@ namespace lazebird.rabbit.rabbit
         {
             setlog = new rlog(setting_output);
             pver = Assembly.GetExecutingAssembly().GetName().Version;
-            link_ver.Text = pver.ToString() + " (" + appver.combine() + ")";
+            link_ver.Text = pver.ToString() + " (" + appver.v.ToString() + ")";
             link_ver.LinkClicked += ver_click;
             link_prj.Text = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
             link_prj.LinkClicked += url_click;
@@ -77,7 +77,7 @@ namespace lazebird.rabbit.rabbit
             {
                 string s = download2str(versionuri);
                 verinfo v = new verinfo(s);
-                if (string.Compare(v.HeadShaShort, appver.HeadShaShort) == 0)
+                if (string.Compare(v.HeadShaShort, appver.v.HeadShaShort) == 0)
                 {
                     setlog.write("Version is up to date!");
                     return;
