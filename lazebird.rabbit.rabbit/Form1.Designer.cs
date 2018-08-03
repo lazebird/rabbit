@@ -59,6 +59,8 @@
             this.HTTPD = new System.Windows.Forms.TabPage();
             this.label_http_port = new System.Windows.Forms.Label();
             this.text_http_port = new System.Windows.Forms.TextBox();
+            this.cb_http_shell = new System.Windows.Forms.CheckBox();
+            this.cb_http_index = new System.Windows.Forms.CheckBox();
             this.btn_httpd = new System.Windows.Forms.Button();
             this.fp_httpd = new System.Windows.Forms.FlowLayoutPanel();
             this.httpd_output = new System.Windows.Forms.ListBox();
@@ -88,19 +90,10 @@
             this.btn_tftpcget = new System.Windows.Forms.Button();
             this.btn_tftpcput = new System.Windows.Forms.Button();
             this.tftpc_output = new System.Windows.Forms.ListBox();
-            this.FTPD = new System.Windows.Forms.TabPage();
-            this.ftp_dirtext1 = new System.Windows.Forms.TextBox();
-            this.ftp_dirbtn1 = new System.Windows.Forms.Button();
-            this.ftp_dirtext2 = new System.Windows.Forms.TextBox();
-            this.ftp_dirbtn2 = new System.Windows.Forms.Button();
-            this.ftp_dirtext3 = new System.Windows.Forms.TextBox();
-            this.ftp_dirbtn3 = new System.Windows.Forms.Button();
-            this.ftp_dirtext4 = new System.Windows.Forms.TextBox();
-            this.ftp_dirbtn4 = new System.Windows.Forms.Button();
-            this.ftp_dirtext5 = new System.Windows.Forms.TextBox();
-            this.ftp_dirbtn5 = new System.Windows.Forms.Button();
-            this.btn_ftp = new System.Windows.Forms.Button();
-            this.ftpd_output = new System.Windows.Forms.ListBox();
+            this.PLAN = new System.Windows.Forms.TabPage();
+            this.fp_plan = new System.Windows.Forms.FlowLayoutPanel();
+            this.btn_planadd = new System.Windows.Forms.Button();
+            this.plan_output = new System.Windows.Forms.ListBox();
             this.DHCPD = new System.Windows.Forms.TabPage();
             this.dhcp_startlabel = new System.Windows.Forms.Label();
             this.dhcp_starttext = new System.Windows.Forms.TextBox();
@@ -122,8 +115,7 @@
             this.label_prof = new System.Windows.Forms.Label();
             this.link_prof = new System.Windows.Forms.LinkLabel();
             this.setting_output = new System.Windows.Forms.ListBox();
-            this.cb_http_shell = new System.Windows.Forms.CheckBox();
-            this.cb_http_index = new System.Windows.Forms.CheckBox();
+            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -132,7 +124,7 @@
             this.HTTPD.SuspendLayout();
             this.TFTPD.SuspendLayout();
             this.TFTPC.SuspendLayout();
-            this.FTPD.SuspendLayout();
+            this.PLAN.SuspendLayout();
             this.DHCPD.SuspendLayout();
             this.Setting.SuspendLayout();
             this.SuspendLayout();
@@ -158,7 +150,7 @@
             this.tabs.Controls.Add(this.HTTPD);
             this.tabs.Controls.Add(this.TFTPD);
             this.tabs.Controls.Add(this.TFTPC);
-            this.tabs.Controls.Add(this.FTPD);
+            this.tabs.Controls.Add(this.PLAN);
             this.tabs.Controls.Add(this.DHCPD);
             this.tabs.Controls.Add(this.Setting);
             resources.ApplyResources(this.tabs, "tabs");
@@ -348,6 +340,18 @@
             this.text_http_port.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.text_http_port.ForeColor = System.Drawing.Color.White;
             this.text_http_port.Name = "text_http_port";
+            // 
+            // cb_http_shell
+            // 
+            resources.ApplyResources(this.cb_http_shell, "cb_http_shell");
+            this.cb_http_shell.Name = "cb_http_shell";
+            this.cb_http_shell.UseVisualStyleBackColor = true;
+            // 
+            // cb_http_index
+            // 
+            resources.ApplyResources(this.cb_http_index, "cb_http_index");
+            this.cb_http_index.Name = "cb_http_index";
+            this.cb_http_index.UseVisualStyleBackColor = true;
             // 
             // btn_httpd
             // 
@@ -579,121 +583,38 @@
             this.tftpc_output.FormattingEnabled = true;
             this.tftpc_output.Name = "tftpc_output";
             // 
-            // FTPD
+            // PLAN
             // 
-            this.FTPD.BackColor = System.Drawing.Color.DimGray;
-            this.FTPD.Controls.Add(this.ftp_dirtext1);
-            this.FTPD.Controls.Add(this.ftp_dirbtn1);
-            this.FTPD.Controls.Add(this.ftp_dirtext2);
-            this.FTPD.Controls.Add(this.ftp_dirbtn2);
-            this.FTPD.Controls.Add(this.ftp_dirtext3);
-            this.FTPD.Controls.Add(this.ftp_dirbtn3);
-            this.FTPD.Controls.Add(this.ftp_dirtext4);
-            this.FTPD.Controls.Add(this.ftp_dirbtn4);
-            this.FTPD.Controls.Add(this.ftp_dirtext5);
-            this.FTPD.Controls.Add(this.ftp_dirbtn5);
-            this.FTPD.Controls.Add(this.btn_ftp);
-            this.FTPD.Controls.Add(this.ftpd_output);
-            this.FTPD.ForeColor = System.Drawing.Color.White;
-            resources.ApplyResources(this.FTPD, "FTPD");
-            this.FTPD.Name = "FTPD";
+            this.PLAN.BackColor = System.Drawing.Color.DimGray;
+            this.PLAN.Controls.Add(this.dateTimePicker1);
+            this.PLAN.Controls.Add(this.btn_planadd);
+            this.PLAN.Controls.Add(this.fp_plan);
+            this.PLAN.Controls.Add(this.plan_output);
+            this.PLAN.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.PLAN, "PLAN");
+            this.PLAN.Name = "PLAN";
             // 
-            // ftp_dirtext1
+            // fp_plan
             // 
-            resources.ApplyResources(this.ftp_dirtext1, "ftp_dirtext1");
-            this.ftp_dirtext1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ftp_dirtext1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.ftp_dirtext1.ForeColor = System.Drawing.Color.White;
-            this.ftp_dirtext1.Name = "ftp_dirtext1";
+            resources.ApplyResources(this.fp_plan, "fp_plan");
+            this.fp_plan.Name = "fp_plan";
             // 
-            // ftp_dirbtn1
+            // btn_planadd
             // 
-            this.ftp_dirbtn1.BackColor = System.Drawing.Color.YellowGreen;
-            this.ftp_dirbtn1.FlatAppearance.BorderSize = 0;
-            resources.ApplyResources(this.ftp_dirbtn1, "ftp_dirbtn1");
-            this.ftp_dirbtn1.Name = "ftp_dirbtn1";
-            this.ftp_dirbtn1.UseVisualStyleBackColor = false;
+            resources.ApplyResources(this.btn_planadd, "btn_planadd");
+            this.btn_planadd.BackColor = System.Drawing.Color.YellowGreen;
+            this.btn_planadd.FlatAppearance.BorderSize = 0;
+            this.btn_planadd.Name = "btn_planadd";
+            this.btn_planadd.UseVisualStyleBackColor = false;
             // 
-            // ftp_dirtext2
+            // plan_output
             // 
-            resources.ApplyResources(this.ftp_dirtext2, "ftp_dirtext2");
-            this.ftp_dirtext2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ftp_dirtext2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.ftp_dirtext2.ForeColor = System.Drawing.Color.White;
-            this.ftp_dirtext2.Name = "ftp_dirtext2";
-            // 
-            // ftp_dirbtn2
-            // 
-            this.ftp_dirbtn2.BackColor = System.Drawing.Color.YellowGreen;
-            this.ftp_dirbtn2.FlatAppearance.BorderSize = 0;
-            resources.ApplyResources(this.ftp_dirbtn2, "ftp_dirbtn2");
-            this.ftp_dirbtn2.Name = "ftp_dirbtn2";
-            this.ftp_dirbtn2.UseVisualStyleBackColor = false;
-            // 
-            // ftp_dirtext3
-            // 
-            resources.ApplyResources(this.ftp_dirtext3, "ftp_dirtext3");
-            this.ftp_dirtext3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ftp_dirtext3.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.ftp_dirtext3.ForeColor = System.Drawing.Color.White;
-            this.ftp_dirtext3.Name = "ftp_dirtext3";
-            // 
-            // ftp_dirbtn3
-            // 
-            this.ftp_dirbtn3.BackColor = System.Drawing.Color.YellowGreen;
-            this.ftp_dirbtn3.FlatAppearance.BorderSize = 0;
-            resources.ApplyResources(this.ftp_dirbtn3, "ftp_dirbtn3");
-            this.ftp_dirbtn3.Name = "ftp_dirbtn3";
-            this.ftp_dirbtn3.UseVisualStyleBackColor = false;
-            // 
-            // ftp_dirtext4
-            // 
-            resources.ApplyResources(this.ftp_dirtext4, "ftp_dirtext4");
-            this.ftp_dirtext4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ftp_dirtext4.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.ftp_dirtext4.ForeColor = System.Drawing.Color.White;
-            this.ftp_dirtext4.Name = "ftp_dirtext4";
-            // 
-            // ftp_dirbtn4
-            // 
-            this.ftp_dirbtn4.BackColor = System.Drawing.Color.YellowGreen;
-            this.ftp_dirbtn4.FlatAppearance.BorderSize = 0;
-            resources.ApplyResources(this.ftp_dirbtn4, "ftp_dirbtn4");
-            this.ftp_dirbtn4.Name = "ftp_dirbtn4";
-            this.ftp_dirbtn4.UseVisualStyleBackColor = false;
-            // 
-            // ftp_dirtext5
-            // 
-            resources.ApplyResources(this.ftp_dirtext5, "ftp_dirtext5");
-            this.ftp_dirtext5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ftp_dirtext5.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.ftp_dirtext5.ForeColor = System.Drawing.Color.White;
-            this.ftp_dirtext5.Name = "ftp_dirtext5";
-            // 
-            // ftp_dirbtn5
-            // 
-            this.ftp_dirbtn5.BackColor = System.Drawing.Color.YellowGreen;
-            this.ftp_dirbtn5.FlatAppearance.BorderSize = 0;
-            resources.ApplyResources(this.ftp_dirbtn5, "ftp_dirbtn5");
-            this.ftp_dirbtn5.Name = "ftp_dirbtn5";
-            this.ftp_dirbtn5.UseVisualStyleBackColor = false;
-            // 
-            // btn_ftp
-            // 
-            resources.ApplyResources(this.btn_ftp, "btn_ftp");
-            this.btn_ftp.BackColor = System.Drawing.Color.YellowGreen;
-            this.btn_ftp.FlatAppearance.BorderSize = 0;
-            this.btn_ftp.Name = "btn_ftp";
-            this.btn_ftp.UseVisualStyleBackColor = false;
-            // 
-            // ftpd_output
-            // 
-            this.ftpd_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ftpd_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.ftpd_output.ForeColor = System.Drawing.Color.White;
-            this.ftpd_output.FormattingEnabled = true;
-            resources.ApplyResources(this.ftpd_output, "ftpd_output");
-            this.ftpd_output.Name = "ftpd_output";
+            resources.ApplyResources(this.plan_output, "plan_output");
+            this.plan_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.plan_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.plan_output.ForeColor = System.Drawing.Color.White;
+            this.plan_output.FormattingEnabled = true;
+            this.plan_output.Name = "plan_output";
             // 
             // DHCPD
             // 
@@ -863,17 +784,10 @@
             this.setting_output.FormattingEnabled = true;
             this.setting_output.Name = "setting_output";
             // 
-            // cb_http_shell
+            // dateTimePicker1
             // 
-            resources.ApplyResources(this.cb_http_shell, "cb_http_shell");
-            this.cb_http_shell.Name = "cb_http_shell";
-            this.cb_http_shell.UseVisualStyleBackColor = true;
-            // 
-            // cb_http_index
-            // 
-            resources.ApplyResources(this.cb_http_index, "cb_http_index");
-            this.cb_http_index.Name = "cb_http_index";
-            this.cb_http_index.UseVisualStyleBackColor = true;
+            resources.ApplyResources(this.dateTimePicker1, "dateTimePicker1");
+            this.dateTimePicker1.Name = "dateTimePicker1";
             // 
             // Form1
             // 
@@ -898,8 +812,7 @@
             this.TFTPD.PerformLayout();
             this.TFTPC.ResumeLayout(false);
             this.TFTPC.PerformLayout();
-            this.FTPD.ResumeLayout(false);
-            this.FTPD.PerformLayout();
+            this.PLAN.ResumeLayout(false);
             this.DHCPD.ResumeLayout(false);
             this.DHCPD.PerformLayout();
             this.Setting.ResumeLayout(false);
@@ -924,22 +837,11 @@
         System.Windows.Forms.TabPage Ping;
         System.Windows.Forms.TabPage HTTPD;
         System.Windows.Forms.ListBox ping_output;
-        System.Windows.Forms.TabPage FTPD;
+        System.Windows.Forms.TabPage PLAN;
         System.Windows.Forms.TabPage Setting;
         System.Windows.Forms.Label label_http_port;
         System.Windows.Forms.TextBox text_http_port;
         System.Windows.Forms.Button btn_httpd;
-        System.Windows.Forms.TextBox ftp_dirtext1;
-        System.Windows.Forms.Button ftp_dirbtn1;
-        System.Windows.Forms.TextBox ftp_dirtext2;
-        System.Windows.Forms.Button ftp_dirbtn2;
-        System.Windows.Forms.TextBox ftp_dirtext3;
-        System.Windows.Forms.Button ftp_dirbtn3;
-        System.Windows.Forms.TextBox ftp_dirtext4;
-        System.Windows.Forms.Button ftp_dirbtn4;
-        System.Windows.Forms.TextBox ftp_dirtext5;
-        System.Windows.Forms.Button ftp_dirbtn5;
-        System.Windows.Forms.Button btn_ftp;
         System.Windows.Forms.TabPage TFTPD;
         System.Windows.Forms.Button tftpd_adddir;
         System.Windows.Forms.Button tftpd_deldir;
@@ -969,7 +871,7 @@
         System.Windows.Forms.ListBox setting_output;
         System.Windows.Forms.LinkLabel link_prj;
         System.Windows.Forms.Label label_prj;
-        System.Windows.Forms.ListBox ftpd_output;
+        System.Windows.Forms.ListBox plan_output;
         System.Windows.Forms.Label label_tftpdtout;
         System.Windows.Forms.TextBox text_tftpdtout;
         System.Windows.Forms.Label label_tftpdretry;
@@ -998,6 +900,9 @@
         private System.Windows.Forms.FlowLayoutPanel fp_httpd;
         private System.Windows.Forms.CheckBox cb_http_index;
         private System.Windows.Forms.CheckBox cb_http_shell;
+        private System.Windows.Forms.Button btn_planadd;
+        private System.Windows.Forms.FlowLayoutPanel fp_plan;
+        private System.Windows.Forms.DateTimePicker dateTimePicker1;
     }
 }
 
