@@ -56,23 +56,41 @@ namespace lazebird.rabbit.rabbit
             string path = Environment.ExpandEnvironmentVariables(((LinkLabel)sender).Text);
             System.Diagnostics.Process.Start(path);
         }
-        string getbyuri(string uri)
+        string download2str(string uri)
         {
             WebClient wc = new WebClient();
             string data = wc.DownloadString(uri);
             wc.Dispose();
             return data;
         }
+        void download2file(string uri, string filepath)
+        {
+            WebClient wc = new WebClient();
+            wc.DownloadFile(uri, filepath);
+            wc.Dispose();
+        }
+        string versionuri = "https://code.aliyun.com/lazebird/rabbit/raw/master/release/version.txt";
+        string binaryuri = "https://code.aliyun.com/lazebird/rabbit/raw/master/release/sRabbit.exe";
         void ver_check()
         {
             try
             {
-                string s = getbyuri("https://code.aliyun.com/lazebird/rabbit/raw/master/release/version.txt");
+                string s = download2str(versionuri);
                 verinfo v = new verinfo(s);
-                if (string.Compare(v.HeadShaShort, appver.HeadShaShort) != 0)
-                    setlog.write("The newest version is " + v.ToString() + ", click the homepage to download it.");
-                else
+                if (string.Compare(v.HeadShaShort, appver.HeadShaShort) == 0)
+                {
                     setlog.write("Version is up to date!");
+                    return;
+                }
+                setlog.write("The newest version is " + v.ToString() + ", click the homepage to download it.");
+                MessageBoxButtons mbox = MessageBoxButtons.YesNo;
+                string newbinpath = Application.ExecutablePath + ".new";
+                DialogResult res = MessageBox.Show("New release will be saved to " + newbinpath, "Rabbit Upgrade", mbox);
+                if (res == DialogResult.Yes)
+                {
+                    download2file(binaryuri, newbinpath);
+                    setlog.write("New release saved to " + newbinpath);
+                }
             }
             catch (Exception e)
             {
