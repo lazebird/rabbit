@@ -52,7 +52,7 @@ namespace lazebird.rabbit.rabbit
             mime += ".png:image/png;";
             mime += "*:application/octet-stream;";
             cfg.Add("mime", mime);
-            cfg.Add("plans", DateTime.Now + "|1|0|Have a rest!;");
+            cfg.Add("plans", DateTime.Now + "|45|0|Have a rest!;");
             return String.IsNullOrEmpty((string)cfg[key]) ? "" : (string)cfg[key];
         }
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace lazebird.rabbit.plan
 {
@@ -23,6 +25,7 @@ namespace lazebird.rabbit.plan
         int duration = 180; // second
         public string msg;
         Thread t;
+        Thread t_ui;
 
         public rplan(Action<string> log, string s) // format refer to tostring()
         {
@@ -109,19 +112,68 @@ namespace lazebird.rabbit.plan
                 log("!E: " + e.ToString());
             }
         }
-        void trigger()
+        int loop;
+        void form_click(object sender, EventArgs e)
+        {
+            loop = 0;
+        }
+        void form_load(object sender, EventArgs e)
+        {
+            Form f = (Form)sender;
+            Label l = new Label();
+            f.Controls.Add(l);
+            Thread t1 = new Thread(() => label_task(f, l));
+            t1.IsBackground = true;
+            t1.Start();
+        }
+        void label_task(Form f, Label l)
+        {
+            l.Location = new Point(10, f.Height / 2);
+            l.Width = f.Width - 20;
+            l.TextAlign = ContentAlignment.MiddleCenter;
+            l.Font = new Font(l.Font.FontFamily, 12, l.Font.Style);
+            l.BackColor = Color.Black;
+            l.ForeColor = Color.White;
+            loop = duration;
+            while (loop-- > 0)
+            {
+                l.Text = msg + " (" + loop + ")";
+                Thread.Sleep(1000); // update progress per second
+            }
+            l.Dispose();
+            f.Dispose();
+            t_ui = null;
+        }
+        void form_task()
+        {
+            Form f = new Form();
+            f.FormBorderStyle = FormBorderStyle.None;
+            f.WindowState = FormWindowState.Maximized;
+            f.BackColor = Color.Black;
+            f.DoubleClick += new EventHandler(form_click);
+            f.Load += new EventHandler(form_load);
+            Application.Run(f);
+        }
+        public void trigger()
         {
             log("I: trigger " + msg);
-            //int loop = duration;
-            //while (loop-- > 0)
-            //{
-            //    Thread.Sleep(1000); // update progress per second
-            //}
+            if (t_ui != null) return;
+            t_ui = new Thread(form_task);
+            t_ui.IsBackground = true;
+            t_ui.Start();
         }
+
+        private void F_DoubleClick(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
         public void stop()
         {
             if (t != null) t.Abort();
             t = null;
+            if (t_ui != null) t.Abort();
+            t_ui = null;
         }
         public static List<string> cycleunitlist()
         {

@@ -54,6 +54,7 @@ namespace lazebird.rabbit.rabbit
             if (!plan_tbhash.ContainsKey(sender)) return;
             rplan p = (rplan)plan_tbhash[sender];
             plan2ui(p);
+            //p.trigger(); // for test
         }
         void plan_add(rplan p)
         {
