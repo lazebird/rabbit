@@ -85,12 +85,12 @@ namespace lazebird.rabbit.rabbit
         void plan_add_click(object sender, EventArgs e)
         {
             plan_add(ui2plan());
-            plan_saveconf();
+            saveconf();
         }
         void plan_del_click(object sender, EventArgs e)
         {
             plan_del(text_planmsg.Text);
-            plan_saveconf();
+            saveconf();
         }
         void plan_readconf()
         {

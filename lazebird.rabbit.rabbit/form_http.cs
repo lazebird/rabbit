@@ -89,7 +89,7 @@ namespace lazebird.rabbit.rabbit
         {
             CheckBox cb = (CheckBox)sender;
             httpd.set_auto_index(cb.Checked);
-            httpd_saveconf();
+            saveconf();
         }
         void httpd_dir_click(object sender, EventArgs evt)
         {
@@ -99,7 +99,7 @@ namespace lazebird.rabbit.rabbit
             else if (Directory.Exists(p)) httpd.del_dir(p);
             httpd_phash.Remove(tb);
             fp_httpd.Controls.Remove(tb);
-            httpd_saveconf();
+            saveconf();
         }
         void httpd_add_path(string p)
         {
@@ -123,7 +123,7 @@ namespace lazebird.rabbit.rabbit
             httpd_phash.Add(tb, p);
             if (File.Exists(p)) httpd.add_file(p);
             else if (Directory.Exists(p)) httpd.add_dir(p);
-            httpd_saveconf();
+            saveconf();
         }
         void httpd_readconf()
         {
