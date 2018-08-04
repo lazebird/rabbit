@@ -89,7 +89,7 @@ namespace lazebird.rabbit.plan
                 default:
                     return false;
             }
-            log("I: update fire time " + firetm.ToString());
+            log("I: update " + msg + " fire time " + firetm.ToString());
             return true;
         }
         void sched_task()
