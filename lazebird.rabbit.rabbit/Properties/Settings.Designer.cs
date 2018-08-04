@@ -298,5 +298,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["http_auto_index"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string plans {
+            get {
+                return ((string)(this["plans"]));
+            }
+            set {
+                this["plans"] = value;
+            }
+        }
     }
 }

@@ -20,6 +20,7 @@ namespace lazebird.rabbit.rabbit
             init_form_http();
             init_form_tftpd();
             init_form_tftpc();
+            init_form_plan();
             init_form_setting();
             init_hash();
         }
@@ -103,6 +104,7 @@ namespace lazebird.rabbit.rabbit
             tabs.SelectedIndex = int.Parse(rconf.get("tabs"));
             httpd_readconf();
             tftpd_readconf();
+            plan_readconf();
         }
         void saveconf()
         {
@@ -124,6 +126,7 @@ namespace lazebird.rabbit.rabbit
             }
             httpd_saveconf();
             tftpd_saveconf();
+            plan_saveconf();
         }
     }
 }

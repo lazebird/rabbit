@@ -15,7 +15,7 @@ namespace lazebird.rabbit.rabbit
             Properties.Settings.Default.Save();
             Properties.Settings.Default.Upgrade();
         }
-         static string get_default(string key) // effective only when settings have been set to ""
+        static string get_default(string key) // effective only when settings have been set to ""
         {
             Hashtable cfg = new Hashtable();
             string mime = "";
@@ -52,6 +52,7 @@ namespace lazebird.rabbit.rabbit
             mime += ".png:image/png;";
             mime += "*:application/octet-stream;";
             cfg.Add("mime", mime);
+            cfg.Add("plans", DateTime.Now + "|1|0|Have a rest!;");
             return String.IsNullOrEmpty((string)cfg[key]) ? "" : (string)cfg[key];
         }
 
