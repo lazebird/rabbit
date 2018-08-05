@@ -162,12 +162,6 @@ namespace lazebird.rabbit.plan
             t_ui.IsBackground = true;
             t_ui.Start();
         }
-
-        private void F_DoubleClick(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         public void stop()
         {
             if (t != null) t.Abort();

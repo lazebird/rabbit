@@ -2,6 +2,7 @@
 using lazebird.vgen.ver;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -31,6 +32,7 @@ namespace lazebird.rabbit.rabbit
             lang_cb.Text = Language.Getlang();
             lang_cb.SelectedIndexChanged += lang_opt_SelectedIndexChanged;
             setlog.write("Language: " + Language.Getlang());
+            if (File.Exists(upgrade.scriptpath)) File.Delete(upgrade.scriptpath);
         }
         void lang_opt_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -82,15 +84,25 @@ namespace lazebird.rabbit.rabbit
                     setlog.write("Version is up to date!");
                     return;
                 }
-                setlog.write("The newest version is " + v.ToString() + ", click the homepage to download it.");
                 MessageBoxButtons mbox = MessageBoxButtons.YesNo;
                 string newbinpath = Application.ExecutablePath + ".new";
                 DialogResult res = MessageBox.Show("New release will be saved to " + newbinpath, "Rabbit Upgrade", mbox);
                 if (res == DialogResult.Yes)
                 {
                     download2file(binaryuri, newbinpath);
-                    setlog.write("New release saved to " + newbinpath);
+                    MessageBoxButtons mbox2 = MessageBoxButtons.YesNo;
+                    DialogResult res2 = MessageBox.Show("Restart to upgrade now?", "Rabbit Upgrade", mbox2);
+                    if (res2 == DialogResult.Yes)
+                    {
+                        upgrade upg = new upgrade(Application.ExecutablePath);
+                        upg.run();
+                        Application.Exit();
+                    }
+                    else setlog.write("New release saved to " + newbinpath);
+
                 }
+                else setlog.write("The newest version is " + v.ToString() + ", click the homepage to download it.");
+
             }
             catch (Exception e)
             {
