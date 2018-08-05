@@ -91,7 +91,7 @@ namespace lazebird.rabbit.plan
                 default:
                     return false;
             }
-            log("I: update " + msg + " fire time " + firetm.ToString());
+            log("I: set <" + msg + "> fire time " + firetm.ToString());
             return true;
         }
         void sched_task()
@@ -152,6 +152,7 @@ namespace lazebird.rabbit.plan
             f.FormBorderStyle = FormBorderStyle.None;
             f.WindowState = FormWindowState.Maximized;
             f.BackColor = Color.Black;
+            f.TopMost = true;
             f.Text = msg + " " + DateTime.Now;
             f.DoubleClick += new EventHandler(form_click);
             f.Load += new EventHandler(form_load);
