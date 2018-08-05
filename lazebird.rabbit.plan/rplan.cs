@@ -152,6 +152,7 @@ namespace lazebird.rabbit.plan
             f.FormBorderStyle = FormBorderStyle.None;
             f.WindowState = FormWindowState.Maximized;
             f.BackColor = Color.Black;
+            f.Text = msg + " " + DateTime.Now;
             f.DoubleClick += new EventHandler(form_click);
             f.Load += new EventHandler(form_load);
             Application.Run(f);
