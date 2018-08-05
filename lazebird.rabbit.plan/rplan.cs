@@ -29,13 +29,15 @@ namespace lazebird.rabbit.plan
 
         public rplan(Action<string> log, string s) // format refer to tostring()
         {
-            string[] args = s.Split('|');
-            if (args.Length != 4)
+            try
             {
-                log("!E: parse " + s);
-                return;
+                string[] args = s.Split('|');
+                init(log, DateTime.Parse(args[0]), int.Parse(args[1]), str2unit(args[2]), args[3]);
             }
-            init(log, DateTime.Parse(args[0]), int.Parse(args[1]), (cycleunit)int.Parse(args[2]), args[3]);
+            catch (Exception e)
+            {
+                log("!E: " + s + ": " + e.ToString());
+            }
         }
         public rplan(Action<string> log, DateTime starttm, int cycle, cycleunit unit, string msg)
         {
