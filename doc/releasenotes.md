@@ -1,5 +1,17 @@
 # Release Notes
 
+## 2018-08-06
+### New
+1. add plan function, remove unimplemented functions
+2. add auto upgrade function
+3. add shell context for http
+4. add system tray icon
+### Fix
+1. minor bugs and optimizations
+### Tip
+1. if config not saved, try to remove old config files in dir %userprofile%\appdata\local; if problem remains, tell me in a new issue.
+2. single release/debug cannot support chinese!!! please change language to english in setting tab!
+
 ## 2018-08-01
 ### New
 1. Cured version number to 2.1.0.0, add compile date and git infos to version control
