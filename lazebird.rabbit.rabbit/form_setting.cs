@@ -122,7 +122,6 @@ namespace lazebird.rabbit.rabbit
             cb_systray.CheckedChanged += systray_click;
             ntfico.DoubleClick += systray_double_click;
             ntfico.Icon = this.Icon;
-            ntfico.Visible = false;
             this.Resize += form_resize;
             if (rconf.get("systray") == "true") cb_systray.Checked = true;
         }
@@ -133,7 +132,7 @@ namespace lazebird.rabbit.rabbit
         }
         void form_resize(object sender, EventArgs e)
         {
-            this.Visible = (this.WindowState != FormWindowState.Minimized);
+            this.Visible = !(this.WindowState == FormWindowState.Minimized && ntfico.Visible);
         }
         void systray_click(object sender, EventArgs e)
         {
