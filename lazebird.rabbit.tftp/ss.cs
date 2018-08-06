@@ -85,10 +85,16 @@ namespace lazebird.rabbit.tftp
         public void session_display(Func<int, string, int> log)
         {
             int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
-            long curlen = (maxblkno == blkno) ? filesize : (filesize * blkno / Math.Max(maxblkno, 1));
+            long curlen = (maxblkno == blkno) ? filesize : (blksize * blkno);
             string msg = "I: " + r.ToString() + " " + filename + " ";
-            msg += (maxblkno == blkno) ? "Succ; " : "Fail; ";
-            msg += maxblkno + "/" + blkno + "/" + deltatm.ToString("###,###.0") + "s ";
+            if (maxblkno == blkno)
+            {
+                msg += filesize.ToString("###,###") + "B" + "/" + deltatm.ToString("###,###.0") + "s ";
+            }
+            else
+            {
+                msg += "Fail; " + maxblkno + "/" + blkno + "/" + deltatm.ToString("###,###.0") + "s ";
+            }
             msg += "@" + (blkno / deltatm).ToString("###,###.0") + " pps/" + (curlen / deltatm).ToString("###,###.0") + " Bps; ";
             msg += totalretry + " retries";
             log(logidx, msg);

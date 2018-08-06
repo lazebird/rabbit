@@ -12,6 +12,7 @@ namespace lazebird.rabbit.rabbit
     {
         rtftpc tftpc;
         rlog tftpclog;
+        string lasttftpcdir = Environment.CurrentDirectory;
         void init_form_tftpc()
         {
             tftpclog = new rlog(tftpc_output);
@@ -28,9 +29,10 @@ namespace lazebird.rabbit.rabbit
             OpenFileDialog fd = new OpenFileDialog();
             fd.Filter = "All files (*.*)|*.*";
             fd.RestoreDirectory = true;
-            fd.InitialDirectory = Environment.CurrentDirectory;
+            fd.InitialDirectory = lasttftpcdir;
             if (fd.ShowDialog() == DialogResult.OK)
             {
+                lasttftpcdir = Path.GetDirectoryName(fd.FileName);
                 text_tftpclfile.Text = fd.FileName;
             }
         }
