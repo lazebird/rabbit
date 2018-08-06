@@ -121,8 +121,8 @@ namespace lazebird.rabbit.rabbit
         {
             cb_systray.CheckedChanged += systray_click;
             ntfico.DoubleClick += systray_double_click;
-            ntfico.Icon = this.Icon;
-            this.Resize += form_resize;
+            ntfico.Icon = Icon;
+            Resize += form_resize;
             if (rconf.get("systray") == "true") cb_systray.Checked = true;
         }
         void save_systray()
@@ -132,18 +132,19 @@ namespace lazebird.rabbit.rabbit
         }
         void form_resize(object sender, EventArgs e)
         {
-            this.Visible = !(this.WindowState == FormWindowState.Minimized && ntfico.Visible);
+            if (WindowState == FormWindowState.Minimized && ntfico.Visible) Visible = false;
         }
         void systray_click(object sender, EventArgs e)
         {
             ntfico.Visible = ((CheckBox)sender).Checked;
-            this.ShowInTaskbar = !ntfico.Visible;
+            ShowInTaskbar = !ntfico.Visible;
             save_systray();
         }
         void systray_double_click(object sender, EventArgs e)
         {
-            this.Visible = (WindowState == FormWindowState.Minimized);
-            this.WindowState = (WindowState == FormWindowState.Minimized) ? FormWindowState.Normal : FormWindowState.Minimized;
+            Visible = (WindowState == FormWindowState.Minimized);
+            WindowState = (WindowState == FormWindowState.Minimized) ? FormWindowState.Normal : FormWindowState.Minimized;
+            if (WindowState == FormWindowState.Normal) Activate();
         }
     }
 }
