@@ -122,6 +122,7 @@ namespace lazebird.rabbit.rabbit
             cb_systray.CheckedChanged += systray_click;
             ntfico.DoubleClick += systray_double_click;
             ntfico.Icon = this.Icon;
+            ntfico.Visible = false;
             this.Resize += form_resize;
             if (rconf.get("systray") == "true") cb_systray.Checked = true;
         }
