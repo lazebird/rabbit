@@ -33,6 +33,7 @@ namespace lazebird.rabbit.rabbit
             lang_cb.SelectedIndexChanged += lang_opt_SelectedIndexChanged;
             setlog.write("Language: " + Language.Getlang());
             if (File.Exists(upgrade.scriptpath)) File.Delete(upgrade.scriptpath);
+            init_systray();
         }
         void lang_opt_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -115,6 +116,34 @@ namespace lazebird.rabbit.rabbit
             Thread t = new Thread(ver_check);
             t.IsBackground = true;
             t.Start();
+        }
+        void init_systray()
+        {
+            cb_systray.CheckedChanged += systray_click;
+            ntfico.DoubleClick += systray_double_click;
+            ntfico.Icon = this.Icon;
+            this.Resize += form_resize;
+            if (rconf.get("systray") == "true") cb_systray.Checked = true;
+        }
+        void save_systray()
+        {
+            if (onloading) return;
+            rconf.set("systray", cb_systray.Checked ? "true" : "false");
+        }
+        void form_resize(object sender, EventArgs e)
+        {
+            this.Visible = (this.WindowState != FormWindowState.Minimized);
+        }
+        void systray_click(object sender, EventArgs e)
+        {
+            ntfico.Visible = ((CheckBox)sender).Checked;
+            this.ShowInTaskbar = !ntfico.Visible;
+            save_systray();
+        }
+        void systray_double_click(object sender, EventArgs e)
+        {
+            this.Visible = (WindowState == FormWindowState.Minimized);
+            this.WindowState = (WindowState == FormWindowState.Minimized) ? FormWindowState.Normal : FormWindowState.Minimized;
         }
     }
 }

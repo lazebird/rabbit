@@ -310,5 +310,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["plans"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string systray {
+            get {
+                return ((string)(this["systray"]));
+            }
+            set {
+                this["systray"] = value;
+            }
+        }
     }
 }
