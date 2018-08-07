@@ -135,7 +135,7 @@ namespace lazebird.rabbit.rabbit
             }
             catch (Exception e)
             {
-                tftpd_log_func(0, "!E: " + e.ToString());
+                tftpd_log_func(-1, "!E: " + e.ToString());
             }
         }
         void tftpd_readconf()

@@ -64,7 +64,7 @@ namespace lazebird.rabbit.rabbit
             }
             catch (Exception e)
             {
-                tftpc_log_func(0, "!E: " + e.ToString());
+                tftpc_log_func(-1, "!E: " + e.ToString());
             }
         }
         void tftpc_put_click(object sender, EventArgs evt)
@@ -78,7 +78,7 @@ namespace lazebird.rabbit.rabbit
             }
             catch (Exception e)
             {
-                tftpc_log_func(0, "!E: " + e.ToString());
+                tftpc_log_func(-1, "!E: " + e.ToString());
             }
         }
     }
