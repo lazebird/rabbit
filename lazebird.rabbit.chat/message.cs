@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 
 namespace lazebird.rabbit.chat
 {
@@ -8,21 +9,21 @@ namespace lazebird.rabbit.chat
         string content;
         DateTime timestamp;
         int status;
-        int logidx;
-        public message(string user, string content)
+        TextBox tb;
+        public message(string user, string content, TextBox tb)
         {
             this.user = user;
             this.content = content;
             timestamp = DateTime.Now;
-            logidx = -1;
+            this.tb = tb;
         }
         public void set_status(int status)
         {
             this.status = status;
         }
-        public void show(Func<int, string, int> log)
+        public void show()
         {
-            logidx = log(logidx, ToString());
+            tb.Text = ToString();
         }
         public override string ToString()
         {
