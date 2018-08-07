@@ -53,19 +53,33 @@ namespace lazebird.rabbit.rabbit
             tftpc_rfile = text_tftpcrfile.Text;
             tftpc = new rtftpc(tftpc_log_func, tftpc_tout, tftpc_retry, tftpc_blksize);
         }
-        void tftpc_get_click(object sender, EventArgs e)
+        void tftpc_get_click(object sender, EventArgs evt)
         {
-            tftpc_read_args();
-            Thread t = new Thread(() => tftpc.get(tftpc_ip, 69, tftpc_rfile, tftpc_rfile, Modes.octet));
-            t.IsBackground = true;
-            t.Start();
+            try
+            {
+                tftpc_read_args();
+                Thread t = new Thread(() => tftpc.get(tftpc_ip, 69, tftpc_rfile, tftpc_rfile, Modes.octet));
+                t.IsBackground = true;
+                t.Start();
+            }
+            catch (Exception e)
+            {
+                tftpc_log_func(0, "!E: " + e.ToString());
+            }
         }
-        void tftpc_put_click(object sender, EventArgs e)
+        void tftpc_put_click(object sender, EventArgs evt)
         {
-            tftpc_read_args();
-            Thread t = new Thread(() => tftpc.put(tftpc_ip, 69, Path.GetFileName(tftpc_lfile), tftpc_lfile, Modes.octet));
-            t.IsBackground = true;
-            t.Start();
+            try
+            {
+                tftpc_read_args();
+                Thread t = new Thread(() => tftpc.put(tftpc_ip, 69, Path.GetFileName(tftpc_lfile), tftpc_lfile, Modes.octet));
+                t.IsBackground = true;
+                t.Start();
+            }
+            catch (Exception e)
+            {
+                tftpc_log_func(0, "!E: " + e.ToString());
+            }
         }
     }
 }

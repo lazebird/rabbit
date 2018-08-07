@@ -33,7 +33,7 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("tftpc_addr", "127.0.0.1");
             cfg.Add("tftpc_timeout", "200");
             cfg.Add("tftpc_retry", "10");
-            cfg.Add("tftpc_blksize", "512");
+            cfg.Add("tftpc_blksize", "1468");
             cfg.Add("tabs", "0");
             mime += ".svg:image/svg+xml;";
             mime += ".html:text/html;";

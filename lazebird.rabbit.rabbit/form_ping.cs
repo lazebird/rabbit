@@ -63,25 +63,32 @@ namespace lazebird.rabbit.rabbit
         bool stop_unset;
         void start_ping()
         {
-            string addr = ((TextBox)texthash["ping_addr"]).Text;
-            int timeout = int.Parse(((TextBox)texthash["ping_timeout"]).Text);
-            int count = int.Parse(((TextBox)texthash["ping_times"]).Text);
-            stop_unset = true;
-            recordidx = 0;
-            txcnt = rxcnt = losscnt = 0;
-            mintm = 0xfffffff;
-            maxtm = totaltm = 0;
-            while (stop_unset && (count < 0 || count-- > 0))
+            try
             {
-                ping.start(addr, timeout, ping_cb, null);
-                txcnt++;
-                if (timeout > (int)RoundtripTime)
+                string addr = ((TextBox)texthash["ping_addr"]).Text;
+                int timeout = int.Parse(((TextBox)texthash["ping_timeout"]).Text);
+                int count = int.Parse(((TextBox)texthash["ping_times"]).Text);
+                stop_unset = true;
+                recordidx = 0;
+                txcnt = rxcnt = losscnt = 0;
+                mintm = 0xfffffff;
+                maxtm = totaltm = 0;
+                while (stop_unset && (count < 0 || count-- > 0))
                 {
-                    Thread.Sleep(timeout - (int)RoundtripTime);
+                    ping.start(addr, timeout, ping_cb, null);
+                    txcnt++;
+                    if (timeout > (int)RoundtripTime)
+                    {
+                        Thread.Sleep(timeout - (int)RoundtripTime);
+                    }
                 }
+                display_statistics();
+                stop_ping();
             }
-            display_statistics();
-            stop_ping();
+            catch (Exception e)
+            {
+                pinglog.write("!E: " + e.ToString());
+            }
         }
         void stop_ping()
         {

@@ -41,17 +41,24 @@ namespace lazebird.rabbit.rabbit
         }
         void httpd_click(object sender, EventArgs evt)
         {
-            if (((Button)btnhash["httpd_btn"]).Text == Language.trans("开始"))
+            try
             {
-                ((Button)btnhash["httpd_btn"]).Text = Language.trans("停止");
-                httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
+                if (((Button)btnhash["httpd_btn"]).Text == Language.trans("开始"))
+                {
+                    ((Button)btnhash["httpd_btn"]).Text = Language.trans("停止");
+                    httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
+                }
+                else
+                {
+                    ((Button)btnhash["httpd_btn"]).Text = Language.trans("开始");
+                    httpd.stop();
+                }
+                saveconf(); // save empty config to restore default config
             }
-            else
+            catch (Exception e)
             {
-                ((Button)btnhash["httpd_btn"]).Text = Language.trans("开始");
-                httpd.stop();
+                httpd_log_func("!E: " + e.ToString());
             }
-            saveconf(); // save empty config to restore default config
         }
         void init_comsrv()
         {

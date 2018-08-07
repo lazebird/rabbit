@@ -116,20 +116,27 @@ namespace lazebird.rabbit.rabbit
             tftpd_dirhash.Remove(b);
             curtftpd_dir = -1;  // reset cur index, to avoid problems
         }
-        void tftpd_click(object sender, EventArgs e)
+        void tftpd_click(object sender, EventArgs evt)
         {
-            if (((Button)btnhash["tftpd_btn"]).Text == Language.trans("开始"))
+            try
             {
-                tftpdlog.clear();
-                ((Button)btnhash["tftpd_btn"]).Text = Language.trans("停止");
-                tftpd.start(69, int.Parse(((TextBox)texthash["tftpd_timeout"]).Text), int.Parse(((TextBox)texthash["tftpd_retry"]).Text));
+                if (((Button)btnhash["tftpd_btn"]).Text == Language.trans("开始"))
+                {
+                    tftpdlog.clear();
+                    ((Button)btnhash["tftpd_btn"]).Text = Language.trans("停止");
+                    tftpd.start(69, int.Parse(((TextBox)texthash["tftpd_timeout"]).Text), int.Parse(((TextBox)texthash["tftpd_retry"]).Text));
+                }
+                else
+                {
+                    ((Button)btnhash["tftpd_btn"]).Text = Language.trans("开始");
+                    tftpd.stop();
+                }
+                saveconf();
             }
-            else
+            catch (Exception e)
             {
-                ((Button)btnhash["tftpd_btn"]).Text = Language.trans("开始");
-                tftpd.stop();
+                tftpd_log_func(0, "!E: " + e.ToString());
             }
-            saveconf();
         }
         void tftpd_readconf()
         {
