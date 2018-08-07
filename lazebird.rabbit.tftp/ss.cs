@@ -87,7 +87,7 @@ namespace lazebird.rabbit.tftp
             int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
             long curlen = (maxblkno == blkno) ? filesize : (blksize * blkno);
             string msg = "I: " + r.ToString() + " " + filename + " ";
-            if (maxblkno == blkno)
+            if (maxblkno != 0 && maxblkno == blkno)
             {
                 msg += filesize.ToString("###,###") + "B" + "/" + deltatm.ToString("###,###.0") + "s ";
             }
