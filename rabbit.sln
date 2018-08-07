@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.shell", "la
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.plan", "lazebird.rabbit.plan\lazebird.rabbit.plan.csproj", "{AB2E0B0B-54CE-4F5E-B24F-319D1E3F1C9F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.chat", "lazebird.rabbit.chat\lazebird.rabbit.chat.csproj", "{F0AA2F5F-8548-4814-BE83-FFDED999202A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +123,14 @@ Global
 		{AB2E0B0B-54CE-4F5E-B24F-319D1E3F1C9F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AB2E0B0B-54CE-4F5E-B24F-319D1E3F1C9F}.Release|x64.ActiveCfg = Release|Any CPU
 		{AB2E0B0B-54CE-4F5E-B24F-319D1E3F1C9F}.Release|x64.Build.0 = Release|Any CPU
+		{F0AA2F5F-8548-4814-BE83-FFDED999202A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0AA2F5F-8548-4814-BE83-FFDED999202A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0AA2F5F-8548-4814-BE83-FFDED999202A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F0AA2F5F-8548-4814-BE83-FFDED999202A}.Debug|x64.Build.0 = Debug|Any CPU
+		{F0AA2F5F-8548-4814-BE83-FFDED999202A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0AA2F5F-8548-4814-BE83-FFDED999202A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0AA2F5F-8548-4814-BE83-FFDED999202A}.Release|x64.ActiveCfg = Release|Any CPU
+		{F0AA2F5F-8548-4814-BE83-FFDED999202A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
