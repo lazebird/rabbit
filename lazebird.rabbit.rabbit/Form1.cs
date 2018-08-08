@@ -21,6 +21,7 @@ namespace lazebird.rabbit.rabbit
             init_form_tftpd();
             init_form_tftpc();
             init_form_plan();
+            init_form_chat();
             init_form_setting();
             init_hash();
         }

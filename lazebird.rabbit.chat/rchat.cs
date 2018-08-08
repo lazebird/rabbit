@@ -3,34 +3,28 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace lazebird.rabbit.chat
 {
-    class rchat
+    public class rchat
     {
         Action<string> log;
+        Action<IPEndPoint, string> adduser;
         Thread rchatd;
         UdpClient uc;
         string username;
         Hashtable sshash;
-        Hashtable ephash;
-        public rchat(Action<string> log)
+        public rchat(Action<string> log, Action<IPEndPoint, string> adduser)
         {
             this.log = log;
+            this.adduser = adduser;
             username = Environment.UserName + "@" + Environment.MachineName;
             sshash = new Hashtable();
-            ephash = new Hashtable();
         }
         public void set_name(string name)
         {
             username = name;
-        }
-        void add_user(IPEndPoint ep, string user)
-        {
-            log("!: " + ep.ToString() + user);
-            if (ephash.ContainsKey(ep)) ephash.Remove(ep);
-            ephash.Add(ep, user);
-            // add button here?
         }
         void show_notification(IPEndPoint ep, string user, string msg)
         {
@@ -47,6 +41,7 @@ namespace lazebird.rabbit.chat
                 {
                     rcvBuffer = uc.Receive(ref r);
                     p.parse(rcvBuffer);
+                    log("I: recv pkt type " + p.type);
                     switch (p.type)
                     {
                         case "query":
@@ -55,7 +50,7 @@ namespace lazebird.rabbit.chat
                             uc.SendAsync(buf, buf.Length, r);
                             break;
                         case "query_response":
-                            add_user(r, p.user);
+                            adduser(r, p.user);
                             break;
                         case "notification":
                             show_notification(r, p.user, p.content);
@@ -83,11 +78,21 @@ namespace lazebird.rabbit.chat
             IPEndPoint r = new IPEndPoint(IPAddress.Broadcast, port);
             byte[] buf = p.pack();
             uc.SendAsync(buf, buf.Length, r);
+            log("I: query " + r.ToString());
+        }
+        public void send_notification(int port)
+        {
+            if (uc == null) return;
+            pkt p = new ntf_pkt();
+            IPEndPoint r = new IPEndPoint(IPAddress.Broadcast, port);
+            byte[] buf = p.pack();
+            uc.SendAsync(buf, buf.Length, r);
         }
         public void new_chat(IPEndPoint r, string ruser)
         {
             if (sshash.ContainsKey(r)) return;
             ss s = new ss(log, username, r, ruser);
+            s.start();
             sshash.Add(r, s);
         }
         public void start(int port)
@@ -102,6 +107,10 @@ namespace lazebird.rabbit.chat
             rchatd = null;
             if (uc != null) uc.Dispose();
             uc = null;
+            foreach (ss s in sshash.Values)
+            {
+                s.stop();
+            }
         }
     }
 }

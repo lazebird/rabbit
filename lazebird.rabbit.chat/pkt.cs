@@ -31,7 +31,7 @@ namespace lazebird.rabbit.chat
         }
         public bool parse(byte[] buf)
         {
-            string s = buf.ToString();
+            string s = Encoding.Default.GetString(buf);
             string[] attrs = s.Split(';');
             foreach (string attr in attrs)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -25,15 +26,48 @@ namespace lazebird.rabbit.chat
             this.user = user;
             this.r = r;
             this.ruser = ruser;
-            t = new Thread(session_task);
-            t.IsBackground = true;
-            t.Start();
         }
         void ui_task()
         {
             f = new Form();
+            f.Text = ruser + " " + r.ToString();
+            f.Width = 800;
+            f.Height = 600;
+            f.Load += F_Load;
             Application.Run(f);
         }
+
+        void F_Load(object sender, EventArgs e)
+        {
+            FlowLayoutPanel fp = new FlowLayoutPanel();
+            fp.Width = f.Width;
+            fp.Height = f.Height;
+            f.Controls.Add(fp);
+            Panel p = new Panel();
+            p.Width = f.Width - 10;
+            p.Height = (int)(f.Height * 0.6);
+            p.BackColor = Color.FromArgb(64, 64, 64);
+            fp.Controls.Add(p);
+            TextBox tb = new TextBox();
+            tb.BackColor = Color.Gray;
+            tb.Multiline = true;
+            tb.WordWrap = true;
+            tb.Width = f.Width - 10;
+            tb.Height = (int)(f.Height * 0.4);
+            tb.KeyDown += Tb_KeyDown;
+            fp.Controls.Add(tb);
+        }
+
+         void Tb_KeyDown(object sender, KeyEventArgs e)
+        {
+            TextBox tb = (TextBox)sender;
+            if (e.KeyData == (Keys.Control | Keys.Enter))
+            {
+                send_message(tb.Text);
+                tb.Text = ""; 
+            }
+        }
+
         void session_task()
         {
             try
@@ -42,6 +76,7 @@ namespace lazebird.rabbit.chat
                 t_ui.IsBackground = true;
                 t_ui.Start();
                 uc = new UdpClient();
+                uc.Connect(r);
                 byte[] rcvBuffer;
                 pkt p = new pkt();
                 while (true)
@@ -53,7 +88,7 @@ namespace lazebird.rabbit.chat
             }
             catch (Exception e)
             {
-                log("!E: daemon " + e.ToString());
+                log("!E: session " + e.ToString());
             }
         }
         void show_message(string msg)
@@ -84,6 +119,20 @@ namespace lazebird.rabbit.chat
             uc.SendAsync(buf, buf.Length, r);
             message m = new message(user, msg);
             msglst.Add(m);
+        }
+        public void start()
+        {
+            t = new Thread(session_task);
+            t.IsBackground = true;
+            t.Start();
+            log("I: session task started");
+        }
+        public void stop()
+        {
+            if (t != null) t.Abort();
+            t = null;
+            if (t_ui != null) t_ui.Abort();
+            t_ui = null;
         }
     }
 }

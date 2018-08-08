@@ -119,7 +119,7 @@ namespace lazebird.rabbit.rabbit
             }
             TextBox tb = new TextBox();
             tb.ReadOnly = true;
-            tb.BackColor = Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            tb.BackColor = Color.FromArgb(64, 64, 64);
             tb.BorderStyle = BorderStyle.None;
             tb.ForeColor = Color.White;
             tb.Text = p;
