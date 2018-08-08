@@ -10,12 +10,13 @@ namespace lazebird.rabbit.chat
         DateTime timestamp;
         int status;
         TextBox tb;
-        public message(string user, string content, TextBox tb)
+        public message(string user, string content)
         {
             this.user = user;
             this.content = content;
             timestamp = DateTime.Now;
-            this.tb = tb;
+            this.tb = new TextBox();
+            show();
         }
         public void set_status(int status)
         {

@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="rchat.cs" />
     <Compile Include="message.cs" />
     <Compile Include="message_response_pkt.cs" />
     <Compile Include="message_pkt.cs" />
