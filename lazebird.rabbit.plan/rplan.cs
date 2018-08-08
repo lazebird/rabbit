@@ -170,7 +170,7 @@ namespace lazebird.rabbit.plan
         {
             if (t != null) t.Abort();
             t = null;
-            if (t_ui != null) t.Abort();
+            if (t_ui != null) t_ui.Abort();
             t_ui = null;
         }
         public static List<string> cycleunitlist()
