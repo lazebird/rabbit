@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace lazebird.rabbit.chat
 {
-    public class rchat
+    public class rchat : IDisposable
     {
         Action<string> log;
         Action<IPEndPoint, string> adduser;
@@ -24,10 +24,13 @@ namespace lazebird.rabbit.chat
         }
         public void set_name(string name)
         {
+            if (string.IsNullOrEmpty(name)) return;
             username = name;
+            log("I: set name to " + username);
         }
         void show_notification(IPEndPoint ep, string user, string msg)
         {
+            MessageBox.Show(msg, user + " " + ep.ToString());
         }
         void server_task(int port)
         {
@@ -83,7 +86,7 @@ namespace lazebird.rabbit.chat
         public void send_notification(int port)
         {
             if (uc == null) return;
-            pkt p = new ntf_pkt();
+            pkt p = new ntf_pkt(username, "test");
             IPEndPoint r = new IPEndPoint(IPAddress.Broadcast, port);
             byte[] buf = p.pack();
             uc.SendAsync(buf, buf.Length, r);
@@ -103,14 +106,23 @@ namespace lazebird.rabbit.chat
         }
         public void stop()
         {
+            Dispose();
+        }
+        protected virtual void Dispose(bool disposing)
+        {
             if (rchatd != null) rchatd.Abort();
             rchatd = null;
             if (uc != null) uc.Dispose();
             uc = null;
             foreach (ss s in sshash.Values)
             {
-                s.stop();
+                s.destroy();
             }
+            if (!disposing) return;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace lazebird.rabbit.chat
 {
-    class ss
+    class ss : IDisposable
     {
         Action<string> log;
         public UdpClient uc;
@@ -16,16 +16,20 @@ namespace lazebird.rabbit.chat
         string user;
         string ruser;
         ArrayList msglst;
-        Thread t;
         Thread t_ui;
+        Thread t_com;
         Form f;
         Hashtable pkthash;
+        Panel p;
         public ss(Action<string> log, string user, IPEndPoint r, string ruser)
         {
             this.log = log;
             this.user = user;
             this.r = r;
             this.ruser = ruser;
+            uc = new UdpClient(r);
+            msglst = new ArrayList();
+            pkthash = new Hashtable();
         }
         void ui_task()
         {
@@ -43,13 +47,15 @@ namespace lazebird.rabbit.chat
             fp.Width = f.Width;
             fp.Height = f.Height;
             f.Controls.Add(fp);
-            Panel p = new Panel();
+            p = new Panel();
             p.Width = f.Width - 10;
             p.Height = (int)(f.Height * 0.6);
             p.BackColor = Color.FromArgb(64, 64, 64);
             fp.Controls.Add(p);
             TextBox tb = new TextBox();
+            tb.BorderStyle = BorderStyle.None;
             tb.BackColor = Color.Gray;
+            tb.ForeColor = Color.White;
             tb.Multiline = true;
             tb.WordWrap = true;
             tb.Width = f.Width - 10;
@@ -58,25 +64,24 @@ namespace lazebird.rabbit.chat
             fp.Controls.Add(tb);
         }
 
-         void Tb_KeyDown(object sender, KeyEventArgs e)
+        void Tb_KeyDown(object sender, KeyEventArgs e)
         {
             TextBox tb = (TextBox)sender;
             if (e.KeyData == (Keys.Control | Keys.Enter))
             {
-                send_message(tb.Text);
-                tb.Text = ""; 
+                write_msg(tb.Text);
+                tb.Text = "";
+            }
+            else if (e.KeyData == Keys.Escape)
+            {
+                f.Close();
             }
         }
 
-        void session_task()
+        void com_task()
         {
             try
             {
-                t_ui = new Thread(ui_task);
-                t_ui.IsBackground = true;
-                t_ui.Start();
-                uc = new UdpClient();
-                uc.Connect(r);
                 byte[] rcvBuffer;
                 pkt p = new pkt();
                 while (true)
@@ -91,18 +96,47 @@ namespace lazebird.rabbit.chat
                 log("!E: session " + e.ToString());
             }
         }
-        void show_message(string msg)
+        void start_com_task()
         {
-            message m = new message(ruser, msg);
-            m.show();
+            if (t_com != null) return;
+            t_com = new Thread(com_task);
+            t_com.IsBackground = true;
+            t_com.Start();
+        }
+        void add_msg(string owner, string msg)
+        {
+            if (f.InvokeRequired)
+            {
+                f.Invoke(new MethodInvoker(delegate { add_msg(owner, msg); }));
+                return;
+            }
+            message m = new message(owner, msg);
+            TextBox tb = new TextBox();
+            tb.Location = new Point(5, 25 * msglst.Count);
+            tb.Width = p.Width - 20;
+            tb.BorderStyle = BorderStyle.None;
+            tb.BackColor = p.BackColor;
+            tb.ForeColor = Color.White;
+            if (owner == user) tb.TextAlign = HorizontalAlignment.Right;
+            p.Controls.Add(tb);
+            tb.Text = msg;
             msglst.Add(m);
+        }
+        void read_msg(string pktid, string msg)
+        {
+            pkt pkt = new message_response_pkt(user, pktid);
+            byte[] buf = pkt.pack();
+            uc.SendAsync(buf, buf.Length, r);
+            add_msg(ruser, msg);
+            start_com_task();
+            log("I: read msg " + msg);
         }
         public bool pkt_proc(pkt p)
         {
             switch (p.type)
             {
                 case "message":
-                    show_message(p.content);
+                    read_msg(p.id, p.content);
                     break;
                 case "message_response":
                     break;
@@ -112,27 +146,46 @@ namespace lazebird.rabbit.chat
             return true;
         }
         int pktid = 0;
-        void send_message(string msg)
+        void write_msg(string msg)
         {
-            pkt p = new message_pkt(user, (++pktid).ToString(), msg);
-            byte[] buf = p.pack();
+            pkt pkt = new message_pkt(user, (++pktid).ToString(), msg);
+            byte[] buf = pkt.pack();
             uc.SendAsync(buf, buf.Length, r);
-            message m = new message(user, msg);
-            msglst.Add(m);
+            add_msg(user, msg);
+            start_com_task();
+            log("I: write msg " + msg);
         }
         public void start()
         {
-            t = new Thread(session_task);
-            t.IsBackground = true;
-            t.Start();
-            log("I: session task started");
+            t_ui = new Thread(ui_task);
+            t_ui.IsBackground = true;
+            t_ui.Start();
         }
-        public void stop()
+        public void destroy()
         {
-            if (t != null) t.Abort();
-            t = null;
+            if (t_com != null) t_com.Abort();
+            t_com = null;
             if (t_ui != null) t_ui.Abort();
             t_ui = null;
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (t_com != null) t_com.Abort();
+            t_com = null;
+            if (t_ui != null) t_ui.Abort();
+            t_ui = null;
+            if (uc != null) uc.Dispose();
+            uc = null;
+            if (!disposing) return;
+            if (msglst != null) msglst.Clear();
+            if (f != null) f.Dispose();
+            f = null;
+            if (p != null) p.Dispose();
+            p = null;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

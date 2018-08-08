@@ -24,11 +24,15 @@ namespace lazebird.rabbit.rabbit
             btn_chat.Click += chat_click;
             btn_chatrefresh.Click += chat_refresh_click;
             btn_chatntf.Click += chat_notify_click;
-            btn_chat.PerformClick();
+            text_chatname.LostFocus += chat_name_change;
         }
         void chat_log_func(string msg)
         {
             chatlog.write(msg);
+        }
+        void chat_name_change(object sender, EventArgs e)
+        {
+            chat.set_name(text_chatname.Text);
         }
         void chat_click(object sender, EventArgs e)
         {
@@ -74,6 +78,9 @@ namespace lazebird.rabbit.rabbit
         }
         void chat_refresh_click(object sender, EventArgs e)
         {
+            fp_chat.Controls.Clear();
+            chatephash.Clear();
+            chatbtnhash.Clear();
             chat.send_query(1314);
         }
         void chat_notify_click(object sender, EventArgs e)
@@ -82,10 +89,14 @@ namespace lazebird.rabbit.rabbit
         }
         void chat_readconf()
         {
+            btn_chat.PerformClick();
+            text_chatname.Text = rconf.get("chatname");
+            chat.set_name(text_chatname.Text);
         }
         void chat_saveconf()
         {
             if (onloading) return;
+            rconf.set("chatname", text_chatname.Text);
         }
     }
 }

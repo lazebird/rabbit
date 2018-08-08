@@ -322,5 +322,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["systray"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string chatname {
+            get {
+                return ((string)(this["chatname"]));
+            }
+            set {
+                this["chatname"] = value;
+            }
+        }
     }
 }

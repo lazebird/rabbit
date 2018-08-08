@@ -106,6 +106,7 @@ namespace lazebird.rabbit.rabbit
             httpd_readconf();
             tftpd_readconf();
             plan_readconf();
+            chat_readconf();
         }
         void saveconf()
         {
@@ -128,6 +129,7 @@ namespace lazebird.rabbit.rabbit
             httpd_saveconf();
             tftpd_saveconf();
             plan_saveconf();
+            chat_saveconf();
         }
     }
 }

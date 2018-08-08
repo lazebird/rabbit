@@ -27,6 +27,8 @@
             tftpd.Dispose();
             tftpdlog.Dispose();
             planlog.Dispose();
+            chat.Dispose();
+            chatlog.Dispose();
         }
 
         #region Windows 窗体设计器生成的代码
