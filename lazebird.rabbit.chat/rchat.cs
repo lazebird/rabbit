@@ -14,19 +14,19 @@ namespace lazebird.rabbit.chat
         Thread rchatd;
         UdpClient uc;
         string username;
-        Hashtable sshash;
+        Hashtable chathash;
         public rchat(Action<string> log, Action<IPEndPoint, string> adduser)
         {
             this.log = log;
             this.adduser = adduser;
             username = Environment.UserName + "@" + Environment.MachineName;
-            sshash = new Hashtable();
+            chathash = new Hashtable();
         }
         public void set_name(string name)
         {
             if (string.IsNullOrEmpty(name)) return;
             username = name;
-            log("I: set name to " + username);
+            log("I: set name " + username);
         }
         void show_notification(IPEndPoint ep, string user, string msg)
         {
@@ -59,10 +59,12 @@ namespace lazebird.rabbit.chat
                             show_notification(r, p.user, p.content);
                             break;
                         case "message":
-                            if (sshash.ContainsKey(r)) break;
-                            ss s = new ss(log, username, r, p.user);
-                            s.pkt_proc(p);
-                            sshash.Add(r, s);
+                            if (chathash.ContainsKey(r)) break;
+                            rchatform s = new rchatform(log, username, p, r);
+                            Thread t = new Thread(() => Application.Run(s));
+                            t.IsBackground = true;
+                            t.Start();
+                            chathash.Add(r, t);
                             break;
                         default:
                             break;
@@ -93,10 +95,12 @@ namespace lazebird.rabbit.chat
         }
         public void new_chat(IPEndPoint r, string ruser)
         {
-            if (sshash.ContainsKey(r)) return;
-            ss s = new ss(log, username, r, ruser);
-            s.start();
-            sshash.Add(r, s);
+            if (chathash.ContainsKey(r)) return;
+            rchatform s = new rchatform(log, username, ruser, r);
+            Thread t = new Thread(() => Application.Run(s));
+            t.IsBackground = true;
+            t.Start();
+            chathash.Add(r, t);
         }
         public void start(int port)
         {
@@ -114,11 +118,11 @@ namespace lazebird.rabbit.chat
             rchatd = null;
             if (uc != null) uc.Dispose();
             uc = null;
-            foreach (ss s in sshash.Values)
-            {
-                s.destroy();
-            }
             if (!disposing) return;
+            foreach (Thread t in chathash.Values)
+            {
+                t.Abort();
+            }
         }
         public void Dispose()
         {

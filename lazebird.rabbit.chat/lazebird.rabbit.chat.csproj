@@ -42,6 +42,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="rchatform.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="rchatform.Designer.cs">
+      <DependentUpon>rchatform.cs</DependentUpon>
+    </Compile>
     <Compile Include="rchat.cs" />
     <Compile Include="message.cs" />
     <Compile Include="message_response_pkt.cs" />
@@ -52,6 +58,11 @@
     <Compile Include="query_response_pkt.cs" />
     <Compile Include="query_pkt.cs" />
     <Compile Include="ss.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="rchatform.resx">
+      <DependentUpon>rchatform.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

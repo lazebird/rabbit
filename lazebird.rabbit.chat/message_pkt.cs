@@ -1,6 +1,6 @@
 ﻿namespace lazebird.rabbit.chat
 {
-    class message_pkt:pkt
+    public class message_pkt:pkt
     {
         public message_pkt(string user, string id, string content)
         {
