@@ -54,6 +54,7 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("mime", mime);
             cfg.Add("plans", DateTime.Now + "|45|minute|Have a rest!;");
             cfg.Add("systray", "false");
+            cfg.Add("chatname", Environment.UserName + "@" + Environment.MachineName);
             return String.IsNullOrEmpty((string)cfg[key]) ? "" : (string)cfg[key];
         }
 

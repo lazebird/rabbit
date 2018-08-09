@@ -89,9 +89,9 @@ namespace lazebird.rabbit.rabbit
         }
         void chat_readconf()
         {
-            btn_chat.PerformClick();
             text_chatname.Text = rconf.get("chatname");
             chat.set_name(text_chatname.Text);
+            btn_chat.PerformClick();
         }
         void chat_saveconf()
         {
