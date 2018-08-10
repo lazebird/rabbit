@@ -94,9 +94,9 @@ namespace lazebird.rabbit.chat
             t.Start();
             chathash.Add(r, t);
         }
-        public void new_notification(int port)
+        public void new_notification(string ip, int port)
         {
-            rntfform f = new rntfform(log, username, port);
+            rntfform f = new rntfform(log, username, ip, port);
             Thread t = new Thread(() => Application.Run(f));
             t.IsBackground = true;
             t.Start();

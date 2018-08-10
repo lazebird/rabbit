@@ -107,6 +107,7 @@
             this.btn_planadd = new System.Windows.Forms.Button();
             this.plan_output = new System.Windows.Forms.ListBox();
             this.CHAT = new System.Windows.Forms.TabPage();
+            this.text_chatntf = new System.Windows.Forms.TextBox();
             this.text_chatname = new System.Windows.Forms.TextBox();
             this.btn_chat = new System.Windows.Forms.Button();
             this.btn_chatrefresh = new System.Windows.Forms.Button();
@@ -692,6 +693,7 @@
             // 
             resources.ApplyResources(this.CHAT, "CHAT");
             this.CHAT.BackColor = System.Drawing.Color.DimGray;
+            this.CHAT.Controls.Add(this.text_chatntf);
             this.CHAT.Controls.Add(this.text_chatname);
             this.CHAT.Controls.Add(this.btn_chat);
             this.CHAT.Controls.Add(this.btn_chatrefresh);
@@ -700,6 +702,11 @@
             this.CHAT.Controls.Add(this.chat_output);
             this.CHAT.ForeColor = System.Drawing.Color.White;
             this.CHAT.Name = "CHAT";
+            // 
+            // tb_chatntf
+            // 
+            resources.ApplyResources(this.text_chatntf, "tb_chatntf");
+            this.text_chatntf.Name = "tb_chatntf";
             // 
             // text_chatname
             // 
@@ -942,6 +949,7 @@
         private System.Windows.Forms.Button btn_chatrefresh;
         private System.Windows.Forms.Button btn_chat;
         private System.Windows.Forms.TextBox text_chatname;
+        private System.Windows.Forms.TextBox text_chatntf;
     }
 }
 

@@ -170,7 +170,7 @@
     <value>开始</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>741, 397</value>
+    <value>741, 405</value>
   </data>
   <data name="label_http_port.Text" xml:space="preserve">
     <value>端口</value>
@@ -179,10 +179,10 @@
     <value>开始</value>
   </data>
   <data name="fp_httpd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>739, 296</value>
+    <value>739, 304</value>
   </data>
   <data name="httpd_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 349</value>
+    <value>10, 357</value>
   </data>
   <data name="httpd_output.Size" type="System.Drawing.Size, System.Drawing">
     <value>739, 100</value>
@@ -239,16 +239,16 @@
     <value>10, 9</value>
   </data>
   <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>741, 260</value>
+    <value>741, 268</value>
   </data>
   <data name="dt1_plan.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 278</value>
+    <value>10, 286</value>
   </data>
   <data name="dt2_plan.Location" type="System.Drawing.Point, System.Drawing">
-    <value>142, 278</value>
+    <value>142, 286</value>
   </data>
   <data name="label_plancycle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>221, 281</value>
+    <value>221, 289</value>
   </data>
   <data name="label_plancycle.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 20</value>
@@ -257,22 +257,22 @@
     <value>重复 /</value>
   </data>
   <data name="text_plancycle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>274, 278</value>
+    <value>274, 286</value>
   </data>
   <data name="cb_planunit.Location" type="System.Drawing.Point, System.Drawing">
-    <value>329, 278</value>
+    <value>329, 286</value>
   </data>
   <data name="text_planmsg.Location" type="System.Drawing.Point, System.Drawing">
-    <value>414, 278</value>
+    <value>414, 286</value>
   </data>
   <data name="btn_plandel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>696, 278</value>
+    <value>696, 286</value>
   </data>
   <data name="btn_planadd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>728, 286</value>
+    <value>728, 294</value>
   </data>
   <data name="plan_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 318</value>
+    <value>10, 326</value>
   </data>
   <data name="btn_chat.Text" xml:space="preserve">
     <value>开始</value>
@@ -284,13 +284,10 @@
     <value>通知</value>
   </data>
   <data name="fp_chat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>741, 259</value>
+    <value>741, 267</value>
   </data>
   <data name="chat_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 317</value>
-  </data>
-  <data name="chat_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>741, 120</value>
+    <value>10, 325</value>
   </data>
   <data name="label_lang.Size" type="System.Drawing.Size, System.Drawing">
     <value>37, 20</value>

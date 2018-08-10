@@ -86,7 +86,7 @@ namespace lazebird.rabbit.rabbit
         }
         void chat_notify_click(object sender, EventArgs e)
         {
-            chat.new_notification(1314);
+            chat.new_notification(text_chatntf.Text, 1314);
         }
         void chat_delay_init()
         {
@@ -98,6 +98,7 @@ namespace lazebird.rabbit.rabbit
         {
             text_chatname.Text = rconf.get("chatname");
             chat.set_name(text_chatname.Text);
+            text_chatntf.Text = "255.255.255.255";
             new Thread(chat_delay_init).Start();
         }
         void chat_saveconf()
