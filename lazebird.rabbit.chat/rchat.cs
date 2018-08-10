@@ -85,22 +85,21 @@ namespace lazebird.rabbit.chat
             uc.SendAsync(buf, buf.Length, r);
             log("I: query " + r.ToString());
         }
-        public void send_notification(int port)
-        {
-            if (uc == null) return;
-            pkt p = new ntf_pkt(username, "test");
-            IPEndPoint r = new IPEndPoint(IPAddress.Broadcast, port);
-            byte[] buf = p.pack();
-            uc.SendAsync(buf, buf.Length, r);
-        }
         public void new_chat(IPEndPoint r, string ruser)
         {
             if (chathash.ContainsKey(r)) return;
-            rchatform s = new rchatform(log, username, ruser, r);
-            Thread t = new Thread(() => Application.Run(s));
+            rchatform f = new rchatform(log, username, ruser, r);
+            Thread t = new Thread(() => Application.Run(f));
             t.IsBackground = true;
             t.Start();
             chathash.Add(r, t);
+        }
+        public void new_notification(int port)
+        {
+            rntfform f = new rntfform(log, username, port);
+            Thread t = new Thread(() => Application.Run(f));
+            t.IsBackground = true;
+            t.Start();
         }
         public void start(int port)
         {

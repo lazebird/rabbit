@@ -22,7 +22,7 @@ namespace lazebird.rabbit.chat
                     user = val;
                     break;
                 case "content":
-                    content = val;
+                    content = decode(val);
                     break;
                 default:
                     return false;
@@ -48,8 +48,20 @@ namespace lazebird.rabbit.chat
             s += "type=" + type + ";";
             if (!string.IsNullOrEmpty(user)) s += "user=" + user + ";";
             if (!string.IsNullOrEmpty(id)) s += "id=" + id + ";";
-            if (!string.IsNullOrEmpty(content)) s += "content=" + content + ";";
+            if (!string.IsNullOrEmpty(content)) s += "content=" + encode(content) + ";";
             return Encoding.Default.GetBytes(s);
+        }
+        string decode(string src)
+        {
+            src = src.Replace("\\####", "=");
+            src = src.Replace("\\###", ";");
+            return src;
+        }
+        string encode(string src)
+        {
+            src = src.Replace("=", "\\####");
+            src = src.Replace(";", "\\###");
+            return src;
         }
     }
 }

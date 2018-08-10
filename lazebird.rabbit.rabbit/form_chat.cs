@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Drawing;
 using System.Net;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace lazebird.rabbit.rabbit
@@ -85,13 +86,19 @@ namespace lazebird.rabbit.rabbit
         }
         void chat_notify_click(object sender, EventArgs e)
         {
-            chat.send_notification(1314);
+            chat.new_notification(1314);
+        }
+        void chat_delay_init()
+        {
+            btn_chat.PerformClick();
+            Thread.Sleep(500);
+            btn_chatrefresh.PerformClick();
         }
         void chat_readconf()
         {
             text_chatname.Text = rconf.get("chatname");
             chat.set_name(text_chatname.Text);
-            btn_chat.PerformClick();
+            new Thread(chat_delay_init).Start();
         }
         void chat_saveconf()
         {

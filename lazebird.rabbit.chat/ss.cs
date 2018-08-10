@@ -77,25 +77,25 @@ namespace lazebird.rabbit.chat
         int pktid = 0;
         void read_msg(string pktid, string msg)
         {
-            pkt pkt = new message_response_pkt(luser, pktid);
-            byte[] buf = pkt.pack();
-            uc.SendAsync(buf, buf.Length, r);
             message m = new message(ruser, msg);
             msglst.Add(m);
             show_msg(false, m, msglst.Count);
-            start_com_task();
             log("I: read_msg " + msg + " count " + msglst.Count);
+            pkt pkt = new message_response_pkt(luser, pktid);
+            byte[] buf = pkt.pack();
+            uc.SendAsync(buf, buf.Length, r);
+            start_com_task();
         }
         public void write_msg(string msg)
         {
-            pkt pkt = new message_pkt(luser, (++pktid).ToString(), msg);
-            byte[] buf = pkt.pack();
-            uc.SendAsync(buf, buf.Length, r);
             message m = new message(luser, msg);
             msglst.Add(m);
             show_msg(true, m, msglst.Count);
-            start_com_task();
             log("I: write_msg " + msg + " count " + msglst.Count);
+            pkt pkt = new message_pkt(luser, (++pktid).ToString(), msg);
+            byte[] buf = pkt.pack();
+            uc.SendAsync(buf, buf.Length, r);
+            start_com_task();
         }
         public void log2txt(string logpath)
         {

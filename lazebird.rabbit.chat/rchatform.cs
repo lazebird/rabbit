@@ -33,13 +33,13 @@ namespace lazebird.rabbit.chat
         }
         void init_form()
         {
+            this.Resize += msg_resize;
             pa_chat.DoubleClick += msg_save_click;
             rtb_chat.KeyUp += msg_key_press;
         }
-        SaveFileDialog fd;
         void msg_save_click(object sender, EventArgs e)
         {
-            fd = new SaveFileDialog();
+            SaveFileDialog fd = new SaveFileDialog();
             fd.Title = "Select a file to save";
             fd.Filter = "文本文件 (*.txt)|*.txt|All files (*.*)|*.*";
             fd.CreatePrompt = true;
@@ -69,6 +69,18 @@ namespace lazebird.rabbit.chat
                 Close();
             }
         }
+        int pa_chat_gap = 30;
+        int tb_chat_gap = 12;
+        void msg_resize(object sender, EventArgs e)
+        {
+            pa_chat.Width = Width - pa_chat_gap;
+            foreach (RichTextBox tb in mhash.Values) tb.Width = pa_chat.Width - tb_chat_gap;
+            log("I: form width " + Width + " fp width " + pa_chat.Width + " tb width " + (pa_chat.Width - tb_chat_gap));
+        }
+        void rtb_ContentsResized(object sender, ContentsResizedEventArgs e)
+        {
+            ((RichTextBox)sender).Height = e.NewRectangle.Height + 5;
+        }
         void show_msg(bool self, message m, int count)
         {
             if (InvokeRequired)
@@ -76,25 +88,28 @@ namespace lazebird.rabbit.chat
                 Invoke(new MethodInvoker(delegate { show_msg(self, m, count); }));
                 return;
             }
-            TextBox tb;
+            RichTextBox rtb;
             if (mhash.ContainsKey(m))
             {
-                tb = (TextBox)mhash[m];
+                rtb = (RichTextBox)mhash[m];
             }
             else
             {
-                tb = new TextBox();
-                tb.Location = new Point(5, 25 * count);
-                tb.Width = pa_chat.Width - 20;
-                tb.Font = new Font(tb.Font.FontFamily, 12, tb.Font.Style);
-                tb.BorderStyle = BorderStyle.None;
-                tb.BackColor = pa_chat.BackColor;
-                tb.ForeColor = Color.White;
-                if (self) tb.TextAlign = HorizontalAlignment.Right;
-                pa_chat.Controls.Add(tb);
-                mhash.Add(m, tb);
+                rtb = new RichTextBox();
+                rtb.Width = pa_chat.Width - tb_chat_gap;
+                rtb.WordWrap = true;
+                rtb.ContentsResized += rtb_ContentsResized;
+                rtb.Font = new Font(rtb.Font.FontFamily, 12, rtb.Font.Style);
+                rtb.BorderStyle = BorderStyle.None;
+                rtb.BackColor = pa_chat.BackColor;
+                rtb.ForeColor = Color.White;
+                rtb.Dock = DockStyle.Top;    // auto add behind pevious tb
+                pa_chat.Controls.Add(rtb);
+                pa_chat.Controls.SetChildIndex(rtb, 0);
+                pa_chat.ScrollControlIntoView(rtb);
+                mhash.Add(m, rtb);
             }
-            tb.Text = m.toshortstring();
+            rtb.Text = m.ToString();
         }
         void del_msg(message m)
         {
@@ -103,10 +118,10 @@ namespace lazebird.rabbit.chat
                 Invoke(new MethodInvoker(delegate { del_msg(m); }));
                 return;
             }
-            TextBox tb;
+            RichTextBox tb;
             if (mhash.ContainsKey(m))
             {
-                tb = (TextBox)mhash[m];
+                tb = (RichTextBox)mhash[m];
                 pa_chat.Controls.Remove(tb);
                 mhash.Remove(m);
             }

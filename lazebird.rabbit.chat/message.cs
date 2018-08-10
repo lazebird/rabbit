@@ -20,7 +20,7 @@ namespace lazebird.rabbit.chat
         }
         public override string ToString()
         {
-            return user + " " + timestamp.ToString() + " " + content + (sentfail ? " !" : "");
+            return user + " " + timestamp.ToString() + ":\r\n" + content + (sentfail ? " !" : "");
         }
         public string toshortstring()
         {
