@@ -112,7 +112,7 @@ namespace lazebird.rabbit.tftp
         protected virtual void Dispose(bool disposing)
         {
             if (q != null) q.Dispose();
-            if (uc != null) uc.Dispose();
+            if (uc != null) uc.Close();
             q = null;
             uc = null;
             if (!disposing) return;

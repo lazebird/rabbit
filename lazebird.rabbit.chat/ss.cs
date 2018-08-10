@@ -116,7 +116,7 @@ namespace lazebird.rabbit.chat
         {
             if (t_com != null) t_com.Abort();
             t_com = null;
-            if (uc != null) uc.Dispose();
+            if (uc != null) uc.Close();
             uc = null;
             if (!disposing) return;
             if (msglst != null) msglst.Clear();
