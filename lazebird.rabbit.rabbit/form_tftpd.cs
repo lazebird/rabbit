@@ -16,8 +16,9 @@ namespace lazebird.rabbit.rabbit
         int curtftpd_dir = -1;
         ArrayList tftpd_dirs;
         Timer tftpd_tmr;
-        Button lastclicked = null;  // donot support two different dir clicked at the same time
+        TextBox lastclicked = null;  // donot support two different dir clicked at the same time
         string lasttftpddir = Environment.CurrentDirectory;
+        int tftpd_dirlen;
         void init_form_tftpd()
         {
             tftpd_dirs = new ArrayList();
@@ -36,38 +37,37 @@ namespace lazebird.rabbit.rabbit
         {
             return tftpdlog.write(id, msg);
         }
-        int tftpd_dir_len = 10; // max 10 charactors shown in dir button
-        void tftpd_set_dir(Button b, string path)
+        void tftpd_set_dir(TextBox b, string path)
         {
             path = Path.GetFullPath(path);
-            b.Text = (path.Length <= tftpd_dir_len) ? path : ("~" + path.Substring(path.Length - tftpd_dir_len + 1));
+            b.Text = path;
             if (tftpd_dirhash.ContainsKey(b)) tftpd_dirhash.Remove(b);
             tftpd_dirhash.Add(b, path);
         }
-        void tftpd_set_active(Button b)
+        void tftpd_set_active(TextBox tb)
         {
-            int newidx = tftpd_dirs.IndexOf(b);
+            int newidx = tftpd_dirs.IndexOf(tb);
             if (newidx != curtftpd_dir && curtftpd_dir >= 0)
             {
-                Button old = (Button)tftpd_dirs[curtftpd_dir];
-                old.BackColor = Color.FromArgb(64, 64, 64);
+                TextBox old = (TextBox)tftpd_dirs[curtftpd_dir];
+                old.BackColor = tftpd_fp.BackColor;
             }
-            b.BackColor = Color.YellowGreen;
+            tb.BackColor = Color.YellowGreen;
             curtftpd_dir = newidx;
-            tftpd.set_cwd((string)tftpd_dirhash[b]);
+            tftpd.set_cwd((string)tftpd_dirhash[tb]);
             saveconf();
             //tftpd_log_func(0, "I: Activate " + tftpd_dirhash[b]);
         }
-        void tftpd_dir_select(Button b)
+        void tftpd_dir_select(TextBox tb)
         {
             SaveFileDialog dialog = new SaveFileDialog();
-            dialog.InitialDirectory = (string)tftpd_dirhash[b];
+            dialog.InitialDirectory = (string)tftpd_dirhash[tb];
             dialog.RestoreDirectory = true;
             dialog.FileName = "Choose Here";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 lasttftpddir = Path.GetDirectoryName(dialog.FileName);
-                tftpd_set_dir(b, lasttftpddir);
+                tftpd_set_dir(tb, lasttftpddir);
             }
         }
         void tftpd_dir_click(object sender, MouseEventArgs e)
@@ -75,12 +75,12 @@ namespace lazebird.rabbit.rabbit
             if (tftpd_tmr.Enabled)  // double click
             {
                 tftpd_tmr.Stop();
-                tftpd_dir_select((Button)sender);
-                tftpd_set_active((Button)sender);    // auto active after select
+                tftpd_dir_select((TextBox)sender);
+                tftpd_set_active((TextBox)sender);    // auto active after select
             }
             else
             {
-                lastclicked = (Button)sender;
+                lastclicked = (TextBox)sender;
                 tftpd_tmr.Start();
             }
         }
@@ -90,18 +90,19 @@ namespace lazebird.rabbit.rabbit
             if (lastclicked == null) return;
             tftpd_set_active(lastclicked);
         }
-        Button tftpd_add_dir()
+        TextBox tftpd_add_dir()
         {
-            Button b = new Button();
-            b.BackColor = Color.FromArgb(64, 64, 64);
-            b.FlatAppearance.BorderSize = 0;
-            b.FlatStyle = FlatStyle.Flat;
-            b.Width = (tftpd_dir_len + 1) << 3;
-            b.MouseDown += tftpd_dir_click;
-            tftpd_fp.Controls.Add(b);
-            tftpd_dirs.Add(b);
-            tftpd_set_dir(b, lasttftpddir);
-            return b;
+            TextBox tb = new TextBox();
+            tb.ReadOnly = true;
+            tb.BackColor = tftpd_fp.BackColor;
+            tb.BorderStyle = BorderStyle.None;
+            tb.ForeColor = Color.White;
+            tb.Width = tftpd_dirlen;
+            tb.MouseDown += tftpd_dir_click;
+            tftpd_fp.Controls.Add(tb);
+            tftpd_dirs.Add(tb);
+            tftpd_set_dir(tb, lasttftpddir);
+            return tb;
         }
         void tftpd_adddir_click(object sender, EventArgs e)
         {
@@ -140,6 +141,7 @@ namespace lazebird.rabbit.rabbit
         }
         void tftpd_readconf()
         {
+            tftpd_dirlen = tftpd_fp.Width - 20;
             string[] dirs = rconf.get("tftpd_dirs").Split(';');
             foreach (string path in dirs)
             {
@@ -148,7 +150,7 @@ namespace lazebird.rabbit.rabbit
             }
             int index = int.Parse(rconf.get("tftpd_dir_index"));
             if (index >= 0 && index < tftpd_dirs.Count)
-                tftpd_set_active((Button)tftpd_dirs[index]);
+                tftpd_set_active((TextBox)tftpd_dirs[index]);
         }
         void tftpd_saveconf()
         {

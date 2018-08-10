@@ -19,6 +19,7 @@ namespace lazebird.rabbit.rabbit
         rlog httpdlog;
         rshell sh;
         Hashtable httpd_phash;
+        int httpdirlen;
         void init_form_http()
         {
             sh = new rshell("Rabbit", Application.ExecutablePath, "Add to Rabbit.http");
@@ -119,12 +120,11 @@ namespace lazebird.rabbit.rabbit
             }
             TextBox tb = new TextBox();
             tb.ReadOnly = true;
-            tb.BackColor = Color.FromArgb(64, 64, 64);
+            tb.BackColor = fp_httpd.BackColor;
             tb.BorderStyle = BorderStyle.None;
             tb.ForeColor = Color.White;
             tb.Text = p;
-            tb.Width = 640;
-            //tb.Anchor = (AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right);
+            tb.Width = httpdirlen;
             tb.DoubleClick += new EventHandler(httpd_dir_click);
             fp_httpd.Controls.Add(tb);
             httpd_phash.Add(tb, p);
@@ -134,6 +134,7 @@ namespace lazebird.rabbit.rabbit
         }
         void httpd_readconf()
         {
+            httpdirlen = fp_httpd.Width - 20;
             string[] paths = rconf.get("http_dirs").Split(';');
             foreach (string path in paths) if (path != "") httpd_add_path(path);
             if (rconf.get("http_auto_index") != "")
