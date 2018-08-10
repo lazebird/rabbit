@@ -80,7 +80,6 @@ namespace lazebird.rabbit.chat
             message m = new message(ruser, msg);
             msglst.Add(m);
             show_msg(false, m, msglst.Count);
-            log("I: read_msg " + msg + " count " + msglst.Count);
             pkt pkt = new message_response_pkt(luser, pktid);
             byte[] buf = pkt.pack();
             uc.SendAsync(buf, buf.Length, r);
@@ -91,7 +90,6 @@ namespace lazebird.rabbit.chat
             message m = new message(luser, msg);
             msglst.Add(m);
             show_msg(true, m, msglst.Count);
-            log("I: write_msg " + msg + " count " + msglst.Count);
             pkt pkt = new message_pkt(luser, (++pktid).ToString(), msg);
             byte[] buf = pkt.pack();
             uc.SendAsync(buf, buf.Length, r);
@@ -100,7 +98,7 @@ namespace lazebird.rabbit.chat
         public void log2txt(string logpath)
         {
             FileStream fs = new FileStream(logpath, FileMode.Create, FileAccess.Write, FileShare.Read);
-            byte[] buf = Encoding.Default.GetBytes(ruser + " & " + luser);
+            byte[] buf = Encoding.Default.GetBytes(ruser + " & " + luser + "\r\n");
             fs.Write(buf, 0, buf.Length);
             foreach (message m in msglst)
             {
