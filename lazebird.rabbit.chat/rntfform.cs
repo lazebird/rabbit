@@ -11,16 +11,14 @@ namespace lazebird.rabbit.chat
     {
         Action<string> log;
         string luser;
-        string ip;
-        int port;
+        IPEndPoint r;
         Hashtable mhash;
-        public rntfform(Action<string> log, string luser, string ip, int port)
+        public rntfform(Action<string> log, string luser, IPEndPoint r)
         {
             InitializeComponent();
             this.log = log;
             this.luser = luser;
-            this.ip = ip;
-            this.port = port;
+            this.r = r;
             mhash = new Hashtable();
             init_form();
         }
@@ -29,14 +27,13 @@ namespace lazebird.rabbit.chat
             this.Resize += msg_resize;
             rtb_chat.KeyUp += msg_key_press;
         }
-        void send_notification(int port, string msg)
+        void send_notification(string msg)
         {
             UdpClient uc_ntf = new UdpClient();
             pkt p = new ntf_pkt(luser, msg);
-            IPEndPoint r = new IPEndPoint(IPAddress.Parse(ip), port);
             byte[] buf = p.pack();
             uc_ntf.SendAsync(buf, buf.Length, r);
-            uc_ntf.Dispose();
+            uc_ntf.Close();
         }
         void msg_key_press(object sender, KeyEventArgs e)
         {
@@ -45,7 +42,7 @@ namespace lazebird.rabbit.chat
             {
                 string s = tb.Text.Trim();
                 if (string.IsNullOrEmpty(s)) return;
-                send_notification(port, s);
+                send_notification(s);
                 show_msg(s);
                 tb.Clear();
             }

@@ -76,14 +76,20 @@ namespace lazebird.rabbit.chat
                 log("!E: daemon " + e.ToString());
             }
         }
-        public void send_query(int port)
+        public void new_query(string ip, int port)
         {
-            if (uc == null) return;
-            pkt p = new query_pkt();
-            IPEndPoint r = new IPEndPoint(IPAddress.Broadcast, port);
-            byte[] buf = p.pack();
-            uc.SendAsync(buf, buf.Length, r);
-            log("I: query " + r.ToString());
+            try
+            {
+                if (uc == null) return;
+                pkt p = new query_pkt();
+                IPEndPoint r = new IPEndPoint(IPAddress.Parse(ip), port);
+                byte[] buf = p.pack();
+                uc.SendAsync(buf, buf.Length, r);
+            }
+            catch (Exception e)
+            {
+                log("!E: " + e.ToString());
+            }
         }
         public void new_chat(IPEndPoint r, string ruser)
         {
@@ -96,10 +102,17 @@ namespace lazebird.rabbit.chat
         }
         public void new_notification(string ip, int port)
         {
-            rntfform f = new rntfform(log, username, ip, port);
-            Thread t = new Thread(() => Application.Run(f));
-            t.IsBackground = true;
-            t.Start();
+            try
+            {
+                rntfform f = new rntfform(log, username, new IPEndPoint(IPAddress.Parse(ip), port));
+                Thread t = new Thread(() => Application.Run(f));
+                t.IsBackground = true;
+                t.Start();
+            }
+            catch (Exception e)
+            {
+                log("!E: " + e.ToString());
+            }
         }
         public void start(int port)
         {
@@ -115,7 +128,7 @@ namespace lazebird.rabbit.chat
         {
             if (rchatd != null) rchatd.Abort();
             rchatd = null;
-            if (uc != null) uc.Dispose();
+            if (uc != null) uc.Close();
             uc = null;
             if (!disposing) return;
             foreach (Thread t in chathash.Values)

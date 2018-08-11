@@ -334,5 +334,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["chatname"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string chatbrdip {
+            get {
+                return ((string)(this["chatbrdip"]));
+            }
+            set {
+                this["chatbrdip"] = value;
+            }
+        }
     }
 }
