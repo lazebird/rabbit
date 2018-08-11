@@ -33,7 +33,10 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="crds.cs" />
     <Compile Include="cwss.cs" />
+    <Compile Include="rdq_pkt.cs" />
+    <Compile Include="srds.cs" />
     <Compile Include="swss.cs" />
     <Compile Include="srss.cs" />
     <Compile Include="err_pkt.cs" />

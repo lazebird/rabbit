@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace lazebird.rabbit.tftp
+﻿namespace lazebird.rabbit.tftp
 {
     class rrq_pkt : pkt
     {

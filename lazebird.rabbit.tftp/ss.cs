@@ -65,6 +65,15 @@ namespace lazebird.rabbit.tftp
             t.IsBackground = true;
             t.Start();
         }
+        public void read_dir(string dirname, ref string dirinfo)
+        {
+            if (!Directory.Exists(cwd + dirname)) return;
+            DirectoryInfo d = new DirectoryInfo(cwd + dirname);
+            dirinfo = "";
+            foreach (FileInfo f in d.GetFiles()) dirinfo += f.Name + ";";
+            this.filename = dirname;
+            this.filesize = dirinfo.Length;
+        }
         virtual public bool pkt_proc(byte[] buf) { return false; }
         public bool retry()
         {
@@ -82,7 +91,7 @@ namespace lazebird.rabbit.tftp
                 logidx = log(logidx, "I: " + r.ToString() + " " + filename + ": " + maxblkno + "/" + blkno + ((curretry == 0) ? "" : (" retry " + curretry)));
             }
         }
-        public void session_display(Func<int, string, int> log)
+        public virtual void session_display(Func<int, string, int> log)
         {
             int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
             long curlen = (maxblkno == blkno) ? filesize : (blksize * blkno);
@@ -104,8 +113,7 @@ namespace lazebird.rabbit.tftp
         public void destroy(Func<int, string, int> log)
         {
             log(-1, "I: Destroy session: " + r.ToString() + " " + cwd + filename);
-            if (q != null)
-                q.stop();
+            if (q != null) q.stop();
             if (t != null) t.Join();
             Dispose(true);
         }

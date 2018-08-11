@@ -34,8 +34,7 @@ namespace lazebird.rabbit.tftp
             {
                 data_pkt pkt = new data_pkt();
                 if (!pkt.parse(buf)) return false;
-                if (pkt.blkno != (blkno & 0xffff))
-                    return true;  // ignore expired data?
+                if (pkt.blkno != (blkno & 0xffff)) return true;  // ignore expired data?
                 filesize += pkt.data.Length;
                 if (pkt.data.Length > 0)
                     while (q.produce(pkt.data) == 0) ; // infinit produce this data

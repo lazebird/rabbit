@@ -37,9 +37,8 @@ namespace lazebird.rabbit.tftp
                 else // ack
                 {
                     ack_pkt pkt = new ack_pkt();
-                    if (pkt.blkno != (blkno & 0xffff))
-                        return true;    // ignore expired ack?
                     if (!pkt.parse(buf)) return false;
+                    if (pkt.blkno != (blkno & 0xffff)) return true;    // ignore expired ack?
                     data = q.consume();  //while ((data = q.consume()) == null) ; // may be infinite wait for a new msg here?
                     pktbuf = new data_pkt(++blkno, data).pack();
                 }

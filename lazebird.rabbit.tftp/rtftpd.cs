@@ -45,6 +45,8 @@ namespace lazebird.rabbit.tftp
                     s = new srss(cwd, new UdpClient(), r, maxretry, timeout);
                 else if ((Opcodes)buf[1] == Opcodes.Write)
                     s = new swss(cwd, new UdpClient(), r, maxretry, timeout);
+                else if ((Opcodes)buf[1] == Opcodes.ReadDir)
+                    s = new srds(cwd, new UdpClient(), r, maxretry, timeout);
                 else
                     return;
                 if (s.pkt_proc(buf))
