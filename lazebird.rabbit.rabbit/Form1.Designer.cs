@@ -141,37 +141,20 @@
             // 
             // toolStripContainer1
             // 
-            resources.ApplyResources(this.toolStripContainer1, "toolStripContainer1");
-            // 
-            // toolStripContainer1.BottomToolStripPanel
-            // 
-            resources.ApplyResources(this.toolStripContainer1.BottomToolStripPanel, "toolStripContainer1.BottomToolStripPanel");
             this.toolStripContainer1.BottomToolStripPanelVisible = false;
             // 
             // toolStripContainer1.ContentPanel
             // 
             resources.ApplyResources(this.toolStripContainer1.ContentPanel, "toolStripContainer1.ContentPanel");
             this.toolStripContainer1.ContentPanel.Controls.Add(this.tabs);
-            // 
-            // toolStripContainer1.LeftToolStripPanel
-            // 
-            resources.ApplyResources(this.toolStripContainer1.LeftToolStripPanel, "toolStripContainer1.LeftToolStripPanel");
+            resources.ApplyResources(this.toolStripContainer1, "toolStripContainer1");
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Name = "toolStripContainer1";
-            // 
-            // toolStripContainer1.RightToolStripPanel
-            // 
-            resources.ApplyResources(this.toolStripContainer1.RightToolStripPanel, "toolStripContainer1.RightToolStripPanel");
             this.toolStripContainer1.RightToolStripPanelVisible = false;
-            // 
-            // toolStripContainer1.TopToolStripPanel
-            // 
-            resources.ApplyResources(this.toolStripContainer1.TopToolStripPanel, "toolStripContainer1.TopToolStripPanel");
             this.toolStripContainer1.TopToolStripPanelVisible = false;
             // 
             // tabs
             // 
-            resources.ApplyResources(this.tabs, "tabs");
             this.tabs.Controls.Add(this.Ping);
             this.tabs.Controls.Add(this.Scan);
             this.tabs.Controls.Add(this.HTTPD);
@@ -180,13 +163,13 @@
             this.tabs.Controls.Add(this.PLAN);
             this.tabs.Controls.Add(this.CHAT);
             this.tabs.Controls.Add(this.Setting);
+            resources.ApplyResources(this.tabs, "tabs");
             this.tabs.Multiline = true;
             this.tabs.Name = "tabs";
             this.tabs.SelectedIndex = 0;
             // 
             // Ping
             // 
-            resources.ApplyResources(this.Ping, "Ping");
             this.Ping.BackColor = System.Drawing.Color.DimGray;
             this.Ping.Controls.Add(this.label_addr);
             this.Ping.Controls.Add(this.text_addr);
@@ -199,6 +182,7 @@
             this.Ping.Controls.Add(this.btn_ping);
             this.Ping.Controls.Add(this.ping_output);
             this.Ping.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.Ping, "Ping");
             this.Ping.Name = "Ping";
             // 
             // label_addr
@@ -245,8 +229,8 @@
             // 
             // btn_ping_log
             // 
-            resources.ApplyResources(this.btn_ping_log, "btn_ping_log");
             this.btn_ping_log.BackColor = System.Drawing.Color.YellowGreen;
+            resources.ApplyResources(this.btn_ping_log, "btn_ping_log");
             this.btn_ping_log.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.btn_ping_log.FlatAppearance.BorderSize = 0;
             this.btn_ping_log.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
@@ -286,7 +270,6 @@
             // 
             // Scan
             // 
-            resources.ApplyResources(this.Scan, "Scan");
             this.Scan.BackColor = System.Drawing.Color.DimGray;
             this.Scan.Controls.Add(this.label_scanip);
             this.Scan.Controls.Add(this.text_scanstart);
@@ -295,6 +278,7 @@
             this.Scan.Controls.Add(this.btn_scan);
             this.Scan.Controls.Add(this.fp_scan);
             this.Scan.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.Scan, "Scan");
             this.Scan.Name = "Scan";
             // 
             // label_scanip
@@ -342,7 +326,6 @@
             // 
             // HTTPD
             // 
-            resources.ApplyResources(this.HTTPD, "HTTPD");
             this.HTTPD.BackColor = System.Drawing.Color.DimGray;
             this.HTTPD.Controls.Add(this.label_http_port);
             this.HTTPD.Controls.Add(this.text_http_port);
@@ -352,6 +335,7 @@
             this.HTTPD.Controls.Add(this.fp_httpd);
             this.HTTPD.Controls.Add(this.httpd_output);
             this.HTTPD.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.HTTPD, "HTTPD");
             this.HTTPD.Name = "HTTPD";
             // 
             // label_http_port
@@ -403,7 +387,6 @@
             // 
             // TFTPD
             // 
-            resources.ApplyResources(this.TFTPD, "TFTPD");
             this.TFTPD.BackColor = System.Drawing.Color.DimGray;
             this.TFTPD.Controls.Add(this.label_tftpdtout);
             this.TFTPD.Controls.Add(this.text_tftpdtout);
@@ -415,6 +398,7 @@
             this.TFTPD.Controls.Add(this.tftpd_btn);
             this.TFTPD.Controls.Add(this.tftpd_output);
             this.TFTPD.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.TFTPD, "TFTPD");
             this.TFTPD.Name = "TFTPD";
             // 
             // label_tftpdtout
@@ -450,17 +434,17 @@
             // 
             // tftpd_adddir
             // 
-            resources.ApplyResources(this.tftpd_adddir, "tftpd_adddir");
             this.tftpd_adddir.BackColor = System.Drawing.Color.YellowGreen;
             this.tftpd_adddir.FlatAppearance.BorderSize = 0;
+            resources.ApplyResources(this.tftpd_adddir, "tftpd_adddir");
             this.tftpd_adddir.Name = "tftpd_adddir";
             this.tftpd_adddir.UseVisualStyleBackColor = false;
             // 
             // tftpd_deldir
             // 
-            resources.ApplyResources(this.tftpd_deldir, "tftpd_deldir");
             this.tftpd_deldir.BackColor = System.Drawing.Color.YellowGreen;
             this.tftpd_deldir.FlatAppearance.BorderSize = 0;
+            resources.ApplyResources(this.tftpd_deldir, "tftpd_deldir");
             this.tftpd_deldir.Name = "tftpd_deldir";
             this.tftpd_deldir.UseVisualStyleBackColor = false;
             // 
@@ -483,7 +467,6 @@
             // 
             // TFTPC
             // 
-            resources.ApplyResources(this.TFTPC, "TFTPC");
             this.TFTPC.BackColor = System.Drawing.Color.DimGray;
             this.TFTPC.Controls.Add(this.label_tftpcaddr);
             this.TFTPC.Controls.Add(this.text_tftpcaddr);
@@ -501,6 +484,7 @@
             this.TFTPC.Controls.Add(this.btn_tftpcput);
             this.TFTPC.Controls.Add(this.tftpc_output);
             this.TFTPC.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.TFTPC, "TFTPC");
             this.TFTPC.Name = "TFTPC";
             // 
             // label_tftpcaddr
@@ -557,9 +541,9 @@
             // 
             // btn_tftpclfile
             // 
-            resources.ApplyResources(this.btn_tftpclfile, "btn_tftpclfile");
             this.btn_tftpclfile.BackColor = System.Drawing.Color.YellowGreen;
             this.btn_tftpclfile.FlatAppearance.BorderSize = 0;
+            resources.ApplyResources(this.btn_tftpclfile, "btn_tftpclfile");
             this.btn_tftpclfile.Name = "btn_tftpclfile";
             this.btn_tftpclfile.UseVisualStyleBackColor = false;
             // 
@@ -611,7 +595,6 @@
             // 
             // PLAN
             // 
-            resources.ApplyResources(this.PLAN, "PLAN");
             this.PLAN.BackColor = System.Drawing.Color.DimGray;
             this.PLAN.Controls.Add(this.fp_plan);
             this.PLAN.Controls.Add(this.dt1_plan);
@@ -624,6 +607,7 @@
             this.PLAN.Controls.Add(this.btn_planadd);
             this.PLAN.Controls.Add(this.plan_output);
             this.PLAN.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.PLAN, "PLAN");
             this.PLAN.Name = "PLAN";
             // 
             // fp_plan
@@ -691,7 +675,6 @@
             // 
             // CHAT
             // 
-            resources.ApplyResources(this.CHAT, "CHAT");
             this.CHAT.BackColor = System.Drawing.Color.DimGray;
             this.CHAT.Controls.Add(this.text_chatntf);
             this.CHAT.Controls.Add(this.text_chatname);
@@ -701,12 +684,13 @@
             this.CHAT.Controls.Add(this.fp_chat);
             this.CHAT.Controls.Add(this.chat_output);
             this.CHAT.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.CHAT, "CHAT");
             this.CHAT.Name = "CHAT";
             // 
-            // tb_chatntf
+            // text_chatntf
             // 
-            resources.ApplyResources(this.text_chatntf, "tb_chatntf");
-            this.text_chatntf.Name = "tb_chatntf";
+            resources.ApplyResources(this.text_chatntf, "text_chatntf");
+            this.text_chatntf.Name = "text_chatntf";
             // 
             // text_chatname
             // 
@@ -753,7 +737,6 @@
             // 
             // Setting
             // 
-            resources.ApplyResources(this.Setting, "Setting");
             this.Setting.BackColor = System.Drawing.Color.DimGray;
             this.Setting.Controls.Add(this.label_lang);
             this.Setting.Controls.Add(this.lang_cb);
@@ -766,6 +749,7 @@
             this.Setting.Controls.Add(this.cb_systray);
             this.Setting.Controls.Add(this.setting_output);
             this.Setting.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
             // 
             // label_lang
@@ -775,8 +759,8 @@
             // 
             // lang_cb
             // 
-            resources.ApplyResources(this.lang_cb, "lang_cb");
             this.lang_cb.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.lang_cb, "lang_cb");
             this.lang_cb.ForeColor = System.Drawing.Color.White;
             this.lang_cb.FormattingEnabled = true;
             this.lang_cb.Name = "lang_cb";
