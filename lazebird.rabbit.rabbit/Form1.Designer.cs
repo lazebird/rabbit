@@ -68,12 +68,12 @@
             this.fp_httpd = new System.Windows.Forms.FlowLayoutPanel();
             this.httpd_output = new System.Windows.Forms.ListBox();
             this.TFTPD = new System.Windows.Forms.TabPage();
-            this.label_tftpdopt = new System.Windows.Forms.Label();
-            this.text_tftpdopt = new System.Windows.Forms.TextBox();
-            this.tftpd_fp = new System.Windows.Forms.FlowLayoutPanel();
             this.tftpd_adddir = new System.Windows.Forms.Button();
             this.tftpd_deldir = new System.Windows.Forms.Button();
+            this.label_tftpdopt = new System.Windows.Forms.Label();
+            this.text_tftpdopt = new System.Windows.Forms.TextBox();
             this.tftpd_btn = new System.Windows.Forms.Button();
+            this.tftpd_fp = new System.Windows.Forms.FlowLayoutPanel();
             this.tftpd_output = new System.Windows.Forms.ListBox();
             this.TFTPC = new System.Windows.Forms.TabPage();
             this.label_tftpcaddr = new System.Windows.Forms.Label();
@@ -88,7 +88,6 @@
             this.btn_tftpcput = new System.Windows.Forms.Button();
             this.tftpc_output = new System.Windows.Forms.ListBox();
             this.PLAN = new System.Windows.Forms.TabPage();
-            this.fp_plan = new System.Windows.Forms.FlowLayoutPanel();
             this.dt1_plan = new System.Windows.Forms.DateTimePicker();
             this.dt2_plan = new System.Windows.Forms.DateTimePicker();
             this.label_plancycle = new System.Windows.Forms.Label();
@@ -98,6 +97,7 @@
             this.btn_plandel = new System.Windows.Forms.Button();
             this.btn_planadd = new System.Windows.Forms.Button();
             this.plan_output = new System.Windows.Forms.ListBox();
+            this.fp_plan = new System.Windows.Forms.FlowLayoutPanel();
             this.CHAT = new System.Windows.Forms.TabPage();
             this.text_chatntf = new System.Windows.Forms.TextBox();
             this.text_chatname = new System.Windows.Forms.TextBox();
@@ -369,24 +369,6 @@
             resources.ApplyResources(this.TFTPD, "TFTPD");
             this.TFTPD.Name = "TFTPD";
             // 
-            // label_tftpdopt
-            // 
-            resources.ApplyResources(this.label_tftpdopt, "label_tftpdopt");
-            this.label_tftpdopt.Name = "label_tftpdopt";
-            // 
-            // text_tftpdopt
-            // 
-            resources.ApplyResources(this.text_tftpdopt, "text_tftpdopt");
-            this.text_tftpdopt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.text_tftpdopt.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.text_tftpdopt.ForeColor = System.Drawing.Color.White;
-            this.text_tftpdopt.Name = "text_tftpdopt";
-            // 
-            // tftpd_fp
-            // 
-            resources.ApplyResources(this.tftpd_fp, "tftpd_fp");
-            this.tftpd_fp.Name = "tftpd_fp";
-            // 
             // tftpd_adddir
             // 
             this.tftpd_adddir.BackColor = System.Drawing.Color.YellowGreen;
@@ -403,6 +385,19 @@
             this.tftpd_deldir.Name = "tftpd_deldir";
             this.tftpd_deldir.UseVisualStyleBackColor = false;
             // 
+            // label_tftpdopt
+            // 
+            resources.ApplyResources(this.label_tftpdopt, "label_tftpdopt");
+            this.label_tftpdopt.Name = "label_tftpdopt";
+            // 
+            // text_tftpdopt
+            // 
+            resources.ApplyResources(this.text_tftpdopt, "text_tftpdopt");
+            this.text_tftpdopt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_tftpdopt.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_tftpdopt.ForeColor = System.Drawing.Color.White;
+            this.text_tftpdopt.Name = "text_tftpdopt";
+            // 
             // tftpd_btn
             // 
             resources.ApplyResources(this.tftpd_btn, "tftpd_btn");
@@ -410,6 +405,11 @@
             this.tftpd_btn.FlatAppearance.BorderSize = 0;
             this.tftpd_btn.Name = "tftpd_btn";
             this.tftpd_btn.UseVisualStyleBackColor = false;
+            // 
+            // tftpd_fp
+            // 
+            resources.ApplyResources(this.tftpd_fp, "tftpd_fp");
+            this.tftpd_fp.Name = "tftpd_fp";
             // 
             // tftpd_output
             // 
@@ -535,11 +535,6 @@
             resources.ApplyResources(this.PLAN, "PLAN");
             this.PLAN.Name = "PLAN";
             // 
-            // fp_plan
-            // 
-            resources.ApplyResources(this.fp_plan, "fp_plan");
-            this.fp_plan.Name = "fp_plan";
-            // 
             // dt1_plan
             // 
             resources.ApplyResources(this.dt1_plan, "dt1_plan");
@@ -559,18 +554,26 @@
             // 
             // text_plancycle
             // 
+            this.text_plancycle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_plancycle.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_plancycle.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.text_plancycle, "text_plancycle");
             this.text_plancycle.Name = "text_plancycle";
             // 
             // cb_planunit
             // 
+            this.cb_planunit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             resources.ApplyResources(this.cb_planunit, "cb_planunit");
+            this.cb_planunit.ForeColor = System.Drawing.Color.White;
             this.cb_planunit.FormattingEnabled = true;
             this.cb_planunit.Name = "cb_planunit";
             // 
             // text_planmsg
             // 
             resources.ApplyResources(this.text_planmsg, "text_planmsg");
+            this.text_planmsg.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_planmsg.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_planmsg.ForeColor = System.Drawing.Color.White;
             this.text_planmsg.Name = "text_planmsg";
             // 
             // btn_plandel
@@ -598,6 +601,11 @@
             this.plan_output.FormattingEnabled = true;
             this.plan_output.Name = "plan_output";
             // 
+            // fp_plan
+            // 
+            resources.ApplyResources(this.fp_plan, "fp_plan");
+            this.fp_plan.Name = "fp_plan";
+            // 
             // CHAT
             // 
             this.CHAT.BackColor = System.Drawing.Color.DimGray;
@@ -615,11 +623,17 @@
             // text_chatntf
             // 
             resources.ApplyResources(this.text_chatntf, "text_chatntf");
+            this.text_chatntf.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_chatntf.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_chatntf.ForeColor = System.Drawing.Color.White;
             this.text_chatntf.Name = "text_chatntf";
             // 
             // text_chatname
             // 
             resources.ApplyResources(this.text_chatname, "text_chatname");
+            this.text_chatname.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_chatname.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_chatname.ForeColor = System.Drawing.Color.White;
             this.text_chatname.Name = "text_chatname";
             // 
             // btn_chat
