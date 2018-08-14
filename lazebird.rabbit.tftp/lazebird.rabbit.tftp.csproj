@@ -57,10 +57,6 @@
       <Project>{9d8c34cf-12bf-4360-9ca3-4d0a7d4d8cbc}</Project>
       <Name>lazebird.rabbit.fs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lazebird.rabbit.queue\lazebird.rabbit.queue.csproj">
-      <Project>{92a8b059-cd4a-4db6-9e9b-892272540965}</Project>
-      <Name>lazebird.rabbit.queue</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,5 +1,4 @@
 ﻿using lazebird.rabbit.fs;
-using lazebird.rabbit.queue;
 using System;
 using System.IO;
 using System.Net;

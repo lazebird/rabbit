@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Threading;
 
-namespace lazebird.rabbit.queue
+namespace lazebird.rabbit.fs
 {
     public class rqueue : IDisposable
     {

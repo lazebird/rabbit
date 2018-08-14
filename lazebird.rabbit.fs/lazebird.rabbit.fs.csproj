@@ -35,12 +35,8 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="rfs.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\lazebird.rabbit.queue\lazebird.rabbit.queue.csproj">
-      <Project>{92a8b059-cd4a-4db6-9e9b-892272540965}</Project>
-      <Name>lazebird.rabbit.queue</Name>
-    </ProjectReference>
+    <Compile Include="rqueue.cs" />
+    <Compile Include="rshell.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

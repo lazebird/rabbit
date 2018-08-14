@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 
-namespace lazebird.rabbit.shell
+namespace lazebird.rabbit.fs
 {
     public class rshell
     {
