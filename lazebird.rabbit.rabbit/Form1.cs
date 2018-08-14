@@ -45,7 +45,12 @@ namespace lazebird.rabbit.rabbit
             }
             else if (keyData == Keys.Enter)
             {
-                if (indexhash.ContainsKey(tabs.SelectedIndex)) ((Button)indexhash[tabs.SelectedIndex]).PerformClick();
+                foreach (DictionaryEntry de in indexhash)
+                {
+                    if ((int)de.Value == tabs.SelectedIndex)
+                        if (btnhash.ContainsKey(de.Key))
+                            ((Button)btnhash[de.Key]).PerformClick();
+                }
             }
             return base.ProcessDialogKey(keyData);
         }
@@ -64,13 +69,12 @@ namespace lazebird.rabbit.rabbit
             texthash.Add("tftpc_addr", text_tftpcaddr);
             texthash.Add("tftpc_opt", text_tftpcopt);
             btnhash.Add("ping_btn", btn_ping);
+            indexhash.Add("ping_btn", 0);
             btnhash.Add("http_btn", btn_httpd);
+            indexhash.Add("http_btn", 2);
             btnhash.Add("tftpd_btn", tftpd_btn);
+            indexhash.Add("tftpd_btn", 3);
             formhash.Add("form", this);
-            indexhash.Add(0, btn_ping);
-            indexhash.Add(2, btn_httpd);
-            indexhash.Add(3, tftpd_btn);
-            //indexhash.Add(7, link_ver);
         }
         void conf_log(string msg)
         {
