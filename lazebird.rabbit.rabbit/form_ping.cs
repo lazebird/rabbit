@@ -25,11 +25,6 @@ namespace lazebird.rabbit.rabbit
         int[] records;
         int recordidx;
         rtaskbar bar;
-        void bar_test()
-        {
-            Thread.Sleep(500);
-            bar.set(0, 0, 0);
-        }
         void ping_log_func(string msg)
         {
             pinglog.write(msg);
@@ -56,7 +51,7 @@ namespace lazebird.rabbit.rabbit
             {
                 losscnt++;
                 display_taskbar(0);
-                RoundtripTime = int.Parse(((TextBox)texthash["ping_timeout"]).Text);
+                RoundtripTime = ping_interval;
                 pinglog.write("请求超时。");
             }
         }
@@ -114,6 +109,7 @@ namespace lazebird.rabbit.rabbit
                 ((Button)btnhash["ping_btn"]).Text = Language.trans("停止");
                 pinglog.clear();
                 ping_parse_args();
+                bar.reset();
                 Thread th = new Thread(start_ping);
                 th.IsBackground = true;
                 th.Start();

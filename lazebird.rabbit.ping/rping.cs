@@ -24,17 +24,16 @@ namespace lazebird.rabbit.ping
         }
         void ping_process(string addr, int timeout, Action<PingReply, object> callback, object data)
         {
-            Ping pingSender = new Ping();
-            PingReply reply;
             try
             {
-                reply = pingSender.Send(addr, timeout);
+                Ping pingSender = new Ping();
+                PingReply reply = pingSender.Send(addr, timeout);
                 callback(reply, data);
                 pingSender.Dispose();
             }
             catch (Exception e)
             {
-                log("Error: " + e.Message);
+                log("!E: " + e.ToString());
                 callback(null, data);
             }
         }

@@ -28,11 +28,8 @@ namespace lazebird.rabbit.rabbit
         bool onloading = false;
         protected override void OnLoad(EventArgs e)
         {
-            onloading = true;
             base.OnLoad(e);
-            Thread th = new Thread(bar_test);
-            th.IsBackground = true;
-            th.Start();
+            onloading = true;
             readconf();
             onloading = false;
         }

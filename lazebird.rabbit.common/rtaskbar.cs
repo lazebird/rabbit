@@ -11,9 +11,12 @@ namespace lazebird.rabbit.common
         public rtaskbar(Action<string> log)
         {
             this.log = log;
-            this.taskbar_support = true;
+            taskbar_support = true;
         }
-
+        public void reset()
+        {
+            taskbar_support = true;
+        }
         public bool set(int state, int cur, int total)
         {
             if (taskbar_support)
@@ -24,7 +27,7 @@ namespace lazebird.rabbit.common
                 }
                 catch (Exception e)
                 {
-                    log(e.Message);
+                    log("!E: " + e.ToString());
                     taskbar_support = false;
                 }
             }
