@@ -1,5 +1,6 @@
 ﻿using lazebird.rabbit.ping;
 using System;
+using System.Collections;
 using System.Drawing;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -19,17 +20,24 @@ namespace lazebird.rabbit.rabbit
         void scan_log_func(string msg)
         {
         }
+        bool scan_filteron;
+        void scan_parse_args()
+        {
+            Hashtable opts = parse_opts(text_scanopt.Text);
+            if (opts.ContainsKey("filter")) scan_filteron = (string)opts["filter"] == "on";
+        }
         void scan_reply(PingReply reply, object data)
         {
             if (reply != null && reply.Status == IPStatus.Success)
-            {
                 ((Label)data).BackColor = Color.Green;
-            }
+            else
+                ((Label)data).Visible = false;
         }
         void start_scan()
         {
             try
             {
+                scan_parse_args();
                 string startip = ((TextBox)texthash["scan_ipstart"]).Text;
                 int lastbyte = int.Parse(((TextBox)texthash["scan_ipend"]).Text);
                 Byte[] ipbytes = IPAddress.Parse(startip).GetAddressBytes();

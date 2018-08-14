@@ -116,6 +116,8 @@
             this.cb_systray = new System.Windows.Forms.CheckBox();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
+            this.label_scanopt = new System.Windows.Forms.Label();
+            this.text_scanopt = new System.Windows.Forms.TextBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -227,6 +229,8 @@
             this.Scan.Controls.Add(this.text_scanstart);
             this.Scan.Controls.Add(this.label_scanend);
             this.Scan.Controls.Add(this.text_scanend);
+            this.Scan.Controls.Add(this.label_scanopt);
+            this.Scan.Controls.Add(this.text_scanopt);
             this.Scan.Controls.Add(this.btn_scan);
             this.Scan.Controls.Add(this.fp_scan);
             this.Scan.ForeColor = System.Drawing.Color.White;
@@ -241,10 +245,10 @@
             // 
             // text_scanstart
             // 
-            resources.ApplyResources(this.text_scanstart, "text_scanstart");
             this.text_scanstart.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.text_scanstart.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.text_scanstart.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.text_scanstart, "text_scanstart");
             this.text_scanstart.Name = "text_scanstart";
             // 
             // label_scanend
@@ -721,6 +725,20 @@
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
             // 
+            // label_scanopt
+            // 
+            resources.ApplyResources(this.label_scanopt, "label_scanopt");
+            this.label_scanopt.BackColor = System.Drawing.Color.Transparent;
+            this.label_scanopt.Name = "label_scanopt";
+            // 
+            // text_scanopt
+            // 
+            resources.ApplyResources(this.text_scanopt, "text_scanopt");
+            this.text_scanopt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_scanopt.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_scanopt.ForeColor = System.Drawing.Color.White;
+            this.text_scanopt.Name = "text_scanopt";
+            // 
             // Form1
             // 
             resources.ApplyResources(this, "$this");
@@ -831,6 +849,8 @@
         private System.Windows.Forms.Button btn_chat;
         private System.Windows.Forms.TextBox text_chatname;
         private System.Windows.Forms.TextBox text_chatntf;
+        private System.Windows.Forms.Label label_scanopt;
+        private System.Windows.Forms.TextBox text_scanopt;
     }
 }
 

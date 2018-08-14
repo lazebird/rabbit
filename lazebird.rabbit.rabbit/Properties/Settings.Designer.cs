@@ -286,5 +286,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["lang"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string scan_opt {
+            get {
+                return ((string)(this["scan_opt"]));
+            }
+            set {
+                this["scan_opt"] = value;
+            }
+        }
     }
 }

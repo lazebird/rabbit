@@ -63,6 +63,7 @@ namespace lazebird.rabbit.rabbit
             texthash.Add("tftpd_opt", text_tftpdopt);
             texthash.Add("scan_ipstart", text_scanstart);
             texthash.Add("scan_ipend", text_scanend);
+            texthash.Add("scan_opt", text_scanopt);
             texthash.Add("tftpc_addr", text_tftpcaddr);
             texthash.Add("tftpc_opt", text_tftpcopt);
             btnhash.Add("ping_btn", btn_ping);
