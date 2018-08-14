@@ -68,6 +68,7 @@ namespace lazebird.rabbit.chat
                     read_msg(p.id, p.content);
                     break;
                 case "message_response":
+                    curretry = 0;
                     break;
                 default:
                     break;
@@ -85,6 +86,22 @@ namespace lazebird.rabbit.chat
             uc.SendAsync(buf, buf.Length, r);
             start_com_task();
         }
+        int maxretry = 3;
+        int curretry = 0;
+        Timer retrytmr;
+        void pkt_retry(object o)
+        {
+            byte[] buf = (byte[])o;
+            uc.SendAsync(buf, buf.Length, r);
+            if (++curretry > maxretry)
+            {
+                retrytmr.Change(Timeout.Infinite, Timeout.Infinite);
+                int msgidx = (int)pkthash[buf];
+                message m = (message)msglst[msgidx - 1];
+                m.set_status(true);
+            }
+
+        }
         public void write_msg(string msg)
         {
             message m = new message(luser, msg);
@@ -94,6 +111,8 @@ namespace lazebird.rabbit.chat
             byte[] buf = pkt.pack();
             uc.SendAsync(buf, buf.Length, r);
             start_com_task();
+            retrytmr = new Timer(pkt_retry, buf, 3, 3);
+            pkthash.Add(buf, msglst.Count);
         }
         public void log2txt(string logpath)
         {

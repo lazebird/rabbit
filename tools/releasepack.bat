@@ -6,6 +6,6 @@ cd ..\lazebird.rabbit.rabbit\
 copy vgen.auto.txt ..\release\version.txt
 REM update binary
 cd bin\Release\
-..\..\..\tools\ILMerge.exe /targetplatform:v4 /ndebug /target:winexe /out:../../../release/sRabbit.exe lazebird.rabbit.rabbit.exe /wildcards *.dll zh-CN/lazebird.rabbit.rabbit.resources.dll
+..\..\..\tools\ILMerge.exe /targetplatform:v4 /ndebug /target:winexe /out:../../../release/sRabbit.exe lazebird.rabbit.rabbit.exe /wildcards *.dll
 popd
 REM pause
