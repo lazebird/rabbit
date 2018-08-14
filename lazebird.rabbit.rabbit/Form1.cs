@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Windows.Forms;
-using System.Threading;
 
 namespace lazebird.rabbit.rabbit
 {

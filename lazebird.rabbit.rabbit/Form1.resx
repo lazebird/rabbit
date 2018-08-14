@@ -285,8 +285,8 @@
   <data name="&gt;&gt;btn_ping.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="ping_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+  <data name="ping_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
   </data>
   <data name="ping_output.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft YaHei UI, 7.8pt</value>
@@ -295,13 +295,13 @@
     <value>19</value>
   </data>
   <data name="ping_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 47</value>
+    <value>0, 45</value>
   </data>
   <data name="ping_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
   </data>
   <data name="ping_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>773, 475</value>
+    <value>774, 475</value>
   </data>
   <data name="ping_output.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -549,17 +549,17 @@
   <data name="&gt;&gt;btn_scan.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="fp_scan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+  <data name="fp_scan.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
   </data>
   <data name="fp_scan.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 50</value>
+    <value>0, 48</value>
   </data>
   <data name="fp_scan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_scan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>769, 472</value>
+    <value>774, 472</value>
   </data>
   <data name="fp_scan.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
@@ -756,17 +756,14 @@
   <data name="&gt;&gt;btn_httpd.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="fp_httpd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
-  </data>
   <data name="fp_httpd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 45</value>
+    <value>0, 45</value>
   </data>
   <data name="fp_httpd.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
   </data>
   <data name="fp_httpd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>756, 370</value>
+    <value>774, 370</value>
   </data>
   <data name="fp_httpd.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -783,20 +780,20 @@
   <data name="&gt;&gt;fp_httpd.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="httpd_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Bottom, Left, Right</value>
+  <data name="httpd_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
   </data>
   <data name="httpd_output.ItemHeight" type="System.Int32, mscorlib">
     <value>20</value>
   </data>
   <data name="httpd_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 420</value>
+    <value>0, 420</value>
   </data>
   <data name="httpd_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="httpd_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>756, 100</value>
+    <value>774, 100</value>
   </data>
   <data name="httpd_output.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -840,87 +837,6 @@
   <data name="&gt;&gt;HTTPD.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="label_tftpdopt.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label_tftpdopt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>149, 12</value>
-  </data>
-  <data name="label_tftpdopt.Size" type="System.Drawing.Size, System.Drawing">
-    <value>37, 20</value>
-  </data>
-  <data name="label_tftpdopt.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
-  </data>
-  <data name="label_tftpdopt.Text" xml:space="preserve">
-    <value>Opt.</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdopt.Name" xml:space="preserve">
-    <value>label_tftpdopt</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdopt.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdopt.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;label_tftpdopt.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="text_tftpdopt.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="text_tftpdopt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>191, 12</value>
-  </data>
-  <data name="text_tftpdopt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 4, 3, 4</value>
-  </data>
-  <data name="text_tftpdopt.Size" type="System.Drawing.Size, System.Drawing">
-    <value>492, 18</value>
-  </data>
-  <data name="text_tftpdopt.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdopt.Name" xml:space="preserve">
-    <value>text_tftpdopt</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdopt.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdopt.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;text_tftpdopt.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="tftpd_fp.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="tftpd_fp.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 44</value>
-  </data>
-  <data name="tftpd_fp.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 4, 3, 4</value>
-  </data>
-  <data name="tftpd_fp.Size" type="System.Drawing.Size, System.Drawing">
-    <value>752, 246</value>
-  </data>
-  <data name="tftpd_fp.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
-  </data>
-  <data name="&gt;&gt;tftpd_fp.Name" xml:space="preserve">
-    <value>tftpd_fp</value>
-  </data>
-  <data name="&gt;&gt;tftpd_fp.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tftpd_fp.Parent" xml:space="preserve">
-    <value>TFTPD</value>
-  </data>
-  <data name="&gt;&gt;tftpd_fp.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
   <data name="tftpd_adddir.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
@@ -952,7 +868,7 @@
     <value>TFTPD</value>
   </data>
   <data name="&gt;&gt;tftpd_adddir.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>0</value>
   </data>
   <data name="tftpd_deldir.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
@@ -985,7 +901,61 @@
     <value>TFTPD</value>
   </data>
   <data name="&gt;&gt;tftpd_deldir.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>1</value>
+  </data>
+  <data name="label_tftpdopt.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_tftpdopt.Location" type="System.Drawing.Point, System.Drawing">
+    <value>149, 12</value>
+  </data>
+  <data name="label_tftpdopt.Size" type="System.Drawing.Size, System.Drawing">
+    <value>37, 20</value>
+  </data>
+  <data name="label_tftpdopt.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="label_tftpdopt.Text" xml:space="preserve">
+    <value>Opt.</value>
+  </data>
+  <data name="&gt;&gt;label_tftpdopt.Name" xml:space="preserve">
+    <value>label_tftpdopt</value>
+  </data>
+  <data name="&gt;&gt;label_tftpdopt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_tftpdopt.Parent" xml:space="preserve">
+    <value>TFTPD</value>
+  </data>
+  <data name="&gt;&gt;label_tftpdopt.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="text_tftpdopt.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="text_tftpdopt.Location" type="System.Drawing.Point, System.Drawing">
+    <value>191, 12</value>
+  </data>
+  <data name="text_tftpdopt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 4, 3, 4</value>
+  </data>
+  <data name="text_tftpdopt.Size" type="System.Drawing.Size, System.Drawing">
+    <value>492, 18</value>
+  </data>
+  <data name="text_tftpdopt.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="&gt;&gt;text_tftpdopt.Name" xml:space="preserve">
+    <value>text_tftpdopt</value>
+  </data>
+  <data name="&gt;&gt;text_tftpdopt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_tftpdopt.Parent" xml:space="preserve">
+    <value>TFTPD</value>
+  </data>
+  <data name="&gt;&gt;text_tftpdopt.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="tftpd_btn.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -1018,22 +988,49 @@
     <value>TFTPD</value>
   </data>
   <data name="&gt;&gt;tftpd_btn.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="tftpd_fp.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="tftpd_fp.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 44</value>
+  </data>
+  <data name="tftpd_fp.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 4, 3, 4</value>
+  </data>
+  <data name="tftpd_fp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>774, 246</value>
+  </data>
+  <data name="tftpd_fp.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="&gt;&gt;tftpd_fp.Name" xml:space="preserve">
+    <value>tftpd_fp</value>
+  </data>
+  <data name="&gt;&gt;tftpd_fp.Type" xml:space="preserve">
+    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tftpd_fp.Parent" xml:space="preserve">
+    <value>TFTPD</value>
+  </data>
+  <data name="&gt;&gt;tftpd_fp.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="tftpd_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+  <data name="tftpd_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
   </data>
   <data name="tftpd_output.ItemHeight" type="System.Int32, mscorlib">
     <value>20</value>
   </data>
   <data name="tftpd_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 296</value>
+    <value>0, 300</value>
   </data>
   <data name="tftpd_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="tftpd_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>752, 220</value>
+    <value>774, 220</value>
   </data>
   <data name="tftpd_output.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -1084,7 +1081,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_tftpcaddr.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 12</value>
+    <value>10, 10</value>
   </data>
   <data name="label_tftpcaddr.Size" type="System.Drawing.Size, System.Drawing">
     <value>22, 20</value>
@@ -1111,13 +1108,13 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpcaddr.Location" type="System.Drawing.Point, System.Drawing">
-    <value>105, 12</value>
+    <value>105, 10</value>
   </data>
   <data name="text_tftpcaddr.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
   </data>
   <data name="text_tftpcaddr.Size" type="System.Drawing.Size, System.Drawing">
-    <value>135, 18</value>
+    <value>240, 18</value>
   </data>
   <data name="text_tftpcaddr.TabIndex" type="System.Int32, mscorlib">
     <value>21</value>
@@ -1141,7 +1138,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_tftpcopt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>361, 12</value>
+    <value>361, 10</value>
   </data>
   <data name="label_tftpcopt.Size" type="System.Drawing.Size, System.Drawing">
     <value>37, 20</value>
@@ -1168,7 +1165,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpcopt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>397, 12</value>
+    <value>397, 10</value>
   </data>
   <data name="text_tftpcopt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
@@ -1198,7 +1195,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_tftpclfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 50</value>
+    <value>10, 40</value>
   </data>
   <data name="btn_tftpclfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1228,7 +1225,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpclfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>105, 50</value>
+    <value>105, 40</value>
   </data>
   <data name="text_tftpclfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1258,7 +1255,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_tftpcrfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 88</value>
+    <value>11, 70</value>
   </data>
   <data name="label_tftpcrfile.Size" type="System.Drawing.Size, System.Drawing">
     <value>59, 20</value>
@@ -1285,7 +1282,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpcrfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>105, 88</value>
+    <value>105, 70</value>
   </data>
   <data name="text_tftpcrfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1318,7 +1315,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_tftpcget.Location" type="System.Drawing.Point, System.Drawing">
-    <value>688, 88</value>
+    <value>688, 70</value>
   </data>
   <data name="btn_tftpcget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1354,7 +1351,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_tftpcput.Location" type="System.Drawing.Point, System.Drawing">
-    <value>688, 50</value>
+    <value>688, 40</value>
   </data>
   <data name="btn_tftpcput.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1380,20 +1377,20 @@
   <data name="&gt;&gt;btn_tftpcput.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="tftpc_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+  <data name="tftpc_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
   </data>
   <data name="tftpc_output.ItemHeight" type="System.Int32, mscorlib">
     <value>20</value>
   </data>
   <data name="tftpc_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 120</value>
+    <value>0, 100</value>
   </data>
   <data name="tftpc_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="tftpc_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>756, 400</value>
+    <value>774, 420</value>
   </data>
   <data name="tftpc_output.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -1437,38 +1434,11 @@
   <data name="&gt;&gt;TFTPC.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="fp_plan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
-  </data>
-  <data name="fp_plan.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 49</value>
-  </data>
-  <data name="fp_plan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>755, 324</value>
-  </data>
-  <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;fp_plan.Name" xml:space="preserve">
-    <value>fp_plan</value>
-  </data>
-  <data name="&gt;&gt;fp_plan.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;fp_plan.Parent" xml:space="preserve">
-    <value>PLAN</value>
-  </data>
-  <data name="&gt;&gt;fp_plan.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
   <data name="dt1_plan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
   </data>
   <data name="dt1_plan.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, -136</value>
+    <value>10, 10</value>
   </data>
   <data name="dt1_plan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1489,7 +1459,7 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;dt1_plan.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>0</value>
   </data>
   <data name="dt2_plan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1498,7 +1468,7 @@
     <value>HH:mm</value>
   </data>
   <data name="dt2_plan.Location" type="System.Drawing.Point, System.Drawing">
-    <value>127, -136</value>
+    <value>130, 10</value>
   </data>
   <data name="dt2_plan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1519,7 +1489,7 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;dt2_plan.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="label_plancycle.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1528,7 +1498,7 @@
     <value>True</value>
   </data>
   <data name="label_plancycle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, -133</value>
+    <value>209, 12</value>
   </data>
   <data name="label_plancycle.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 20</value>
@@ -1549,13 +1519,13 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;label_plancycle.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>2</value>
   </data>
   <data name="text_plancycle.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
   </data>
   <data name="text_plancycle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>278, -136</value>
+    <value>278, 10</value>
   </data>
   <data name="text_plancycle.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1579,13 +1549,13 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;text_plancycle.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>3</value>
   </data>
   <data name="cb_planunit.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
   </data>
   <data name="cb_planunit.Location" type="System.Drawing.Point, System.Drawing">
-    <value>334, -136</value>
+    <value>334, 10</value>
   </data>
   <data name="cb_planunit.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
@@ -1606,13 +1576,13 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;cb_planunit.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>4</value>
   </data>
   <data name="text_planmsg.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left, Right</value>
   </data>
   <data name="text_planmsg.Location" type="System.Drawing.Point, System.Drawing">
-    <value>423, -136</value>
+    <value>423, 10</value>
   </data>
   <data name="text_planmsg.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1633,7 +1603,7 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;text_planmsg.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>5</value>
   </data>
   <data name="btn_plandel.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -1648,7 +1618,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_plandel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>715, -136</value>
+    <value>715, 10</value>
   </data>
   <data name="btn_plandel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1672,7 +1642,7 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;btn_plandel.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>6</value>
   </data>
   <data name="btn_planadd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -1687,7 +1657,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_planadd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>743, -136</value>
+    <value>743, 10</value>
   </data>
   <data name="btn_planadd.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1711,22 +1681,22 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;btn_planadd.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>7</value>
   </data>
-  <data name="plan_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Bottom, Left, Right</value>
+  <data name="plan_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
   </data>
   <data name="plan_output.ItemHeight" type="System.Int32, mscorlib">
     <value>20</value>
   </data>
   <data name="plan_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 378</value>
+    <value>0, 380</value>
   </data>
   <data name="plan_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="plan_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>755, 140</value>
+    <value>774, 140</value>
   </data>
   <data name="plan_output.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -1741,6 +1711,33 @@
     <value>PLAN</value>
   </data>
   <data name="&gt;&gt;plan_output.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="fp_plan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="fp_plan.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 49</value>
+  </data>
+  <data name="fp_plan.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
+    <value>774, 328</value>
+  </data>
+  <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="&gt;&gt;fp_plan.Name" xml:space="preserve">
+    <value>fp_plan</value>
+  </data>
+  <data name="&gt;&gt;fp_plan.Type" xml:space="preserve">
+    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;fp_plan.Parent" xml:space="preserve">
+    <value>PLAN</value>
+  </data>
+  <data name="&gt;&gt;fp_plan.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
   <data name="PLAN.Location" type="System.Drawing.Point, System.Drawing">
@@ -1927,13 +1924,13 @@
     <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="fp_chat.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 42</value>
+    <value>0, 42</value>
   </data>
   <data name="fp_chat.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_chat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>756, 353</value>
+    <value>774, 354</value>
   </data>
   <data name="fp_chat.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1950,20 +1947,20 @@
   <data name="&gt;&gt;fp_chat.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="chat_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Bottom, Left, Right</value>
+  <data name="chat_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
   </data>
   <data name="chat_output.ItemHeight" type="System.Int32, mscorlib">
     <value>20</value>
   </data>
   <data name="chat_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 398</value>
+    <value>0, 400</value>
   </data>
   <data name="chat_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="chat_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>756, 120</value>
+    <value>774, 120</value>
   </data>
   <data name="chat_output.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -2256,20 +2253,20 @@
   <data name="&gt;&gt;cb_systray.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
-  <data name="setting_output.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+  <data name="setting_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
   </data>
   <data name="setting_output.ItemHeight" type="System.Int32, mscorlib">
     <value>20</value>
   </data>
   <data name="setting_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 200</value>
+    <value>0, 220</value>
   </data>
   <data name="setting_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="setting_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>756, 300</value>
+    <value>774, 300</value>
   </data>
   <data name="setting_output.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>

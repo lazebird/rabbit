@@ -55,6 +55,8 @@
             this.text_scanstart = new System.Windows.Forms.TextBox();
             this.label_scanend = new System.Windows.Forms.Label();
             this.text_scanend = new System.Windows.Forms.TextBox();
+            this.label_scanopt = new System.Windows.Forms.Label();
+            this.text_scanopt = new System.Windows.Forms.TextBox();
             this.btn_scan = new System.Windows.Forms.Button();
             this.fp_scan = new System.Windows.Forms.FlowLayoutPanel();
             this.HTTPD = new System.Windows.Forms.TabPage();
@@ -116,8 +118,6 @@
             this.cb_systray = new System.Windows.Forms.CheckBox();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
-            this.label_scanopt = new System.Windows.Forms.Label();
-            this.text_scanopt = new System.Windows.Forms.TextBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -215,9 +215,9 @@
             // 
             // ping_output
             // 
-            resources.ApplyResources(this.ping_output, "ping_output");
             this.ping_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ping_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.ping_output, "ping_output");
             this.ping_output.ForeColor = System.Drawing.Color.White;
             this.ping_output.FormattingEnabled = true;
             this.ping_output.Name = "ping_output";
@@ -265,6 +265,20 @@
             this.text_scanend.ForeColor = System.Drawing.Color.White;
             this.text_scanend.Name = "text_scanend";
             // 
+            // label_scanopt
+            // 
+            resources.ApplyResources(this.label_scanopt, "label_scanopt");
+            this.label_scanopt.BackColor = System.Drawing.Color.Transparent;
+            this.label_scanopt.Name = "label_scanopt";
+            // 
+            // text_scanopt
+            // 
+            resources.ApplyResources(this.text_scanopt, "text_scanopt");
+            this.text_scanopt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_scanopt.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_scanopt.ForeColor = System.Drawing.Color.White;
+            this.text_scanopt.Name = "text_scanopt";
+            // 
             // btn_scan
             // 
             resources.ApplyResources(this.btn_scan, "btn_scan");
@@ -275,8 +289,8 @@
             // 
             // fp_scan
             // 
-            resources.ApplyResources(this.fp_scan, "fp_scan");
             this.fp_scan.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.fp_scan, "fp_scan");
             this.fp_scan.ForeColor = System.Drawing.Color.White;
             this.fp_scan.Name = "fp_scan";
             // 
@@ -334,9 +348,9 @@
             // 
             // httpd_output
             // 
-            resources.ApplyResources(this.httpd_output, "httpd_output");
             this.httpd_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.httpd_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.httpd_output, "httpd_output");
             this.httpd_output.ForeColor = System.Drawing.Color.White;
             this.httpd_output.FormattingEnabled = true;
             this.httpd_output.Name = "httpd_output";
@@ -344,12 +358,12 @@
             // TFTPD
             // 
             this.TFTPD.BackColor = System.Drawing.Color.DimGray;
-            this.TFTPD.Controls.Add(this.label_tftpdopt);
-            this.TFTPD.Controls.Add(this.text_tftpdopt);
-            this.TFTPD.Controls.Add(this.tftpd_fp);
             this.TFTPD.Controls.Add(this.tftpd_adddir);
             this.TFTPD.Controls.Add(this.tftpd_deldir);
+            this.TFTPD.Controls.Add(this.label_tftpdopt);
+            this.TFTPD.Controls.Add(this.text_tftpdopt);
             this.TFTPD.Controls.Add(this.tftpd_btn);
+            this.TFTPD.Controls.Add(this.tftpd_fp);
             this.TFTPD.Controls.Add(this.tftpd_output);
             this.TFTPD.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.TFTPD, "TFTPD");
@@ -399,9 +413,9 @@
             // 
             // tftpd_output
             // 
-            resources.ApplyResources(this.tftpd_output, "tftpd_output");
             this.tftpd_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.tftpd_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.tftpd_output, "tftpd_output");
             this.tftpd_output.ForeColor = System.Drawing.Color.White;
             this.tftpd_output.FormattingEnabled = true;
             this.tftpd_output.Name = "tftpd_output";
@@ -497,9 +511,9 @@
             // 
             // tftpc_output
             // 
-            resources.ApplyResources(this.tftpc_output, "tftpc_output");
             this.tftpc_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.tftpc_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.tftpc_output, "tftpc_output");
             this.tftpc_output.ForeColor = System.Drawing.Color.White;
             this.tftpc_output.FormattingEnabled = true;
             this.tftpc_output.Name = "tftpc_output";
@@ -507,7 +521,6 @@
             // PLAN
             // 
             this.PLAN.BackColor = System.Drawing.Color.DimGray;
-            this.PLAN.Controls.Add(this.fp_plan);
             this.PLAN.Controls.Add(this.dt1_plan);
             this.PLAN.Controls.Add(this.dt2_plan);
             this.PLAN.Controls.Add(this.label_plancycle);
@@ -517,6 +530,7 @@
             this.PLAN.Controls.Add(this.btn_plandel);
             this.PLAN.Controls.Add(this.btn_planadd);
             this.PLAN.Controls.Add(this.plan_output);
+            this.PLAN.Controls.Add(this.fp_plan);
             this.PLAN.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.PLAN, "PLAN");
             this.PLAN.Name = "PLAN";
@@ -577,9 +591,9 @@
             // 
             // plan_output
             // 
-            resources.ApplyResources(this.plan_output, "plan_output");
             this.plan_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.plan_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.plan_output, "plan_output");
             this.plan_output.ForeColor = System.Drawing.Color.White;
             this.plan_output.FormattingEnabled = true;
             this.plan_output.Name = "plan_output";
@@ -639,9 +653,9 @@
             // 
             // chat_output
             // 
-            resources.ApplyResources(this.chat_output, "chat_output");
             this.chat_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.chat_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.chat_output, "chat_output");
             this.chat_output.ForeColor = System.Drawing.Color.White;
             this.chat_output.FormattingEnabled = true;
             this.chat_output.Name = "chat_output";
@@ -714,9 +728,9 @@
             // 
             // setting_output
             // 
-            resources.ApplyResources(this.setting_output, "setting_output");
             this.setting_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.setting_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.setting_output, "setting_output");
             this.setting_output.ForeColor = System.Drawing.Color.White;
             this.setting_output.FormattingEnabled = true;
             this.setting_output.Name = "setting_output";
@@ -724,20 +738,6 @@
             // ntfico
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
-            // 
-            // label_scanopt
-            // 
-            resources.ApplyResources(this.label_scanopt, "label_scanopt");
-            this.label_scanopt.BackColor = System.Drawing.Color.Transparent;
-            this.label_scanopt.Name = "label_scanopt";
-            // 
-            // text_scanopt
-            // 
-            resources.ApplyResources(this.text_scanopt, "text_scanopt");
-            this.text_scanopt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.text_scanopt.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.text_scanopt.ForeColor = System.Drawing.Color.White;
-            this.text_scanopt.Name = "text_scanopt";
             // 
             // Form1
             // 

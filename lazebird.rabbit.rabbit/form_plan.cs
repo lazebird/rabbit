@@ -65,7 +65,7 @@ namespace lazebird.rabbit.rabbit
             tb.BorderStyle = BorderStyle.None;
             tb.ForeColor = Color.White;
             tb.Text = p.msg;
-            tb.Width = 640;
+            tb.Width = 760;
             //tb.Anchor = (AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right);
             tb.DoubleClick += new EventHandler(plan_click);
             fp_plan.Controls.Add(tb);
