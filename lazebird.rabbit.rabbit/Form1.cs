@@ -45,12 +45,7 @@ namespace lazebird.rabbit.rabbit
             }
             else if (keyData == Keys.Enter)
             {
-                foreach (DictionaryEntry de in indexhash)
-                {
-                    if ((int)de.Value == tabs.SelectedIndex)
-                        if (btnhash.ContainsKey(de.Key))
-                            ((Button)btnhash[de.Key]).PerformClick();
-                }
+                if (indexhash.ContainsKey(tabs.SelectedIndex)) ((Button)indexhash[tabs.SelectedIndex]).PerformClick();
             }
             return base.ProcessDialogKey(keyData);
         }
@@ -60,26 +55,22 @@ namespace lazebird.rabbit.rabbit
             btnhash = new Hashtable();
             formhash = new Hashtable();
             indexhash = new Hashtable();
-            texthash.Add("ping_addr", text_addr);
-            texthash.Add("ping_timeout", text_interval);
-            texthash.Add("ping_times", text_count);
-            texthash.Add("ping_logfile", text_logpath);
+            texthash.Add("ping_addr", text_pingaddr);
+            texthash.Add("ping_opt", text_pingopt);
             texthash.Add("http_port", text_http_port);
-            texthash.Add("tftpd_timeout", text_tftpdtout);
-            texthash.Add("tftpd_retry", text_tftpdretry);
+            texthash.Add("tftpd_opt", text_tftpdopt);
             texthash.Add("scan_ipstart", text_scanstart);
             texthash.Add("scan_ipend", text_scanend);
             texthash.Add("tftpc_addr", text_tftpcaddr);
-            texthash.Add("tftpc_timeout", text_tftpctout);
-            texthash.Add("tftpc_retry", text_tftpcretry);
-            texthash.Add("tftpc_blksize", text_tftpcblksize);
+            texthash.Add("tftpc_opt", text_tftpcopt);
             btnhash.Add("ping_btn", btn_ping);
-            indexhash.Add("ping_btn", 0);
-            btnhash.Add("httpd_btn", btn_httpd);
-            indexhash.Add("httpd_btn", 2);
+            btnhash.Add("http_btn", btn_httpd);
             btnhash.Add("tftpd_btn", tftpd_btn);
-            indexhash.Add("tftpd_btn", 3);
             formhash.Add("form", this);
+            indexhash.Add(0, btn_ping);
+            indexhash.Add(2, btn_httpd);
+            indexhash.Add(3, tftpd_btn);
+            //indexhash.Add(7, link_ver);
         }
         void conf_log(string msg)
         {
@@ -101,8 +92,8 @@ namespace lazebird.rabbit.rabbit
                     ((Button)btnhash[key]).PerformClick();
                 }
             }
-            conf_log("G: " + "tabs" + " - " + rconf.get("tabs"));
-            tabs.SelectedIndex = int.Parse(rconf.get("tabs"));
+            conf_log("G: " + "tabindex" + " - " + rconf.get("tabindex"));
+            tabs.SelectedIndex = int.Parse(rconf.get("tabindex"));
             httpd_readconf();
             tftpd_readconf();
             plan_readconf();
@@ -119,8 +110,8 @@ namespace lazebird.rabbit.rabbit
                 rconf.set(key, ((TextBox)texthash[key]).Text);
                 conf_log("S: " + key + " - " + ((TextBox)texthash[key]).Text);
             }
-            rconf.set("tabs", tabs.SelectedIndex.ToString());
-            conf_log("S: " + "tabs" + " - " + tabs.SelectedIndex.ToString());
+            rconf.set("tabindex", tabs.SelectedIndex.ToString());
+            conf_log("S: " + "tabindex" + " - " + tabs.SelectedIndex.ToString());
             foreach (string key in btnhash.Keys)
             {
                 rconf.set(key, ((Button)btnhash[key]).Text);
@@ -130,6 +121,20 @@ namespace lazebird.rabbit.rabbit
             tftpd_saveconf();
             plan_saveconf();
             chat_saveconf();
+        }
+        Hashtable parse_opts(string s)
+        {
+            Hashtable h = new Hashtable();
+            string[] attrs = s.Split(';');
+            foreach (string attr in attrs)
+            {
+                if (attr.Length <= 0) continue;
+                string[] opts = attr.Split('=');
+                if (opts.Length != 2) continue;
+                if (h.ContainsKey(opts[0])) h.Remove(opts[0]);
+                h.Add(opts[0], opts[1]);
+            }
+            return h;
         }
     }
 }

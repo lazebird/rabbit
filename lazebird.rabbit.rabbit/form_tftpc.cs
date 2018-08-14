@@ -1,6 +1,7 @@
 ﻿using lazebird.rabbit.common;
 using lazebird.rabbit.tftp;
 using System;
+using System.Collections;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
@@ -42,22 +43,23 @@ namespace lazebird.rabbit.rabbit
         int tftpc_blksize;
         string tftpc_lfile;
         string tftpc_rfile;
-        void tftpc_read_args()
+        void tftpc_parse_args()
         {
-            saveconf();
             tftpc_ip = ((TextBox)texthash["tftpc_addr"]).Text;
-            tftpc_tout = int.Parse(((TextBox)texthash["tftpc_timeout"]).Text);
-            tftpc_retry = int.Parse(((TextBox)texthash["tftpc_retry"]).Text);
-            tftpc_blksize = int.Parse(((TextBox)texthash["tftpc_blksize"]).Text);
+            Hashtable opts = parse_opts(text_tftpcopt.Text);
+            if (opts.ContainsKey("timeout")) tftpc_tout = int.Parse((string)opts["timeout"]);
+            if (opts.ContainsKey("retry")) tftpc_retry = int.Parse((string)opts["retry"]);
+            if (opts.ContainsKey("blksize")) tftpc_blksize = int.Parse((string)opts["blksize"]);
             tftpc_lfile = text_tftpclfile.Text;
             tftpc_rfile = text_tftpcrfile.Text;
             tftpc = new rtftpc(tftpc_log_func, tftpc_tout, tftpc_retry, tftpc_blksize);
+            saveconf();
         }
         void tftpc_get_click(object sender, EventArgs evt)
         {
             try
             {
-                tftpc_read_args();
+                tftpc_parse_args();
                 Thread t = new Thread(() => tftpc.get(tftpc_ip, 69, tftpc_rfile, tftpc_rfile, Modes.octet));
                 t.IsBackground = true;
                 t.Start();
@@ -71,7 +73,7 @@ namespace lazebird.rabbit.rabbit
         {
             try
             {
-                tftpc_read_args();
+                tftpc_parse_args();
                 Thread t = new Thread(() => tftpc.put(tftpc_ip, 69, Path.GetFileName(tftpc_lfile), tftpc_lfile, Modes.octet));
                 t.IsBackground = true;
                 t.Start();

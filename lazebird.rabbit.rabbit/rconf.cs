@@ -7,7 +7,7 @@ namespace lazebird.rabbit.rabbit
     {
         public static string get(string key)   // property.setting must be set to avoid exception
         {
-            return ((string)Properties.Settings.Default[key] == "") ? get_default(key) : (string)Properties.Settings.Default[key];
+            return string.IsNullOrEmpty((string)Properties.Settings.Default[key]) ? get_default(key) : (string)Properties.Settings.Default[key];
         }
         public static void set(string key, string value)
         {
@@ -18,23 +18,23 @@ namespace lazebird.rabbit.rabbit
         static string get_default(string key) // effective only when settings have been set to ""
         {
             Hashtable cfg = new Hashtable();
-            string mime = "";
+            cfg.Add("tabindex", "0");
             cfg.Add("ping_addr", "www.mozilla.com");
-            cfg.Add("ping_timeout", "1000");
-            cfg.Add("ping_times", "-1");
+            cfg.Add("ping_opt", "interval=1000;count=-1;log=;");
             cfg.Add("http_port", "8000");
             cfg.Add("http_dirs", ".;..;");
             cfg.Add("scan_ipstart", "192.168.1.1");
             cfg.Add("scan_ipend", "254");
-            cfg.Add("tftpd_timeout", "200");
-            cfg.Add("tftpd_retry", "30");
-            cfg.Add("tftpd_dir_index", "0");
+            cfg.Add("tftpd_opt", "timeout=200;retry=30;");
             cfg.Add("tftpd_dirs", ".;");
+            cfg.Add("tftpd_dir_index", "0");
             cfg.Add("tftpc_addr", "127.0.0.1");
-            cfg.Add("tftpc_timeout", "200");
-            cfg.Add("tftpc_retry", "10");
-            cfg.Add("tftpc_blksize", "1468");
-            cfg.Add("tabs", "0");
+            cfg.Add("tftpc_opt", "timeout=200;retry=10;blksize=1468;");
+            cfg.Add("plans", DateTime.Now + "|45|minute|Have a rest!;");
+            cfg.Add("systray", "false");
+            cfg.Add("chatname", Environment.UserName + "@" + Environment.MachineName);
+            cfg.Add("chatbrdip", "255.255.255.255");
+            string mime = "";
             mime += ".svg:image/svg+xml;";
             mime += ".html:text/html;";
             mime += ".htm:text/html;";
@@ -52,10 +52,6 @@ namespace lazebird.rabbit.rabbit
             mime += ".png:image/png;";
             mime += "*:application/octet-stream;";
             cfg.Add("mime", mime);
-            cfg.Add("plans", DateTime.Now + "|45|minute|Have a rest!;");
-            cfg.Add("systray", "false");
-            cfg.Add("chatname", Environment.UserName + "@" + Environment.MachineName);
-            cfg.Add("chatbrdip", "255.255.255.255");
             return String.IsNullOrEmpty((string)cfg[key]) ? "" : (string)cfg[key];
         }
 

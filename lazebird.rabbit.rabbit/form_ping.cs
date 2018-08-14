@@ -1,6 +1,7 @@
 ﻿using lazebird.rabbit.common;
 using lazebird.rabbit.ping;
 using System;
+using System.Collections;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Windows.Forms;
@@ -16,7 +17,6 @@ namespace lazebird.rabbit.rabbit
             pinglog = new rlog(ping_output);
             ping = new rping(ping_log_func);
             btn_ping.Click += new EventHandler(ping_click);
-            btn_ping_log.Click += new EventHandler(ping_log_click);
             bar = new rtaskbar(pinglog.write);
             records = new int[5];
         }
@@ -61,25 +61,35 @@ namespace lazebird.rabbit.rabbit
             }
         }
         bool stop_unset;
+        string ping_addr;
+        int ping_interval = 1000;
+        int ping_count = -1;
+        string ping_logpath = "";
+        void ping_parse_args()
+        {
+            ping_addr = ((TextBox)texthash["ping_addr"]).Text;
+            Hashtable opts = parse_opts(text_pingopt.Text);
+            if (opts.ContainsKey("interval")) ping_interval = int.Parse((string)opts["interval"]);
+            if (opts.ContainsKey("count")) ping_count = int.Parse((string)opts["count"]);
+            if (opts.ContainsKey("log")) ping_logpath = (string)opts["log"];
+            if (!string.IsNullOrEmpty(ping_logpath)) pinglog.setfile(ping_logpath);
+        }
         void start_ping()
         {
             try
             {
-                string addr = ((TextBox)texthash["ping_addr"]).Text;
-                int timeout = int.Parse(((TextBox)texthash["ping_timeout"]).Text);
-                int count = int.Parse(((TextBox)texthash["ping_times"]).Text);
                 stop_unset = true;
                 recordidx = 0;
                 txcnt = rxcnt = losscnt = 0;
                 mintm = 0xfffffff;
                 maxtm = totaltm = 0;
-                while (stop_unset && (count < 0 || count-- > 0))
+                while (stop_unset && (ping_count < 0 || ping_count-- > 0))
                 {
-                    ping.start(addr, timeout, ping_cb, null);
+                    ping.start(ping_addr, ping_interval, ping_cb, null);
                     txcnt++;
-                    if (timeout > (int)RoundtripTime)
+                    if (ping_interval > (int)RoundtripTime)
                     {
-                        Thread.Sleep(timeout - (int)RoundtripTime);
+                        Thread.Sleep(ping_interval - (int)RoundtripTime);
                     }
                 }
                 display_statistics();
@@ -102,8 +112,8 @@ namespace lazebird.rabbit.rabbit
             {
                 ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
                 ((Button)btnhash["ping_btn"]).Text = Language.trans("停止");
-                pinglog.setfile(((TextBox)texthash["ping_logfile"]).Text);
                 pinglog.clear();
+                ping_parse_args();
                 Thread th = new Thread(start_ping);
                 th.IsBackground = true;
                 th.Start();
@@ -113,19 +123,6 @@ namespace lazebird.rabbit.rabbit
                 stop_ping();
             }
             saveconf();
-        }
-        void ping_log_click(object sender, EventArgs e)
-        {
-            SaveFileDialog fd = new SaveFileDialog();
-            fd.Filter = "文本文件 (*.txt)|*.txt|All files (*.*)|*.*";
-            fd.RestoreDirectory = true;
-            fd.CreatePrompt = true;
-            fd.OverwritePrompt = true;
-            fd.InitialDirectory = Environment.CurrentDirectory;
-            if (fd.ShowDialog() == DialogResult.OK)
-            {
-                ((TextBox)texthash["ping_logfile"]).Text = fd.FileName;
-            }
         }
         void display_taskbar(int rx)
         {

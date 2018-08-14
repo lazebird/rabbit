@@ -117,6 +117,14 @@ namespace lazebird.rabbit.rabbit
             tftpd_dirhash.Remove(b);
             curtftpd_dir = -1;  // reset cur index, to avoid problems
         }
+        int tftpd_timeout = 200;
+        int tftpd_retry = 30;
+        void tftpd_parse_args()
+        {
+            Hashtable opts = parse_opts(text_tftpdopt.Text);
+            if (opts.ContainsKey("timeout")) tftpd_timeout = int.Parse((string)opts["timeout"]);
+            if (opts.ContainsKey("retry")) tftpd_retry = int.Parse((string)opts["retry"]);
+        }
         void tftpd_click(object sender, EventArgs evt)
         {
             try
@@ -125,7 +133,8 @@ namespace lazebird.rabbit.rabbit
                 {
                     tftpdlog.clear();
                     ((Button)btnhash["tftpd_btn"]).Text = Language.trans("停止");
-                    tftpd.start(69, int.Parse(((TextBox)texthash["tftpd_timeout"]).Text), int.Parse(((TextBox)texthash["tftpd_retry"]).Text));
+                    tftpd_parse_args();
+                    tftpd.start(69, tftpd_timeout, tftpd_retry);
                 }
                 else
                 {
