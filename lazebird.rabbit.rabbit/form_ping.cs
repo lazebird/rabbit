@@ -10,8 +10,7 @@ namespace lazebird.rabbit.rabbit
     public partial class Form1 : Form
     {
         rlog pinglog;
-        int[] records;
-        int recordidx;
+        Queue recq;
         rtaskbar bar;
         string ping_addr;
         int ping_interval = 1000;
@@ -24,7 +23,7 @@ namespace lazebird.rabbit.rabbit
             pinglog = new rlog(ping_output);
             btn_ping.Click += new EventHandler(ping_click);
             bar = new rtaskbar(pinglog.write);
-            records = new int[5];
+            recq = new Queue();
         }
         void ping_log_func(string msg)
         {
@@ -37,7 +36,7 @@ namespace lazebird.rabbit.rabbit
                 ((Form)formhash["form"]).Text = "Rabbit";
                 ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
             }
-            else display_taskbar(reply.Status == IPStatus.Success ? 1 : 0);
+            else display_taskbar(reply.Status == IPStatus.Success);
             if (ping != null) text_pingstat.Text = ping.ToString();
         }
         void ping_parse_args()
@@ -58,6 +57,7 @@ namespace lazebird.rabbit.rabbit
                 ((Button)btnhash["ping_btn"]).Text = Language.trans("停止");
                 pinglog.clear();
                 ping_parse_args();
+                recq.Clear();
                 bar.reset();
                 ping = new rping(ping_log_func, ping_addr, ping_interval, ping_count, ping_stoponloss);
                 ping.start(ping_cb, null);
@@ -69,33 +69,16 @@ namespace lazebird.rabbit.rabbit
             }
             saveconf();
         }
-        void display_taskbar(int rx)
+        void display_taskbar(bool state)
         {
-            if (recordidx < 5)
-            {
-                records[recordidx++] = rx;
-            }
-            else
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    records[i] = records[i + 1];
-                }
-                records[4] = rx;
-            }
-            int count = 0;
-            for (int i = 0; i < recordidx; i++)
-            {
-                count += records[i];
-            }
-            if (count != recordidx)
-            {
-                bar.set(4, recordidx - count, 5); // TaskbarProgressBarState.Error
-            }
-            else
-            {
-                bar.set(2, count, 5); // TaskbarProgressBarState.Normal
-            }
+            recq.Enqueue(state);
+            while (recq.Count > 5) recq.Dequeue();
+            int success = 0;
+            int failure = 0;
+            int tmp;
+            foreach (bool s in recq) tmp = (s ? (success++) : (failure++));
+            if (failure > 0) bar.set(4, failure, 5); // TaskbarProgressBarState.Error
+            else bar.set(2, success, 5); // TaskbarProgressBarState.Normal
         }
     }
 }
