@@ -16,7 +16,7 @@ namespace lazebird.rabbit.rabbit
         Version pver;
         string prjurl = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
         string profileuri = @"%userprofile%\appdata\local";
-        string helpurl = "https://code.aliyun.com/lazebird/rabbit/raw/master/doc/manual.md";
+        string helpurl = "https://code.aliyun.com/lazebird/rabbit/blob/master/doc/manual.md";
         void init_form_setting()
         {
             setlog = new rlog(setting_output);
