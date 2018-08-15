@@ -16,6 +16,7 @@ namespace lazebird.rabbit.rabbit
         int ping_interval = 1000;
         int ping_count = -1;
         bool ping_stoponloss = false;
+        bool ping_taskbar = false;
         rping ping;
         string ping_logpath = "";
         void init_form_ping()
@@ -46,6 +47,7 @@ namespace lazebird.rabbit.rabbit
             if (opts.ContainsKey("interval")) ping_interval = int.Parse((string)opts["interval"]);
             if (opts.ContainsKey("count")) ping_count = int.Parse((string)opts["count"]);
             if (opts.ContainsKey("stoponloss")) ping_stoponloss = (string)opts["stoponloss"] == "true";
+            if (opts.ContainsKey("taskbar")) ping_taskbar = (string)opts["taskbar"] == "true";
             if (opts.ContainsKey("log")) ping_logpath = (string)opts["log"];
             if (!string.IsNullOrEmpty(ping_logpath)) pinglog.setfile(ping_logpath);
         }
@@ -58,7 +60,6 @@ namespace lazebird.rabbit.rabbit
                 pinglog.clear();
                 ping_parse_args();
                 recq.Clear();
-                bar.reset();
                 ping = new rping(ping_log_func, ping_addr, ping_interval, ping_count, ping_stoponloss);
                 ping.start(ping_cb, null);
             }
@@ -71,6 +72,7 @@ namespace lazebird.rabbit.rabbit
         }
         void display_taskbar(bool state)
         {
+            if (ping_taskbar) bar.reset();
             recq.Enqueue(state);
             while (recq.Count > 5) recq.Dequeue();
             int success = 0;
