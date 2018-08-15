@@ -17,7 +17,7 @@ namespace lazebird.rabbit.rabbit
         void init_form_tftpc()
         {
             tftpclog = new rlog(tftpc_output);
-            btn_tftpclfile.Click += new EventHandler(tftpc_lfile_click);
+            text_tftpclfile.DoubleClick += new EventHandler(tftpc_lfile_click);
             btn_tftpcput.Click += new EventHandler(tftpc_put_click);
             btn_tftpcget.Click += new EventHandler(tftpc_get_click);
         }

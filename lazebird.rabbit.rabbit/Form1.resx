@@ -1096,7 +1096,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_tftpcaddr.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 8</value>
+    <value>10, 10</value>
   </data>
   <data name="label_tftpcaddr.Size" type="System.Drawing.Size, System.Drawing">
     <value>18, 16</value>
@@ -1123,7 +1123,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpcaddr.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 8</value>
+    <value>92, 10</value>
   </data>
   <data name="text_tftpcaddr.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 14</value>
@@ -1150,7 +1150,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_tftpcopt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>316, 8</value>
+    <value>316, 10</value>
   </data>
   <data name="label_tftpcopt.Size" type="System.Drawing.Size, System.Drawing">
     <value>31, 16</value>
@@ -1177,7 +1177,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpcopt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>347, 8</value>
+    <value>347, 10</value>
   </data>
   <data name="text_tftpcopt.Size" type="System.Drawing.Size, System.Drawing">
     <value>421, 14</value>
@@ -1197,50 +1197,17 @@
   <data name="&gt;&gt;text_tftpcopt.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="btn_tftpclfile.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
-  </data>
-  <data name="btn_tftpclfile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="btn_tftpclfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 32</value>
-  </data>
-  <data name="btn_tftpclfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="btn_tftpclfile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 20</value>
-  </data>
-  <data name="btn_tftpclfile.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
-  </data>
-  <data name="btn_tftpclfile.Text" xml:space="preserve">
-    <value>Put File</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpclfile.Name" xml:space="preserve">
-    <value>btn_tftpclfile</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpclfile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpclfile.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;btn_tftpclfile.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
   <data name="text_tftpclfile.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpclfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 32</value>
+    <value>10, 40</value>
   </data>
   <data name="text_tftpclfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="text_tftpclfile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>595, 14</value>
+    <value>675, 14</value>
   </data>
   <data name="text_tftpclfile.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -1255,49 +1222,19 @@
     <value>TFTPC</value>
   </data>
   <data name="&gt;&gt;text_tftpclfile.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="label_tftpcrfile.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label_tftpcrfile.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label_tftpcrfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 56</value>
-  </data>
-  <data name="label_tftpcrfile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 16</value>
-  </data>
-  <data name="label_tftpcrfile.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
-  </data>
-  <data name="label_tftpcrfile.Text" xml:space="preserve">
-    <value>Get File</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcrfile.Name" xml:space="preserve">
-    <value>label_tftpcrfile</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcrfile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcrfile.Parent" xml:space="preserve">
-    <value>TFTPC</value>
-  </data>
-  <data name="&gt;&gt;label_tftpcrfile.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>4</value>
   </data>
   <data name="text_tftpcrfile.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpcrfile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>92, 56</value>
+    <value>10, 70</value>
   </data>
   <data name="text_tftpcrfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="text_tftpcrfile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>595, 14</value>
+    <value>675, 14</value>
   </data>
   <data name="text_tftpcrfile.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -1312,7 +1249,7 @@
     <value>TFTPC</value>
   </data>
   <data name="&gt;&gt;text_tftpcrfile.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>5</value>
   </data>
   <data name="btn_tftpcget.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -1324,7 +1261,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_tftpcget.Location" type="System.Drawing.Point, System.Drawing">
-    <value>702, 56</value>
+    <value>702, 70</value>
   </data>
   <data name="btn_tftpcget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1348,7 +1285,7 @@
     <value>TFTPC</value>
   </data>
   <data name="&gt;&gt;btn_tftpcget.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>6</value>
   </data>
   <data name="btn_tftpcput.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -1360,7 +1297,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_tftpcput.Location" type="System.Drawing.Point, System.Drawing">
-    <value>702, 32</value>
+    <value>702, 40</value>
   </data>
   <data name="btn_tftpcput.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -1384,7 +1321,7 @@
     <value>TFTPC</value>
   </data>
   <data name="&gt;&gt;btn_tftpcput.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>7</value>
   </data>
   <data name="tftpc_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
@@ -1393,13 +1330,13 @@
     <value>16</value>
   </data>
   <data name="tftpc_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 84</value>
+    <value>0, 100</value>
   </data>
   <data name="tftpc_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="tftpc_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 448</value>
+    <value>776, 432</value>
   </data>
   <data name="tftpc_output.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -1414,7 +1351,7 @@
     <value>TFTPC</value>
   </data>
   <data name="&gt;&gt;tftpc_output.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>8</value>
   </data>
   <data name="TFTPC.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
@@ -1717,7 +1654,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 380</value>
+    <value>776, 383</value>
   </data>
   <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1924,7 +1861,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_chat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 401</value>
+    <value>776, 404</value>
   </data>
   <data name="fp_chat.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>

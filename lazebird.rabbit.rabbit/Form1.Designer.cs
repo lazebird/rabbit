@@ -81,9 +81,7 @@
             this.text_tftpcaddr = new System.Windows.Forms.TextBox();
             this.label_tftpcopt = new System.Windows.Forms.Label();
             this.text_tftpcopt = new System.Windows.Forms.TextBox();
-            this.btn_tftpclfile = new System.Windows.Forms.Button();
             this.text_tftpclfile = new System.Windows.Forms.TextBox();
-            this.label_tftpcrfile = new System.Windows.Forms.Label();
             this.text_tftpcrfile = new System.Windows.Forms.TextBox();
             this.btn_tftpcget = new System.Windows.Forms.Button();
             this.btn_tftpcput = new System.Windows.Forms.Button();
@@ -436,9 +434,7 @@
             this.TFTPC.Controls.Add(this.text_tftpcaddr);
             this.TFTPC.Controls.Add(this.label_tftpcopt);
             this.TFTPC.Controls.Add(this.text_tftpcopt);
-            this.TFTPC.Controls.Add(this.btn_tftpclfile);
             this.TFTPC.Controls.Add(this.text_tftpclfile);
-            this.TFTPC.Controls.Add(this.label_tftpcrfile);
             this.TFTPC.Controls.Add(this.text_tftpcrfile);
             this.TFTPC.Controls.Add(this.btn_tftpcget);
             this.TFTPC.Controls.Add(this.btn_tftpcput);
@@ -473,14 +469,6 @@
             this.text_tftpcopt.ForeColor = System.Drawing.Color.White;
             this.text_tftpcopt.Name = "text_tftpcopt";
             // 
-            // btn_tftpclfile
-            // 
-            this.btn_tftpclfile.BackColor = System.Drawing.Color.YellowGreen;
-            this.btn_tftpclfile.FlatAppearance.BorderSize = 0;
-            resources.ApplyResources(this.btn_tftpclfile, "btn_tftpclfile");
-            this.btn_tftpclfile.Name = "btn_tftpclfile";
-            this.btn_tftpclfile.UseVisualStyleBackColor = false;
-            // 
             // text_tftpclfile
             // 
             resources.ApplyResources(this.text_tftpclfile, "text_tftpclfile");
@@ -488,11 +476,6 @@
             this.text_tftpclfile.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.text_tftpclfile.ForeColor = System.Drawing.Color.White;
             this.text_tftpclfile.Name = "text_tftpclfile";
-            // 
-            // label_tftpcrfile
-            // 
-            resources.ApplyResources(this.label_tftpcrfile, "label_tftpcrfile");
-            this.label_tftpcrfile.Name = "label_tftpcrfile";
             // 
             // text_tftpcrfile
             // 
@@ -826,11 +809,9 @@
         System.Windows.Forms.Label label_tftpcopt;
         System.Windows.Forms.TextBox text_tftpcopt;
         System.Windows.Forms.TextBox text_tftpclfile;
-        System.Windows.Forms.Button btn_tftpclfile;
         System.Windows.Forms.TextBox text_tftpcrfile;
         System.Windows.Forms.Button btn_tftpcget;
         System.Windows.Forms.ListBox tftpc_output;
-        System.Windows.Forms.Label label_tftpcrfile;
         System.Windows.Forms.Button btn_tftpcput;
         System.Windows.Forms.Label label_tftpcaddr;
         System.Windows.Forms.TextBox text_tftpcaddr;
