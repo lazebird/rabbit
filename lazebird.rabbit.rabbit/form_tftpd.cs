@@ -15,8 +15,6 @@ namespace lazebird.rabbit.rabbit
         Hashtable tftpd_dirhash;
         int curtftpd_dir = -1;
         ArrayList tftpd_dirs;
-        Timer tftpd_tmr;
-        TextBox lastclicked = null;  // donot support two different dir clicked at the same time
         string lasttftpddir = Environment.CurrentDirectory;
         int tftpdtblen;
         int tftpd_timeout = 200;

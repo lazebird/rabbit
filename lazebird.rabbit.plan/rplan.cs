@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -114,55 +113,11 @@ namespace lazebird.rabbit.plan
                 log("!E: " + e.ToString());
             }
         }
-        int loop;
-        void form_click(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right) loop = 0;
-        }
-        void form_load(object sender, EventArgs e)
-        {
-            Form f = (Form)sender;
-            Label l = new Label();
-            f.Controls.Add(l);
-            Thread t1 = new Thread(() => label_task(f, l));
-            t1.IsBackground = true;
-            t1.Start();
-        }
-        void label_task(Form f, Label l)
-        {
-            l.Location = new Point(10, f.Height / 2);
-            l.Width = f.Width - 20;
-            l.TextAlign = ContentAlignment.MiddleCenter;
-            l.Font = new Font(l.Font.FontFamily, 12, l.Font.Style);
-            l.BackColor = Color.Black;
-            l.ForeColor = Color.White;
-            loop = duration;
-            while (loop-- > 0)
-            {
-                l.Text = msg + " (" + loop + ")";
-                Thread.Sleep(1000); // update progress per second
-            }
-            l.Dispose();
-            f.Dispose();
-            t_ui = null;
-        }
-        void form_task()
-        {
-            Form f = new Form();
-            f.FormBorderStyle = FormBorderStyle.None;
-            f.WindowState = FormWindowState.Maximized;
-            f.BackColor = Color.Black;
-            f.TopMost = true;
-            f.Text = msg + " " + DateTime.Now;
-            f.MouseClick += form_click;
-            f.Load += form_load;
-            Application.Run(f);
-        }
         public void trigger()
         {
             log("I: trigger " + msg);
             if (t_ui != null) return;
-            t_ui = new Thread(form_task);
+            t_ui = new Thread(() => Application.Run(new rplanform(msg, duration)));
             t_ui.IsBackground = true;
             t_ui.Start();
         }
