@@ -14,6 +14,8 @@ namespace lazebird.rabbit.chat
         IPEndPoint r;
         ss chatss;
         Hashtable mhash;
+        int pa_chat_gap = 30;
+        int tb_chat_gap = 12;
         public rchatform(Action<string> log, string luser, string ruser, IPEndPoint r)
         {
             InitializeComponent();
@@ -23,10 +25,49 @@ namespace lazebird.rabbit.chat
             this.r = r;
             Text = ruser + " " + r.ToString();
             chatss = new ss(log, luser, ruser, r);
-            chatss.init_view_api(show_msg, del_msg);
+            chatss.OnHear += Chatss_OnHear;
+            chatss.OnSayfail += Chatss_OnSayfail;
             mhash = new Hashtable();
             init_form();
         }
+        void show_msg(message m)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new MethodInvoker(delegate { show_msg(m); }));
+                return;
+            }
+            RichTextBox rtb;
+            if (mhash.ContainsKey(m))
+                rtb = (RichTextBox)mhash[m];
+            else
+            {
+                rtb = new RichTextBox();
+                rtb.Width = pa_chat.Width - tb_chat_gap;
+                rtb.WordWrap = true;
+                rtb.ContentsResized += rtb_ContentsResized;
+                rtb.Font = new Font(rtb.Font.FontFamily, 12, rtb.Font.Style);
+                rtb.BorderStyle = BorderStyle.None;
+                rtb.BackColor = pa_chat.BackColor;
+                rtb.ForeColor = Color.White;
+                rtb.Dock = DockStyle.Top;    // auto add behind pevious tb
+                pa_chat.Controls.Add(rtb);
+                pa_chat.Controls.SetChildIndex(rtb, 0);
+                pa_chat.ScrollControlIntoView(rtb);
+                mhash.Add(m, rtb);
+            }
+            rtb.Text = m.ToString();
+        }
+        void Chatss_OnSayfail(object sender, EventArgs e)
+        {
+            show_msg((message)sender);
+        }
+
+        void Chatss_OnHear(object sender, EventArgs e)
+        {
+            show_msg((message)sender);
+        }
+
         public rchatform(Action<string> log, string luser, pkt pkt, IPEndPoint r) : this(log, luser, pkt.user, r)
         {
             chatss.pkt_proc(pkt);
@@ -57,7 +98,10 @@ namespace lazebird.rabbit.chat
             RichTextBox tb = (RichTextBox)sender;
             if (e.KeyData == (Keys.Enter))
             {
-                if (!string.IsNullOrEmpty(tb.Text.Trim())) chatss.write_msg(tb.Text.Trim());
+                if (!string.IsNullOrEmpty(tb.Text.Trim()))
+                {
+                    show_msg(chatss.say(tb.Text.Trim()));
+                }
                 tb.Clear();
             }
             else if (e.KeyData == (Keys.Control | Keys.S))
@@ -69,8 +113,6 @@ namespace lazebird.rabbit.chat
                 Close();
             }
         }
-        int pa_chat_gap = 30;
-        int tb_chat_gap = 12;
         void msg_resize(object sender, EventArgs e)
         {
             pa_chat.Width = Width - pa_chat_gap;
@@ -80,51 +122,6 @@ namespace lazebird.rabbit.chat
         void rtb_ContentsResized(object sender, ContentsResizedEventArgs e)
         {
             ((RichTextBox)sender).Height = e.NewRectangle.Height + 5;
-        }
-        void show_msg(bool self, message m, int count)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new MethodInvoker(delegate { show_msg(self, m, count); }));
-                return;
-            }
-            RichTextBox rtb;
-            if (mhash.ContainsKey(m))
-            {
-                rtb = (RichTextBox)mhash[m];
-            }
-            else
-            {
-                rtb = new RichTextBox();
-                rtb.Width = pa_chat.Width - tb_chat_gap;
-                rtb.WordWrap = true;
-                rtb.ContentsResized += rtb_ContentsResized;
-                rtb.Font = new Font(rtb.Font.FontFamily, 12, rtb.Font.Style);
-                rtb.BorderStyle = BorderStyle.None;
-                rtb.BackColor = pa_chat.BackColor;
-                rtb.ForeColor = Color.White;
-                rtb.Dock = DockStyle.Top;    // auto add behind pevious tb
-                pa_chat.Controls.Add(rtb);
-                pa_chat.Controls.SetChildIndex(rtb, 0);
-                pa_chat.ScrollControlIntoView(rtb);
-                mhash.Add(m, rtb);
-            }
-            rtb.Text = m.ToString();
-        }
-        void del_msg(message m)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new MethodInvoker(delegate { del_msg(m); }));
-                return;
-            }
-            RichTextBox tb;
-            if (mhash.ContainsKey(m))
-            {
-                tb = (RichTextBox)mhash[m];
-                pa_chat.Controls.Remove(tb);
-                mhash.Remove(m);
-            }
         }
     }
 }

@@ -4,14 +4,16 @@ namespace lazebird.rabbit.chat
 {
     public class message
     {
-        string user;
-        string content;
+        public string user;
+        public string content;
+        public int index;
         DateTime timestamp;
-        bool sentfail;
-        public message(string user, string content)
+        bool sentfail = false;
+        public message(string user, string content, int index)
         {
             this.user = user;
             this.content = content;
+            this.index = index;
             timestamp = DateTime.Now;
         }
         public void set_status(bool sentfail)
@@ -20,11 +22,11 @@ namespace lazebird.rabbit.chat
         }
         public override string ToString()
         {
-            return user + " " + timestamp.ToString() + "\r\n" + content + (sentfail ? " !" : "");
+            return user + " " + timestamp.ToString() + "\r\n" + content + (sentfail ? " (send failed!)" : "");
         }
         public string toshortstring()
         {
-            return content + (sentfail ? " !" : "");
+            return content + (sentfail ? " (send failed!)" : "");
         }
     }
 }

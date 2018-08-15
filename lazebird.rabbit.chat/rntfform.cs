@@ -66,9 +66,10 @@ namespace lazebird.rabbit.chat
         {
             ((RichTextBox)sender).Height = e.NewRectangle.Height + 5;
         }
+        int msgindex = 0;
         void show_msg(string s)
         {
-            message m = new message(luser, s);
+            message m = new message(luser, s, msgindex++);
             RichTextBox rtb = new RichTextBox();
             rtb.Width = pa_chat.Width - tb_chat_gap;
             rtb.WordWrap = true;
@@ -83,16 +84,6 @@ namespace lazebird.rabbit.chat
             pa_chat.ScrollControlIntoView(rtb);
             mhash.Add(m, rtb);
             rtb.Text = m.ToString();
-        }
-        void del_msg(message m)
-        {
-            RichTextBox tb;
-            if (mhash.ContainsKey(m))
-            {
-                tb = (RichTextBox)mhash[m];
-                pa_chat.Controls.Remove(tb);
-                mhash.Remove(m);
-            }
         }
     }
 }
