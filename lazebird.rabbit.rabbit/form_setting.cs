@@ -36,6 +36,7 @@ namespace lazebird.rabbit.rabbit
             setlog.write("Language: " + Language.Getlang());
             if (File.Exists(upgrade.scriptpath)) File.Delete(upgrade.scriptpath);
             init_systray();
+            cb_top.CheckedChanged += top_click;
         }
         void lang_opt_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -151,6 +152,10 @@ namespace lazebird.rabbit.rabbit
             Visible = (WindowState == FormWindowState.Minimized);
             WindowState = (WindowState == FormWindowState.Minimized) ? FormWindowState.Normal : FormWindowState.Minimized;
             if (WindowState == FormWindowState.Normal) Activate();
+        }
+        void top_click(object sender, EventArgs e)
+        {
+            TopMost = ((CheckBox)sender).Checked;
         }
     }
 }

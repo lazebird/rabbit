@@ -1935,6 +1935,36 @@
   <data name="&gt;&gt;CHAT.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
+  <data name="cb_top.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="cb_top.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="cb_top.Location" type="System.Drawing.Point, System.Drawing">
+    <value>315, 10</value>
+  </data>
+  <data name="cb_top.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 20</value>
+  </data>
+  <data name="cb_top.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="cb_top.Text" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="&gt;&gt;cb_top.Name" xml:space="preserve">
+    <value>cb_top</value>
+  </data>
+  <data name="&gt;&gt;cb_top.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cb_top.Parent" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="&gt;&gt;cb_top.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="link_help.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
   </data>
@@ -1966,7 +1996,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;link_help.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="label_lang.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1993,7 +2023,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;label_lang.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="lang_cb.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
@@ -2020,7 +2050,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;lang_cb.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="label_ver.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2050,7 +2080,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;label_ver.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="link_ver.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2077,7 +2107,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;link_ver.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="link_prj.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -2107,7 +2137,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;link_prj.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="link_prof.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -2140,7 +2170,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;link_prof.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="cb_systray.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2167,7 +2197,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;cb_systray.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="setting_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
@@ -2197,7 +2227,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;setting_output.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="Setting.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>

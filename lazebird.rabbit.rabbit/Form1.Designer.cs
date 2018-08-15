@@ -106,6 +106,7 @@
             this.fp_chat = new System.Windows.Forms.FlowLayoutPanel();
             this.chat_output = new System.Windows.Forms.ListBox();
             this.Setting = new System.Windows.Forms.TabPage();
+            this.link_help = new System.Windows.Forms.LinkLabel();
             this.label_lang = new System.Windows.Forms.Label();
             this.lang_cb = new System.Windows.Forms.ComboBox();
             this.label_ver = new System.Windows.Forms.Label();
@@ -115,7 +116,7 @@
             this.cb_systray = new System.Windows.Forms.CheckBox();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
-            this.link_help = new System.Windows.Forms.LinkLabel();
+            this.cb_top = new System.Windows.Forms.CheckBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -670,6 +671,7 @@
             // Setting
             // 
             this.Setting.BackColor = System.Drawing.Color.DimGray;
+            this.Setting.Controls.Add(this.cb_top);
             this.Setting.Controls.Add(this.link_help);
             this.Setting.Controls.Add(this.label_lang);
             this.Setting.Controls.Add(this.lang_cb);
@@ -682,6 +684,12 @@
             this.Setting.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
+            // 
+            // link_help
+            // 
+            resources.ApplyResources(this.link_help, "link_help");
+            this.link_help.Name = "link_help";
+            this.link_help.TabStop = true;
             // 
             // label_lang
             // 
@@ -737,11 +745,11 @@
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
             // 
-            // link_help
+            // cb_top
             // 
-            resources.ApplyResources(this.link_help, "link_help");
-            this.link_help.Name = "link_help";
-            this.link_help.TabStop = true;
+            resources.ApplyResources(this.cb_top, "cb_top");
+            this.cb_top.Name = "cb_top";
+            this.cb_top.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -853,6 +861,7 @@
         private System.Windows.Forms.TextBox text_scanopt;
         private System.Windows.Forms.TextBox text_pingstat;
         private System.Windows.Forms.LinkLabel link_help;
+        private System.Windows.Forms.CheckBox cb_top;
     }
 }
 
