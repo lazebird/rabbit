@@ -118,6 +118,7 @@
             this.cb_systray = new System.Windows.Forms.CheckBox();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
+            this.text_pingstat = new System.Windows.Forms.TextBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -168,6 +169,7 @@
             this.Ping.Controls.Add(this.label_pingopt);
             this.Ping.Controls.Add(this.text_pingopt);
             this.Ping.Controls.Add(this.btn_ping);
+            this.Ping.Controls.Add(this.text_pingstat);
             this.Ping.Controls.Add(this.ping_output);
             this.Ping.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Ping, "Ping");
@@ -753,6 +755,14 @@
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
             // 
+            // text_pingstat
+            // 
+            this.text_pingstat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_pingstat.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_pingstat.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.text_pingstat, "text_pingstat");
+            this.text_pingstat.Name = "text_pingstat";
+            // 
             // Form1
             // 
             resources.ApplyResources(this, "$this");
@@ -865,6 +875,7 @@
         private System.Windows.Forms.TextBox text_chatntf;
         private System.Windows.Forms.Label label_scanopt;
         private System.Windows.Forms.TextBox text_scanopt;
+        private System.Windows.Forms.TextBox text_pingstat;
     }
 }
 

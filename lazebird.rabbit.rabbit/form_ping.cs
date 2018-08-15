@@ -19,9 +19,11 @@ namespace lazebird.rabbit.rabbit
             btn_ping.Click += new EventHandler(ping_click);
             bar = new rtaskbar(pinglog.write);
             records = new int[5];
+            ping_opertm = DateTime.Now;
         }
         int txcnt, rxcnt, losscnt;
         int mintm, maxtm, totaltm;
+        DateTime ping_opertm;
         int[] records;
         int recordidx;
         rtaskbar bar;
@@ -63,7 +65,7 @@ namespace lazebird.rabbit.rabbit
         void ping_parse_args()
         {
             ping_addr = ((TextBox)texthash["ping_addr"]).Text;
-            Hashtable opts = parse_opts(text_pingopt.Text);
+            Hashtable opts = ropt.parse_opts(text_pingopt.Text);
             if (opts.ContainsKey("interval")) ping_interval = int.Parse((string)opts["interval"]);
             if (opts.ContainsKey("count")) ping_count = int.Parse((string)opts["count"]);
             if (opts.ContainsKey("log")) ping_logpath = (string)opts["log"];
@@ -103,6 +105,7 @@ namespace lazebird.rabbit.rabbit
         }
         void ping_click(object sender, EventArgs evt)
         {
+            ping_opertm = DateTime.Now;
             if (((Button)btnhash["ping_btn"]).Text == Language.trans("开始"))
             {
                 ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;

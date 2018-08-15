@@ -46,7 +46,7 @@ namespace lazebird.rabbit.rabbit
         void tftpc_parse_args()
         {
             tftpc_ip = ((TextBox)texthash["tftpc_addr"]).Text;
-            Hashtable opts = parse_opts(text_tftpcopt.Text);
+            Hashtable opts = ropt.parse_opts(text_tftpcopt.Text);
             if (opts.ContainsKey("timeout")) tftpc_tout = int.Parse((string)opts["timeout"]);
             if (opts.ContainsKey("retry")) tftpc_retry = int.Parse((string)opts["retry"]);
             if (opts.ContainsKey("blksize")) tftpc_blksize = int.Parse((string)opts["blksize"]);

@@ -1,4 +1,5 @@
-﻿using lazebird.rabbit.ping;
+﻿using lazebird.rabbit.common;
+using lazebird.rabbit.ping;
 using System;
 using System.Collections;
 using System.Drawing;
@@ -23,7 +24,7 @@ namespace lazebird.rabbit.rabbit
         bool scan_filteron;
         void scan_parse_args()
         {
-            Hashtable opts = parse_opts(text_scanopt.Text);
+            Hashtable opts = ropt.parse_opts(text_scanopt.Text);
             if (opts.ContainsKey("filter")) scan_filteron = (string)opts["filter"] == "on";
         }
         void scan_reply(PingReply reply, object data)
