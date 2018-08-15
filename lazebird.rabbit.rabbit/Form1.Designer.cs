@@ -49,6 +49,7 @@
             this.label_pingopt = new System.Windows.Forms.Label();
             this.text_pingopt = new System.Windows.Forms.TextBox();
             this.btn_ping = new System.Windows.Forms.Button();
+            this.text_pingstat = new System.Windows.Forms.TextBox();
             this.ping_output = new System.Windows.Forms.ListBox();
             this.Scan = new System.Windows.Forms.TabPage();
             this.label_scanip = new System.Windows.Forms.Label();
@@ -111,14 +112,11 @@
             this.lang_cb = new System.Windows.Forms.ComboBox();
             this.label_ver = new System.Windows.Forms.Label();
             this.link_ver = new System.Windows.Forms.LinkLabel();
-            this.label_prj = new System.Windows.Forms.Label();
             this.link_prj = new System.Windows.Forms.LinkLabel();
-            this.label_prof = new System.Windows.Forms.Label();
             this.link_prof = new System.Windows.Forms.LinkLabel();
             this.cb_systray = new System.Windows.Forms.CheckBox();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
-            this.text_pingstat = new System.Windows.Forms.TextBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -214,6 +212,15 @@
             this.btn_ping.ForeColor = System.Drawing.Color.White;
             this.btn_ping.Name = "btn_ping";
             this.btn_ping.UseVisualStyleBackColor = false;
+            // 
+            // text_pingstat
+            // 
+            this.text_pingstat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_pingstat.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_pingstat.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.text_pingstat, "text_pingstat");
+            this.text_pingstat.Name = "text_pingstat";
+            this.text_pingstat.ReadOnly = true;
             // 
             // ping_output
             // 
@@ -683,9 +690,7 @@
             this.Setting.Controls.Add(this.lang_cb);
             this.Setting.Controls.Add(this.label_ver);
             this.Setting.Controls.Add(this.link_ver);
-            this.Setting.Controls.Add(this.label_prj);
             this.Setting.Controls.Add(this.link_prj);
-            this.Setting.Controls.Add(this.label_prof);
             this.Setting.Controls.Add(this.link_prof);
             this.Setting.Controls.Add(this.cb_systray);
             this.Setting.Controls.Add(this.setting_output);
@@ -716,25 +721,17 @@
             resources.ApplyResources(this.link_ver, "link_ver");
             this.link_ver.Name = "link_ver";
             // 
-            // label_prj
-            // 
-            resources.ApplyResources(this.label_prj, "label_prj");
-            this.label_prj.Name = "label_prj";
-            // 
             // link_prj
             // 
             resources.ApplyResources(this.link_prj, "link_prj");
             this.link_prj.Name = "link_prj";
-            // 
-            // label_prof
-            // 
-            resources.ApplyResources(this.label_prof, "label_prof");
-            this.label_prof.Name = "label_prof";
+            this.link_prj.TabStop = true;
             // 
             // link_prof
             // 
             resources.ApplyResources(this.link_prof, "link_prof");
             this.link_prof.Name = "link_prof";
+            this.link_prof.TabStop = true;
             // 
             // cb_systray
             // 
@@ -754,14 +751,6 @@
             // ntfico
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
-            // 
-            // text_pingstat
-            // 
-            this.text_pingstat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.text_pingstat.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.text_pingstat.ForeColor = System.Drawing.Color.White;
-            resources.ApplyResources(this.text_pingstat, "text_pingstat");
-            this.text_pingstat.Name = "text_pingstat";
             // 
             // Form1
             // 
@@ -830,7 +819,6 @@
         System.Windows.Forms.FlowLayoutPanel fp_scan;
         System.Windows.Forms.ListBox setting_output;
         System.Windows.Forms.LinkLabel link_prj;
-        System.Windows.Forms.Label label_prj;
         System.Windows.Forms.ListBox plan_output;
         System.Windows.Forms.Label label_tftpdopt;
         System.Windows.Forms.TextBox text_tftpdopt;
@@ -849,7 +837,6 @@
         System.Windows.Forms.FlowLayoutPanel tftpd_fp;
         private System.Windows.Forms.Label label_ver;
         private System.Windows.Forms.LinkLabel link_ver;
-        private System.Windows.Forms.Label label_prof;
         private System.Windows.Forms.LinkLabel link_prof;
         private System.Windows.Forms.FlowLayoutPanel fp_httpd;
         private System.Windows.Forms.CheckBox cb_http_index;

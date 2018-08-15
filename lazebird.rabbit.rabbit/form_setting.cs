@@ -14,16 +14,16 @@ namespace lazebird.rabbit.rabbit
     {
         rlog setlog;
         Version pver;
+        string prjurl = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
+        string profileuri = @"%userprofile%\appdata\local";
         void init_form_setting()
         {
             setlog = new rlog(setting_output);
             pver = Assembly.GetExecutingAssembly().GetName().Version;
             link_ver.Text = pver.ToString() + " (" + appver.v.ToString() + ")";
             link_ver.LinkClicked += ver_click;
-            link_prj.Text = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
-            link_prj.LinkClicked += url_click;
-            link_prof.Text = @"%userprofile%\appdata\local";
-            link_prof.LinkClicked += path_click;
+            link_prj.LinkClicked += prj_click;
+            link_prof.LinkClicked += profile_click;
             List<string> list = new List<string>();
             list.Add("System");
             list.Add("English");
@@ -50,13 +50,13 @@ namespace lazebird.rabbit.rabbit
             setlog.write("Set Language: " + lang_cb.Text);
             setlog.write("Restart App to take effect!");
         }
-        void url_click(object sender, LinkLabelLinkClickedEventArgs e)
+        void prj_click(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(((LinkLabel)sender).Text);
+            System.Diagnostics.Process.Start(prjurl);
         }
-        void path_click(object sender, LinkLabelLinkClickedEventArgs e)
+        void profile_click(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            string path = Environment.ExpandEnvironmentVariables(((LinkLabel)sender).Text);
+            string path = Environment.ExpandEnvironmentVariables(profileuri);
             System.Diagnostics.Process.Start(path);
         }
         string download2str(string uri)

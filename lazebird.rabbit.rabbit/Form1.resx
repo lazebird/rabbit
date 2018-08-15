@@ -1126,7 +1126,7 @@
     <value>92, 8</value>
   </data>
   <data name="text_tftpcaddr.Size" type="System.Drawing.Size, System.Drawing">
-    <value>310, 14</value>
+    <value>220, 14</value>
   </data>
   <data name="text_tftpcaddr.TabIndex" type="System.Int32, mscorlib">
     <value>21</value>
@@ -1717,7 +1717,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 377</value>
+    <value>776, 380</value>
   </data>
   <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1924,7 +1924,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_chat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 398</value>
+    <value>776, 401</value>
   </data>
   <data name="fp_chat.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -2109,44 +2109,20 @@
   <data name="&gt;&gt;link_ver.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="label_prj.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label_prj.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 70</value>
-  </data>
-  <data name="label_prj.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 16</value>
-  </data>
-  <data name="label_prj.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="label_prj.Text" xml:space="preserve">
-    <value>Homepage</value>
-  </data>
-  <data name="&gt;&gt;label_prj.Name" xml:space="preserve">
-    <value>label_prj</value>
-  </data>
-  <data name="&gt;&gt;label_prj.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_prj.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;label_prj.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
   <data name="link_prj.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="link_prj.Location" type="System.Drawing.Point, System.Drawing">
-    <value>90, 70</value>
+    <value>650, 10</value>
   </data>
   <data name="link_prj.Size" type="System.Drawing.Size, System.Drawing">
-    <value>0, 16</value>
+    <value>66, 16</value>
   </data>
   <data name="link_prj.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
+  </data>
+  <data name="link_prj.Text" xml:space="preserve">
+    <value>HomePage</value>
   </data>
   <data name="&gt;&gt;link_prj.Name" xml:space="preserve">
     <value>link_prj</value>
@@ -2158,37 +2134,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;link_prj.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="label_prof.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label_prof.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label_prof.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 100</value>
-  </data>
-  <data name="label_prof.Size" type="System.Drawing.Size, System.Drawing">
-    <value>42, 16</value>
-  </data>
-  <data name="label_prof.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="label_prof.Text" xml:space="preserve">
-    <value>Profile</value>
-  </data>
-  <data name="&gt;&gt;label_prof.Name" xml:space="preserve">
-    <value>label_prof</value>
-  </data>
-  <data name="&gt;&gt;label_prof.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_prof.Parent" xml:space="preserve">
-    <value>Setting</value>
-  </data>
-  <data name="&gt;&gt;label_prof.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>4</value>
   </data>
   <data name="link_prof.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2197,13 +2143,16 @@
     <value>NoControl</value>
   </data>
   <data name="link_prof.Location" type="System.Drawing.Point, System.Drawing">
-    <value>90, 100</value>
+    <value>720, 10</value>
   </data>
   <data name="link_prof.Size" type="System.Drawing.Size, System.Drawing">
-    <value>0, 16</value>
+    <value>42, 16</value>
   </data>
   <data name="link_prof.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
+  </data>
+  <data name="link_prof.Text" xml:space="preserve">
+    <value>Profile</value>
   </data>
   <data name="&gt;&gt;link_prof.Name" xml:space="preserve">
     <value>link_prof</value>
@@ -2215,13 +2164,13 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;link_prof.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>5</value>
   </data>
   <data name="cb_systray.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="cb_systray.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 130</value>
+    <value>220, 10</value>
   </data>
   <data name="cb_systray.Size" type="System.Drawing.Size, System.Drawing">
     <value>89, 20</value>
@@ -2242,7 +2191,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;cb_systray.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>6</value>
   </data>
   <data name="setting_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
@@ -2251,13 +2200,13 @@
     <value>16</value>
   </data>
   <data name="setting_output.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 164</value>
+    <value>0, 68</value>
   </data>
   <data name="setting_output.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
   </data>
   <data name="setting_output.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 368</value>
+    <value>776, 464</value>
   </data>
   <data name="setting_output.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -2272,7 +2221,7 @@
     <value>Setting</value>
   </data>
   <data name="&gt;&gt;setting_output.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>7</value>
   </data>
   <data name="Setting.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 25</value>
