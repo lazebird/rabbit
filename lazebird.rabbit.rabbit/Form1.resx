@@ -1654,7 +1654,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 383</value>
+    <value>776, 386</value>
   </data>
   <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1861,7 +1861,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_chat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 404</value>
+    <value>776, 407</value>
   </data>
   <data name="fp_chat.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -2046,6 +2046,9 @@
   <data name="&gt;&gt;link_ver.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="link_prj.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
   <data name="link_prj.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -2072,6 +2075,9 @@
   </data>
   <data name="&gt;&gt;link_prj.ZOrder" xml:space="preserve">
     <value>4</value>
+  </data>
+  <data name="link_prof.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
   </data>
   <data name="link_prof.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
