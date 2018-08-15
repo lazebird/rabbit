@@ -60,11 +60,11 @@ namespace lazebird.rabbit.chat
                             break;
                         case "message":
                             if (chathash.ContainsKey(r)) break;
-                            rchatform s = new rchatform(log, username, p, r);
-                            Thread t = new Thread(() => Application.Run(s));
+                            rchatform f = new rchatform(log, username, p, r);
+                            Thread t = new Thread(() => Application.Run(f));
                             t.IsBackground = true;
                             t.Start();
-                            chathash.Add(r, t);
+                            chathash.Add(r, f);
                             break;
                         default:
                             break;
@@ -93,12 +93,16 @@ namespace lazebird.rabbit.chat
         }
         public void new_chat(IPEndPoint r, string ruser)
         {
-            if (chathash.ContainsKey(r)) return;
+            if (chathash.ContainsKey(r))
+            {
+                if (((rchatform)chathash[r]).IsDisposed) chathash.Remove(r);
+                else return;
+            }
             rchatform f = new rchatform(log, username, ruser, r);
             Thread t = new Thread(() => Application.Run(f));
             t.IsBackground = true;
             t.Start();
-            chathash.Add(r, t);
+            chathash.Add(r, f);
         }
         public void new_notification(string ip, int port)
         {
@@ -130,11 +134,9 @@ namespace lazebird.rabbit.chat
             rchatd = null;
             if (uc != null) uc.Close();
             uc = null;
+            foreach (rchatform f in chathash.Values) f.Dispose();
+            chathash.Clear();
             if (!disposing) return;
-            foreach (Thread t in chathash.Values)
-            {
-                t.Abort();
-            }
         }
         public void Dispose()
         {
