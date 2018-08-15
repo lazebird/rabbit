@@ -106,6 +106,7 @@
             this.fp_chat = new System.Windows.Forms.FlowLayoutPanel();
             this.chat_output = new System.Windows.Forms.ListBox();
             this.Setting = new System.Windows.Forms.TabPage();
+            this.cb_top = new System.Windows.Forms.CheckBox();
             this.link_help = new System.Windows.Forms.LinkLabel();
             this.label_lang = new System.Windows.Forms.Label();
             this.lang_cb = new System.Windows.Forms.ComboBox();
@@ -116,7 +117,7 @@
             this.cb_systray = new System.Windows.Forms.CheckBox();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
-            this.cb_top = new System.Windows.Forms.CheckBox();
+            this.cb_autostart = new System.Windows.Forms.CheckBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -671,6 +672,7 @@
             // Setting
             // 
             this.Setting.BackColor = System.Drawing.Color.DimGray;
+            this.Setting.Controls.Add(this.cb_autostart);
             this.Setting.Controls.Add(this.cb_top);
             this.Setting.Controls.Add(this.link_help);
             this.Setting.Controls.Add(this.label_lang);
@@ -684,6 +686,12 @@
             this.Setting.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
+            // 
+            // cb_top
+            // 
+            resources.ApplyResources(this.cb_top, "cb_top");
+            this.cb_top.Name = "cb_top";
+            this.cb_top.UseVisualStyleBackColor = true;
             // 
             // link_help
             // 
@@ -745,11 +753,11 @@
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
             // 
-            // cb_top
+            // cb_autostart
             // 
-            resources.ApplyResources(this.cb_top, "cb_top");
-            this.cb_top.Name = "cb_top";
-            this.cb_top.UseVisualStyleBackColor = true;
+            resources.ApplyResources(this.cb_autostart, "cb_autostart");
+            this.cb_autostart.Name = "cb_autostart";
+            this.cb_autostart.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -862,6 +870,7 @@
         private System.Windows.Forms.TextBox text_pingstat;
         private System.Windows.Forms.LinkLabel link_help;
         private System.Windows.Forms.CheckBox cb_top;
+        private System.Windows.Forms.CheckBox cb_autostart;
     }
 }
 

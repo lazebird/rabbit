@@ -65,5 +65,25 @@ namespace lazebird.rabbit.fs
         {
             return exist(@"Directory\shell");
         }
+        public void reg_autostart()
+        {
+            RegistryKey parent = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+            parent.SetValue(appname, apppath);
+            parent.Close();
+        }
+        public void dereg_autostart()
+        {
+            RegistryKey parent = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+            parent.DeleteValue(appname);
+            parent.Close();
+        }
+        public bool autostart_exist()
+        {
+            bool ret;
+            RegistryKey parent = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", false);
+            ret = parent.GetValue(appname) != null;
+            parent.Close();
+            return ret;
+        }
     }
 }

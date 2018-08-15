@@ -37,6 +37,8 @@ namespace lazebird.rabbit.rabbit
             if (File.Exists(upgrade.scriptpath)) File.Delete(upgrade.scriptpath);
             init_systray();
             cb_top.CheckedChanged += top_click;
+            cb_autostart.CheckedChanged += autostart_click;
+            if (sh.autostart_exist()) cb_autostart.Checked = true;
         }
         void lang_opt_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -156,6 +158,12 @@ namespace lazebird.rabbit.rabbit
         void top_click(object sender, EventArgs e)
         {
             TopMost = ((CheckBox)sender).Checked;
+        }
+        void autostart_click(object sender, EventArgs e)
+        {
+            CheckBox cb = (CheckBox)sender;
+            if (cb.Checked) sh.reg_autostart();
+            else sh.dereg_autostart();
         }
     }
 }
