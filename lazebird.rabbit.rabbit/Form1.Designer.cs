@@ -115,6 +115,7 @@
             this.cb_systray = new System.Windows.Forms.CheckBox();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
+            this.link_help = new System.Windows.Forms.LinkLabel();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -669,6 +670,7 @@
             // Setting
             // 
             this.Setting.BackColor = System.Drawing.Color.DimGray;
+            this.Setting.Controls.Add(this.link_help);
             this.Setting.Controls.Add(this.label_lang);
             this.Setting.Controls.Add(this.lang_cb);
             this.Setting.Controls.Add(this.label_ver);
@@ -734,6 +736,12 @@
             // ntfico
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
+            // 
+            // link_help
+            // 
+            resources.ApplyResources(this.link_help, "link_help");
+            this.link_help.Name = "link_help";
+            this.link_help.TabStop = true;
             // 
             // Form1
             // 
@@ -844,6 +852,7 @@
         private System.Windows.Forms.Label label_scanopt;
         private System.Windows.Forms.TextBox text_scanopt;
         private System.Windows.Forms.TextBox text_pingstat;
+        private System.Windows.Forms.LinkLabel link_help;
     }
 }
 

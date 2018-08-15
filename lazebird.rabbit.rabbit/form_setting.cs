@@ -16,6 +16,7 @@ namespace lazebird.rabbit.rabbit
         Version pver;
         string prjurl = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
         string profileuri = @"%userprofile%\appdata\local";
+        string helpurl = "https://code.aliyun.com/lazebird/rabbit/raw/master/doc/manual.md";
         void init_form_setting()
         {
             setlog = new rlog(setting_output);
@@ -24,6 +25,7 @@ namespace lazebird.rabbit.rabbit
             link_ver.LinkClicked += ver_click;
             link_prj.LinkClicked += prj_click;
             link_prof.LinkClicked += profile_click;
+            link_help.LinkClicked += help_click;
             List<string> list = new List<string>();
             list.Add("System");
             list.Add("English");
@@ -58,6 +60,10 @@ namespace lazebird.rabbit.rabbit
         {
             string path = Environment.ExpandEnvironmentVariables(profileuri);
             System.Diagnostics.Process.Start(path);
+        }
+        void help_click(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(helpurl);
         }
         string download2str(string uri)
         {

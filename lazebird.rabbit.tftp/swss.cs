@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using static lazebird.rabbit.tftp.pkt;
@@ -18,6 +19,12 @@ namespace lazebird.rabbit.tftp
                 wrq_pkt pkt = new wrq_pkt();
                 if (!pkt.parse(buf)) return false;
                 set_param(pkt.timeout * 1000 / Math.Max(maxretry, 1), pkt.blksize);
+                if (File.Exists(cwd + pkt.filename))
+                {
+                    pktbuf = new err_pkt(Errcodes.FileAlreadyExists, pkt.filename).pack();
+                    uc.Send(pktbuf, pktbuf.Length, r);
+                    return false;
+                }
                 write_file(pkt.filename);
                 if (pkt.has_opt())
                 {
