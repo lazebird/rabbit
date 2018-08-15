@@ -116,7 +116,7 @@ namespace lazebird.rabbit.plan
         public void trigger()
         {
             log("I: trigger " + msg);
-            if (t_ui != null) return;
+            if (t_ui != null) t_ui.Abort();
             t_ui = new Thread(() => Application.Run(new rplanform(msg, duration)));
             t_ui.IsBackground = true;
             t_ui.Start();
