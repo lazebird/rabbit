@@ -15,7 +15,7 @@ namespace lazebird.rabbit.plan
             this.duration = duration;
             InitializeComponent();
             Text = msg + " " + DateTime.Now;
-            MouseClick += form_click;
+            DoubleClick += form_click;
         }
         protected override void OnLoad(EventArgs e)
         {
@@ -24,9 +24,9 @@ namespace lazebird.rabbit.plan
             t.IsBackground = true;
             t.Start();
         }
-        void form_click(object sender, MouseEventArgs e)
+        void form_click(object sender, EventArgs e)
         {
-            if (e.Button == MouseButtons.Right) duration = 0;
+            duration = 0;
         }
         void msg_task()
         {

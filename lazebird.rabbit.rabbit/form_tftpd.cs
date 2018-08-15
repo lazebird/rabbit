@@ -15,13 +15,18 @@ namespace lazebird.rabbit.rabbit
         Hashtable tftpd_dirhash;
         int curtftpd_dir = -1;
         ArrayList tftpd_dirs;
-        string lasttftpddir = Environment.CurrentDirectory;
-        int tftpdtblen;
         int tftpd_timeout = 200;
         int tftpd_retry = 30;
+        Timer tftpd_tmr;
+        TextBox lastclicked = null;  // donot support two different dir clicked at the same time
+        string lasttftpddir = Environment.CurrentDirectory;
+        int tftpdtblen;
         void init_form_tftpd()
         {
             tftpd_dirs = new ArrayList();
+            tftpd_tmr = new Timer();
+            tftpd_tmr.Interval = 200; // 200ms
+            tftpd_tmr.Tick += new EventHandler(tftpd_dir_tick);
             tftpd_dirhash = new Hashtable();
             tftpdlog = new rlog(tftpd_output);
             tftpd = new rtftpd(tftpd_log_func);
@@ -70,11 +75,23 @@ namespace lazebird.rabbit.rabbit
         }
         void tftpd_dir_click(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
+            if (tftpd_tmr.Enabled)  // double click
             {
+                tftpd_tmr.Stop();
                 tftpd_dir_select((TextBox)sender);
+                tftpd_active_dir((TextBox)sender);    // auto active after select
             }
-            tftpd_active_dir((TextBox)sender);    // auto active after select
+            else
+            {
+                lastclicked = (TextBox)sender;
+                tftpd_tmr.Start();
+            }
+        }
+        void tftpd_dir_tick(object sender, EventArgs e) // single click
+        {
+            tftpd_tmr.Stop();
+            if (lastclicked == null) return;
+            tftpd_active_dir(lastclicked);
         }
         TextBox tftpd_add_dir()
         {
@@ -84,7 +101,7 @@ namespace lazebird.rabbit.rabbit
             tb.BorderStyle = BorderStyle.None;
             tb.ForeColor = Color.White;
             tb.Width = tftpdtblen;
-            tb.MouseClick += tftpd_dir_click;
+            tb.MouseDown += tftpd_dir_click;
             tftpd_fp.Controls.Add(tb);
             tftpd_dirs.Add(tb);
             tftpd_set_dir(tb, lasttftpddir);

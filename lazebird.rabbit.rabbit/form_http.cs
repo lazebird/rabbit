@@ -42,17 +42,17 @@ namespace lazebird.rabbit.rabbit
         }
         void httpd_click(object sender, EventArgs evt)
         {
-                if (((Button)btnhash["http_btn"]).Text == Language.trans("开始"))
-                {
-                    ((Button)btnhash["http_btn"]).Text = Language.trans("停止");
-                    httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
-                }
-                else
-                {
-                    ((Button)btnhash["http_btn"]).Text = Language.trans("开始");
-                    httpd.stop();
-                }
-                saveconf(); // save empty config to restore default config
+            if (((Button)btnhash["http_btn"]).Text == Language.trans("开始"))
+            {
+                ((Button)btnhash["http_btn"]).Text = Language.trans("停止");
+                httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
+            }
+            else
+            {
+                ((Button)btnhash["http_btn"]).Text = Language.trans("开始");
+                httpd.stop();
+            }
+            saveconf(); // save empty config to restore default config
             try
             {
             }
@@ -99,9 +99,8 @@ namespace lazebird.rabbit.rabbit
             httpd.set_auto_index(cb.Checked);
             saveconf();
         }
-        void httpd_dir_click(object sender, MouseEventArgs evt)
+        void httpd_dir_click(object sender, EventArgs evt)
         {
-            //if (evt.Button != MouseButtons.Right) return;
             TextBox tb = (TextBox)sender;
             string p = tb.Text;
             if (File.Exists(p)) httpd.del_file(p);
@@ -126,7 +125,7 @@ namespace lazebird.rabbit.rabbit
             tb.ForeColor = Color.White;
             tb.Text = p;
             tb.Width = httptblen;
-            tb.MouseClick += httpd_dir_click;
+            tb.DoubleClick += httpd_dir_click;
             fp_httpd.Controls.Add(tb);
             httpd_phash.Add(tb, p);
             if (File.Exists(p)) httpd.add_file(p);
