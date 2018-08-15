@@ -59,7 +59,11 @@ namespace lazebird.rabbit.chat
                             show_notification(r, p.user, p.content);
                             break;
                         case "message":
-                            if (chathash.ContainsKey(r)) break;
+                            if (chathash.ContainsKey(r))
+                            {
+                                ((rchatform)chathash[r]).Close();
+                                chathash.Remove(r);
+                            }
                             rchatform f = new rchatform(log, username, p, r);
                             Thread t = new Thread(() => Application.Run(f));
                             t.IsBackground = true;
