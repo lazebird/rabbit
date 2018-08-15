@@ -212,17 +212,9 @@
       <Project>{6c93b9cb-1bad-42fd-a497-ac81c64b5d33}</Project>
       <Name>lazebird.rabbit.common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lazebird.rabbit.dhcp\lazebird.rabbit.dhcp.csproj">
-      <Project>{f722ccc9-3f3c-48bb-b868-9f8f5807f220}</Project>
-      <Name>lazebird.rabbit.dhcp</Name>
-    </ProjectReference>
     <ProjectReference Include="..\lazebird.rabbit.fs\lazebird.rabbit.fs.csproj">
       <Project>{9D8C34CF-12BF-4360-9CA3-4D0A7D4D8CBC}</Project>
       <Name>lazebird.rabbit.fs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\lazebird.rabbit.ftp\lazebird.rabbit.ftp.csproj">
-      <Project>{a430ad1a-2327-4a7a-8d37-082d1b5df0e4}</Project>
-      <Name>lazebird.rabbit.ftp</Name>
     </ProjectReference>
     <ProjectReference Include="..\lazebird.rabbit.http\lazebird.rabbit.http.csproj">
       <Project>{66efb1d8-8785-4ad9-b135-f8d699e186f6}</Project>
