@@ -106,6 +106,7 @@
             this.fp_chat = new System.Windows.Forms.FlowLayoutPanel();
             this.chat_output = new System.Windows.Forms.ListBox();
             this.Setting = new System.Windows.Forms.TabPage();
+            this.cb_autostart = new System.Windows.Forms.CheckBox();
             this.cb_top = new System.Windows.Forms.CheckBox();
             this.link_help = new System.Windows.Forms.LinkLabel();
             this.label_lang = new System.Windows.Forms.Label();
@@ -117,7 +118,6 @@
             this.cb_systray = new System.Windows.Forms.CheckBox();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
-            this.cb_autostart = new System.Windows.Forms.CheckBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -672,20 +672,26 @@
             // Setting
             // 
             this.Setting.BackColor = System.Drawing.Color.DimGray;
-            this.Setting.Controls.Add(this.cb_autostart);
-            this.Setting.Controls.Add(this.cb_top);
-            this.Setting.Controls.Add(this.link_help);
             this.Setting.Controls.Add(this.label_lang);
             this.Setting.Controls.Add(this.lang_cb);
-            this.Setting.Controls.Add(this.label_ver);
-            this.Setting.Controls.Add(this.link_ver);
+            this.Setting.Controls.Add(this.cb_systray);
+            this.Setting.Controls.Add(this.cb_top);
+            this.Setting.Controls.Add(this.cb_autostart);
             this.Setting.Controls.Add(this.link_prj);
             this.Setting.Controls.Add(this.link_prof);
-            this.Setting.Controls.Add(this.cb_systray);
+            this.Setting.Controls.Add(this.link_help);
+            this.Setting.Controls.Add(this.label_ver);
+            this.Setting.Controls.Add(this.link_ver);
             this.Setting.Controls.Add(this.setting_output);
             this.Setting.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
+            // 
+            // cb_autostart
+            // 
+            resources.ApplyResources(this.cb_autostart, "cb_autostart");
+            this.cb_autostart.Name = "cb_autostart";
+            this.cb_autostart.UseVisualStyleBackColor = true;
             // 
             // cb_top
             // 
@@ -752,12 +758,6 @@
             // ntfico
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
-            // 
-            // cb_autostart
-            // 
-            resources.ApplyResources(this.cb_autostart, "cb_autostart");
-            this.cb_autostart.Name = "cb_autostart";
-            this.cb_autostart.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
