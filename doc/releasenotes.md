@@ -1,5 +1,17 @@
 # Release Notes
 
+## 2018-08-15
+### New
+1. add chat function
+2. add top most on setting tab
+3. simplify UI 
+4. add help url on setting tab
+5. remove chinese language
+### Fix
+1. minor bugs and optimizations
+### Tip
+1. if config not saved, try to remove old config files in dir %userprofile%\appdata\local; if problem remains, tell me in a new issue.
+
 ## 2018-08-06
 ### New
 1. add plan function, remove unimplemented functions
