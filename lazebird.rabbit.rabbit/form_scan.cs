@@ -11,10 +11,8 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
-        rping scan;
         void init_form_scan()
         {
-            scan = new rping(scan_log_func);
             btn_scan.Click += new EventHandler(scan_click);
             fp_scan.AutoScroll = true;
         }
@@ -29,10 +27,9 @@ namespace lazebird.rabbit.rabbit
         }
         void scan_reply(PingReply reply, object data)
         {
-            if (reply != null && reply.Status == IPStatus.Success)
-                ((Label)data).BackColor = Color.Green;
-            else
-                ((Label)data).Visible = false;
+            if (reply == null) return;
+            if (reply.Status == IPStatus.Success) ((Label)data).BackColor = Color.Green;
+            else if (scan_filteron) ((Label)data).Visible = false;
         }
         void start_scan()
         {
@@ -52,7 +49,8 @@ namespace lazebird.rabbit.rabbit
                     lb.ForeColor = Color.White;
                     fp_scan.Controls.Add(lb);
                     ipbytes[3] = (Byte)i;
-                    scan.start_async((new IPAddress(ipbytes)).ToString(), 1000, scan_reply, lb);
+                    rping s = new rping(scan_log_func, (new IPAddress(ipbytes)).ToString(), 1000, 1, false);
+                    s.start(scan_reply, lb);
                 }
             }
             catch (Exception) { }
