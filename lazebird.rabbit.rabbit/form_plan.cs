@@ -13,6 +13,7 @@ namespace lazebird.rabbit.rabbit
         Hashtable plan_tbhash;
         Hashtable plan_msghash;
         rlog planlog;
+        int plantblen;
         void init_form_plan()
         {
             plan_tbhash = new Hashtable();
@@ -65,7 +66,7 @@ namespace lazebird.rabbit.rabbit
             tb.BorderStyle = BorderStyle.None;
             tb.ForeColor = Color.White;
             tb.Text = p.msg;
-            tb.Width = 760;
+            tb.Width = plantblen;
             //tb.Anchor = (AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right);
             tb.DoubleClick += new EventHandler(plan_click);
             fp_plan.Controls.Add(tb);
@@ -94,6 +95,7 @@ namespace lazebird.rabbit.rabbit
         }
         void plan_readconf()
         {
+            plantblen = fp_plan.Width - 20;
             string[] cfgs = rconf.get("plans").Split(';');
             foreach (string cfg in cfgs)
                 if (cfg.Length > 0) plan_add(new rplan(plan_log_func, cfg));

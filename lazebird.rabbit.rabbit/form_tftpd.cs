@@ -18,19 +18,18 @@ namespace lazebird.rabbit.rabbit
         Timer tftpd_tmr;
         TextBox lastclicked = null;  // donot support two different dir clicked at the same time
         string lasttftpddir = Environment.CurrentDirectory;
-        int tftpd_dirlen;
+        int tftpdtblen;
+        int tftpd_timeout = 200;
+        int tftpd_retry = 30;
         void init_form_tftpd()
         {
             tftpd_dirs = new ArrayList();
-            tftpd_tmr = new Timer();
-            tftpd_tmr.Interval = 200; // 200ms
-            tftpd_tmr.Tick += new EventHandler(tftpd_dir_tick);
             tftpd_dirhash = new Hashtable();
             tftpdlog = new rlog(tftpd_output);
             tftpd = new rtftpd(tftpd_log_func);
-            tftpd_adddir.Click += new EventHandler(tftpd_adddir_click);
-            tftpd_deldir.Click += new EventHandler(tftpd_deldir_click);
-            tftpd_btn.Click += new EventHandler(tftpd_click);
+            tftpd_adddir.Click += tftpd_adddir_click;
+            tftpd_deldir.Click += tftpd_deldir_click;
+            tftpd_btn.Click += tftpd_click;
             tftpd_fp.AutoScroll = true;
         }
         int tftpd_log_func(int id, string msg)
@@ -44,7 +43,7 @@ namespace lazebird.rabbit.rabbit
             if (tftpd_dirhash.ContainsKey(b)) tftpd_dirhash.Remove(b);
             tftpd_dirhash.Add(b, path);
         }
-        void tftpd_set_active(TextBox tb)
+        void tftpd_active_dir(TextBox tb)
         {
             int newidx = tftpd_dirs.IndexOf(tb);
             if (newidx != curtftpd_dir && curtftpd_dir >= 0)
@@ -58,7 +57,7 @@ namespace lazebird.rabbit.rabbit
             saveconf();
             //tftpd_log_func(0, "I: Activate " + tftpd_dirhash[b]);
         }
-        void tftpd_dir_select(TextBox tb)
+        TextBox tftpd_dir_select(TextBox tb)
         {
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.InitialDirectory = (string)tftpd_dirhash[tb];
@@ -69,26 +68,15 @@ namespace lazebird.rabbit.rabbit
                 lasttftpddir = Path.GetDirectoryName(dialog.FileName);
                 tftpd_set_dir(tb, lasttftpddir);
             }
+            return tb;
         }
         void tftpd_dir_click(object sender, MouseEventArgs e)
         {
-            if (tftpd_tmr.Enabled)  // double click
+            if (e.Button == MouseButtons.Right)
             {
-                tftpd_tmr.Stop();
                 tftpd_dir_select((TextBox)sender);
-                tftpd_set_active((TextBox)sender);    // auto active after select
             }
-            else
-            {
-                lastclicked = (TextBox)sender;
-                tftpd_tmr.Start();
-            }
-        }
-        void tftpd_dir_tick(object sender, EventArgs e) // single click
-        {
-            tftpd_tmr.Stop();
-            if (lastclicked == null) return;
-            tftpd_set_active(lastclicked);
+            tftpd_active_dir((TextBox)sender);    // auto active after select
         }
         TextBox tftpd_add_dir()
         {
@@ -97,28 +85,30 @@ namespace lazebird.rabbit.rabbit
             tb.BackColor = tftpd_fp.BackColor;
             tb.BorderStyle = BorderStyle.None;
             tb.ForeColor = Color.White;
-            tb.Width = tftpd_dirlen;
-            tb.MouseDown += tftpd_dir_click;
+            tb.Width = tftpdtblen;
+            tb.MouseClick += tftpd_dir_click;
             tftpd_fp.Controls.Add(tb);
             tftpd_dirs.Add(tb);
             tftpd_set_dir(tb, lasttftpddir);
             return tb;
         }
+        void tftpd_del_dir(TextBox tb)
+        {
+            tftpd_fp.Controls.Remove(tb);
+            tftpd_dirs.Remove(tb);
+            tftpd_dirhash.Remove(tb);
+        }
         void tftpd_adddir_click(object sender, EventArgs e)
         {
-            tftpd_add_dir();
+            tftpd_active_dir(tftpd_dir_select(tftpd_add_dir()));    // auto active after select
         }
         void tftpd_deldir_click(object sender, EventArgs e)
         {
-            if (tftpd_dirs.Count == 0) return;
-            Button b = (Button)tftpd_dirs[tftpd_dirs.Count - 1];
-            tftpd_fp.Controls.Remove(b);
-            tftpd_dirs.Remove(b);
-            tftpd_dirhash.Remove(b);
+            if (curtftpd_dir < 0 || curtftpd_dir >= tftpd_dirs.Count) return;
+            tftpd_del_dir((TextBox)tftpd_dirs[curtftpd_dir]);
             curtftpd_dir = -1;  // reset cur index, to avoid problems
+            if (tftpd_dirs.Count > 0) tftpd_active_dir((TextBox)tftpd_dirs[tftpd_dirs.Count - 1]);
         }
-        int tftpd_timeout = 200;
-        int tftpd_retry = 30;
         void tftpd_parse_args()
         {
             Hashtable opts = ropt.parse_opts(text_tftpdopt.Text);
@@ -150,7 +140,7 @@ namespace lazebird.rabbit.rabbit
         }
         void tftpd_readconf()
         {
-            tftpd_dirlen = tftpd_fp.Width - 20;
+            tftpdtblen = tftpd_fp.Width - 20;
             string[] dirs = rconf.get("tftpd_dirs").Split(';');
             foreach (string path in dirs)
             {
@@ -159,7 +149,7 @@ namespace lazebird.rabbit.rabbit
             }
             int index = int.Parse(rconf.get("tftpd_dir_index"));
             if (index >= 0 && index < tftpd_dirs.Count)
-                tftpd_set_active((TextBox)tftpd_dirs[index]);
+                tftpd_active_dir((TextBox)tftpd_dirs[index]);
         }
         void tftpd_saveconf()
         {

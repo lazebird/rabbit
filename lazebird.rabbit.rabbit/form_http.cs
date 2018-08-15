@@ -19,7 +19,7 @@ namespace lazebird.rabbit.rabbit
         rlog httpdlog;
         rshell sh;
         Hashtable httpd_phash;
-        int httpdirlen;
+        int httptblen;
         void init_form_http()
         {
             sh = new rshell("Rabbit", Application.ExecutablePath, "Add to Rabbit.http");
@@ -99,8 +99,9 @@ namespace lazebird.rabbit.rabbit
             httpd.set_auto_index(cb.Checked);
             saveconf();
         }
-        void httpd_dir_click(object sender, EventArgs evt)
+        void httpd_dir_click(object sender, MouseEventArgs evt)
         {
+            //if (evt.Button != MouseButtons.Right) return;
             TextBox tb = (TextBox)sender;
             string p = tb.Text;
             if (File.Exists(p)) httpd.del_file(p);
@@ -124,8 +125,8 @@ namespace lazebird.rabbit.rabbit
             tb.BorderStyle = BorderStyle.None;
             tb.ForeColor = Color.White;
             tb.Text = p;
-            tb.Width = httpdirlen;
-            tb.DoubleClick += new EventHandler(httpd_dir_click);
+            tb.Width = httptblen;
+            tb.MouseClick += httpd_dir_click;
             fp_httpd.Controls.Add(tb);
             httpd_phash.Add(tb, p);
             if (File.Exists(p)) httpd.add_file(p);
@@ -134,7 +135,7 @@ namespace lazebird.rabbit.rabbit
         }
         void httpd_readconf()
         {
-            httpdirlen = fp_httpd.Width - 20;
+            httptblen = fp_httpd.Width - 20;
             string[] paths = rconf.get("http_dirs").Split(';');
             foreach (string path in paths) if (path != "") httpd_add_path(path);
             if (rconf.get("http_auto_index") != "")

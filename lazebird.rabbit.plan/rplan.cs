@@ -115,9 +115,9 @@ namespace lazebird.rabbit.plan
             }
         }
         int loop;
-        void form_click(object sender, EventArgs e)
+        void form_click(object sender, MouseEventArgs e)
         {
-            loop = 0;
+            if (e.Button == MouseButtons.Right) loop = 0;
         }
         void form_load(object sender, EventArgs e)
         {
@@ -154,8 +154,8 @@ namespace lazebird.rabbit.plan
             f.BackColor = Color.Black;
             f.TopMost = true;
             f.Text = msg + " " + DateTime.Now;
-            f.DoubleClick += new EventHandler(form_click);
-            f.Load += new EventHandler(form_load);
+            f.MouseClick += form_click;
+            f.Load += form_load;
             Application.Run(f);
         }
         public void trigger()
