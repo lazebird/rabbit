@@ -59,16 +59,16 @@ namespace lazebird.rabbit.chat
                             show_notification(r, p.user, p.content);
                             break;
                         case "message":
-                            if (chathash.ContainsKey(r))
+                            if (chathash.ContainsKey(r.Address))
                             {
-                                ((rchatform)chathash[r]).Close();
-                                chathash.Remove(r);
+                                ((rchatform)chathash[r.Address]).Close();
+                                chathash.Remove(r.Address);
                             }
                             rchatform f = new rchatform(log, username, p, r);
                             Thread t = new Thread(() => Application.Run(f));
                             t.IsBackground = true;
                             t.Start();
-                            chathash.Add(r, f);
+                            chathash.Add(r.Address, f); // keep only one session per ip 
                             break;
                         default:
                             break;
@@ -97,9 +97,9 @@ namespace lazebird.rabbit.chat
         }
         public void new_chat(IPEndPoint r, string ruser)
         {
-            if (chathash.ContainsKey(r))
+            if (chathash.ContainsKey(r.Address))
             {
-                if (((rchatform)chathash[r]).IsDisposed) chathash.Remove(r);
+                if (((rchatform)chathash[r.Address]).IsDisposed) chathash.Remove(r.Address);
                 else return;
             }
             rchatform f = new rchatform(log, username, ruser, r);
