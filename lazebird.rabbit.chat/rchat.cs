@@ -44,7 +44,6 @@ namespace lazebird.rabbit.chat
                 {
                     rcvBuffer = uc.Receive(ref r);
                     p.parse(rcvBuffer);
-                    log("I: recv pkt type " + p.type);
                     switch (p.type)
                     {
                         case "query":
@@ -59,7 +58,7 @@ namespace lazebird.rabbit.chat
                             show_notification(r, p.user, p.content);
                             break;
                         case "message":
-                            log("I: recv chat from " + p.user + " " + r.Address);
+                            log("I: recv chat from " + p.user + " " + r.Address + " msg " + p.content);
                             if (chathash.ContainsKey(r.Address))
                             {
                                 if (((rchatform)chathash[r.Address]).IsDisposed) chathash.Remove(r.Address);

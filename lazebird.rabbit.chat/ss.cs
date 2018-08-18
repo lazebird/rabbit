@@ -94,7 +94,7 @@ namespace lazebird.rabbit.chat
         void hear(string id, string msg)
         {
             int pid = int.Parse(id);
-            if (rxpktid < pid)  // not expired pkt
+            if (rxpktid < pid || pid == 1)  // not expired pkt; pid = 1 means this is an new chat?
             {
                 rxpktid = pid;
                 message m = new message(ruser, msg, msglst.Count);
