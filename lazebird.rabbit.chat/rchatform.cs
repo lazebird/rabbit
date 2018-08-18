@@ -30,9 +30,10 @@ namespace lazebird.rabbit.chat
             mhash = new Hashtable();
             init_form();
         }
-        public bool pkt_proc(pkt pkt)
+        public bool pkt_proc(pkt pkt, IPEndPoint r)
         {
-            return chatss.pkt_proc(pkt);
+            this.r = r;
+            return chatss.pkt_proc(pkt, r);
         }
         void init_form()
         {

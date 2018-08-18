@@ -65,7 +65,7 @@ namespace lazebird.rabbit.chat
                                 if (((rchatform)chathash[r.Address]).IsDisposed) chathash.Remove(r.Address);
                                 else
                                 {
-                                    ((rchatform)chathash[r.Address]).pkt_proc(p); // reuse old session
+                                    ((rchatform)chathash[r.Address]).pkt_proc(p, r); // reuse old session
                                     break;
                                 }
                             }
@@ -73,7 +73,7 @@ namespace lazebird.rabbit.chat
                             Thread t = new Thread(() => Application.Run(f));
                             t.IsBackground = true;
                             t.Start();
-                            f.pkt_proc(p);
+                            f.pkt_proc(p, r);
                             chathash.Add(r.Address, f); // keep only one session per ip 
                             break;
                         default:

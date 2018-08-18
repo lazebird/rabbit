@@ -52,7 +52,7 @@ namespace lazebird.rabbit.chat
                 {
                     rcvBuffer = uc.Receive(ref r);
                     p.parse(rcvBuffer);
-                    pkt_proc(p);
+                    pkt_proc(p, r);
                 }
             }
             catch (Exception e)
@@ -67,8 +67,9 @@ namespace lazebird.rabbit.chat
             t_hear.IsBackground = true;
             t_hear.Start();
         }
-        public bool pkt_proc(pkt p)
+        public bool pkt_proc(pkt p, IPEndPoint r)
         {
+            this.r = r; // update remote info dynamically
             switch (p.type)
             {
                 case "message":
