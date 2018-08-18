@@ -62,13 +62,18 @@ namespace lazebird.rabbit.chat
                             log("I: recv chat from " + p.user + " " + r.Address);
                             if (chathash.ContainsKey(r.Address))
                             {
-                                ((rchatform)chathash[r.Address]).Close();
-                                chathash.Remove(r.Address);
+                                if (((rchatform)chathash[r.Address]).IsDisposed) chathash.Remove(r.Address);
+                                else
+                                {
+                                    ((rchatform)chathash[r.Address]).pkt_proc(p); // reuse old session
+                                    break;
+                                }
                             }
-                            rchatform f = new rchatform(log, username, p, r);
+                            rchatform f = new rchatform(log, username, p.user, r);
                             Thread t = new Thread(() => Application.Run(f));
                             t.IsBackground = true;
                             t.Start();
+                            f.pkt_proc(p);
                             chathash.Add(r.Address, f); // keep only one session per ip 
                             break;
                         default:

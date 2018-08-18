@@ -30,6 +30,16 @@ namespace lazebird.rabbit.chat
             mhash = new Hashtable();
             init_form();
         }
+        public bool pkt_proc(pkt pkt)
+        {
+            return chatss.pkt_proc(pkt);
+        }
+        void init_form()
+        {
+            this.Resize += msg_resize;
+            pa_chat.DoubleClick += msg_save_click;
+            rtb_chat.KeyUp += msg_key_press;
+        }
         void show_msg(message m)
         {
             if (InvokeRequired)
@@ -62,21 +72,9 @@ namespace lazebird.rabbit.chat
         {
             show_msg((message)sender);
         }
-
         void Chatss_OnHear(object sender, EventArgs e)
         {
             show_msg((message)sender);
-        }
-
-        public rchatform(Action<string> log, string luser, pkt pkt, IPEndPoint r) : this(log, luser, pkt.user, r)
-        {
-            chatss.pkt_proc(pkt);
-        }
-        void init_form()
-        {
-            this.Resize += msg_resize;
-            pa_chat.DoubleClick += msg_save_click;
-            rtb_chat.KeyUp += msg_key_press;
         }
         void msg_save_click(object sender, EventArgs e)
         {
