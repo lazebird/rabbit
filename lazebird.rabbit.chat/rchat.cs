@@ -59,6 +59,7 @@ namespace lazebird.rabbit.chat
                             show_notification(r, p.user, p.content);
                             break;
                         case "message":
+                            log("I: recv chat from " + p.user + " " + r.Address);
                             if (chathash.ContainsKey(r.Address))
                             {
                                 ((rchatform)chathash[r.Address]).Close();
@@ -102,6 +103,7 @@ namespace lazebird.rabbit.chat
                 if (((rchatform)chathash[r.Address]).IsDisposed) chathash.Remove(r.Address);
                 else return;
             }
+            log("I: new chat to " + ruser + " " + r.Address);
             rchatform f = new rchatform(log, username, ruser, r);
             Thread t = new Thread(() => Application.Run(f));
             t.IsBackground = true;

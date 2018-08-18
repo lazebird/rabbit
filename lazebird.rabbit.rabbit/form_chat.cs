@@ -55,7 +55,6 @@ namespace lazebird.rabbit.rabbit
             IPEndPoint r = (IPEndPoint)chatbtnhash[sender];
             string ruser = (string)chatephash[r];
             chat.new_chat(r, ruser);
-            chat_log_func("I: chat with " + r.ToString() + " " + ruser);
         }
         void add_user(IPEndPoint ep, string user)
         {
