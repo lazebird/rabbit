@@ -1,4 +1,5 @@
-﻿using lazebird.rabbit.fs;
+﻿using lazebird.rabbit.common;
+using lazebird.rabbit.fs;
 using System;
 using System.Collections;
 using System.IO;
@@ -17,18 +18,28 @@ namespace lazebird.rabbit.http
         rfs rfs;
         string method;
         string uri;
+        string args;
+        Hashtable opthash;
         rqueue q;
         Thread t;
         bool auto_index;
 
         public ss(HttpListenerRequest request, HttpListenerResponse response, rfs rfs)
         {
-            this.log = log_func;
+            log = log_func;
             this.request = request;
             this.response = response;
             this.rfs = rfs;
-            this.method = request.HttpMethod;
-            this.uri = Uri.UnescapeDataString(request.RawUrl);
+            method = request.HttpMethod;
+            try
+            {
+                string[] s = Uri.UnescapeDataString(request.RawUrl).Split('?');
+                uri = s[0];
+                args = s.Length > 1 ? s[1] : "";
+                opthash = ropt.parse_opts(args);
+                if (opthash.ContainsKey("autoindex")) this.auto_index = bool.Parse((string)opthash["autoindex"]);
+            }
+            catch (Exception) { }
             response.ContentEncoding = Encoding.UTF8;
         }
         public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs) : this(request, response, rfs)
@@ -37,7 +48,7 @@ namespace lazebird.rabbit.http
         }
         public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs, bool auto_index) : this(log, request, response, rfs)
         {
-            this.auto_index = auto_index;
+            if (!opthash.ContainsKey("autoindex")) this.auto_index = auto_index;
         }
         void log_func(string msg) { }
         string uri2rpath(string uri)
