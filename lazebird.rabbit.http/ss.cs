@@ -23,6 +23,7 @@ namespace lazebird.rabbit.http
         rqueue q;
         Thread t;
         bool auto_index;
+        bool video_play;
 
         public ss(HttpListenerRequest request, HttpListenerResponse response, rfs rfs)
         {
@@ -31,6 +32,7 @@ namespace lazebird.rabbit.http
             this.response = response;
             this.rfs = rfs;
             method = request.HttpMethod;
+            video_play = true;
             try
             {
                 string[] s = Uri.UnescapeDataString(request.RawUrl).Split('?');
@@ -38,6 +40,7 @@ namespace lazebird.rabbit.http
                 args = s.Length > 1 ? s[1] : "";
                 opthash = ropt.parse_opts(args);
                 if (opthash.ContainsKey("autoindex")) this.auto_index = bool.Parse((string)opthash["autoindex"]);
+                if (opthash.ContainsKey("videoplay")) this.video_play = bool.Parse((string)opthash["videoplay"]);
             }
             catch (Exception) { }
             response.ContentEncoding = Encoding.UTF8;
@@ -76,8 +79,39 @@ namespace lazebird.rabbit.http
                 suffix = fname.Substring(idx);
             return (string)mimehash[suffix] ?? (string)mimehash["*"] ?? "";
         }
+        bool loadvideo(Hashtable mimehash, string path)
+        {
+            if (!video_play) return false;
+            string mime = uri2mime(mimehash, path);
+            if (!mime.Contains("video/")) return false;
+            string s = @"
+<head>
+    <link href=""https://vjs.zencdn.net/7.1.0/video-js.css"" rel=""stylesheet"">
+    <!-- If you'd like to support IE8 (for Video.js versions prior to v7) -->
+    <script src=""https://vjs.zencdn.net/ie8/ie8-version/videojs-ie8.min.js""></script>
+</head>
+<body>
+    <video id=""my-video"" class=""video-js"" controls preload=""auto"" width=""640"" height=""264"" poster=""MY_VIDEO_POSTER.jpg"" data-setup=""{}"">
+        <source src=""$uri?videoplay=false"" type='$mime'>
+        <p class=""vjs-no-js"">
+            To view this video please enable JavaScript, and consider upgrading to a web browser that
+            <a href=""https://videojs.com/html5-video-support/"" target=""_blank"">supports HTML5 video</a>
+        </p>
+    </video>
+    <script src=""https://vjs.zencdn.net/7.1.0/video.js""></script>
+</body>
+";
+            s = s.Replace("$uri", uri);
+            s = s.Replace("$mime", mime);
+            byte[] buffer = Encoding.UTF8.GetBytes(s);
+            response.ContentLength64 = buffer.Length;
+            response.OutputStream.Write(buffer, 0, buffer.Length);
+            response.OutputStream.Close();
+            return true;
+        }
         void loadfile(Hashtable mimehash, string path)
         {
+            if (loadvideo(mimehash, path)) return;
             Stream output = response.OutputStream;
             response.ContentType = uri2mime(mimehash, path);
             log("I: file " + path + " mime " + response.ContentType);
