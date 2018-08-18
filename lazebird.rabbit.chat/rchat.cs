@@ -108,7 +108,7 @@ namespace lazebird.rabbit.chat
             Thread t = new Thread(() => Application.Run(f));
             t.IsBackground = true;
             t.Start();
-            chathash.Add(r, f);
+            chathash.Add(r.Address, f);
         }
         public void new_notification(string ip, int port)
         {
