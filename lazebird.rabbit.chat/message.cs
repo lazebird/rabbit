@@ -22,11 +22,7 @@ namespace lazebird.rabbit.chat
         }
         public override string ToString()
         {
-            return user + " " + timestamp.ToString() + "\r\n" + content + (sentfail ? " (send failed!)" : "");
-        }
-        public string toshortstring()
-        {
-            return content + (sentfail ? " (send failed!)" : "");
+            return user + " " + timestamp.ToString() + "\r\n" + content + (sentfail ? " (please refresh and start an new chat!)" : "");
         }
     }
 }
