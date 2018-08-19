@@ -61,10 +61,11 @@
             this.btn_scan = new System.Windows.Forms.Button();
             this.fp_scan = new System.Windows.Forms.FlowLayoutPanel();
             this.HTTPD = new System.Windows.Forms.TabPage();
+            this.label_httpopt = new System.Windows.Forms.Label();
+            this.text_httpopt = new System.Windows.Forms.TextBox();
             this.label_http_port = new System.Windows.Forms.Label();
             this.text_http_port = new System.Windows.Forms.TextBox();
             this.cb_http_shell = new System.Windows.Forms.CheckBox();
-            this.cb_http_index = new System.Windows.Forms.CheckBox();
             this.btn_httpd = new System.Windows.Forms.Button();
             this.fp_httpd = new System.Windows.Forms.FlowLayoutPanel();
             this.httpd_output = new System.Windows.Forms.ListBox();
@@ -106,16 +107,16 @@
             this.fp_chat = new System.Windows.Forms.FlowLayoutPanel();
             this.chat_output = new System.Windows.Forms.ListBox();
             this.Setting = new System.Windows.Forms.TabPage();
-            this.cb_autostart = new System.Windows.Forms.CheckBox();
-            this.cb_top = new System.Windows.Forms.CheckBox();
-            this.link_help = new System.Windows.Forms.LinkLabel();
             this.label_lang = new System.Windows.Forms.Label();
             this.lang_cb = new System.Windows.Forms.ComboBox();
-            this.label_ver = new System.Windows.Forms.Label();
-            this.link_ver = new System.Windows.Forms.LinkLabel();
+            this.cb_systray = new System.Windows.Forms.CheckBox();
+            this.cb_top = new System.Windows.Forms.CheckBox();
+            this.cb_autostart = new System.Windows.Forms.CheckBox();
             this.link_prj = new System.Windows.Forms.LinkLabel();
             this.link_prof = new System.Windows.Forms.LinkLabel();
-            this.cb_systray = new System.Windows.Forms.CheckBox();
+            this.link_help = new System.Windows.Forms.LinkLabel();
+            this.label_ver = new System.Windows.Forms.Label();
+            this.link_ver = new System.Windows.Forms.LinkLabel();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
             this.toolStripContainer1.ContentPanel.SuspendLayout();
@@ -216,10 +217,10 @@
             // 
             // text_pingstat
             // 
+            resources.ApplyResources(this.text_pingstat, "text_pingstat");
             this.text_pingstat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.text_pingstat.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.text_pingstat.ForeColor = System.Drawing.Color.White;
-            resources.ApplyResources(this.text_pingstat, "text_pingstat");
             this.text_pingstat.Name = "text_pingstat";
             this.text_pingstat.ReadOnly = true;
             // 
@@ -269,10 +270,10 @@
             // 
             // text_scanend
             // 
-            resources.ApplyResources(this.text_scanend, "text_scanend");
             this.text_scanend.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.text_scanend.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.text_scanend.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.text_scanend, "text_scanend");
             this.text_scanend.Name = "text_scanend";
             // 
             // label_scanopt
@@ -307,16 +308,30 @@
             // HTTPD
             // 
             this.HTTPD.BackColor = System.Drawing.Color.DimGray;
+            this.HTTPD.Controls.Add(this.label_httpopt);
+            this.HTTPD.Controls.Add(this.text_httpopt);
             this.HTTPD.Controls.Add(this.label_http_port);
             this.HTTPD.Controls.Add(this.text_http_port);
             this.HTTPD.Controls.Add(this.cb_http_shell);
-            this.HTTPD.Controls.Add(this.cb_http_index);
             this.HTTPD.Controls.Add(this.btn_httpd);
             this.HTTPD.Controls.Add(this.fp_httpd);
             this.HTTPD.Controls.Add(this.httpd_output);
             this.HTTPD.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.HTTPD, "HTTPD");
             this.HTTPD.Name = "HTTPD";
+            // 
+            // label_httpopt
+            // 
+            resources.ApplyResources(this.label_httpopt, "label_httpopt");
+            this.label_httpopt.Name = "label_httpopt";
+            // 
+            // text_httpopt
+            // 
+            resources.ApplyResources(this.text_httpopt, "text_httpopt");
+            this.text_httpopt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_httpopt.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_httpopt.ForeColor = System.Drawing.Color.White;
+            this.text_httpopt.Name = "text_httpopt";
             // 
             // label_http_port
             // 
@@ -325,10 +340,10 @@
             // 
             // text_http_port
             // 
-            resources.ApplyResources(this.text_http_port, "text_http_port");
             this.text_http_port.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.text_http_port.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.text_http_port.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.text_http_port, "text_http_port");
             this.text_http_port.Name = "text_http_port";
             // 
             // cb_http_shell
@@ -336,12 +351,6 @@
             resources.ApplyResources(this.cb_http_shell, "cb_http_shell");
             this.cb_http_shell.Name = "cb_http_shell";
             this.cb_http_shell.UseVisualStyleBackColor = true;
-            // 
-            // cb_http_index
-            // 
-            resources.ApplyResources(this.cb_http_index, "cb_http_index");
-            this.cb_http_index.Name = "cb_http_index";
-            this.cb_http_index.UseVisualStyleBackColor = true;
             // 
             // btn_httpd
             // 
@@ -453,10 +462,10 @@
             // 
             // text_tftpcaddr
             // 
-            resources.ApplyResources(this.text_tftpcaddr, "text_tftpcaddr");
             this.text_tftpcaddr.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.text_tftpcaddr.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.text_tftpcaddr.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.text_tftpcaddr, "text_tftpcaddr");
             this.text_tftpcaddr.Name = "text_tftpcaddr";
             // 
             // label_tftpcopt
@@ -687,24 +696,6 @@
             resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
             // 
-            // cb_autostart
-            // 
-            resources.ApplyResources(this.cb_autostart, "cb_autostart");
-            this.cb_autostart.Name = "cb_autostart";
-            this.cb_autostart.UseVisualStyleBackColor = true;
-            // 
-            // cb_top
-            // 
-            resources.ApplyResources(this.cb_top, "cb_top");
-            this.cb_top.Name = "cb_top";
-            this.cb_top.UseVisualStyleBackColor = true;
-            // 
-            // link_help
-            // 
-            resources.ApplyResources(this.link_help, "link_help");
-            this.link_help.Name = "link_help";
-            this.link_help.TabStop = true;
-            // 
             // label_lang
             // 
             resources.ApplyResources(this.label_lang, "label_lang");
@@ -718,15 +709,23 @@
             this.lang_cb.FormattingEnabled = true;
             this.lang_cb.Name = "lang_cb";
             // 
-            // label_ver
+            // cb_systray
             // 
-            resources.ApplyResources(this.label_ver, "label_ver");
-            this.label_ver.Name = "label_ver";
+            resources.ApplyResources(this.cb_systray, "cb_systray");
+            this.cb_systray.Name = "cb_systray";
+            this.cb_systray.UseVisualStyleBackColor = true;
             // 
-            // link_ver
+            // cb_top
             // 
-            resources.ApplyResources(this.link_ver, "link_ver");
-            this.link_ver.Name = "link_ver";
+            resources.ApplyResources(this.cb_top, "cb_top");
+            this.cb_top.Name = "cb_top";
+            this.cb_top.UseVisualStyleBackColor = true;
+            // 
+            // cb_autostart
+            // 
+            resources.ApplyResources(this.cb_autostart, "cb_autostart");
+            this.cb_autostart.Name = "cb_autostart";
+            this.cb_autostart.UseVisualStyleBackColor = true;
             // 
             // link_prj
             // 
@@ -740,11 +739,21 @@
             this.link_prof.Name = "link_prof";
             this.link_prof.TabStop = true;
             // 
-            // cb_systray
+            // link_help
             // 
-            resources.ApplyResources(this.cb_systray, "cb_systray");
-            this.cb_systray.Name = "cb_systray";
-            this.cb_systray.UseVisualStyleBackColor = true;
+            resources.ApplyResources(this.link_help, "link_help");
+            this.link_help.Name = "link_help";
+            this.link_help.TabStop = true;
+            // 
+            // label_ver
+            // 
+            resources.ApplyResources(this.label_ver, "label_ver");
+            this.label_ver.Name = "label_ver";
+            // 
+            // link_ver
+            // 
+            resources.ApplyResources(this.link_ver, "link_ver");
+            this.link_ver.Name = "link_ver";
             // 
             // setting_output
             // 
@@ -844,7 +853,6 @@
         private System.Windows.Forms.LinkLabel link_ver;
         private System.Windows.Forms.LinkLabel link_prof;
         private System.Windows.Forms.FlowLayoutPanel fp_httpd;
-        private System.Windows.Forms.CheckBox cb_http_index;
         private System.Windows.Forms.CheckBox cb_http_shell;
         private System.Windows.Forms.Button btn_planadd;
         private System.Windows.Forms.FlowLayoutPanel fp_plan;
@@ -871,6 +879,8 @@
         private System.Windows.Forms.LinkLabel link_help;
         private System.Windows.Forms.CheckBox cb_top;
         private System.Windows.Forms.CheckBox cb_autostart;
+        private System.Windows.Forms.Label label_httpopt;
+        private System.Windows.Forms.TextBox text_httpopt;
     }
 }
 

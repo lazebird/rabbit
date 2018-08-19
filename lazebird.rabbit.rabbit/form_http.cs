@@ -20,6 +20,9 @@ namespace lazebird.rabbit.rabbit
         rshell sh;
         Hashtable httpd_phash;
         int httptblen;
+        int httpport;
+        bool autoindex;
+        bool videoplay;
         void init_form_http()
         {
             sh = new rshell("Rabbit", Application.ExecutablePath, "Add to Rabbit.http");
@@ -32,7 +35,6 @@ namespace lazebird.rabbit.rabbit
             btn_httpd.Click += new EventHandler(httpd_click);
             if (sh.file_exist()) cb_http_shell.Checked = true;
             cb_http_shell.CheckedChanged += new EventHandler(http_shell_click);
-            cb_http_index.CheckedChanged += new EventHandler(http_index_click);
             fp_httpd.AutoScroll = true;
             init_comsrv();
         }
@@ -42,19 +44,20 @@ namespace lazebird.rabbit.rabbit
         }
         void httpd_click(object sender, EventArgs evt)
         {
-            if (((Button)btnhash["http_btn"]).Text == Language.trans("开始"))
-            {
-                ((Button)btnhash["http_btn"]).Text = Language.trans("停止");
-                httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
-            }
-            else
-            {
-                ((Button)btnhash["http_btn"]).Text = Language.trans("开始");
-                httpd.stop();
-            }
-            saveconf(); // save empty config to restore default config
             try
             {
+                http_parse_args();
+                if (((Button)btnhash["http_btn"]).Text == Language.trans("开始"))
+                {
+                    ((Button)btnhash["http_btn"]).Text = Language.trans("停止");
+                    httpd.start(httpport, autoindex, videoplay);
+                }
+                else
+                {
+                    ((Button)btnhash["http_btn"]).Text = Language.trans("开始");
+                    httpd.stop();
+                }
+                saveconf(); // save empty config to restore default config
             }
             catch (Exception e)
             {
@@ -93,12 +96,6 @@ namespace lazebird.rabbit.rabbit
             if (cb.Checked) { sh.reg_file(); sh.reg_dir(); }
             else { sh.dereg_file(); sh.dereg_dir(); }
         }
-        void http_index_click(object sender, EventArgs e)
-        {
-            CheckBox cb = (CheckBox)sender;
-            httpd.set_auto_index(cb.Checked);
-            saveconf();
-        }
         void httpd_dir_click(object sender, EventArgs evt)
         {
             TextBox tb = (TextBox)sender;
@@ -132,16 +129,18 @@ namespace lazebird.rabbit.rabbit
             else if (Directory.Exists(p)) httpd.add_dir(p);
             saveconf();
         }
+        void http_parse_args()
+        {
+            httpport = int.Parse(((TextBox)texthash["http_port"]).Text);
+            Hashtable opts = ropt.parse_opts(text_httpopt.Text);
+            if (opts.ContainsKey("autoindex")) autoindex = bool.Parse((string)opts["autoindex"]);
+            if (opts.ContainsKey("videoplay")) videoplay = bool.Parse((string)opts["videoplay"]);
+        }
         void httpd_readconf()
         {
             httptblen = fp_httpd.Width - 20;
             string[] paths = rconf.get("http_dirs").Split(';');
             foreach (string path in paths) if (path != "") httpd_add_path(path);
-            if (rconf.get("http_auto_index") != "")
-            {
-                cb_http_index.Checked = true;
-                httpd.set_auto_index(cb_http_index.Checked);
-            }
         }
         void httpd_saveconf()
         {
@@ -152,7 +151,6 @@ namespace lazebird.rabbit.rabbit
                 dirs += path + ";";
             }
             rconf.set("http_dirs", dirs);
-            if (cb_http_index.Checked) rconf.set("http_auto_index", "true");
         }
     }
 }

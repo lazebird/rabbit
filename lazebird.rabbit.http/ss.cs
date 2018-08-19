@@ -22,8 +22,8 @@ namespace lazebird.rabbit.http
         Hashtable opthash;
         rqueue q;
         Thread t;
-        bool auto_index;
-        bool video_play;
+        bool autoindex;
+        bool videoplay;
 
         public ss(HttpListenerRequest request, HttpListenerResponse response, rfs rfs)
         {
@@ -32,15 +32,15 @@ namespace lazebird.rabbit.http
             this.response = response;
             this.rfs = rfs;
             method = request.HttpMethod;
-            video_play = true;
+            videoplay = true;
             try
             {
                 string[] s = Uri.UnescapeDataString(request.RawUrl).Split('?');
                 uri = s[0];
                 args = s.Length > 1 ? s[1] : "";
                 opthash = ropt.parse_opts(args);
-                if (opthash.ContainsKey("autoindex")) this.auto_index = bool.Parse((string)opthash["autoindex"]);
-                if (opthash.ContainsKey("videoplay")) this.video_play = bool.Parse((string)opthash["videoplay"]);
+                if (opthash.ContainsKey("autoindex")) this.autoindex = bool.Parse((string)opthash["autoindex"]);
+                if (opthash.ContainsKey("videoplay")) this.videoplay = bool.Parse((string)opthash["videoplay"]);
             }
             catch (Exception) { }
             response.ContentEncoding = Encoding.UTF8;
@@ -49,9 +49,10 @@ namespace lazebird.rabbit.http
         {
             this.log = log;
         }
-        public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs, bool auto_index) : this(log, request, response, rfs)
+        public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs, bool autoindex, bool videoplay) : this(log, request, response, rfs)
         {
-            if (!opthash.ContainsKey("autoindex")) this.auto_index = auto_index;
+            if (!opthash.ContainsKey("autoindex")) this.autoindex = autoindex;
+            if (!opthash.ContainsKey("videoplay")) this.videoplay = videoplay;
         }
         void log_func(string msg) { }
         string uri2rpath(string uri)
@@ -81,7 +82,7 @@ namespace lazebird.rabbit.http
         }
         bool loadvideo(Hashtable mimehash, string path)
         {
-            if (!video_play) return false;
+            if (!videoplay) return false;
             string mime = uri2mime(mimehash, path);
             if (!mime.Contains("video/")) return false;
             string s = @"
@@ -136,7 +137,7 @@ namespace lazebird.rabbit.http
         bool loadindex(Hashtable mimehash, string rdir)
         {
             string indexpath;
-            if (!auto_index) return false;
+            if (!autoindex) return false;
             if (rdir != "")
             {
                 indexpath = rdir + "index.html";

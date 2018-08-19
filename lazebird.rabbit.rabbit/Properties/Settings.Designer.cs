@@ -122,12 +122,12 @@ namespace lazebird.rabbit.rabbit.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string http_auto_index {
+        public string http_opt {
             get {
-                return ((string)(this["http_auto_index"]));
+                return ((string)(this["http_opt"]));
             }
             set {
-                this["http_auto_index"] = value;
+                this["http_opt"] = value;
             }
         }
         

@@ -13,7 +13,8 @@ namespace lazebird.rabbit.http
         HttpListener hl = null;
         Hashtable mimehash;
         rfs rfs;
-        bool auto_index;
+        bool autoindex;
+        bool videoplay;
         public rhttpd(Action<string> log)
         {
             this.log = log;
@@ -31,9 +32,10 @@ namespace lazebird.rabbit.http
             }
 
         }
-        public void set_auto_index(bool state) { auto_index = state; }
-        public void start(int port)
+        public void start(int port, bool autoindex, bool videoplay)
         {
+            this.autoindex = autoindex;
+            this.videoplay = videoplay;
             hl = new HttpListener();
             hl.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
             hl.Prefixes.Clear();
@@ -56,7 +58,7 @@ namespace lazebird.rabbit.http
         }
         void session_task(HttpListenerRequest request, HttpListenerResponse response)
         {
-            ss s = new ss(log, request, response, rfs, auto_index);
+            ss s = new ss(log, request, response, rfs, autoindex, videoplay);
             s.proc_req(mimehash);
             s.destroy();
         }

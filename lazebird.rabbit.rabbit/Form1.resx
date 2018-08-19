@@ -285,6 +285,9 @@
   <data name="&gt;&gt;btn_ping.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
+  <data name="text_pingstat.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
   <data name="text_pingstat.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 50</value>
   </data>
@@ -292,7 +295,7 @@
     <value>2, 2, 2, 2</value>
   </data>
   <data name="text_pingstat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>887, 18</value>
+    <value>774, 18</value>
   </data>
   <data name="text_pingstat.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -452,9 +455,6 @@
   </data>
   <data name="&gt;&gt;label_scanend.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="text_scanend.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
   </data>
   <data name="text_scanend.Location" type="System.Drawing.Point, System.Drawing">
     <value>380, 15</value>
@@ -627,6 +627,63 @@
   <data name="&gt;&gt;Scan.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="label_httpopt.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_httpopt.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_httpopt.Location" type="System.Drawing.Point, System.Drawing">
+    <value>220, 15</value>
+  </data>
+  <data name="label_httpopt.Size" type="System.Drawing.Size, System.Drawing">
+    <value>37, 20</value>
+  </data>
+  <data name="label_httpopt.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="label_httpopt.Text" xml:space="preserve">
+    <value>Opt.</value>
+  </data>
+  <data name="&gt;&gt;label_httpopt.Name" xml:space="preserve">
+    <value>label_httpopt</value>
+  </data>
+  <data name="&gt;&gt;label_httpopt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_httpopt.Parent" xml:space="preserve">
+    <value>HTTPD</value>
+  </data>
+  <data name="&gt;&gt;label_httpopt.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="text_httpopt.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="text_httpopt.Location" type="System.Drawing.Point, System.Drawing">
+    <value>260, 15</value>
+  </data>
+  <data name="text_httpopt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="text_httpopt.Size" type="System.Drawing.Size, System.Drawing">
+    <value>350, 18</value>
+  </data>
+  <data name="text_httpopt.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="&gt;&gt;text_httpopt.Name" xml:space="preserve">
+    <value>text_httpopt</value>
+  </data>
+  <data name="&gt;&gt;text_httpopt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;text_httpopt.Parent" xml:space="preserve">
+    <value>HTTPD</value>
+  </data>
+  <data name="&gt;&gt;text_httpopt.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
   <data name="label_http_port.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -652,10 +709,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;label_http_port.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="text_http_port.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+    <value>2</value>
   </data>
   <data name="text_http_port.Location" type="System.Drawing.Point, System.Drawing">
     <value>66, 15</value>
@@ -664,7 +718,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="text_http_port.Size" type="System.Drawing.Size, System.Drawing">
-    <value>398, 18</value>
+    <value>150, 18</value>
   </data>
   <data name="text_http_port.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -679,7 +733,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;text_http_port.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="cb_http_shell.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -688,7 +742,7 @@
     <value>True</value>
   </data>
   <data name="cb_http_shell.Location" type="System.Drawing.Point, System.Drawing">
-    <value>486, 15</value>
+    <value>620, 15</value>
   </data>
   <data name="cb_http_shell.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 2, 3, 2</value>
@@ -712,40 +766,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;cb_http_shell.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="cb_http_index.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="cb_http_index.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="cb_http_index.Location" type="System.Drawing.Point, System.Drawing">
-    <value>577, 15</value>
-  </data>
-  <data name="cb_http_index.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 2, 3, 2</value>
-  </data>
-  <data name="cb_http_index.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 24</value>
-  </data>
-  <data name="cb_http_index.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
-  </data>
-  <data name="cb_http_index.Text" xml:space="preserve">
-    <value>index</value>
-  </data>
-  <data name="&gt;&gt;cb_http_index.Name" xml:space="preserve">
-    <value>cb_http_index</value>
-  </data>
-  <data name="&gt;&gt;cb_http_index.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;cb_http_index.Parent" xml:space="preserve">
-    <value>HTTPD</value>
-  </data>
-  <data name="&gt;&gt;cb_http_index.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="btn_httpd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -778,7 +799,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;btn_httpd.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="fp_httpd.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 45</value>
@@ -802,7 +823,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;fp_httpd.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="httpd_output.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
@@ -832,7 +853,7 @@
     <value>HTTPD</value>
   </data>
   <data name="&gt;&gt;httpd_output.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="HTTPD.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 29</value>
@@ -1127,9 +1148,6 @@
   </data>
   <data name="&gt;&gt;label_tftpcaddr.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="text_tftpcaddr.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
   </data>
   <data name="text_tftpcaddr.Location" type="System.Drawing.Point, System.Drawing">
     <value>39, 12</value>
