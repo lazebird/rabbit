@@ -32,7 +32,6 @@ namespace lazebird.rabbit.http
             this.response = response;
             this.rfs = rfs;
             method = request.HttpMethod;
-            videoplay = true;
             try
             {
                 string[] s = Uri.UnescapeDataString(request.RawUrl).Split('?');
