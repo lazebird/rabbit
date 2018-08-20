@@ -116,8 +116,8 @@ namespace lazebird.rabbit.http
             log("I: file " + path + " mime " + response.ContentType);
             FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
             response.ContentLength64 = fs.Length;
-            q = new rqueue(10); // 10 * 10M, max memory used 100M
-            t = new Thread(() => rfs.readstream(fs, q, 10000000));    // 10000000, max block size 10M
+            q = new rqueue(10000); // 10000 * 10K, max memory used 100M
+            t = new Thread(() => rfs.readstream(fs, q, 10000));    // 10000, max block size 10K, avoid LOH problem
             t.IsBackground = true;
             t.Start();
             rfs.writestream(output, q, fs.Name);
