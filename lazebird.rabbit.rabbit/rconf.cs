@@ -211,6 +211,7 @@ namespace lazebird.rabbit.rabbit
             mime += ".wdb:application/vnd.ms-works;";
             mime += ".wks:application/vnd.ms-works;";
             mime += ".wmf:application/x-msmetafile;";
+            mime += ".wmv:video/x-ms-wmv;";
             mime += ".wps:application/vnd.ms-works;";
             mime += ".wri:application/x-mswrite;";
             mime += ".wrl:x-world/x-vrml;";
