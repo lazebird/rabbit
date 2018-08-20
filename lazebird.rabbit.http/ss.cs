@@ -87,18 +87,17 @@ namespace lazebird.rabbit.http
             string s = @"
 <head>
     <link href=""https://vjs.zencdn.net/7.1.0/video-js.css"" rel=""stylesheet"">
-    <!-- If you'd like to support IE8 (for Video.js versions prior to v7) -->
-    <script src=""https://vjs.zencdn.net/ie8/ie8-version/videojs-ie8.min.js""></script>
+    <script src=""https://vjs.zencdn.net/7.1.0/video.js""></script>
+    <script src=""https://cdn.jsdelivr.net/npm/videojs-flash@2/dist/videojs-flash.min.js""></script>
 </head>
 <body>
-    <video id=""my-video"" class=""video-js"" controls preload=""auto"" width=""640"" height=""264"" poster=""MY_VIDEO_POSTER.jpg"" data-setup=""{}"">
+    <video id=""my-video"" class=""video-js"" controls preload=""auto"" width=""640"" height=""264"" poster=""MY_VIDEO_POSTER.jpg"" data-setup='{""techOrder"": [""flash"",""html5""]}'>
         <source src=""$uri?videoplay=false"" type='$mime'>
         <p class=""vjs-no-js"">
             To view this video please enable JavaScript, and consider upgrading to a web browser that
             <a href=""https://videojs.com/html5-video-support/"" target=""_blank"">supports HTML5 video</a>
         </p>
     </video>
-    <script src=""https://vjs.zencdn.net/7.1.0/video.js""></script>
 </body>
 ";
             s = s.Replace("$uri", uri);

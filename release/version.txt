@@ -1,6 +1,6 @@
-date=2018/08/19
-time=11:24:14
+date=2018/08/20
+time=08:32:39
 branch=master
-sha=595a4d6a0feb4d15bc0a808937d90ead458a3406
-shashort=595a4d6
+sha=14c9975b496ebd0766aa779b31bd86ed611bce53
+shashort=14c9975
 extra=Release
