@@ -96,7 +96,8 @@ namespace lazebird.rabbit.rabbit
             text_chatntf.Text = rconf.get("chatbrdip");
             chat_click(null, null);
             chat_refresh_click(null, null);
-            new Thread(() => chat_refresh_click(null, null)).Start();
+            Thread.Sleep(100);
+            chat_refresh_click(null, null);
         }
         void chat_saveconf()
         {
