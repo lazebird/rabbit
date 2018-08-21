@@ -73,10 +73,7 @@ namespace lazebird.rabbit.http
                 t.Start();
                 hl.BeginGetContext(new AsyncCallback(dispatcher), null);
             }
-            catch (Exception e)
-            {
-                log("!E: " + e.ToString());
-            }
+            catch (Exception) { }
         }
 
         string rootpath;

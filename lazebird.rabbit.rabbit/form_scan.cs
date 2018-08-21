@@ -23,7 +23,7 @@ namespace lazebird.rabbit.rabbit
         void scan_parse_args()
         {
             Hashtable opts = ropt.parse_opts(text_scanopt.Text);
-            if (opts.ContainsKey("filter")) scan_filter = bool.Parse((string)opts["filter"]);
+            if (opts.ContainsKey("filter")) scan_filter = (string)opts["filter"] == "true"; // not bool.parse for compatible
         }
         void scan_reply(PingReply reply, object data)
         {

@@ -82,25 +82,21 @@ namespace lazebird.rabbit.rabbit
             chatephash.Clear();
             chatbtnhash.Clear();
             chat.new_query(text_chatntf.Text, 1314);
-            saveconf();
+            if (sender != null) saveconf();
         }
         void chat_notify_click(object sender, EventArgs e)
         {
             chat.new_notification(text_chatntf.Text, 1314);
             saveconf();
         }
-        void chat_delay_init()
-        {
-            btn_chat.PerformClick();
-            Thread.Sleep(500);
-            btn_chatrefresh.PerformClick();
-        }
         void chat_readconf()
         {
             text_chatname.Text = rconf.get("chatname");
             chat.set_name(text_chatname.Text);
             text_chatntf.Text = rconf.get("chatbrdip");
-            new Thread(chat_delay_init).Start();
+            chat_click(null, null);
+            chat_refresh_click(null, null);
+            new Thread(() => chat_refresh_click(null, null)).Start();
         }
         void chat_saveconf()
         {
