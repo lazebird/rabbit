@@ -31,7 +31,7 @@
 ## IP扫描（Scan）
 ### 配置项
 - IP： 扫描的IP地址范围，前面方框内为完整的起始IP，后面方框内为结束IP的最后字节值
-- filter：显示过滤选项，on表示仅显示可达的IP，off表示显示全部IP；默认为on
+- filter：显示过滤选项，true表示仅显示可达的IP，false表示显示全部IP；默认为true
 
 ## HTTP服务器（HTTPD）
 ### 配置项
