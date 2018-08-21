@@ -55,10 +55,7 @@ namespace lazebird.rabbit.chat
                     pkt_proc(p, r);
                 }
             }
-            catch (Exception e)
-            {
-                log("!E: session " + e.ToString());
-            }
+            catch (Exception) { }
         }
         void start_hear_task()
         {

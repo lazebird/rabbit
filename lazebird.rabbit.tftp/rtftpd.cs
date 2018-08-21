@@ -111,7 +111,7 @@ namespace lazebird.rabbit.tftp
             }
             catch (Exception e)
             {
-                slog("!E: " + e.Message);
+                slog("!E: " + e.ToString());
             }
         }
         protected virtual void Dispose(bool disposing)

@@ -19,17 +19,17 @@ namespace lazebird.rabbit.rabbit
         void scan_log_func(string msg)
         {
         }
-        bool scan_filteron;
+        bool scan_filter;
         void scan_parse_args()
         {
             Hashtable opts = ropt.parse_opts(text_scanopt.Text);
-            if (opts.ContainsKey("filter")) scan_filteron = (string)opts["filter"] == "on";
+            if (opts.ContainsKey("filter")) scan_filter = bool.Parse((string)opts["filter"]);
         }
         void scan_reply(PingReply reply, object data)
         {
             if (reply == null) return;
             if (reply.Status == IPStatus.Success) ((Label)data).BackColor = Color.Green;
-            else if (scan_filteron) ((Label)data).Visible = false;
+            else if (scan_filter) ((Label)data).Visible = false;
         }
         void start_scan()
         {

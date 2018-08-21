@@ -36,6 +36,7 @@ namespace lazebird.rabbit.http
         {
             this.autoindex = autoindex;
             this.videoplay = videoplay;
+            if (hl != null) stop();
             hl = new HttpListener();
             hl.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
             hl.Prefixes.Clear();
@@ -47,7 +48,7 @@ namespace lazebird.rabbit.http
             }
             catch (Exception e)
             {
-                log("!E: " + e.Message);
+                log("!E: " + e.ToString());
                 hl.Close();
                 hl = null;
             }
@@ -74,7 +75,7 @@ namespace lazebird.rabbit.http
             }
             catch (Exception e)
             {
-                log("!E: " + e.Message);
+                log("!E: " + e.ToString());
             }
         }
 
