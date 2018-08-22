@@ -26,7 +26,7 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("http_dirs", ".;..;");
             cfg.Add("scan_ipstart", "192.168.1.1");
             cfg.Add("scan_ipend", "254");
-            cfg.Add("scan_opt", "hideunreachable=false;");
+            cfg.Add("scan_opt", "interval=1000;count=1;stoponloss=false;hideunreachable=false;");
             cfg.Add("tftpd_opt", "timeout=200;retry=30;");
             cfg.Add("tftpd_dirs", ".;");
             cfg.Add("tftpd_dir_index", "0");
