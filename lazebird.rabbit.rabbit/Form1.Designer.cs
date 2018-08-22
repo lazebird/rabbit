@@ -88,6 +88,8 @@
             this.btn_tftpcput = new System.Windows.Forms.Button();
             this.tftpc_output = new System.Windows.Forms.ListBox();
             this.PLAN = new System.Windows.Forms.TabPage();
+            this.text_planopt = new System.Windows.Forms.TextBox();
+            this.label_planopt = new System.Windows.Forms.Label();
             this.dt1_plan = new System.Windows.Forms.DateTimePicker();
             this.dt2_plan = new System.Windows.Forms.DateTimePicker();
             this.label_plancycle = new System.Windows.Forms.Label();
@@ -119,8 +121,6 @@
             this.link_ver = new System.Windows.Forms.LinkLabel();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
-            this.label_planopt = new System.Windows.Forms.Label();
-            this.text_planopt = new System.Windows.Forms.TextBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -543,6 +543,19 @@
             resources.ApplyResources(this.PLAN, "PLAN");
             this.PLAN.Name = "PLAN";
             // 
+            // text_planopt
+            // 
+            resources.ApplyResources(this.text_planopt, "text_planopt");
+            this.text_planopt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_planopt.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_planopt.ForeColor = System.Drawing.Color.White;
+            this.text_planopt.Name = "text_planopt";
+            // 
+            // label_planopt
+            // 
+            resources.ApplyResources(this.label_planopt, "label_planopt");
+            this.label_planopt.Name = "label_planopt";
+            // 
             // dt1_plan
             // 
             resources.ApplyResources(this.dt1_plan, "dt1_plan");
@@ -771,19 +784,6 @@
             // ntfico
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
-            // 
-            // label_planopt
-            // 
-            resources.ApplyResources(this.label_planopt, "label_planopt");
-            this.label_planopt.Name = "label_planopt";
-            // 
-            // text_planopt
-            // 
-            resources.ApplyResources(this.text_planopt, "text_planopt");
-            this.text_planopt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.text_planopt.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.text_planopt.ForeColor = System.Drawing.Color.White;
-            this.text_planopt.Name = "text_planopt";
             // 
             // Form1
             // 
