@@ -47,6 +47,7 @@ namespace lazebird.rabbit.rabbit
             if (opts.ContainsKey("interval")) int.TryParse((string)opts["interval"], out ping_interval);
             if (opts.ContainsKey("count")) int.TryParse((string)opts["count"], out ping_count);
             if (opts.ContainsKey("stoponloss")) bool.TryParse((string)opts["stoponloss"], out ping_stoponloss);
+            if (opts.ContainsKey("taskbar")) bool.TryParse((string)opts["taskbar"], out ping_taskbar);
             if (opts.ContainsKey("log")) ping_logpath = (string)opts["log"];
             if (!string.IsNullOrEmpty(ping_logpath)) pinglog.setfile(ping_logpath);
         }
