@@ -22,7 +22,7 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("ping_addr", "www.mozilla.com");
             cfg.Add("ping_opt", "interval=1000;count=-1;taskbar=true;log=;");
             cfg.Add("http_port", "80");
-            cfg.Add("http_opt", "autoindex=true;videoplay=true;");
+            cfg.Add("http_opt", "autoindex=false;videoplay=true;");
             cfg.Add("http_dirs", ".;..;");
             cfg.Add("scan_ipstart", "192.168.1.1");
             cfg.Add("scan_ipend", "254");

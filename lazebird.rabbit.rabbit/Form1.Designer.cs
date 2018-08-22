@@ -119,6 +119,8 @@
             this.link_ver = new System.Windows.Forms.LinkLabel();
             this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
+            this.label_planopt = new System.Windows.Forms.Label();
+            this.text_planopt = new System.Windows.Forms.TextBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -525,6 +527,8 @@
             // PLAN
             // 
             this.PLAN.BackColor = System.Drawing.Color.DimGray;
+            this.PLAN.Controls.Add(this.text_planopt);
+            this.PLAN.Controls.Add(this.label_planopt);
             this.PLAN.Controls.Add(this.dt1_plan);
             this.PLAN.Controls.Add(this.dt2_plan);
             this.PLAN.Controls.Add(this.label_plancycle);
@@ -574,10 +578,10 @@
             // 
             // text_planmsg
             // 
-            resources.ApplyResources(this.text_planmsg, "text_planmsg");
             this.text_planmsg.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.text_planmsg.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.text_planmsg.ForeColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.text_planmsg, "text_planmsg");
             this.text_planmsg.Name = "text_planmsg";
             // 
             // btn_plandel
@@ -768,6 +772,19 @@
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
             // 
+            // label_planopt
+            // 
+            resources.ApplyResources(this.label_planopt, "label_planopt");
+            this.label_planopt.Name = "label_planopt";
+            // 
+            // text_planopt
+            // 
+            resources.ApplyResources(this.text_planopt, "text_planopt");
+            this.text_planopt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.text_planopt.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.text_planopt.ForeColor = System.Drawing.Color.White;
+            this.text_planopt.Name = "text_planopt";
+            // 
             // Form1
             // 
             resources.ApplyResources(this, "$this");
@@ -881,6 +898,8 @@
         private System.Windows.Forms.CheckBox cb_autostart;
         private System.Windows.Forms.Label label_httpopt;
         private System.Windows.Forms.TextBox text_httpopt;
+        private System.Windows.Forms.Label label_planopt;
+        private System.Windows.Forms.TextBox text_planopt;
     }
 }
 

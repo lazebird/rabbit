@@ -42,6 +42,11 @@ namespace lazebird.rabbit.rabbit
                 plan_log_func("I: msg cannot be null or empty!");
                 return null;
             }
+            if (plan_msghash.ContainsKey(msg))
+            {
+                if (!plan_override) return null;
+                plan_del(msg);
+            }
             return new rplan(plan_log_func, starttm, cycle, unit, msg);
         }
         void plan2ui(rplan p)
@@ -62,11 +67,6 @@ namespace lazebird.rabbit.rabbit
         void plan_add(rplan p)
         {
             if (p == null) return;
-            if (plan_msghash.ContainsKey(p.msg))
-            {
-                if (!plan_override) return;
-                plan_msghash.Remove(p.msg);
-            }
             TextBox tb = new TextBox();
             tb.ReadOnly = true;
             tb.BackColor = Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -92,7 +92,7 @@ namespace lazebird.rabbit.rabbit
         }
         void plan_parse_args()
         {
-            Hashtable opts = ropt.parse_opts("");
+            Hashtable opts = ropt.parse_opts(text_planopt.Text);
             if (opts.ContainsKey("override")) bool.TryParse((string)opts["override"], out plan_override);
         }
         void plan_add_click(object sender, EventArgs e)
