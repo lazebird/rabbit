@@ -10,6 +10,7 @@ call:prjpack lazebird.rabbit.common
 call:prjpack lazebird.rabbit.tftp
 call:prjpack lazebird.rabbit.fs
 call:prjpack lazebird.rabbit.plan
+call:prjpack lazebird.rabbit.chat
 popd
 pause
 GOTO:EOF

@@ -38,8 +38,8 @@ namespace lazebird.rabbit.http
                 uri = s[0];
                 args = s.Length > 1 ? s[1] : "";
                 opthash = ropt.parse_opts(args);
-                if (opthash.ContainsKey("autoindex")) this.autoindex = bool.Parse((string)opthash["autoindex"]);
-                if (opthash.ContainsKey("videoplay")) this.videoplay = bool.Parse((string)opthash["videoplay"]);
+                if (opthash.ContainsKey("autoindex")) bool.TryParse((string)opthash["autoindex"], out autoindex);
+                if (opthash.ContainsKey("videoplay")) bool.TryParse((string)opthash["videoplay"], out videoplay);
             }
             catch (Exception) { }
             response.ContentEncoding = Encoding.UTF8;

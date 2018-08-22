@@ -19,17 +19,17 @@ namespace lazebird.rabbit.rabbit
         void scan_log_func(string msg)
         {
         }
-        bool scan_filter;
+        bool scan_hideunreachable;
         void scan_parse_args()
         {
             Hashtable opts = ropt.parse_opts(text_scanopt.Text);
-            if (opts.ContainsKey("filter")) scan_filter = (string)opts["filter"] == "true"; // not bool.parse for compatible
+            if (opts.ContainsKey("hideunreachable")) bool.TryParse((string)opts["hideunreachable"], out scan_hideunreachable);
         }
         void scan_reply(PingReply reply, object data)
         {
             if (reply == null) return;
             if (reply.Status == IPStatus.Success) ((Label)data).BackColor = Color.Green;
-            else if (scan_filter) ((Label)data).Visible = false;
+            else if (scan_hideunreachable) ((Label)data).Visible = false;
         }
         void start_scan()
         {
@@ -37,7 +37,8 @@ namespace lazebird.rabbit.rabbit
             {
                 scan_parse_args();
                 string startip = ((TextBox)texthash["scan_ipstart"]).Text;
-                int lastbyte = int.Parse(((TextBox)texthash["scan_ipend"]).Text);
+                int lastbyte = 254;
+                int.TryParse(((TextBox)texthash["scan_ipend"]).Text, out lastbyte);
                 Byte[] ipbytes = IPAddress.Parse(startip).GetAddressBytes();
                 for (int i = ipbytes[3]; i <= lastbyte && i < 255; i++)
                 {

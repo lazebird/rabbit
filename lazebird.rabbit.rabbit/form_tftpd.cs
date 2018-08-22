@@ -127,8 +127,8 @@ namespace lazebird.rabbit.rabbit
         void tftpd_parse_args()
         {
             Hashtable opts = ropt.parse_opts(text_tftpdopt.Text);
-            if (opts.ContainsKey("timeout")) tftpd_timeout = int.Parse((string)opts["timeout"]);
-            if (opts.ContainsKey("retry")) tftpd_retry = int.Parse((string)opts["retry"]);
+            if (opts.ContainsKey("timeout")) int.TryParse((string)opts["timeout"], out tftpd_timeout);
+            if (opts.ContainsKey("retry")) int.TryParse((string)opts["retry"], out tftpd_retry);
         }
         void tftpd_click(object sender, EventArgs evt)
         {

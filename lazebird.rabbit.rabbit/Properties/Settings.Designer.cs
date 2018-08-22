@@ -298,5 +298,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["scan_opt"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string plan_opt {
+            get {
+                return ((string)(this["plan_opt"]));
+            }
+            set {
+                this["plan_opt"] = value;
+            }
+        }
     }
 }

@@ -20,13 +20,9 @@ namespace lazebird.rabbit.tftp
 
         bool parse_opt(string name, string val)
         {
-            if (name == "timeout")
-                timeout = int.Parse(val);
-            else if (name == "blksize")
-                blksize = int.Parse(val);
-            else
-                return false;
-            return true;
+            if (name == "timeout") return int.TryParse(val, out timeout);
+            else if (name == "blksize") return int.TryParse(val, out blksize);
+            else return false;
         }
         override public bool parse(byte[] buf)
         {

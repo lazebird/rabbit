@@ -37,7 +37,6 @@ namespace lazebird.rabbit.rabbit
         }
         void chat_click(object sender, EventArgs e)
         {
-            chat_log_func("I: " + btn_chat.Text);
             if (btn_chat.Text == Language.trans("开始"))
             {
                 btn_chat.Text = Language.trans("停止");
@@ -63,7 +62,7 @@ namespace lazebird.rabbit.rabbit
                 this.Invoke(new MethodInvoker(delegate { add_user(ep, user); }));
                 return;
             }
-            chat_log_func("I: " + ep.ToString() + " " + user);
+            //chat_log_func("I: " + ep.ToString() + " " + user);
             if (chatephash.ContainsKey(ep)) chatephash.Remove(ep);
             chatephash.Add(ep, user);
             Button b = new Button();

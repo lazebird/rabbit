@@ -26,13 +26,14 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("http_dirs", ".;..;");
             cfg.Add("scan_ipstart", "192.168.1.1");
             cfg.Add("scan_ipend", "254");
-            cfg.Add("scan_opt", "filter=true;");
+            cfg.Add("scan_opt", "hideunreachable=false;");
             cfg.Add("tftpd_opt", "timeout=200;retry=30;");
             cfg.Add("tftpd_dirs", ".;");
             cfg.Add("tftpd_dir_index", "0");
             cfg.Add("tftpc_addr", "127.0.0.1");
             cfg.Add("tftpc_opt", "timeout=200;retry=10;blksize=1468;");
-            cfg.Add("plans", DateTime.Now + "|45|minute|Have a rest!;");
+            cfg.Add("plan_opt", "override=false;");
+            cfg.Add("plans", DateTime.Now + "|0|minute|Have a rest!;");
             cfg.Add("systray", "false");
             cfg.Add("chatname", Environment.UserName + "@" + Environment.MachineName);
             cfg.Add("chatbrdip", "255.255.255.255");

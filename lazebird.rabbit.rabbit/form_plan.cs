@@ -14,6 +14,7 @@ namespace lazebird.rabbit.rabbit
         Hashtable plan_msghash;
         rlog planlog;
         int plantblen;
+        bool plan_override;
         void init_form_plan()
         {
             plan_tbhash = new Hashtable();
@@ -32,10 +33,11 @@ namespace lazebird.rabbit.rabbit
         rplan ui2plan()
         {
             DateTime starttm = DateTime.Parse(dt1_plan.Text + " " + dt2_plan.Text);
-            int cycle = int.Parse(text_plancycle.Text);
+            int cycle = 0;
+            int.TryParse(text_plancycle.Text, out cycle);
             cycleunit unit = str2unit(cb_planunit.Text);
-            string msg = text_planmsg.Text;
-            if (msg == "")
+            string msg = text_planmsg.Text.Trim();
+            if (string.IsNullOrWhiteSpace(msg))
             {
                 plan_log_func("I: msg cannot be null or empty!");
                 return null;
@@ -59,7 +61,12 @@ namespace lazebird.rabbit.rabbit
         }
         void plan_add(rplan p)
         {
-            if (p == null || plan_msghash.ContainsKey(p.msg)) return;
+            if (p == null) return;
+            if (plan_msghash.ContainsKey(p.msg))
+            {
+                if (!plan_override) return;
+                plan_msghash.Remove(p.msg);
+            }
             TextBox tb = new TextBox();
             tb.ReadOnly = true;
             tb.BackColor = Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -83,8 +90,14 @@ namespace lazebird.rabbit.rabbit
             plan_msghash.Remove(text_planmsg.Text);
             plan_tbhash.Remove(tb);
         }
+        void plan_parse_args()
+        {
+            Hashtable opts = ropt.parse_opts("");
+            if (opts.ContainsKey("override")) bool.TryParse((string)opts["override"], out plan_override);
+        }
         void plan_add_click(object sender, EventArgs e)
         {
+            plan_parse_args();
             plan_add(ui2plan());
             saveconf();
         }

@@ -85,7 +85,6 @@ namespace lazebird.rabbit.chat
             fd.CreatePrompt = true;
             fd.OverwritePrompt = true;
             fd.ShowHelp = true;
-            log("I: saving logs");
             if (fd.ShowDialog() == DialogResult.OK)
             {
                 log("I: saving logs to " + fd.FileName);
@@ -116,7 +115,7 @@ namespace lazebird.rabbit.chat
         {
             pa_chat.Width = Width - pa_chat_gap;
             foreach (RichTextBox tb in mhash.Values) tb.Width = pa_chat.Width - tb_chat_gap;
-            log("I: form width " + Width + " fp width " + pa_chat.Width + " tb width " + (pa_chat.Width - tb_chat_gap));
+            //log("I: form width " + Width + " fp width " + pa_chat.Width + " tb width " + (pa_chat.Width - tb_chat_gap));
         }
         void rtb_ContentsResized(object sender, ContentsResizedEventArgs e)
         {

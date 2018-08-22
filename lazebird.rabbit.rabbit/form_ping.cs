@@ -44,10 +44,9 @@ namespace lazebird.rabbit.rabbit
         {
             ping_addr = ((TextBox)texthash["ping_addr"]).Text;
             Hashtable opts = ropt.parse_opts(text_pingopt.Text);
-            if (opts.ContainsKey("interval")) ping_interval = int.Parse((string)opts["interval"]);
-            if (opts.ContainsKey("count")) ping_count = int.Parse((string)opts["count"]);
-            if (opts.ContainsKey("stoponloss")) ping_stoponloss = (string)opts["stoponloss"] == "true";
-            if (opts.ContainsKey("taskbar")) ping_taskbar = (string)opts["taskbar"] == "true";
+            if (opts.ContainsKey("interval")) int.TryParse((string)opts["interval"], out ping_interval);
+            if (opts.ContainsKey("count")) int.TryParse((string)opts["count"], out ping_count);
+            if (opts.ContainsKey("stoponloss")) bool.TryParse((string)opts["stoponloss"], out ping_stoponloss);
             if (opts.ContainsKey("log")) ping_logpath = (string)opts["log"];
             if (!string.IsNullOrEmpty(ping_logpath)) pinglog.setfile(ping_logpath);
         }

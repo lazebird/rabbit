@@ -131,10 +131,10 @@ namespace lazebird.rabbit.rabbit
         }
         void http_parse_args()
         {
-            httpport = int.Parse(((TextBox)texthash["http_port"]).Text);
+            int.TryParse(((TextBox)texthash["http_port"]).Text, out httpport);
             Hashtable opts = ropt.parse_opts(text_httpopt.Text);
-            if (opts.ContainsKey("autoindex")) autoindex = bool.Parse((string)opts["autoindex"]);
-            if (opts.ContainsKey("videoplay")) videoplay = bool.Parse((string)opts["videoplay"]);
+            if (opts.ContainsKey("autoindex")) bool.TryParse((string)opts["autoindex"], out autoindex);
+            if (opts.ContainsKey("videoplay")) bool.TryParse((string)opts["videoplay"], out videoplay);
         }
         void httpd_readconf()
         {

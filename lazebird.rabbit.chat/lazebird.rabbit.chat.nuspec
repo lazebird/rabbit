@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>lazebird</authors>
+    <owners>lazebird</owners>
+    <licenseUrl>https://github.com/lazebird/rabbit/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/lazebird/rabbit</projectUrl>
+    <iconUrl>https://github.com/lazebird/rabbit/blob/master/lazebird.rabbit.rabbit/easter%20Bunny.ico</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>an stupid chat library with udp in lan</description>
+    <releaseNotes>support server/client, support user discovey, notification to all, chat one to one</releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags>lazebird rabbit chat</tags>
+  </metadata>
+</package>

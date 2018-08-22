@@ -26,7 +26,7 @@ namespace lazebird.rabbit.chat
         {
             if (string.IsNullOrEmpty(name)) return;
             username = name;
-            log("I: set name " + username);
+            //log("I: set name " + username);
         }
         void show_notification(IPEndPoint ep, string user, string msg)
         {
