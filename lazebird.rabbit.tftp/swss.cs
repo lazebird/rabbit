@@ -23,6 +23,7 @@ namespace lazebird.rabbit.tftp
                 {
                     pktbuf = new err_pkt(Errcodes.FileAlreadyExists, pkt.filename).pack();
                     uc.Send(pktbuf, pktbuf.Length, r);
+                    filename = pkt.filename; // set filename for log
                     return false;
                 }
                 write_file(pkt.filename);

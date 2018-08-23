@@ -27,6 +27,7 @@ namespace lazebird.rabbit.tftp
                     {
                         pktbuf = new err_pkt(Errcodes.FileNotFound, pkt.filename).pack();
                         uc.Send(pktbuf, pktbuf.Length, r);
+                        filename = pkt.filename; // set filename for log
                         return false;
                     }
                     read_file(pkt.filename);
