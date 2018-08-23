@@ -17,13 +17,11 @@ namespace lazebird.rabbit.rabbit
         int scan_count = 1;
         bool scan_stoponloss = false;
         Hashtable scansshash;
-        int scan_start_stat;
-        int scan_stop_stat;
         void init_form_scan()
         {
             btn_scan.Click += new EventHandler(scan_click);
             fp_scan.AutoScroll = true;
-            scansshash = new Hashtable();
+            scansshash = Hashtable.Synchronized(new Hashtable());
         }
         void scan_log_func(string msg)
         {
@@ -46,7 +44,7 @@ namespace lazebird.rabbit.rabbit
             if (reply == null)
             {
                 scansshash.Remove(lb);
-                lock (scan_lock) if (++scan_stop_stat == scan_start_stat) btn_scan.Text = "Start";
+                if (scansshash.Count == 0) btn_scan.Text = "Start";
                 return;
             }
             lb.BackColor = (reply.Status == IPStatus.Success) ? Color.Green : Color.FromArgb(64, 64, 64);
@@ -58,10 +56,8 @@ namespace lazebird.rabbit.rabbit
             {
                 scan_parse_args();
                 Byte[] ipbytes = IPAddress.Parse(scan_startip).GetAddressBytes();
-                scan_start_stat = scan_stop_stat = 0;
                 for (int i = ipbytes[3]; i <= scan_lastbyte && i < 255; i++)
                 {
-                    scan_start_stat++;
                     Label lb = new Label();
                     lb.Text = i.ToString();
                     lb.Width = lb.Height = 28;
