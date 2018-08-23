@@ -39,13 +39,14 @@ namespace lazebird.rabbit.rabbit
             if (opts.ContainsKey("stoponloss")) bool.TryParse((string)opts["stoponloss"], out scan_stoponloss);
             if (opts.ContainsKey("hideunreachable")) bool.TryParse((string)opts["hideunreachable"], out scan_hideunreachable);
         }
+        object scan_lock = new object();
         void scan_reply(PingReply reply, object data)
         {
             Label lb = (Label)data;
             if (reply == null)
             {
                 scansshash.Remove(lb);
-                if (++scan_stop_stat == scan_start_stat) btn_scan.Text = "Start";
+                lock (scan_lock) if (++scan_stop_stat == scan_start_stat) btn_scan.Text = "Start";
                 return;
             }
             lb.BackColor = (reply.Status == IPStatus.Success) ? Color.Green : Color.FromArgb(64, 64, 64);
