@@ -65,6 +65,7 @@ namespace lazebird.rabbit.chat
                                 else
                                 {
                                     ((rchatform)chathash[r.Address]).pkt_proc(p, r); // reuse old session
+                                    ((rchatform)chathash[r.Address]).Activate();
                                     break;
                                 }
                             }
