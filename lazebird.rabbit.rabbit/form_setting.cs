@@ -54,14 +54,22 @@ namespace lazebird.rabbit.rabbit
             setlog.write("Set Language: " + lang_cb.Text);
             setlog.write("Restart App to take effect!");
         }
-        void url_click(object sender, LinkLabelLinkClickedEventArgs e)
+        void url_click(object sender, LinkLabelLinkClickedEventArgs evt)
         {
-            if (sender == link_prj)
-                System.Diagnostics.Process.Start(prjurl);
-            else if (sender == link_prof)
-                System.Diagnostics.Process.Start(profileuri);
-            else if (sender == link_help)
-                System.Diagnostics.Process.Start(helpurl);
+            string path = "";
+            if (sender == link_prj) path = prjurl;
+            else if (sender == link_prof) path = profileuri;
+            else if (sender == link_help) path = helpurl;
+            try
+            {
+                System.Diagnostics.Process.Start(path);
+            }
+            catch (Exception e)
+            {
+                Clipboard.SetDataObject(path);
+                setlog.write("!E: " + e.ToString());
+                setlog.write("!E: Url " + path + " copied");
+            }
         }
         string download2str(string uri)
         {
