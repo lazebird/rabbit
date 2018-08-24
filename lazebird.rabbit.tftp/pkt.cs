@@ -12,7 +12,8 @@ namespace lazebird.rabbit.tftp
             Data = 3,
             Ack = 4,
             Error = 5,
-            OAck = 6
+            OAck = 6,
+            ReadDir = 200,
         }
         public enum Modes
         {
@@ -29,7 +30,8 @@ namespace lazebird.rabbit.tftp
             IllegalOper = 4,
             UnknownTrans = 5,
             FileAlreadyExists = 6,
-            NoSuchUser = 7
+            NoSuchUser = 7,
+            DirNotFound = 200
         }
         public Opcodes op = 0;
 

@@ -11,8 +11,8 @@
     <iconUrl>https://github.com/lazebird/rabbit/blob/master/lazebird.rabbit.rabbit/easter%20Bunny.ico</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>an advance fs library for rabbit project</description>
-    <releaseNotes>support add/del file/dir in virtual file system</releaseNotes>
+    <releaseNotes>support add/del file/dir in virtual file system, support rqueue and rshell</releaseNotes>
     <copyright>Copyright 2018</copyright>
-    <tags>lazebird rabbit fs</tags>
+    <tags>lazebird rabbit fs rqueue rshell</tags>
   </metadata>
 </package>

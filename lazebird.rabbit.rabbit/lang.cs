@@ -48,7 +48,7 @@ namespace lazebird.rabbit.rabbit
             enhash.Add("开始", "Start");
             enhash.Add("停止", "Stop");
             Getsetting();
-            if (language == "中文")
+            if (false && language == "中文")
             {
                 return zhhash.ContainsKey(key) ? (string)zhhash[key] : key;
             }

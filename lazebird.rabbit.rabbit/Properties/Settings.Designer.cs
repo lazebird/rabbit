@@ -26,84 +26,12 @@ namespace lazebird.rabbit.rabbit.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ping_addr {
+        public string tabindex {
             get {
-                return ((string)(this["ping_addr"]));
+                return ((string)(this["tabindex"]));
             }
             set {
-                this["ping_addr"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ping_timeout {
-            get {
-                return ((string)(this["ping_timeout"]));
-            }
-            set {
-                this["ping_timeout"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ping_times {
-            get {
-                return ((string)(this["ping_times"]));
-            }
-            set {
-                this["ping_times"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ping_logfile {
-            get {
-                return ((string)(this["ping_logfile"]));
-            }
-            set {
-                this["ping_logfile"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string http_port {
-            get {
-                return ((string)(this["http_port"]));
-            }
-            set {
-                this["http_port"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string http_dirs {
-            get {
-                return ((string)(this["http_dirs"]));
-            }
-            set {
-                this["http_dirs"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tabs {
-            get {
-                return ((string)(this["tabs"]));
-            }
-            set {
-                this["tabs"] = value;
+                this["tabindex"] = value;
             }
         }
         
@@ -122,60 +50,24 @@ namespace lazebird.rabbit.rabbit.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string httpd_btn {
+        public string ping_addr {
             get {
-                return ((string)(this["httpd_btn"]));
+                return ((string)(this["ping_addr"]));
             }
             set {
-                this["httpd_btn"] = value;
+                this["ping_addr"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string mime {
+        public string ping_opt {
             get {
-                return ((string)(this["mime"]));
+                return ((string)(this["ping_opt"]));
             }
             set {
-                this["mime"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftpd_timeout {
-            get {
-                return ((string)(this["tftpd_timeout"]));
-            }
-            set {
-                this["tftpd_timeout"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftpd_retry {
-            get {
-                return ((string)(this["tftpd_retry"]));
-            }
-            set {
-                this["tftpd_retry"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftpd_btn {
-            get {
-                return ((string)(this["tftpd_btn"]));
-            }
-            set {
-                this["tftpd_btn"] = value;
+                this["ping_opt"] = value;
             }
         }
         
@@ -206,60 +98,84 @@ namespace lazebird.rabbit.rabbit.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string lang {
+        public string http_btn {
             get {
-                return ((string)(this["lang"]));
+                return ((string)(this["http_btn"]));
             }
             set {
-                this["lang"] = value;
+                this["http_btn"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftpc_timeout {
+        public string http_port {
             get {
-                return ((string)(this["tftpc_timeout"]));
+                return ((string)(this["http_port"]));
             }
             set {
-                this["tftpc_timeout"] = value;
+                this["http_port"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftpc_retry {
+        public string http_opt {
             get {
-                return ((string)(this["tftpc_retry"]));
+                return ((string)(this["http_opt"]));
             }
             set {
-                this["tftpc_retry"] = value;
+                this["http_opt"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftpc_blksize {
+        public string http_dirs {
             get {
-                return ((string)(this["tftpc_blksize"]));
+                return ((string)(this["http_dirs"]));
             }
             set {
-                this["tftpc_blksize"] = value;
+                this["http_dirs"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftpc_addr {
+        public string tftpd_btn {
             get {
-                return ((string)(this["tftpc_addr"]));
+                return ((string)(this["tftpd_btn"]));
             }
             set {
-                this["tftpc_addr"] = value;
+                this["tftpd_btn"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpd_opt {
+            get {
+                return ((string)(this["tftpd_opt"]));
+            }
+            set {
+                this["tftpd_opt"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpd_dirs {
+            get {
+                return ((string)(this["tftpd_dirs"]));
+            }
+            set {
+                this["tftpd_dirs"] = value;
             }
         }
         
@@ -278,12 +194,132 @@ namespace lazebird.rabbit.rabbit.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string tftpd_dirs {
+        public string tftpc_addr {
             get {
-                return ((string)(this["tftpd_dirs"]));
+                return ((string)(this["tftpc_addr"]));
             }
             set {
-                this["tftpd_dirs"] = value;
+                this["tftpc_addr"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string tftpc_opt {
+            get {
+                return ((string)(this["tftpc_opt"]));
+            }
+            set {
+                this["tftpc_opt"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string plans {
+            get {
+                return ((string)(this["plans"]));
+            }
+            set {
+                this["plans"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string chatname {
+            get {
+                return ((string)(this["chatname"]));
+            }
+            set {
+                this["chatname"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string chatbrdip {
+            get {
+                return ((string)(this["chatbrdip"]));
+            }
+            set {
+                this["chatbrdip"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string systray {
+            get {
+                return ((string)(this["systray"]));
+            }
+            set {
+                this["systray"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string mime {
+            get {
+                return ((string)(this["mime"]));
+            }
+            set {
+                this["mime"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string lang {
+            get {
+                return ((string)(this["lang"]));
+            }
+            set {
+                this["lang"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string scan_opt {
+            get {
+                return ((string)(this["scan_opt"]));
+            }
+            set {
+                this["scan_opt"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string plan_opt {
+            get {
+                return ((string)(this["plan_opt"]));
+            }
+            set {
+                this["plan_opt"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string autoupdate {
+            get {
+                return ((string)(this["autoupdate"]));
+            }
+            set {
+                this["autoupdate"] = value;
             }
         }
     }

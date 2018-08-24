@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("lazebird.rabbit.dhcp")]
+[assembly: AssemblyTitle("lazebird.rabbit.plan")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("lazebird.rabbit.dhcp")]
+[assembly: AssemblyProduct("lazebird.rabbit.plan")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
-[assembly: Guid("f722ccc9-3f3c-48bb-b868-9f8f5807f220")]
+[assembly: Guid("ab2e0b0b-54ce-4f5e-b24f-319d1e3f1c9f")]
 
 // 程序集的版本信息由下列四个值组成: 
 //

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Windows.Forms;
-using System.Threading;
 
 namespace lazebird.rabbit.rabbit
 {
@@ -20,17 +19,16 @@ namespace lazebird.rabbit.rabbit
             init_form_http();
             init_form_tftpd();
             init_form_tftpc();
+            init_form_plan();
+            init_form_chat();
             init_form_setting();
             init_hash();
         }
         bool onloading = false;
         protected override void OnLoad(EventArgs e)
         {
-            onloading = true;
             base.OnLoad(e);
-            Thread th = new Thread(bar_test);
-            th.IsBackground = true;
-            th.Start();
+            onloading = true;
             readconf();
             onloading = false;
         }
@@ -58,23 +56,21 @@ namespace lazebird.rabbit.rabbit
             btnhash = new Hashtable();
             formhash = new Hashtable();
             indexhash = new Hashtable();
-            texthash.Add("ping_addr", text_addr);
-            texthash.Add("ping_timeout", text_interval);
-            texthash.Add("ping_times", text_count);
-            texthash.Add("ping_logfile", text_logpath);
+            texthash.Add("ping_addr", text_pingaddr);
+            texthash.Add("ping_opt", text_pingopt);
             texthash.Add("http_port", text_http_port);
-            texthash.Add("tftpd_timeout", text_tftpdtout);
-            texthash.Add("tftpd_retry", text_tftpdretry);
+            texthash.Add("http_opt", text_httpopt);
+            texthash.Add("tftpd_opt", text_tftpdopt);
             texthash.Add("scan_ipstart", text_scanstart);
             texthash.Add("scan_ipend", text_scanend);
+            texthash.Add("scan_opt", text_scanopt);
             texthash.Add("tftpc_addr", text_tftpcaddr);
-            texthash.Add("tftpc_timeout", text_tftpctout);
-            texthash.Add("tftpc_retry", text_tftpcretry);
-            texthash.Add("tftpc_blksize", text_tftpcblksize);
+            texthash.Add("tftpc_opt", text_tftpcopt);
+            texthash.Add("plan_opt", text_planopt);
             btnhash.Add("ping_btn", btn_ping);
             indexhash.Add("ping_btn", 0);
-            btnhash.Add("httpd_btn", btn_httpd);
-            indexhash.Add("httpd_btn", 2);
+            btnhash.Add("http_btn", btn_httpd);
+            indexhash.Add("http_btn", 2);
             btnhash.Add("tftpd_btn", tftpd_btn);
             indexhash.Add("tftpd_btn", 3);
             formhash.Add("form", this);
@@ -99,10 +95,13 @@ namespace lazebird.rabbit.rabbit
                     ((Button)btnhash[key]).PerformClick();
                 }
             }
-            conf_log("G: " + "tabs" + " - " + rconf.get("tabs"));
-            tabs.SelectedIndex = int.Parse(rconf.get("tabs"));
+            conf_log("G: " + "tabindex" + " - " + rconf.get("tabindex"));
+            tabs.SelectedIndex = int.Parse(rconf.get("tabindex"));
             httpd_readconf();
             tftpd_readconf();
+            plan_readconf();
+            chat_readconf();
+            setting_readconf();
         }
         void saveconf()
         {
@@ -115,8 +114,8 @@ namespace lazebird.rabbit.rabbit
                 rconf.set(key, ((TextBox)texthash[key]).Text);
                 conf_log("S: " + key + " - " + ((TextBox)texthash[key]).Text);
             }
-            rconf.set("tabs", tabs.SelectedIndex.ToString());
-            conf_log("S: " + "tabs" + " - " + tabs.SelectedIndex.ToString());
+            rconf.set("tabindex", tabs.SelectedIndex.ToString());
+            conf_log("S: " + "tabindex" + " - " + tabs.SelectedIndex.ToString());
             foreach (string key in btnhash.Keys)
             {
                 rconf.set(key, ((Button)btnhash[key]).Text);
@@ -124,6 +123,9 @@ namespace lazebird.rabbit.rabbit
             }
             httpd_saveconf();
             tftpd_saveconf();
+            plan_saveconf();
+            chat_saveconf();
+            setting_saveconf();
         }
     }
 }

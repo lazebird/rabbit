@@ -5,53 +5,38 @@
 ## 目标
 
 ## API
-1. public rping(Action<string> log)  
+1. public rping(Action<string> log, string addr) public rping(Action<string> log, string addr, int interval, int count, bool stoponloss)
     - 构造函数
-    - log：log输出接口
+    - log: 日志输出接口
+    - addr: ping目的地址
+    - interval: ping间隔，也用作超时，默认1000ms
+    - count: ping次数，默认-1，表示持续ping
+    - stoponloss: 丢包时停止ping操作标识
 
-2. public void start(string addr, int timeout, Action<PingReply, object> callback, object data)
-    - 同步执行ping操作
-    - addr：ping地址
-    - timeout： ping超时时间，单位毫秒
-    - callback：处理结果的回调函数，第一个参数为请求id，用于匹配请求和响应；第二个参数为ping结果对象
-    - data: callback回调函数的传参
+2. public void start(Action<PingReply, object> callback, object data)
+    - 启动ping会话
+    - callback: 回调函数，在每个ping响应处理时回调；同时在ping结束时也会回调，并且reply信息参数为null
+    - data: 回调参数
 
-3. public void start_async(string addr, int timeout, Action<PingReply, object> callback, object data)
-    - 异步执行ping操作
-    - addr：ping地址
-    - timeout： ping超时时间，单位毫秒
-    - callback：处理结果的回调函数，第一个参数为请求id，用于匹配请求和响应；第二个参数为ping结果对象
-    - data: callback回调函数的传参
+3. public void stop()
+    - 结束ping会话
+
+4. public override string ToString()
+    - tostring函数重写
+    - 返回一个字符串，内容为实时的会话统计信息
 
 ## 示例
     ```
-    rping ping = new rping(ping_log_func);
-    void ping_log_func(string msg)
-    {
-        console.write(msg);
-    }
     void ping_cb(PingReply reply, object data)
     {
-        if (reply == null)  // exception
+        if (reply == null)
         {
+            ((Form)formhash["form"]).Text = "Rabbit";
+            ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
         }
-        else if (reply.Status == IPStatus.Success)
-        {
-            pinglog.write("来自 " + reply.Address + " 的回复: 字节=" + reply.Buffer.Length + " 毫秒=" + reply.RoundtripTime + " TTL=" + reply.Options.Ttl);
-        }
-        else
-        {
-            pinglog.write("请求超时。");
-        }
+        else display_taskbar(reply.Status == IPStatus.Success);
+        if (ping != null) text_pingstat.Text = ping.ToString();
     }
-    ping.start(addr, timeout, ping_cb, null);
-
-    void scan_reply(PingReply reply, object data)
-    {
-        if (reply != null && reply.Status == IPStatus.Success)
-        {
-            ((Label)data).BackColor = Color.Green;
-        }
-    }
-    ping.start_async((new IPAddress(ipbytes)).ToString(), 1000, scan_reply, lb);
+    rping ping = new rping(ping_log_func, ping_addr, ping_interval, ping_count, ping_stoponloss);
+    ping.start(ping_cb, null);
     ```

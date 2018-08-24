@@ -1,6 +1,34 @@
 # Release Notes
 
-## Latest Version: 2.1.0
+## 2018-08-15
+### New
+1. add chat function
+2. add top most on setting tab
+3. simplify UI 
+4. add help url on setting tab
+5. remove chinese language
+### Fix
+1. minor bugs and optimizations
+### Tip
+1. if config not saved, try to remove old config files in dir %userprofile%\appdata\local; if problem remains, tell me in a new issue.
+
+## 2018-08-06
+### New
+1. add plan function, remove unimplemented functions
+2. add auto upgrade function
+3. add shell context for http
+4. add system tray icon
+### Fix
+1. minor bugs and optimizations
+### Tip
+1. if config not saved, try to remove old config files in dir %userprofile%\appdata\local; if problem remains, tell me in a new issue.
+2. single release/debug cannot support chinese!!! please change language to english in setting tab!
+
+## 2018-08-01
+### New
+1. Cured version number to 2.1.0.0, add compile date and git infos to version control
+### Fix
+1. fix http crash problem when user select language chinese by fault
 
 ## 2018-07-31
 ### New

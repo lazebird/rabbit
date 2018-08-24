@@ -45,6 +45,8 @@ namespace lazebird.rabbit.tftp
                     s = new srss(cwd, new UdpClient(), r, maxretry, timeout);
                 else if ((Opcodes)buf[1] == Opcodes.Write)
                     s = new swss(cwd, new UdpClient(), r, maxretry, timeout);
+                else if ((Opcodes)buf[1] == Opcodes.ReadDir)
+                    s = new srds(cwd, new UdpClient(), r, maxretry, timeout);
                 else
                     return;
                 if (s.pkt_proc(buf))
@@ -109,12 +111,12 @@ namespace lazebird.rabbit.tftp
             }
             catch (Exception e)
             {
-                slog("!E: " + e.Message);
+                slog("!E: " + e.ToString());
             }
         }
         protected virtual void Dispose(bool disposing)
         {
-            if (uc != null) uc.Dispose();
+            if (uc != null) uc.Close();
             if (tftpd != null) tftpd.Abort();
             uc = null;
             tftpd = null;

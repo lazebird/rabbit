@@ -10,9 +10,9 @@
     <projectUrl>https://github.com/lazebird/rabbit</projectUrl>
     <iconUrl>https://github.com/lazebird/rabbit/blob/master/lazebird.rabbit.rabbit/easter%20Bunny.ico</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>implement a critical resource queue, support producer-consumer design model</description>
-    <releaseNotes>support consume/produce api</releaseNotes>
+    <description>an stupid chat library with udp in lan</description>
+    <releaseNotes>support server/client, support user discovey, notification to all, chat one to one</releaseNotes>
     <copyright>Copyright 2018</copyright>
-    <tags>lazebird rabbit queue</tags>
+    <tags>lazebird rabbit chat</tags>
   </metadata>
 </package>

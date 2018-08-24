@@ -1,6 +1,6 @@
 ﻿using lazebird.rabbit.common;
+using lazebird.rabbit.fs;
 using lazebird.rabbit.http;
-using Microsoft.Win32;
 using System;
 using System.Collections;
 using System.Drawing;
@@ -17,9 +17,15 @@ namespace lazebird.rabbit.rabbit
     {
         rhttpd httpd;
         rlog httpdlog;
+        rshell sh;
         Hashtable httpd_phash;
+        int httptblen;
+        int httpport;
+        bool autoindex;
+        bool videoplay;
         void init_form_http()
         {
+            sh = new rshell("Rabbit", Application.ExecutablePath, "Add to Rabbit.http");
             httpd_phash = new Hashtable();
             //httpd_output.HorizontalScrollbar = true;
             //httpd_output.HorizontalExtent = 5000;
@@ -27,8 +33,8 @@ namespace lazebird.rabbit.rabbit
             httpd = new rhttpd(httpd_log_func);
             httpd.init_mime(rconf.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);
-            btn_http_reg.Click += new EventHandler(http_reg_shell);
-            btn_http_dereg.Click += new EventHandler(http_dereg_shell);
+            if (sh.file_exist()) cb_http_shell.Checked = true;
+            cb_http_shell.CheckedChanged += new EventHandler(http_shell_click);
             fp_httpd.AutoScroll = true;
             init_comsrv();
         }
@@ -38,17 +44,25 @@ namespace lazebird.rabbit.rabbit
         }
         void httpd_click(object sender, EventArgs evt)
         {
-            if (((Button)btnhash["httpd_btn"]).Text == Language.trans("开始"))
+            try
             {
-                ((Button)btnhash["httpd_btn"]).Text = Language.trans("停止");
-                httpd.start(int.Parse(((TextBox)texthash["http_port"]).Text));
+                http_parse_args();
+                if (((Button)btnhash["http_btn"]).Text == Language.trans("开始"))
+                {
+                    ((Button)btnhash["http_btn"]).Text = Language.trans("停止");
+                    httpd.start(httpport, autoindex, videoplay);
+                }
+                else
+                {
+                    ((Button)btnhash["http_btn"]).Text = Language.trans("开始");
+                    httpd.stop();
+                }
+                saveconf(); // save empty config to restore default config
             }
-            else
+            catch (Exception e)
             {
-                ((Button)btnhash["httpd_btn"]).Text = Language.trans("开始");
-                httpd.stop();
+                httpd_log_func("!E: " + e.ToString());
             }
-            saveconf(); // save empty config to restore default config
         }
         void init_comsrv()
         {
@@ -75,38 +89,12 @@ namespace lazebird.rabbit.rabbit
                 httpd_log_func("!E: " + e.ToString());
             }
         }
-        string shellname = "Rabbit";
-        string menuname = "Add to Rabbit.http";
-        void reg_shell(RegistryKey shell)
+        void http_shell_click(object sender, EventArgs e)
         {
-            RegistryKey custom = shell.CreateSubKey(shellname);
-            custom.SetValue("", menuname);
-            RegistryKey cmd = custom.CreateSubKey("command");
-            cmd.SetValue("", Application.ExecutablePath + " %1");
-            cmd.Close();
-            custom.Close();
-        }
-        void dereg_shell(RegistryKey shell)
-        {
-            shell.DeleteSubKeyTree(shellname);
-        }
-        void http_reg_shell(object sender, EventArgs e)
-        {
-            RegistryKey shell = Registry.ClassesRoot.OpenSubKey(@"*\shell", true);
-            reg_shell(shell);
-            shell.Close();
-            shell = Registry.ClassesRoot.OpenSubKey(@"Directory\shell", true);
-            reg_shell(shell);
-            shell.Close();
-        }
-        void http_dereg_shell(object sender, EventArgs e)
-        {
-            RegistryKey shell = Registry.ClassesRoot.OpenSubKey(@"*\shell", true);
-            dereg_shell(shell);
-            shell.Close();
-            shell = Registry.ClassesRoot.OpenSubKey(@"Directory\shell", true);
-            dereg_shell(shell);
-            shell.Close();
+            CheckBox cb = (CheckBox)sender;
+            //httpd_log_func("I: current checked " + cb.Checked + " exist " + sh.file_exist());
+            if (cb.Checked) { sh.reg_file(); sh.reg_dir(); }
+            else { sh.dereg_file(); sh.dereg_dir(); }
         }
         void httpd_dir_click(object sender, EventArgs evt)
         {
@@ -116,7 +104,7 @@ namespace lazebird.rabbit.rabbit
             else if (Directory.Exists(p)) httpd.del_dir(p);
             httpd_phash.Remove(tb);
             fp_httpd.Controls.Remove(tb);
-            httpd_saveconf();
+            saveconf();
         }
         void httpd_add_path(string p)
         {
@@ -129,21 +117,28 @@ namespace lazebird.rabbit.rabbit
             }
             TextBox tb = new TextBox();
             tb.ReadOnly = true;
-            tb.BackColor = Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            tb.BackColor = fp_httpd.BackColor;
             tb.BorderStyle = BorderStyle.None;
             tb.ForeColor = Color.White;
             tb.Text = p;
-            tb.Width = fp_httpd.Width - 5;
-            tb.Anchor = (AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right);
-            tb.DoubleClick += new EventHandler(httpd_dir_click);
+            tb.Width = httptblen;
+            tb.DoubleClick += httpd_dir_click;
             fp_httpd.Controls.Add(tb);
             httpd_phash.Add(tb, p);
             if (File.Exists(p)) httpd.add_file(p);
             else if (Directory.Exists(p)) httpd.add_dir(p);
-            httpd_saveconf();
+            saveconf();
+        }
+        void http_parse_args()
+        {
+            int.TryParse(((TextBox)texthash["http_port"]).Text, out httpport);
+            Hashtable opts = ropt.parse_opts(text_httpopt.Text);
+            if (opts.ContainsKey("autoindex")) bool.TryParse((string)opts["autoindex"], out autoindex);
+            if (opts.ContainsKey("videoplay")) bool.TryParse((string)opts["videoplay"], out videoplay);
         }
         void httpd_readconf()
         {
+            httptblen = fp_httpd.Width - 20;
             string[] paths = rconf.get("http_dirs").Split(';');
             foreach (string path in paths) if (path != "") httpd_add_path(path);
         }

@@ -1,5 +1,5 @@
-﻿using lazebird.rabbit.fs;
-using lazebird.rabbit.queue;
+﻿using lazebird.rabbit.common;
+using lazebird.rabbit.fs;
 using System;
 using System.Collections;
 using System.IO;
@@ -18,22 +18,40 @@ namespace lazebird.rabbit.http
         rfs rfs;
         string method;
         string uri;
+        string args;
+        Hashtable opthash;
         rqueue q;
         Thread t;
+        bool autoindex;
+        bool videoplay;
 
         public ss(HttpListenerRequest request, HttpListenerResponse response, rfs rfs)
         {
-            this.log = log_func;
+            log = log_func;
             this.request = request;
             this.response = response;
             this.rfs = rfs;
-            this.method = request.HttpMethod;
-            this.uri = Uri.UnescapeDataString(request.RawUrl);
+            method = request.HttpMethod;
+            try
+            {
+                string[] s = Uri.UnescapeDataString(request.RawUrl).Split('?');
+                uri = s[0];
+                args = s.Length > 1 ? s[1] : "";
+                opthash = ropt.parse_opts(args);
+                if (opthash.ContainsKey("autoindex")) bool.TryParse((string)opthash["autoindex"], out autoindex);
+                if (opthash.ContainsKey("videoplay")) bool.TryParse((string)opthash["videoplay"], out videoplay);
+            }
+            catch (Exception) { }
             response.ContentEncoding = Encoding.UTF8;
         }
         public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs) : this(request, response, rfs)
         {
             this.log = log;
+        }
+        public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs, bool autoindex, bool videoplay) : this(log, request, response, rfs)
+        {
+            if (!opthash.ContainsKey("autoindex")) this.autoindex = autoindex;
+            if (!opthash.ContainsKey("videoplay")) this.videoplay = videoplay;
         }
         void log_func(string msg) { }
         string uri2rpath(string uri)
@@ -61,14 +79,45 @@ namespace lazebird.rabbit.http
                 suffix = fname.Substring(idx);
             return (string)mimehash[suffix] ?? (string)mimehash["*"] ?? "";
         }
+        bool loadvideo(Hashtable mimehash, string path)
+        {
+            if (!videoplay) return false;
+            string mime = uri2mime(mimehash, path);
+            if (!mime.Contains("video/")) return false;
+            string s = @"
+<head>
+    <link href=""https://vjs.zencdn.net/7.1.0/video-js.css"" rel=""stylesheet"">
+    <script src=""https://vjs.zencdn.net/7.1.0/video.js""></script>
+    <script src=""https://cdn.jsdelivr.net/npm/videojs-flash@2/dist/videojs-flash.min.js""></script>
+</head>
+<body>
+    <video id=""my-video"" class=""video-js"" controls preload=""auto"" width=""640"" height=""264"" poster=""MY_VIDEO_POSTER.jpg"" data-setup='{""techOrder"": [""flash"",""html5""]}'>
+        <source src=""$uri?videoplay=false"" type='$mime'>
+        <p class=""vjs-no-js"">
+            To view this video please enable JavaScript, and consider upgrading to a web browser that
+            <a href=""https://videojs.com/html5-video-support/"" target=""_blank"">supports HTML5 video</a>
+        </p>
+    </video>
+</body>
+";
+            s = s.Replace("$uri", uri);
+            s = s.Replace("$mime", mime);
+            byte[] buffer = Encoding.UTF8.GetBytes(s);
+            response.ContentLength64 = buffer.Length;
+            response.OutputStream.Write(buffer, 0, buffer.Length);
+            response.OutputStream.Close();
+            return true;
+        }
         void loadfile(Hashtable mimehash, string path)
         {
+            if (loadvideo(mimehash, path)) return;
             Stream output = response.OutputStream;
-            response.ContentType = uri2mime(mimehash, uri);
+            response.ContentType = uri2mime(mimehash, path);
+            log("I: file " + path + " mime " + response.ContentType);
             FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
             response.ContentLength64 = fs.Length;
-            q = new rqueue(10); // 10 * 10M, max memory used 100M
-            t = new Thread(() => rfs.readstream(fs, q, 10000000));    // 10000000, max block size 10M
+            q = new rqueue(10000); // 10000 * 10K, max memory used 100M
+            t = new Thread(() => rfs.readstream(fs, q, 10000));    // 10000, max block size 10K, avoid LOH problem
             t.IsBackground = true;
             t.Start();
             rfs.writestream(output, q, fs.Name);
@@ -83,9 +132,27 @@ namespace lazebird.rabbit.http
         {
             return "<tr><td>" + s1 + "</td>" + "<td>" + s2 + "</td>" + "<td>" + s3 + "</td></tr>";
         }
-        void loaddir(string rdir)
+        bool loadindex(Hashtable mimehash, string rdir)
+        {
+            string indexpath;
+            if (!autoindex) return false;
+            if (rdir != "")
+            {
+                indexpath = rdir + "index.html";
+                if (File.Exists(indexpath)) { loadfile(mimehash, indexpath); return true; }
+                indexpath = rdir + "index.htm";
+                if (File.Exists(indexpath)) { loadfile(mimehash, indexpath); return true; }
+            }
+            indexpath = uri + "index.html";
+            if (rfs.fhash.ContainsKey(indexpath)) { loadfile(mimehash, (string)rfs.fhash[indexpath]); return true; }
+            indexpath = uri + "index.htm";
+            if (rfs.fhash.ContainsKey(indexpath)) { loadfile(mimehash, (string)rfs.fhash[indexpath]); return true; }
+            return false;
+        }
+        void loaddir(Hashtable mimehash, string rdir)
         {
             if (uri[uri.Length - 1] != '/') uri += "/"; // fix uri ending
+            if (loadindex(mimehash, rdir)) return;    // auto index
             string index = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><table><tbody>";
             index += create_th("Name", "Size (Bytes)", "Last Modified");
             if (uri != "/") index += create_td("<a href=" + Uri.EscapeUriString(Path.GetDirectoryName(uri + "../").Replace(@"\", @"/")) + ">" + ".." + " </a>", "-", "-");
@@ -134,9 +201,9 @@ namespace lazebird.rabbit.http
             else if (File.Exists(path)) // file
                 loadfile(mimehash, path);
             else if (Directory.Exists(path)) // dir
-                loaddir(path);
+                loaddir(mimehash, path);
             else if (path == "" && rfs.dhash.ContainsKey(uri))
-                loaddir(path); // v dir
+                loaddir(mimehash, path); // v dir
             else
                 loaderror(path, 404);
         }

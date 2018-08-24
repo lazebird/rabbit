@@ -1,5 +1,4 @@
-﻿using lazebird.rabbit.queue;
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 
@@ -49,39 +48,34 @@ namespace lazebird.rabbit.fs
             byte[] buffer = null;
             BinaryReader binReader = new BinaryReader(fs);
             long left = fs.Length;
-            long size = Math.Min(maxblksz, fs.Length);
-            while (left > size)
+            try
             {
-                buffer = binReader.ReadBytes((int)size);
-                while (q.produce(buffer) == 0) ;
-                left -= size;
+                while (left > 0)
+                {
+                    long size = Math.Min(maxblksz, left);
+                    buffer = binReader.ReadBytes((int)size);
+                    while (!q.has_stopped() && q.produce(buffer) == 0) ;
+                    if (q.has_stopped()) break;
+                    left -= size;
+                }
             }
-            if (left > 0)
-            {
-                buffer = binReader.ReadBytes((int)left);
-                while (q.produce(buffer) == 0) ;
-            }
+            catch (Exception) { }
             binReader.Close();  //fs.Close(); // binReader disposed?
             q.stop();
         }
         public static void writestream(Stream output, rqueue q, string filename)
         {
-            int totalsize = 0;
-            int starttm = Environment.TickCount;
             byte[] buffer;
-            while (true)
+            try
             {
-                if ((buffer = q.consume()) != null)
+                while (true)
                 {
-                    output.Write(buffer, 0, buffer.Length);
-                    totalsize += buffer.Length;
+                    if ((buffer = q.consume()) != null) output.Write(buffer, 0, buffer.Length);
+                    else if (q.has_stopped()) break;
                 }
-                else if (q.has_stopped())
-                    break;
             }
+            catch (Exception) { }
             output.Close();
-            int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
-            //log("I: " + filename + " " + totalsize + " B/" + deltatm.ToString("###,###.00") + " s; @" + (totalsize / deltatm).ToString("###,###.00") + " Bps");
         }
     }
 }

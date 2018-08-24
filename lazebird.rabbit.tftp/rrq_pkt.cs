@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace lazebird.rabbit.tftp
+﻿namespace lazebird.rabbit.tftp
 {
     class rrq_pkt : pkt
     {
@@ -26,13 +24,9 @@ namespace lazebird.rabbit.tftp
         override public bool has_opt() { return (timeout != 0 || blksize != 0); }
         bool parse_opt(string name, string val)
         {
-            if (name == "timeout")
-                timeout = int.Parse(val);
-            else if (name == "blksize")
-                blksize = int.Parse(val);
-            else
-                return false;
-            return true;
+            if (name == "timeout") return int.TryParse(val, out timeout);
+            else if (name == "blksize") return int.TryParse(val, out blksize);
+            else return false;
         }
         override public bool parse(byte[] buf)
         {

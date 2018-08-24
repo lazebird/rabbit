@@ -2,3 +2,5 @@
 obj/
 bin/
 packages/
+*.tt.cs
+*.auto.*

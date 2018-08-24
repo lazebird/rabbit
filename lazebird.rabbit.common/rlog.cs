@@ -70,7 +70,7 @@ namespace lazebird.rabbit.common
 
         protected virtual void Dispose(bool disposing)
         {
-            if (file != null) file.Dispose();
+            if (file != null) file.Close();
             file = null;
             if (!disposing) return;
             logview = null;

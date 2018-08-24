@@ -13,6 +13,8 @@ namespace lazebird.rabbit.http
         HttpListener hl = null;
         Hashtable mimehash;
         rfs rfs;
+        bool autoindex;
+        bool videoplay;
         public rhttpd(Action<string> log)
         {
             this.log = log;
@@ -30,8 +32,11 @@ namespace lazebird.rabbit.http
             }
 
         }
-        public void start(int port)
+        public void start(int port, bool autoindex, bool videoplay)
         {
+            this.autoindex = autoindex;
+            this.videoplay = videoplay;
+            if (hl != null) stop();
             hl = new HttpListener();
             hl.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
             hl.Prefixes.Clear();
@@ -43,17 +48,18 @@ namespace lazebird.rabbit.http
             }
             catch (Exception e)
             {
-                log("!E: " + e.Message);
+                log("!E: " + e.ToString());
                 hl.Close();
+                hl = null;
             }
         }
         public void stop()
         {
-            Dispose();
+            Dispose(false);
         }
         void session_task(HttpListenerRequest request, HttpListenerResponse response)
         {
-            ss s = new ss(log, request, response, rfs);
+            ss s = new ss(log, request, response, rfs, autoindex, videoplay);
             s.proc_req(mimehash);
             s.destroy();
         }
@@ -67,10 +73,7 @@ namespace lazebird.rabbit.http
                 t.Start();
                 hl.BeginGetContext(new AsyncCallback(dispatcher), null);
             }
-            catch (Exception e)
-            {
-                log("!E: " + e.Message);
-            }
+            catch (Exception) { }
         }
 
         string rootpath;
