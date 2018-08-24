@@ -2,6 +2,7 @@
 using lazebird.vgen.ver;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -15,58 +16,51 @@ namespace lazebird.rabbit.rabbit
         rlog setlog;
         Version pver;
         string prjurl = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
-        string profileuri = @"%userprofile%\appdata\local";
+        // Environment.ExpandEnvironmentVariables(@"%userprofile%\appdata\local");
+        string profileuri = Path.GetDirectoryName(ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath);
         string helpurl = "https://code.aliyun.com/lazebird/rabbit/blob/master/doc/manual.md";
+        string versionuri = "https://code.aliyun.com/lazebird/rabbit/raw/master/release/version.txt";
+        string binaryuri = "https://code.aliyun.com/lazebird/rabbit/raw/master/release/sRabbit.exe";
         void init_form_setting()
         {
             setlog = new rlog(setting_output);
             pver = Assembly.GetExecutingAssembly().GetName().Version;
-            link_ver.Text = pver.ToString() + " (" + appver.v.ToString() + ")";
-            link_ver.LinkClicked += ver_click;
-            link_prj.LinkClicked += prj_click;
-            link_prof.LinkClicked += profile_click;
-            link_help.LinkClicked += help_click;
             List<string> list = new List<string>();
             list.Add("System");
             list.Add("English");
             list.Add("中文");
             lang_cb.DataSource = list;
             lang_cb.Text = Language.Getlang();
-            lang_cb.SelectedIndexChanged += lang_opt_SelectedIndexChanged;
             setlog.write("Language: " + Language.Getlang());
-            if (File.Exists(upgrade.scriptpath)) File.Delete(upgrade.scriptpath);
-            init_systray();
+            lang_cb.SelectedIndexChanged += lang_opt_SelectedIndexChanged;
+            cb_systray.CheckedChanged += systray_click;
+            ntfico.DoubleClick += systray_double_click;
+            ntfico.Icon = Icon;
+            Resize += form_resize;
             cb_top.CheckedChanged += top_click;
             cb_autostart.CheckedChanged += autostart_click;
-            if (sh.autostart_exist()) cb_autostart.Checked = true;
+            link_prj.LinkClicked += url_click;
+            link_prof.LinkClicked += url_click;
+            link_help.LinkClicked += url_click;
+            link_ver.Text = pver.ToString() + " (" + appver.v.ToString() + ")";
+            link_ver.LinkClicked += ver_click;
         }
         void lang_opt_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // 将被选中的项目强制转换为MyItem
             string lang = lang_cb.SelectedItem as string;
-            if (lang_cb.Text == "System")
-            {
-                rconf.set("lang", "");
-            }
-            else
-            {
-                rconf.set("lang", lang_cb.Text);
-            }
+            if (lang_cb.Text == "System") rconf.set("lang", "");
+            else rconf.set("lang", lang_cb.Text);
             setlog.write("Set Language: " + lang_cb.Text);
             setlog.write("Restart App to take effect!");
         }
-        void prj_click(object sender, LinkLabelLinkClickedEventArgs e)
+        void url_click(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(prjurl);
-        }
-        void profile_click(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            string path = Environment.ExpandEnvironmentVariables(profileuri);
-            System.Diagnostics.Process.Start(path);
-        }
-        void help_click(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            System.Diagnostics.Process.Start(helpurl);
+            if (sender == link_prj)
+                System.Diagnostics.Process.Start(prjurl);
+            else if (sender == link_prof)
+                System.Diagnostics.Process.Start(profileuri);
+            else if (sender == link_help)
+                System.Diagnostics.Process.Start(helpurl);
         }
         string download2str(string uri)
         {
@@ -81,8 +75,6 @@ namespace lazebird.rabbit.rabbit
             wc.DownloadFile(uri, filepath);
             wc.Dispose();
         }
-        string versionuri = "https://code.aliyun.com/lazebird/rabbit/raw/master/release/version.txt";
-        string binaryuri = "https://code.aliyun.com/lazebird/rabbit/raw/master/release/sRabbit.exe";
         void ver_check()
         {
             try
@@ -126,19 +118,6 @@ namespace lazebird.rabbit.rabbit
             t.IsBackground = true;
             t.Start();
         }
-        void init_systray()
-        {
-            cb_systray.CheckedChanged += systray_click;
-            ntfico.DoubleClick += systray_double_click;
-            ntfico.Icon = Icon;
-            Resize += form_resize;
-            if (rconf.get("systray") == "true") cb_systray.Checked = true;
-        }
-        void save_systray()
-        {
-            if (onloading) return;
-            rconf.set("systray", cb_systray.Checked ? "true" : "false");
-        }
         void form_resize(object sender, EventArgs e)
         {
             if (WindowState == FormWindowState.Minimized && ntfico.Visible) Visible = false;
@@ -147,7 +126,7 @@ namespace lazebird.rabbit.rabbit
         {
             ntfico.Visible = ((CheckBox)sender).Checked;
             ShowInTaskbar = !ntfico.Visible;
-            save_systray();
+            setting_saveconf();
         }
         void systray_double_click(object sender, EventArgs e)
         {
@@ -164,6 +143,18 @@ namespace lazebird.rabbit.rabbit
             CheckBox cb = (CheckBox)sender;
             if (cb.Checked) sh.reg_autostart();
             else sh.dereg_autostart();
+        }
+        void setting_readconf()
+        {
+            if (File.Exists(upgrade.scriptpath)) File.Delete(upgrade.scriptpath);
+            if (sh.autostart_exist()) cb_autostart.Checked = true;
+            if (rconf.get("systray") == "true") cb_systray.Checked = true;
+            ver_click(null, null);
+        }
+        void setting_saveconf()
+        {
+            if (onloading) return;
+            rconf.set("systray", cb_systray.Checked ? "true" : "false");
         }
     }
 }
