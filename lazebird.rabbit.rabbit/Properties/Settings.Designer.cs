@@ -310,5 +310,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["plan_opt"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string autoupdate {
+            get {
+                return ((string)(this["autoupdate"]));
+            }
+            set {
+                this["autoupdate"] = value;
+            }
+        }
     }
 }

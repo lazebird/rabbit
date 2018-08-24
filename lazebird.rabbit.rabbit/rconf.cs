@@ -35,6 +35,7 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("plan_opt", "override=false;");
             cfg.Add("plans", DateTime.Now + "|0|minute|Have a rest!;");
             cfg.Add("systray", "false");
+            cfg.Add("autoupdate", "true");
             cfg.Add("chatname", Environment.UserName + "@" + Environment.MachineName);
             cfg.Add("chatbrdip", "255.255.255.255");
             string mime = "";

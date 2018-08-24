@@ -109,6 +109,7 @@
             this.fp_chat = new System.Windows.Forms.FlowLayoutPanel();
             this.chat_output = new System.Windows.Forms.ListBox();
             this.Setting = new System.Windows.Forms.TabPage();
+            this.cb_autoupdate = new System.Windows.Forms.CheckBox();
             this.label_lang = new System.Windows.Forms.Label();
             this.lang_cb = new System.Windows.Forms.ComboBox();
             this.cb_systray = new System.Windows.Forms.CheckBox();
@@ -698,6 +699,7 @@
             // Setting
             // 
             this.Setting.BackColor = System.Drawing.Color.DimGray;
+            this.Setting.Controls.Add(this.cb_autoupdate);
             this.Setting.Controls.Add(this.label_lang);
             this.Setting.Controls.Add(this.lang_cb);
             this.Setting.Controls.Add(this.cb_systray);
@@ -712,6 +714,12 @@
             this.Setting.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
+            // 
+            // cb_autoupdate
+            // 
+            resources.ApplyResources(this.cb_autoupdate, "cb_autoupdate");
+            this.cb_autoupdate.Name = "cb_autoupdate";
+            this.cb_autoupdate.UseVisualStyleBackColor = true;
             // 
             // label_lang
             // 
@@ -900,6 +908,7 @@
         private System.Windows.Forms.TextBox text_httpopt;
         private System.Windows.Forms.Label label_planopt;
         private System.Windows.Forms.TextBox text_planopt;
+        private System.Windows.Forms.CheckBox cb_autoupdate;
     }
 }
 

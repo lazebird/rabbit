@@ -39,6 +39,7 @@ namespace lazebird.rabbit.rabbit
             Resize += form_resize;
             cb_top.CheckedChanged += top_click;
             cb_autostart.CheckedChanged += autostart_click;
+            cb_autoupdate.CheckedChanged += autoupdate_click;
             link_prj.LinkClicked += url_click;
             link_prof.LinkClicked += url_click;
             link_help.LinkClicked += url_click;
@@ -86,24 +87,23 @@ namespace lazebird.rabbit.rabbit
                     setlog.write("Version is up to date!");
                     return;
                 }
-                MessageBoxButtons mbox = MessageBoxButtons.YesNo;
                 string newbinpath = Application.ExecutablePath + ".new";
-                DialogResult res = MessageBox.Show("New release will be saved to " + newbinpath, "Rabbit Upgrade", mbox);
+                MessageBoxButtons mbox = MessageBoxButtons.YesNo;
+                DialogResult res = MessageBox.Show("New Version!!!\r\n" + v.ToString() + "\r\nDownload?", "Rabbit Upgrade", mbox);
                 if (res == DialogResult.Yes)
                 {
                     download2file(binaryuri, newbinpath);
-                    MessageBoxButtons mbox2 = MessageBoxButtons.YesNo;
-                    DialogResult res2 = MessageBox.Show("Restart to upgrade now?", "Rabbit Upgrade", mbox2);
+                    DialogResult res2 = MessageBox.Show("Restart & Upgrade?", "Rabbit Upgrade", mbox);
                     if (res2 == DialogResult.Yes)
                     {
                         upgrade upg = new upgrade(Application.ExecutablePath);
                         upg.run();
                         Application.Exit();
                     }
-                    else setlog.write("New release saved to " + newbinpath);
+                    else MessageBox.Show("New version saved to " + newbinpath, "Rabbit Upgrade");
 
                 }
-                else setlog.write("The newest version is " + v.ToString() + ", click the homepage to download it.");
+                else setlog.write("New version: " + v.ToString() + ", click the homepage to download it.");
 
             }
             catch (Exception e)
@@ -144,17 +144,23 @@ namespace lazebird.rabbit.rabbit
             if (cb.Checked) sh.reg_autostart();
             else sh.dereg_autostart();
         }
+        void autoupdate_click(object sender, EventArgs e)
+        {
+            setting_saveconf();
+        }
         void setting_readconf()
         {
             if (File.Exists(upgrade.scriptpath)) File.Delete(upgrade.scriptpath);
             if (sh.autostart_exist()) cb_autostart.Checked = true;
             if (rconf.get("systray") == "true") cb_systray.Checked = true;
-            ver_click(null, null);
+            if (rconf.get("autoupdate") == "true") cb_autoupdate.Checked = true;
+            if (cb_autoupdate.Checked) ver_click(null, null);
         }
         void setting_saveconf()
         {
             if (onloading) return;
             rconf.set("systray", cb_systray.Checked ? "true" : "false");
+            rconf.set("autoupdate", cb_autoupdate.Checked ? "true" : "false");
         }
     }
 }
