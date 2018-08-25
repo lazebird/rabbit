@@ -164,19 +164,15 @@ namespace lazebird.rabbit.http
                 foreach (DirectoryInfo d in dir.GetDirectories())
                     index += create_td("<a href=" + Uri.EscapeUriString(uri + d.Name + "/") + ">" + d.Name + "/" + " </a>", "-", d.LastWriteTime.ToString());
             }
-            Regex rgright = new Regex("^" + uri + ".");
-            Regex rgwrong = new Regex("^" + uri + ".+/.");
             foreach (string key in rfs.fhash.Keys)
             {
-                if (!rgright.IsMatch(key) || rgwrong.IsMatch(key))
-                    continue;
+                if (key.Length < uri.Length || key.Substring(0, uri.Length) != uri) continue;
                 FileInfo f = new FileInfo((string)rfs.fhash[key]);
                 index += create_td("<a href=" + Uri.EscapeUriString(uri + f.Name) + ">" + f.Name + " </a>", f.Length.ToString("###,###"), f.LastWriteTime.ToString());
             }
             foreach (string key in rfs.dhash.Keys)
             {
-                if (!rgright.IsMatch(key) || rgwrong.IsMatch(key))
-                    continue;
+                if (key.Length < uri.Length || key.Substring(0, uri.Length) != uri) continue;
                 DirectoryInfo d = new DirectoryInfo((string)rfs.dhash[key]);
                 index += create_td("<a href=" + Uri.EscapeUriString(uri + d.Name + "/") + ">" + d.Name + "/" + " </a>", "-", d.LastWriteTime.ToString());
             }
