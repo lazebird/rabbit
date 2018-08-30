@@ -39,12 +39,16 @@ namespace lazebird.rabbit.rabbit
             string msg = text_planmsg.Text.Trim();
             if (string.IsNullOrWhiteSpace(msg))
             {
-                plan_log_func("I: msg cannot be null or empty!");
+                plan_log_func("!E: msg cannot be null or empty!");
                 return null;
             }
             if (plan_msghash.ContainsKey(msg))
             {
-                if (!plan_override) return null;
+                if (!plan_override)
+                {
+                    plan_log_func("!E: <" + msg + "> already exists!");
+                    return null;
+                }
                 plan_del(msg);
             }
             return new rplan(plan_log_func, starttm, cycle, unit, msg);
@@ -82,7 +86,11 @@ namespace lazebird.rabbit.rabbit
         }
         void plan_del(string msg)
         {
-            if (!plan_msghash.ContainsKey(text_planmsg.Text)) return;
+            if (!plan_msghash.ContainsKey(text_planmsg.Text))
+            {
+                plan_log_func("!E: <" + msg + "> not found!");
+                return;
+            }
             TextBox tb = (TextBox)plan_msghash[text_planmsg.Text];
             rplan p = (rplan)plan_tbhash[tb];
             p.stop();

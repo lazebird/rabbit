@@ -49,64 +49,50 @@ namespace lazebird.rabbit.plan
             this.cycle = cycle;
             this.unit = unit;
             this.msg = msg;
-            if (update_firetm())
-            {
-                t = new Thread(sched_task);
-                t.IsBackground = true;
-                t.Start();
-            }
+            t = new Thread(sched_task);
+            t.IsBackground = true;
+            t.Start();
         }
         bool update_firetm()
         {
             DateTime curtm = DateTime.Now;
-            if (starttm.CompareTo(curtm) > 0)
-            {
-                firetm = starttm;
-                return true;
-            }
-            if (cycle == 0) return false;
+            firetm = starttm;
+            if (cycle == 0) return (starttm.CompareTo(curtm) > 0);
             switch (unit)
             {
                 case cycleunit.minute:
-                    firetm = starttm.AddMinutes(cycle);
                     while (curtm.CompareTo(firetm) > 0) firetm = firetm.AddMinutes(cycle);
                     break;
                 case cycleunit.hour:
-                    firetm = starttm.AddHours(cycle);
                     while (curtm.CompareTo(firetm) > 0) firetm = firetm.AddHours(cycle);
                     break;
                 case cycleunit.day:
-                    firetm = starttm.AddDays(cycle);
                     while (curtm.CompareTo(firetm) > 0) firetm = firetm.AddDays(cycle);
                     break;
                 case cycleunit.month:
-                    firetm = starttm.AddMonths(cycle);
                     while (curtm.CompareTo(firetm) > 0) firetm = firetm.AddMonths(cycle);
                     break;
                 case cycleunit.year:
-                    firetm = starttm.AddYears(cycle);
                     while (curtm.CompareTo(firetm) > 0) firetm = firetm.AddYears(cycle);
                     break;
                 default:
                     return false;
             }
-            log("I: set <" + msg + "> fire time " + firetm.ToString());
             return true;
         }
         void sched_task()
         {
-            while (true)
-            {
-                if (DateTime.Now.CompareTo(firetm) >= 0)
-                {
-                    trigger();
-                    if (!update_firetm()) break;
-                }
-                else
-                    Thread.Sleep((int)firetm.Subtract(DateTime.Now).TotalMilliseconds);
-            }
             try
             {
+                if (!update_firetm()) return;
+                while (true)
+                {
+                    if (DateTime.Now.CompareTo(firetm) >= 0) trigger();
+                    if (!update_firetm()) return;
+                    ulong firegap = (ulong)firetm.Subtract(DateTime.Now).TotalMilliseconds;
+                    log("I: set <" + msg + "> fire time " + firetm.ToString() + " (" + firegap / 60000 + " min. | " + firegap / (24 * 3600000) + " d)");
+                    Thread.Sleep((int)Math.Min(firegap, int.MaxValue));
+                }
             }
             catch (Exception e)
             {
@@ -115,7 +101,7 @@ namespace lazebird.rabbit.plan
         }
         public void trigger()
         {
-            log("I: trigger " + msg);
+            log("I: <" + msg + "> triggered");
             if (t_ui != null) t_ui.Abort();
             t_ui = new Thread(() => Application.Run(new rplanform(msg, duration)));
             t_ui.IsBackground = true;
@@ -123,6 +109,7 @@ namespace lazebird.rabbit.plan
         }
         public void stop()
         {
+            log("I: stop <" + msg + ">");
             if (t != null) t.Abort();
             t = null;
             if (t_ui != null) t_ui.Abort();
