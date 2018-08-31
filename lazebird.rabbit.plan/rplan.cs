@@ -89,15 +89,12 @@ namespace lazebird.rabbit.plan
                 {
                     if (DateTime.Now.CompareTo(firetm) >= 0) trigger();
                     if (!update_firetm()) return;
-                    ulong firegap = (ulong)firetm.Subtract(DateTime.Now).TotalMilliseconds;
-                    log("I: set <" + msg + "> fire time " + firetm.ToString() + " (" + firegap / 60000 + " min. | " + firegap / (24 * 3600000) + " d)");
+                    ulong firegap = (ulong)firetm.Subtract(DateTime.Now).TotalMilliseconds + 1; // round up
+                    log("I: set <" + msg + "> fire time " + firetm.ToString() + " (" + firegap + " ms | " + firegap / 60000 + " min. | " + firegap / (24 * 3600000) + " d)");
                     Thread.Sleep((int)Math.Min(firegap, int.MaxValue));
                 }
             }
-            catch (Exception e)
-            {
-                log("!E: " + e.ToString());
-            }
+            catch (Exception) { }
         }
         public void trigger()
         {
