@@ -53,9 +53,8 @@ namespace lazebird.rabbit.plan
             t.IsBackground = true;
             t.Start();
         }
-        bool update_firetm()
+        bool update_firetm(DateTime curtm)
         {
-            DateTime curtm = DateTime.Now;
             firetm = starttm;
             if (cycle == 0) return (starttm.CompareTo(curtm) > 0);
             switch (unit)
@@ -84,12 +83,14 @@ namespace lazebird.rabbit.plan
         {
             try
             {
-                if (!update_firetm()) return;
+                DateTime curtm = DateTime.Now;
+                if (!update_firetm(curtm)) return;
                 while (true)
                 {
-                    if (DateTime.Now.CompareTo(firetm) >= 0) trigger();
-                    if (!update_firetm()) return;
-                    ulong firegap = (ulong)firetm.Subtract(DateTime.Now).TotalMilliseconds + 1; // round up
+                    curtm = DateTime.Now;
+                    if (curtm.CompareTo(firetm) >= 0) trigger();
+                    if (!update_firetm(curtm)) return;
+                    ulong firegap = (ulong)firetm.Subtract(curtm).TotalMilliseconds + 1; // round up
                     log("I: set <" + msg + "> fire time " + firetm.ToString() + " (" + firegap + " ms | " + firegap / 60000 + " min. | " + firegap / (24 * 3600000) + " d)");
                     Thread.Sleep((int)Math.Min(firegap, int.MaxValue));
                 }
