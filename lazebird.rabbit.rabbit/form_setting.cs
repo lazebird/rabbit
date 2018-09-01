@@ -134,6 +134,7 @@ namespace lazebird.rabbit.rabbit
         {
             ntfico.Visible = ((CheckBox)sender).Checked;
             ShowInTaskbar = !ntfico.Visible;
+            if (ShowInTaskbar) bar = new rtaskbar(pinglog.write, this.Handle); // reset taskbar
             setting_saveconf();
         }
         void systray_double_click(object sender, EventArgs e)

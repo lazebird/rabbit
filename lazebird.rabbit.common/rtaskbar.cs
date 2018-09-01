@@ -6,11 +6,13 @@ namespace lazebird.rabbit.common
     public class rtaskbar
     {
         Action<string> log;
+        IntPtr handle;
         bool taskbar_support;
 
-        public rtaskbar(Action<string> log)
+        public rtaskbar(Action<string> log, IntPtr handle)
         {
             this.log = log;
+            this.handle = handle;
             taskbar_support = true;
         }
         public void reset()
@@ -35,12 +37,9 @@ namespace lazebird.rabbit.common
         }
         void set_internal(int state, int cur, int total)
         {
-            if (!TaskbarManager.IsPlatformSupported)
-            {
-                return;
-            }
-            TaskbarManager.Instance.SetProgressState((TaskbarProgressBarState)state);
-            TaskbarManager.Instance.SetProgressValue(cur, total);
+            if (!TaskbarManager.IsPlatformSupported) return;
+            TaskbarManager.Instance.SetProgressState((TaskbarProgressBarState)state, handle);
+            TaskbarManager.Instance.SetProgressValue(cur, total, handle);
         }
     }
 }

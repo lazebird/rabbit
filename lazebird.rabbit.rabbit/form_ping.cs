@@ -23,7 +23,7 @@ namespace lazebird.rabbit.rabbit
         {
             pinglog = new rlog(ping_output);
             btn_ping.Click += new EventHandler(ping_click);
-            bar = new rtaskbar(pinglog.write);
+            bar = new rtaskbar(pinglog.write, this.Handle);
             recq = new Queue();
         }
         void ping_log_func(string msg)
