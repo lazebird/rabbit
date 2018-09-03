@@ -1,5 +1,6 @@
 ﻿using lazebird.rabbit.common;
 using lazebird.vgen.ver;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -45,6 +46,13 @@ namespace lazebird.rabbit.rabbit
             link_help.LinkClicked += url_click;
             link_ver.Text = pver.ToString() + " (" + appver.v.ToString() + ")";
             link_ver.LinkClicked += ver_click;
+            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+        }
+        void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode != PowerModes.Resume) return; // restart app on wakeup
+            Application.Restart();
+            Application.Exit();
         }
         void lang_opt_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -104,8 +112,7 @@ namespace lazebird.rabbit.rabbit
                     DialogResult res2 = MessageBox.Show("Restart & Upgrade?", "Rabbit Upgrade", mbox);
                     if (res2 == DialogResult.Yes)
                     {
-                        upgrade upg = new upgrade(Application.ExecutablePath);
-                        upg.run();
+                        new upgrade(Application.ExecutablePath).run();
                         Application.Exit();
                     }
                     else MessageBox.Show("New version saved to " + newbinpath, "Rabbit Upgrade");
