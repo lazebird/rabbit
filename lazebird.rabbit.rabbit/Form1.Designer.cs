@@ -29,6 +29,7 @@
             planlog.Dispose();
             chat.Dispose();
             chatlog.Dispose();
+            on_dispose();
         }
 
         #region Windows 窗体设计器生成的代码

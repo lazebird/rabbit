@@ -178,5 +178,9 @@ namespace lazebird.rabbit.rabbit
             rconf.set("systray", cb_systray.Checked ? "true" : "false");
             rconf.set("autoupdate", cb_autoupdate.Checked ? "true" : "false");
         }
+        void on_dispose()
+        {
+            SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
+        }
     }
 }
