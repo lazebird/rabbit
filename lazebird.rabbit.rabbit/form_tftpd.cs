@@ -173,9 +173,9 @@ namespace lazebird.rabbit.rabbit
             if (onloading) return;
             rconf.set("tftpd_dir_index", curtftpd_dir.ToString());
             string dirs = "";
-            foreach (string path in tftpd_dirhash.Values)
+            for (int i = 0; i < tftpd_dirs.Count; i++)
             {
-                dirs += path + ";";
+                dirs += tftpd_dirhash[tftpd_dirs[i]] + ";";
             }
             rconf.set("tftpd_dirs", dirs);
         }
