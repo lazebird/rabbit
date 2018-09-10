@@ -8,7 +8,7 @@ namespace lazebird.rabbit.tftp
 {
     class swss : ss // server write session
     {
-        public swss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout) : base(cwd, uc, r, maxretry, timeout)
+        public swss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout, int qsize) : base(cwd, uc, r, maxretry, timeout, qsize)
         {
         }
 

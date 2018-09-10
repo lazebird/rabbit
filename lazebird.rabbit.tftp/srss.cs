@@ -8,7 +8,7 @@ namespace lazebird.rabbit.tftp
 {
     class srss : ss // server read session
     {
-        public srss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout) : base(cwd, uc, r, maxretry, timeout)
+        public srss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout, int qsize) : base(cwd, uc, r, maxretry, timeout, qsize)
         {
         }
 

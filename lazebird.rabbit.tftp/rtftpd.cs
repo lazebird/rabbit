@@ -16,6 +16,7 @@ namespace lazebird.rabbit.tftp
         string cwd = "";    // used for wrq, set the first non-empty dir added as root dir
         int timeout = 200;
         int maxretry = 30;
+        int qsize = 2000;
         object obj;
         public rtftpd(Func<int, string, int> log)
         {
@@ -42,9 +43,9 @@ namespace lazebird.rabbit.tftp
 
                 ss s;
                 if ((Opcodes)buf[1] == Opcodes.Read)
-                    s = new srss(cwd, new UdpClient(), r, maxretry, timeout);
+                    s = new srss(cwd, new UdpClient(), r, maxretry, timeout, qsize);
                 else if ((Opcodes)buf[1] == Opcodes.Write)
-                    s = new swss(cwd, new UdpClient(), r, maxretry, timeout);
+                    s = new swss(cwd, new UdpClient(), r, maxretry, timeout, qsize);
                 else if ((Opcodes)buf[1] == Opcodes.ReadDir)
                     s = new srds(cwd, new UdpClient(), r, maxretry, timeout);
                 else
@@ -92,10 +93,11 @@ namespace lazebird.rabbit.tftp
                 slog("!E: daemon " + e.ToString());
             }
         }
-        public void start(int port, int timeout, int maxretry)
+        public void start(int port, int timeout, int maxretry, int qsize)
         {
             this.timeout = timeout;
             this.maxretry = maxretry;
+            this.qsize = qsize;
             if (tftpd == null)
             {
                 tftpd = new Thread(() => daemon_task(port));

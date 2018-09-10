@@ -19,6 +19,8 @@ namespace lazebird.rabbit.tftp
         public string filename = null;
         public long filesize = 0;
         public int maxblkno = 0;
+        public int qsize = 2000;
+        public int qtout = 1000;
         public rqueue q = null;
         Thread t = null;
         public int curretry = 0;
@@ -37,6 +39,10 @@ namespace lazebird.rabbit.tftp
             this.timeout = timeout;
             uc.Client.ReceiveTimeout = this.timeout;
         }
+        public ss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout, int qsize):this(cwd, uc, r, maxretry, timeout)
+        {
+            this.qsize = qsize;
+        }
         public void set_param(int timeout, int blksize)
         {
             if (timeout > 0) this.timeout = timeout;
@@ -49,7 +55,7 @@ namespace lazebird.rabbit.tftp
             FileStream fs = new FileStream(cwd + filename, FileMode.Open, FileAccess.Read);
             this.filename = filename;
             this.filesize = fs.Length;
-            this.q = new rqueue(2000, 1000);
+            this.q = new rqueue(qsize, qtout);
             this.maxblkno = (int)(this.filesize + this.blksize) / this.blksize;   // if len % blksize = 0, an empty data pkt sent at last
             t = new Thread(() => rfs.readstream(fs, this.q, this.blksize));
             t.IsBackground = true;
@@ -59,7 +65,7 @@ namespace lazebird.rabbit.tftp
         {
             FileStream fs = new FileStream(cwd + filename, FileMode.Create, FileAccess.Write, FileShare.Read);
             this.filename = filename;
-            this.q = new rqueue(2000, 1000);
+            this.q = new rqueue(qsize, qtout);
             t = new Thread(() => rfs.writestream(fs, this.q, this.filename));
             t.IsBackground = true;
             t.Start();

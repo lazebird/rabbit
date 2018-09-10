@@ -28,6 +28,8 @@ namespace lazebird.rabbit.fs
         }
         public rqueue(int maxsize, int timeout) : this()
         {
+            if (maxsize < 1) maxsize = 1;
+            if (timeout < 100) timeout = 100; // at least wait for 100ms
             this.maxsize = maxsize;
             this.timeout = timeout;
         }
