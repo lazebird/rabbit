@@ -3,7 +3,6 @@ using lazebird.rabbit.fs;
 using lazebird.rabbit.http;
 using System;
 using System.Collections;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -15,16 +14,17 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
+        rpanel http_fpannel;
         rhttpd httpd;
         rlog httpdlog;
         rshell sh;
         Hashtable httpd_phash;
-        int httptblen;
         int httpport;
         bool autoindex;
         bool videoplay;
         void init_form_http()
         {
+            http_fpannel = new rpanel(fp_httpd, fp_httpd.Width - 20);
             sh = new rshell("Rabbit", Application.ExecutablePath, "Add to Rabbit.http");
             httpd_phash = new Hashtable();
             //httpd_output.HorizontalScrollbar = true;
@@ -35,7 +35,6 @@ namespace lazebird.rabbit.rabbit
             btn_httpd.Click += new EventHandler(httpd_click);
             if (sh.file_exist()) cb_http_shell.Checked = true;
             cb_http_shell.CheckedChanged += new EventHandler(http_shell_click);
-            fp_httpd.AutoScroll = true;
             init_comsrv();
         }
         void httpd_log_func(string msg)
@@ -103,7 +102,7 @@ namespace lazebird.rabbit.rabbit
             if (File.Exists(p)) httpd.del_file(p);
             else if (Directory.Exists(p)) httpd.del_dir(p);
             httpd_phash.Remove(tb);
-            fp_httpd.Controls.Remove(tb);
+            http_fpannel.del(tb);
             saveconf();
         }
         void httpd_add_path(string p)
@@ -115,15 +114,7 @@ namespace lazebird.rabbit.rabbit
                 this.Invoke(new MethodInvoker(delegate { httpd_add_path(p); }));
                 return;
             }
-            TextBox tb = new TextBox();
-            tb.ReadOnly = true;
-            tb.BackColor = fp_httpd.BackColor;
-            tb.BorderStyle = BorderStyle.None;
-            tb.ForeColor = Color.White;
-            tb.Text = p;
-            tb.Width = httptblen;
-            tb.DoubleClick += httpd_dir_click;
-            fp_httpd.Controls.Add(tb);
+            TextBox tb = http_fpannel.add(p, null, httpd_dir_click);
             httpd_phash.Add(tb, p);
             if (File.Exists(p)) httpd.add_file(p);
             else if (Directory.Exists(p)) httpd.add_dir(p);
@@ -138,7 +129,6 @@ namespace lazebird.rabbit.rabbit
         }
         void httpd_readconf()
         {
-            httptblen = fp_httpd.Width - 20;
             string[] paths = rconf.get("http_dirs").Split(';');
             foreach (string path in paths) if (path != "") httpd_add_path(path);
         }

@@ -10,6 +10,7 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
+        rpanel tftpd_dpanel;
         rtftpd tftpd;
         rlog tftpdlog;
         Hashtable tftpd_dirhash;
@@ -22,9 +23,9 @@ namespace lazebird.rabbit.rabbit
         Timer tftpd_tmr;
         TextBox lastclicked = null;  // donot support two different dir clicked at the same time
         string lasttftpddir = Environment.CurrentDirectory;
-        int tftpdtblen;
         void init_form_tftpd()
         {
+            tftpd_dpanel = new rpanel(tftpd_fp, tftpd_fp.Width - 20);
             tftpd_dirs = new ArrayList();
             tftpd_tmr = new Timer();
             tftpd_tmr.Interval = 200; // 200ms
@@ -97,23 +98,16 @@ namespace lazebird.rabbit.rabbit
         }
         TextBox tftpd_add_dir()
         {
-            TextBox tb = new TextBox();
-            tb.ReadOnly = true;
-            tb.BackColor = tftpd_fp.BackColor;
-            tb.BorderStyle = BorderStyle.None;
-            tb.ForeColor = Color.White;
-            tb.Width = tftpdtblen;
-            tb.MouseDown += tftpd_dir_click;
-            tftpd_fp.Controls.Add(tb);
+            TextBox tb = tftpd_dpanel.add("", tftpd_dir_click, null);
             tftpd_dirs.Add(tb);
             tftpd_set_dir(tb, lasttftpddir);
             return tb;
         }
         void tftpd_del_dir(TextBox tb)
         {
-            tftpd_fp.Controls.Remove(tb);
             tftpd_dirs.Remove(tb);
             tftpd_dirhash.Remove(tb);
+            tftpd_dpanel.del(tb);
         }
         void tftpd_adddir_click(object sender, EventArgs e)
         {
@@ -159,7 +153,6 @@ namespace lazebird.rabbit.rabbit
         }
         void tftpd_readconf()
         {
-            tftpdtblen = tftpd_fp.Width - 20;
             string[] dirs = rconf.get("tftpd_dirs").Split(';');
             foreach (string path in dirs)
             {

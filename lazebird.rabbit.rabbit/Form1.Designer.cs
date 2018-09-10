@@ -21,14 +21,19 @@
             base.Dispose(disposing);
             httpd.Dispose();
             httpdlog.Dispose();
+            http_fpannel.Dispose();
             pinglog.Dispose();
+            scan_panel.Dispose();
             setlog.Dispose();
             tftpclog.Dispose();
             tftpd.Dispose();
             tftpdlog.Dispose();
+            tftpd_dpanel.Dispose();
             planlog.Dispose();
+            plan_panel.Dispose();
             chat.Dispose();
             chatlog.Dispose();
+            chat_upanel.Dispose();
             on_dispose();
         }
 

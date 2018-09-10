@@ -11,6 +11,7 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
+        rpanel scan_panel;
         string scan_startip;
         int scan_lastbyte;
         int scan_interval = 1000;
@@ -19,8 +20,8 @@ namespace lazebird.rabbit.rabbit
         Hashtable scansshash;
         void init_form_scan()
         {
+            scan_panel = new rpanel(fp_scan, 28);
             btn_scan.Click += new EventHandler(scan_click);
-            fp_scan.AutoScroll = true;
             scansshash = Hashtable.Synchronized(new Hashtable());
         }
         void scan_log_func(string msg)
@@ -37,18 +38,17 @@ namespace lazebird.rabbit.rabbit
             if (opts.ContainsKey("stoponloss")) bool.TryParse((string)opts["stoponloss"], out scan_stoponloss);
             if (opts.ContainsKey("hideunreachable")) bool.TryParse((string)opts["hideunreachable"], out scan_hideunreachable);
         }
-        object scan_lock = new object();
         void scan_reply(PingReply reply, object data)
         {
-            Label lb = (Label)data;
+            TextBox tb = (TextBox)data;
             if (reply == null)
             {
-                scansshash.Remove(lb);
+                scansshash.Remove(tb);
                 if (scansshash.Count == 0) btn_scan.Text = "Start";
                 return;
             }
-            lb.BackColor = (reply.Status == IPStatus.Success) ? Color.Green : Color.FromArgb(64, 64, 64);
-            if (scan_hideunreachable) lb.Visible = (reply.Status == IPStatus.Success);
+            if (reply.Status == IPStatus.Success) tb.BackColor = Color.Green;
+            if (scan_hideunreachable) tb.Visible = (reply.Status == IPStatus.Success);
         }
         void start_scan()
         {
@@ -58,43 +58,30 @@ namespace lazebird.rabbit.rabbit
                 Byte[] ipbytes = IPAddress.Parse(scan_startip).GetAddressBytes();
                 for (int i = ipbytes[3]; i <= scan_lastbyte && i < 255; i++)
                 {
-                    Label lb = new Label();
-                    lb.Text = i.ToString();
-                    lb.Width = lb.Height = 28;
-                    lb.TextAlign = ContentAlignment.MiddleCenter;
-                    lb.BackColor = Color.FromArgb(64, 64, 64);
-                    lb.ForeColor = Color.White;
-                    fp_scan.Controls.Add(lb);
+                    TextBox tb = scan_panel.add(i.ToString(), null, null);
+                    tb.Width = tb.Height = 28;
+                    tb.TextAlign = HorizontalAlignment.Center;
                     ipbytes[3] = (Byte)i;
                     rping s = new rping(scan_log_func, (new IPAddress(ipbytes)).ToString(), scan_interval, scan_count, scan_stoponloss);
-                    s.start(scan_reply, lb);
-                    scansshash.Add(lb, s);
+                    s.start(scan_reply, tb);
+                    scansshash.Add(tb, s);
                 }
             }
             catch (Exception) { }
         }
         void stop_scan()
         {
-            foreach (Label lb in scansshash.Keys)
+            foreach (TextBox tb in scansshash.Keys)
             {
-                ((rping)scansshash[lb]).stop();
+                ((rping)scansshash[tb]).stop();
             }
-        }
-        void clear_scan()
-        {
-            fp_scan.Controls.Clear();
-            foreach (Label lb in scansshash.Keys)
-            {
-                lb.Dispose();
-            }
-            scansshash.Clear();
         }
         void scan_click(object sender, EventArgs e)
         {
             if (btn_scan.Text == "Start")
             {
                 btn_scan.Text = "Stop";
-                clear_scan();
+                scan_panel.clear();
                 start_scan();
             }
             else

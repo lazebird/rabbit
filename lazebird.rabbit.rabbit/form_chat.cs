@@ -2,7 +2,6 @@
 using lazebird.rabbit.common;
 using System;
 using System.Collections;
-using System.Drawing;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
@@ -11,16 +10,17 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
+        rpanel chat_upanel;
         rlog chatlog;
         rchat chat;
         Hashtable chatephash;
         Hashtable chatbtnhash;
         void init_form_chat()
         {
+            chat_upanel = new rpanel(fp_chat, 160);
             chatephash = new Hashtable();
             chatbtnhash = new Hashtable();
             chatlog = new rlog(chat_output);
-            fp_chat.AutoScroll = true;
             chat = new rchat(chat_log_func, add_user);
             btn_chat.Click += chat_click;
             btn_chatrefresh.Click += chat_refresh_click;
@@ -65,21 +65,14 @@ namespace lazebird.rabbit.rabbit
             //chat_log_func("I: " + ep.ToString() + " " + user);
             if (chatephash.ContainsKey(ep)) chatephash.Remove(ep);
             chatephash.Add(ep, user);
-            Button b = new Button();
-            b.BackColor = Color.FromArgb(64, 64, 64);
-            b.FlatAppearance.BorderSize = 0;
-            b.FlatStyle = FlatStyle.Flat;
-            b.Width = 160;
-            b.Text = user;
-            b.Click += user_click;
-            fp_chat.Controls.Add(b);
-            chatbtnhash.Add(b, ep);
+            TextBox tb = chat_upanel.add(user, user_click, null);
+            chatbtnhash.Add(tb, ep);
         }
         void chat_refresh_click(object sender, EventArgs e)
         {
-            fp_chat.Controls.Clear();
             chatephash.Clear();
             chatbtnhash.Clear();
+            chat_upanel.clear();
             chat.new_query(text_chatntf.Text, 1314);
             if (sender != null) saveconf();
         }
