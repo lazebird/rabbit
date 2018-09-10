@@ -2,6 +2,7 @@
 using lazebird.rabbit.common;
 using System;
 using System.Collections;
+using System.Drawing;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
@@ -66,6 +67,8 @@ namespace lazebird.rabbit.rabbit
             if (chatephash.ContainsKey(ep)) chatephash.Remove(ep);
             chatephash.Add(ep, user);
             TextBox tb = chat_upanel.add(user, user_click, null);
+            tb.BackColor = Color.FromArgb(64, 64, 64);
+            tb.TextAlign = HorizontalAlignment.Center;
             chatbtnhash.Add(tb, ep);
         }
         void chat_refresh_click(object sender, EventArgs e)
