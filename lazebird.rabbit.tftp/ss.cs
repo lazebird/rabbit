@@ -21,6 +21,7 @@ namespace lazebird.rabbit.tftp
         public int maxblkno = 0;
         public int qsize = 2000;
         public int qtout = 1000;
+        public bool override_flag = false;
         public rqueue q = null;
         Thread t = null;
         public int curretry = 0;
@@ -39,9 +40,13 @@ namespace lazebird.rabbit.tftp
             this.timeout = timeout;
             uc.Client.ReceiveTimeout = this.timeout;
         }
-        public ss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout, int qsize):this(cwd, uc, r, maxretry, timeout)
+        public ss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout, int qsize) : this(cwd, uc, r, maxretry, timeout)
         {
             this.qsize = qsize;
+        }
+        public ss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout, bool override_flag) : this(cwd, uc, r, maxretry, timeout)
+        {
+            this.override_flag = override_flag;
         }
         public void set_param(int timeout, int blksize)
         {

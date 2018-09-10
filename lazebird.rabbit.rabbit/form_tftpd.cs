@@ -18,6 +18,7 @@ namespace lazebird.rabbit.rabbit
         int tftpd_timeout = 200;
         int tftpd_retry = 30;
         int tftpd_qsize = 2000;
+        bool tftpd_override = false;
         Timer tftpd_tmr;
         TextBox lastclicked = null;  // donot support two different dir clicked at the same time
         string lasttftpddir = Environment.CurrentDirectory;
@@ -131,6 +132,7 @@ namespace lazebird.rabbit.rabbit
             if (opts.ContainsKey("timeout")) int.TryParse((string)opts["timeout"], out tftpd_timeout);
             if (opts.ContainsKey("retry")) int.TryParse((string)opts["retry"], out tftpd_retry);
             if (opts.ContainsKey("qsize")) int.TryParse((string)opts["qsize"], out tftpd_qsize);
+            if (opts.ContainsKey("override")) bool.TryParse((string)opts["override"], out tftpd_override);
         }
         void tftpd_click(object sender, EventArgs evt)
         {
@@ -141,7 +143,7 @@ namespace lazebird.rabbit.rabbit
                     tftpdlog.clear();
                     ((Button)btnhash["tftpd_btn"]).Text = Language.trans("停止");
                     tftpd_parse_args();
-                    tftpd.start(69, tftpd_timeout, tftpd_retry, tftpd_qsize);
+                    tftpd.start(69, tftpd_timeout, tftpd_retry, tftpd_qsize, tftpd_override);
                 }
                 else
                 {

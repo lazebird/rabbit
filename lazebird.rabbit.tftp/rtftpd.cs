@@ -17,6 +17,7 @@ namespace lazebird.rabbit.tftp
         int timeout = 200;
         int maxretry = 30;
         int qsize = 2000;
+        bool override_flag = false;
         object obj;
         public rtftpd(Func<int, string, int> log)
         {
@@ -45,7 +46,7 @@ namespace lazebird.rabbit.tftp
                 if ((Opcodes)buf[1] == Opcodes.Read)
                     s = new srss(cwd, new UdpClient(), r, maxretry, timeout, qsize);
                 else if ((Opcodes)buf[1] == Opcodes.Write)
-                    s = new swss(cwd, new UdpClient(), r, maxretry, timeout, qsize);
+                    s = new swss(cwd, new UdpClient(), r, maxretry, timeout, override_flag);
                 else if ((Opcodes)buf[1] == Opcodes.ReadDir)
                     s = new srds(cwd, new UdpClient(), r, maxretry, timeout);
                 else
@@ -93,11 +94,12 @@ namespace lazebird.rabbit.tftp
                 slog("!E: daemon " + e.ToString());
             }
         }
-        public void start(int port, int timeout, int maxretry, int qsize)
+        public void start(int port, int timeout, int maxretry, int qsize, bool override_flag)
         {
             this.timeout = timeout;
             this.maxretry = maxretry;
             this.qsize = qsize;
+            this.override_flag = override_flag;
             if (tftpd == null)
             {
                 tftpd = new Thread(() => daemon_task(port));

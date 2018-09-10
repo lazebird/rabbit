@@ -8,7 +8,7 @@ namespace lazebird.rabbit.tftp
 {
     class swss : ss // server write session
     {
-        public swss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout, int qsize) : base(cwd, uc, r, maxretry, timeout, qsize)
+        public swss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout, bool override_flag) : base(cwd, uc, r, maxretry, timeout, override_flag)
         {
         }
 
@@ -19,7 +19,7 @@ namespace lazebird.rabbit.tftp
                 wrq_pkt pkt = new wrq_pkt();
                 if (!pkt.parse(buf)) return false;
                 set_param(pkt.timeout * 1000 / Math.Max(maxretry, 1), pkt.blksize);
-                if (File.Exists(cwd + pkt.filename))
+                if (File.Exists(cwd + pkt.filename) && !override_flag)
                 {
                     pktbuf = new err_pkt(Errcodes.FileAlreadyExists, pkt.filename).pack();
                     uc.Send(pktbuf, pktbuf.Length, r);
