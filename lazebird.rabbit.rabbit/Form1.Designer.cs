@@ -50,13 +50,13 @@
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
             this.tabs = new System.Windows.Forms.TabControl();
             this.Ping = new System.Windows.Forms.TabPage();
+            this.fp_ping = new System.Windows.Forms.FlowLayoutPanel();
             this.label_pingaddr = new System.Windows.Forms.Label();
             this.text_pingaddr = new System.Windows.Forms.TextBox();
             this.label_pingopt = new System.Windows.Forms.Label();
             this.text_pingopt = new System.Windows.Forms.TextBox();
             this.btn_ping = new System.Windows.Forms.Button();
             this.text_pingstat = new System.Windows.Forms.TextBox();
-            this.ping_output = new System.Windows.Forms.ListBox();
             this.Scan = new System.Windows.Forms.TabPage();
             this.label_scanip = new System.Windows.Forms.Label();
             this.text_scanstart = new System.Windows.Forms.TextBox();
@@ -67,23 +67,24 @@
             this.btn_scan = new System.Windows.Forms.Button();
             this.fp_scan = new System.Windows.Forms.FlowLayoutPanel();
             this.HTTPD = new System.Windows.Forms.TabPage();
+            this.fp_httpd_log = new System.Windows.Forms.FlowLayoutPanel();
             this.label_httpopt = new System.Windows.Forms.Label();
             this.text_httpopt = new System.Windows.Forms.TextBox();
             this.label_http_port = new System.Windows.Forms.Label();
             this.text_http_port = new System.Windows.Forms.TextBox();
             this.cb_http_shell = new System.Windows.Forms.CheckBox();
             this.btn_httpd = new System.Windows.Forms.Button();
-            this.fp_httpd = new System.Windows.Forms.FlowLayoutPanel();
-            this.httpd_output = new System.Windows.Forms.ListBox();
+            this.fp_httpd_file = new System.Windows.Forms.FlowLayoutPanel();
             this.TFTPD = new System.Windows.Forms.TabPage();
+            this.fp_tftpd_log = new System.Windows.Forms.FlowLayoutPanel();
             this.tftpd_adddir = new System.Windows.Forms.Button();
             this.tftpd_deldir = new System.Windows.Forms.Button();
             this.label_tftpdopt = new System.Windows.Forms.Label();
             this.text_tftpdopt = new System.Windows.Forms.TextBox();
             this.tftpd_btn = new System.Windows.Forms.Button();
-            this.tftpd_fp = new System.Windows.Forms.FlowLayoutPanel();
-            this.tftpd_output = new System.Windows.Forms.ListBox();
+            this.fp_tftpd_dir = new System.Windows.Forms.FlowLayoutPanel();
             this.TFTPC = new System.Windows.Forms.TabPage();
+            this.fp_tftpc_log = new System.Windows.Forms.FlowLayoutPanel();
             this.label_tftpcaddr = new System.Windows.Forms.Label();
             this.text_tftpcaddr = new System.Windows.Forms.TextBox();
             this.label_tftpcopt = new System.Windows.Forms.Label();
@@ -92,8 +93,8 @@
             this.text_tftpcrfile = new System.Windows.Forms.TextBox();
             this.btn_tftpcget = new System.Windows.Forms.Button();
             this.btn_tftpcput = new System.Windows.Forms.Button();
-            this.tftpc_output = new System.Windows.Forms.ListBox();
             this.PLAN = new System.Windows.Forms.TabPage();
+            this.fp_plan_log = new System.Windows.Forms.FlowLayoutPanel();
             this.text_planopt = new System.Windows.Forms.TextBox();
             this.label_planopt = new System.Windows.Forms.Label();
             this.dt1_plan = new System.Windows.Forms.DateTimePicker();
@@ -104,17 +105,17 @@
             this.text_planmsg = new System.Windows.Forms.TextBox();
             this.btn_plandel = new System.Windows.Forms.Button();
             this.btn_planadd = new System.Windows.Forms.Button();
-            this.plan_output = new System.Windows.Forms.ListBox();
             this.fp_plan = new System.Windows.Forms.FlowLayoutPanel();
             this.CHAT = new System.Windows.Forms.TabPage();
+            this.fp_chat_log = new System.Windows.Forms.FlowLayoutPanel();
             this.text_chatntf = new System.Windows.Forms.TextBox();
             this.text_chatname = new System.Windows.Forms.TextBox();
             this.btn_chat = new System.Windows.Forms.Button();
             this.btn_chatrefresh = new System.Windows.Forms.Button();
             this.btn_chatntf = new System.Windows.Forms.Button();
             this.fp_chat = new System.Windows.Forms.FlowLayoutPanel();
-            this.chat_output = new System.Windows.Forms.ListBox();
             this.Setting = new System.Windows.Forms.TabPage();
+            this.fp_setting = new System.Windows.Forms.FlowLayoutPanel();
             this.cb_autoupdate = new System.Windows.Forms.CheckBox();
             this.label_lang = new System.Windows.Forms.Label();
             this.lang_cb = new System.Windows.Forms.ComboBox();
@@ -126,7 +127,6 @@
             this.link_help = new System.Windows.Forms.LinkLabel();
             this.label_ver = new System.Windows.Forms.Label();
             this.link_ver = new System.Windows.Forms.LinkLabel();
-            this.setting_output = new System.Windows.Forms.ListBox();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
@@ -173,16 +173,22 @@
             // Ping
             // 
             this.Ping.BackColor = System.Drawing.Color.DimGray;
+            this.Ping.Controls.Add(this.fp_ping);
             this.Ping.Controls.Add(this.label_pingaddr);
             this.Ping.Controls.Add(this.text_pingaddr);
             this.Ping.Controls.Add(this.label_pingopt);
             this.Ping.Controls.Add(this.text_pingopt);
             this.Ping.Controls.Add(this.btn_ping);
             this.Ping.Controls.Add(this.text_pingstat);
-            this.Ping.Controls.Add(this.ping_output);
             this.Ping.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Ping, "Ping");
             this.Ping.Name = "Ping";
+            // 
+            // fp_ping
+            // 
+            this.fp_ping.BackColor = System.Drawing.Color.Gray;
+            resources.ApplyResources(this.fp_ping, "fp_ping");
+            this.fp_ping.Name = "fp_ping";
             // 
             // label_pingaddr
             // 
@@ -232,15 +238,6 @@
             this.text_pingstat.ForeColor = System.Drawing.Color.White;
             this.text_pingstat.Name = "text_pingstat";
             this.text_pingstat.ReadOnly = true;
-            // 
-            // ping_output
-            // 
-            this.ping_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ping_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.ping_output, "ping_output");
-            this.ping_output.ForeColor = System.Drawing.Color.White;
-            this.ping_output.FormattingEnabled = true;
-            this.ping_output.Name = "ping_output";
             // 
             // Scan
             // 
@@ -317,17 +314,23 @@
             // HTTPD
             // 
             this.HTTPD.BackColor = System.Drawing.Color.DimGray;
+            this.HTTPD.Controls.Add(this.fp_httpd_log);
             this.HTTPD.Controls.Add(this.label_httpopt);
             this.HTTPD.Controls.Add(this.text_httpopt);
             this.HTTPD.Controls.Add(this.label_http_port);
             this.HTTPD.Controls.Add(this.text_http_port);
             this.HTTPD.Controls.Add(this.cb_http_shell);
             this.HTTPD.Controls.Add(this.btn_httpd);
-            this.HTTPD.Controls.Add(this.fp_httpd);
-            this.HTTPD.Controls.Add(this.httpd_output);
+            this.HTTPD.Controls.Add(this.fp_httpd_file);
             this.HTTPD.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.HTTPD, "HTTPD");
             this.HTTPD.Name = "HTTPD";
+            // 
+            // fp_httpd_log
+            // 
+            this.fp_httpd_log.BackColor = System.Drawing.Color.Gray;
+            resources.ApplyResources(this.fp_httpd_log, "fp_httpd_log");
+            this.fp_httpd_log.Name = "fp_httpd_log";
             // 
             // label_httpopt
             // 
@@ -369,33 +372,30 @@
             this.btn_httpd.Name = "btn_httpd";
             this.btn_httpd.UseVisualStyleBackColor = false;
             // 
-            // fp_httpd
+            // fp_httpd_file
             // 
-            resources.ApplyResources(this.fp_httpd, "fp_httpd");
-            this.fp_httpd.Name = "fp_httpd";
-            // 
-            // httpd_output
-            // 
-            this.httpd_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.httpd_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.httpd_output, "httpd_output");
-            this.httpd_output.ForeColor = System.Drawing.Color.White;
-            this.httpd_output.FormattingEnabled = true;
-            this.httpd_output.Name = "httpd_output";
+            resources.ApplyResources(this.fp_httpd_file, "fp_httpd_file");
+            this.fp_httpd_file.Name = "fp_httpd_file";
             // 
             // TFTPD
             // 
             this.TFTPD.BackColor = System.Drawing.Color.DimGray;
+            this.TFTPD.Controls.Add(this.fp_tftpd_log);
             this.TFTPD.Controls.Add(this.tftpd_adddir);
             this.TFTPD.Controls.Add(this.tftpd_deldir);
             this.TFTPD.Controls.Add(this.label_tftpdopt);
             this.TFTPD.Controls.Add(this.text_tftpdopt);
             this.TFTPD.Controls.Add(this.tftpd_btn);
-            this.TFTPD.Controls.Add(this.tftpd_fp);
-            this.TFTPD.Controls.Add(this.tftpd_output);
+            this.TFTPD.Controls.Add(this.fp_tftpd_dir);
             this.TFTPD.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.TFTPD, "TFTPD");
             this.TFTPD.Name = "TFTPD";
+            // 
+            // fp_tftpd_log
+            // 
+            this.fp_tftpd_log.BackColor = System.Drawing.Color.Gray;
+            resources.ApplyResources(this.fp_tftpd_log, "fp_tftpd_log");
+            this.fp_tftpd_log.Name = "fp_tftpd_log";
             // 
             // tftpd_adddir
             // 
@@ -434,23 +434,15 @@
             this.tftpd_btn.Name = "tftpd_btn";
             this.tftpd_btn.UseVisualStyleBackColor = false;
             // 
-            // tftpd_fp
+            // fp_tftpd_dir
             // 
-            resources.ApplyResources(this.tftpd_fp, "tftpd_fp");
-            this.tftpd_fp.Name = "tftpd_fp";
-            // 
-            // tftpd_output
-            // 
-            this.tftpd_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.tftpd_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.tftpd_output, "tftpd_output");
-            this.tftpd_output.ForeColor = System.Drawing.Color.White;
-            this.tftpd_output.FormattingEnabled = true;
-            this.tftpd_output.Name = "tftpd_output";
+            resources.ApplyResources(this.fp_tftpd_dir, "fp_tftpd_dir");
+            this.fp_tftpd_dir.Name = "fp_tftpd_dir";
             // 
             // TFTPC
             // 
             this.TFTPC.BackColor = System.Drawing.Color.DimGray;
+            this.TFTPC.Controls.Add(this.fp_tftpc_log);
             this.TFTPC.Controls.Add(this.label_tftpcaddr);
             this.TFTPC.Controls.Add(this.text_tftpcaddr);
             this.TFTPC.Controls.Add(this.label_tftpcopt);
@@ -459,10 +451,15 @@
             this.TFTPC.Controls.Add(this.text_tftpcrfile);
             this.TFTPC.Controls.Add(this.btn_tftpcget);
             this.TFTPC.Controls.Add(this.btn_tftpcput);
-            this.TFTPC.Controls.Add(this.tftpc_output);
             this.TFTPC.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.TFTPC, "TFTPC");
             this.TFTPC.Name = "TFTPC";
+            // 
+            // fp_tftpc_log
+            // 
+            this.fp_tftpc_log.BackColor = System.Drawing.Color.Gray;
+            resources.ApplyResources(this.fp_tftpc_log, "fp_tftpc_log");
+            this.fp_tftpc_log.Name = "fp_tftpc_log";
             // 
             // label_tftpcaddr
             // 
@@ -522,18 +519,10 @@
             this.btn_tftpcput.Name = "btn_tftpcput";
             this.btn_tftpcput.UseVisualStyleBackColor = false;
             // 
-            // tftpc_output
-            // 
-            this.tftpc_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.tftpc_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.tftpc_output, "tftpc_output");
-            this.tftpc_output.ForeColor = System.Drawing.Color.White;
-            this.tftpc_output.FormattingEnabled = true;
-            this.tftpc_output.Name = "tftpc_output";
-            // 
             // PLAN
             // 
             this.PLAN.BackColor = System.Drawing.Color.DimGray;
+            this.PLAN.Controls.Add(this.fp_plan_log);
             this.PLAN.Controls.Add(this.text_planopt);
             this.PLAN.Controls.Add(this.label_planopt);
             this.PLAN.Controls.Add(this.dt1_plan);
@@ -544,11 +533,16 @@
             this.PLAN.Controls.Add(this.text_planmsg);
             this.PLAN.Controls.Add(this.btn_plandel);
             this.PLAN.Controls.Add(this.btn_planadd);
-            this.PLAN.Controls.Add(this.plan_output);
             this.PLAN.Controls.Add(this.fp_plan);
             this.PLAN.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.PLAN, "PLAN");
             this.PLAN.Name = "PLAN";
+            // 
+            // fp_plan_log
+            // 
+            this.fp_plan_log.BackColor = System.Drawing.Color.Gray;
+            resources.ApplyResources(this.fp_plan_log, "fp_plan_log");
+            this.fp_plan_log.Name = "fp_plan_log";
             // 
             // text_planopt
             // 
@@ -620,15 +614,6 @@
             this.btn_planadd.Name = "btn_planadd";
             this.btn_planadd.UseVisualStyleBackColor = false;
             // 
-            // plan_output
-            // 
-            this.plan_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.plan_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.plan_output, "plan_output");
-            this.plan_output.ForeColor = System.Drawing.Color.White;
-            this.plan_output.FormattingEnabled = true;
-            this.plan_output.Name = "plan_output";
-            // 
             // fp_plan
             // 
             resources.ApplyResources(this.fp_plan, "fp_plan");
@@ -637,16 +622,22 @@
             // CHAT
             // 
             this.CHAT.BackColor = System.Drawing.Color.DimGray;
+            this.CHAT.Controls.Add(this.fp_chat_log);
             this.CHAT.Controls.Add(this.text_chatntf);
             this.CHAT.Controls.Add(this.text_chatname);
             this.CHAT.Controls.Add(this.btn_chat);
             this.CHAT.Controls.Add(this.btn_chatrefresh);
             this.CHAT.Controls.Add(this.btn_chatntf);
             this.CHAT.Controls.Add(this.fp_chat);
-            this.CHAT.Controls.Add(this.chat_output);
             this.CHAT.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.CHAT, "CHAT");
             this.CHAT.Name = "CHAT";
+            // 
+            // fp_chat_log
+            // 
+            this.fp_chat_log.BackColor = System.Drawing.Color.Gray;
+            resources.ApplyResources(this.fp_chat_log, "fp_chat_log");
+            this.fp_chat_log.Name = "fp_chat_log";
             // 
             // text_chatntf
             // 
@@ -693,18 +684,10 @@
             resources.ApplyResources(this.fp_chat, "fp_chat");
             this.fp_chat.Name = "fp_chat";
             // 
-            // chat_output
-            // 
-            this.chat_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.chat_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.chat_output, "chat_output");
-            this.chat_output.ForeColor = System.Drawing.Color.White;
-            this.chat_output.FormattingEnabled = true;
-            this.chat_output.Name = "chat_output";
-            // 
             // Setting
             // 
             this.Setting.BackColor = System.Drawing.Color.DimGray;
+            this.Setting.Controls.Add(this.fp_setting);
             this.Setting.Controls.Add(this.cb_autoupdate);
             this.Setting.Controls.Add(this.label_lang);
             this.Setting.Controls.Add(this.lang_cb);
@@ -716,10 +699,15 @@
             this.Setting.Controls.Add(this.link_help);
             this.Setting.Controls.Add(this.label_ver);
             this.Setting.Controls.Add(this.link_ver);
-            this.Setting.Controls.Add(this.setting_output);
             this.Setting.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
+            // 
+            // fp_setting
+            // 
+            this.fp_setting.BackColor = System.Drawing.Color.Gray;
+            resources.ApplyResources(this.fp_setting, "fp_setting");
+            this.fp_setting.Name = "fp_setting";
             // 
             // cb_autoupdate
             // 
@@ -786,15 +774,6 @@
             resources.ApplyResources(this.link_ver, "link_ver");
             this.link_ver.Name = "link_ver";
             // 
-            // setting_output
-            // 
-            this.setting_output.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.setting_output.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.setting_output, "setting_output");
-            this.setting_output.ForeColor = System.Drawing.Color.White;
-            this.setting_output.FormattingEnabled = true;
-            this.setting_output.Name = "setting_output";
-            // 
             // ntfico
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
@@ -843,7 +822,6 @@
         System.Windows.Forms.TabControl tabs;
         System.Windows.Forms.TabPage Ping;
         System.Windows.Forms.TabPage HTTPD;
-        System.Windows.Forms.ListBox ping_output;
         System.Windows.Forms.TabPage PLAN;
         System.Windows.Forms.TabPage Setting;
         System.Windows.Forms.Label label_http_port;
@@ -854,8 +832,6 @@
         System.Windows.Forms.Button tftpd_deldir;
         System.Windows.Forms.Label label_lang;
         System.Windows.Forms.ComboBox lang_cb;
-        System.Windows.Forms.ListBox httpd_output;
-        System.Windows.Forms.ListBox tftpd_output;
         System.Windows.Forms.Button tftpd_btn;
         System.Windows.Forms.TabPage Scan;
         System.Windows.Forms.Label label_scanip;
@@ -864,9 +840,7 @@
         System.Windows.Forms.TextBox text_scanend;
         System.Windows.Forms.Button btn_scan;
         System.Windows.Forms.FlowLayoutPanel fp_scan;
-        System.Windows.Forms.ListBox setting_output;
         System.Windows.Forms.LinkLabel link_prj;
-        System.Windows.Forms.ListBox plan_output;
         System.Windows.Forms.Label label_tftpdopt;
         System.Windows.Forms.TextBox text_tftpdopt;
         System.Windows.Forms.TabPage TFTPC;
@@ -875,15 +849,14 @@
         System.Windows.Forms.TextBox text_tftpclfile;
         System.Windows.Forms.TextBox text_tftpcrfile;
         System.Windows.Forms.Button btn_tftpcget;
-        System.Windows.Forms.ListBox tftpc_output;
         System.Windows.Forms.Button btn_tftpcput;
         System.Windows.Forms.Label label_tftpcaddr;
         System.Windows.Forms.TextBox text_tftpcaddr;
-        System.Windows.Forms.FlowLayoutPanel tftpd_fp;
+        System.Windows.Forms.FlowLayoutPanel fp_tftpd_dir;
         private System.Windows.Forms.Label label_ver;
         private System.Windows.Forms.LinkLabel link_ver;
         private System.Windows.Forms.LinkLabel link_prof;
-        private System.Windows.Forms.FlowLayoutPanel fp_httpd;
+        private System.Windows.Forms.FlowLayoutPanel fp_httpd_file;
         private System.Windows.Forms.CheckBox cb_http_shell;
         private System.Windows.Forms.Button btn_planadd;
         private System.Windows.Forms.FlowLayoutPanel fp_plan;
@@ -898,7 +871,6 @@
         private System.Windows.Forms.NotifyIcon ntfico;
         private System.Windows.Forms.TabPage CHAT;
         private System.Windows.Forms.FlowLayoutPanel fp_chat;
-        private System.Windows.Forms.ListBox chat_output;
         private System.Windows.Forms.Button btn_chatntf;
         private System.Windows.Forms.Button btn_chatrefresh;
         private System.Windows.Forms.Button btn_chat;
@@ -915,6 +887,13 @@
         private System.Windows.Forms.Label label_planopt;
         private System.Windows.Forms.TextBox text_planopt;
         private System.Windows.Forms.CheckBox cb_autoupdate;
+        private System.Windows.Forms.FlowLayoutPanel fp_ping;
+        private System.Windows.Forms.FlowLayoutPanel fp_httpd_log;
+        private System.Windows.Forms.FlowLayoutPanel fp_tftpd_log;
+        private System.Windows.Forms.FlowLayoutPanel fp_tftpc_log;
+        private System.Windows.Forms.FlowLayoutPanel fp_plan_log;
+        private System.Windows.Forms.FlowLayoutPanel fp_chat_log;
+        private System.Windows.Forms.FlowLayoutPanel fp_setting;
     }
 }
 

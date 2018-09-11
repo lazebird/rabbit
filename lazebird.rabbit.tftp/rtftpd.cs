@@ -35,7 +35,6 @@ namespace lazebird.rabbit.tftp
         public void set_cwd(string path)
         {
             cwd = path + "/";
-            slog("I: CWD " + cwd);
         }
         void session_task(byte[] buf, IPEndPoint r)
         {

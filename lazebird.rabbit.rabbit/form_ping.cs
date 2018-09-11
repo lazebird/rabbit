@@ -9,7 +9,7 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
-        rlog pinglog;
+        rpanel pinglog;
         Queue recq;
         rtaskbar bar;
         string ping_addr;
@@ -21,7 +21,7 @@ namespace lazebird.rabbit.rabbit
         string ping_logpath = "";
         void init_form_ping()
         {
-            pinglog = new rlog(ping_output);
+            pinglog = new rpanel(fp_ping, 0);
             btn_ping.Click += new EventHandler(ping_click);
             bar = new rtaskbar(pinglog.write, this.Handle);
             recq = new Queue();
@@ -49,7 +49,7 @@ namespace lazebird.rabbit.rabbit
             if (opts.ContainsKey("stoponloss")) bool.TryParse((string)opts["stoponloss"], out ping_stoponloss);
             if (opts.ContainsKey("taskbar")) bool.TryParse((string)opts["taskbar"], out ping_taskbar);
             if (opts.ContainsKey("log")) ping_logpath = (string)opts["log"];
-            if (!string.IsNullOrEmpty(ping_logpath)) pinglog.setfile(ping_logpath);
+            if (!string.IsNullOrEmpty(ping_logpath)) pinglog.savefile(ping_logpath);
         }
         void ping_click(object sender, EventArgs evt)
         {

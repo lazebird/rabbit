@@ -10,16 +10,16 @@ namespace lazebird.rabbit.rabbit
     public partial class Form1 : Form
     {
         rpanel plan_panel;
+        rpanel planlog;
         Hashtable plan_tbhash;
         Hashtable plan_msghash;
-        rlog planlog;
         bool plan_override;
         void init_form_plan()
         {
-            plan_panel = new rpanel(fp_plan, fp_plan.Width - 20);
+            plan_panel = new rpanel(fp_plan, 0);
+            planlog = new rpanel(fp_plan_log, 0);
             plan_tbhash = new Hashtable();
             plan_msghash = new Hashtable();
-            planlog = new rlog(plan_output);
             btn_planadd.Click += new EventHandler(plan_add_click);
             btn_plandel.Click += new EventHandler(plan_del_click);
             cb_planunit.DataSource = cycleunitlist();

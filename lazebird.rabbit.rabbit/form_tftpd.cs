@@ -12,7 +12,7 @@ namespace lazebird.rabbit.rabbit
     {
         rpanel tftpd_dpanel;
         rtftpd tftpd;
-        rlog tftpdlog;
+        rpanel tftpdlog;
         Hashtable tftpd_dirhash;
         int curtftpd_dir = -1;
         ArrayList tftpd_dirs;
@@ -25,18 +25,18 @@ namespace lazebird.rabbit.rabbit
         string lasttftpddir = Environment.CurrentDirectory;
         void init_form_tftpd()
         {
-            tftpd_dpanel = new rpanel(tftpd_fp, tftpd_fp.Width - 20);
+            tftpd_dpanel = new rpanel(fp_tftpd_dir, 0);
+            tftpdlog = new rpanel(fp_tftpd_log, 0);
             tftpd_dirs = new ArrayList();
             tftpd_tmr = new Timer();
             tftpd_tmr.Interval = 200; // 200ms
             tftpd_tmr.Tick += new EventHandler(tftpd_dir_tick);
             tftpd_dirhash = new Hashtable();
-            tftpdlog = new rlog(tftpd_output);
             tftpd = new rtftpd(tftpd_log_func);
             tftpd_adddir.Click += tftpd_adddir_click;
             tftpd_deldir.Click += tftpd_deldir_click;
             tftpd_btn.Click += tftpd_click;
-            tftpd_fp.AutoScroll = true;
+            fp_tftpd_dir.AutoScroll = true;
         }
         int tftpd_log_func(int id, string msg)
         {
@@ -55,7 +55,7 @@ namespace lazebird.rabbit.rabbit
             if (newidx != curtftpd_dir && curtftpd_dir >= 0)
             {
                 TextBox old = (TextBox)tftpd_dirs[curtftpd_dir];
-                old.BackColor = tftpd_fp.BackColor;
+                old.BackColor = fp_tftpd_dir.BackColor;
             }
             tb.BackColor = Color.YellowGreen;
             curtftpd_dir = newidx;

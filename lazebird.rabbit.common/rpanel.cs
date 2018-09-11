@@ -16,7 +16,8 @@ namespace lazebird.rabbit.common
         {
             fp.AutoScroll = true;
             this.fp = fp;
-            this.width = width;
+            if (width <= 0) this.width = fp.Width - 20; // default
+            else this.width = width;
             list = new ArrayList();
         }
         public void savefile(string name)
@@ -25,8 +26,10 @@ namespace lazebird.rabbit.common
             file = null;
             if (!string.IsNullOrWhiteSpace(name)) file = new StreamWriter(name, true);
         }
+        delegate TextBox tb_invoker();
         public TextBox add(string msg, MouseEventHandler mousedown, MouseEventHandler mousedoubleclick)
         {
+            if (fp.InvokeRequired) return (TextBox)fp.Invoke(new tb_invoker(() => add(msg, mousedown, mousedoubleclick)));
             if (file != null)
             {
                 file.WriteLine(DateTime.Now.ToString() + ": " + msg);
@@ -42,8 +45,19 @@ namespace lazebird.rabbit.common
             if (mousedown != null) tb.MouseDown += mousedown;
             if (mousedoubleclick != null) tb.MouseDoubleClick += mousedoubleclick;
             fp.Controls.Add(tb);
+            fp.ScrollControlIntoView(tb);
             list.Add(tb);
             return tb;
+        }
+        public void write(string msg)
+        {
+            add(msg, null, null);
+        }
+        public int write(int id, string msg)
+        {
+            if (id >= 0 && id < list.Count) ((TextBox)list[id]).Text = msg;
+            else id = list.IndexOf(add(msg, null, null));
+            return id;
         }
         public void del(TextBox tb)
         {
