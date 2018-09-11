@@ -87,14 +87,14 @@ namespace lazebird.rabbit.fs
             int starttm = Environment.TickCount;
             long size = readstream(fs, q, maxblksz);
             int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
-            log("I: Read file " + filename + " size " + size + " time " + deltatm + "; " + (size / deltatm).ToString("###,###.0") + " Bps; ");
+            log("I: Read file " + filename + ", size " + size.ToString("###,###") + " bytes, time " + deltatm + " s; " + (size / deltatm).ToString("###,###.0") + " Bps; ");
         }
         public static void writestream_log(Stream output, rqueue q, string filename, Action<string> log)
         {
             int starttm = Environment.TickCount;
             long size = writestream(output, q, filename);
             int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
-            log("I: Write file " + filename + " size " + size + " time " + deltatm + "; " + (size / deltatm).ToString("###,###.0") + " Bps; ");
+            log("I: Write file " + filename + ", size " + size.ToString("###,###") + " bytes, time " + deltatm + " s; " + (size / deltatm).ToString("###,###.0") + " Bps; ");
         }
     }
 }
