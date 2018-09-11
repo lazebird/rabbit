@@ -41,7 +41,6 @@ namespace lazebird.rabbit.tftp
                 }
                 else if (oper == Opcodes.ReadDir)
                 {
-                    slog("I: get dir " + remoteFile);
                     s = new crds(remoteFile, new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
                     buf = new rdq_pkt(remoteFile).pack();
                 }

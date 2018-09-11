@@ -26,11 +26,9 @@ namespace lazebird.rabbit.tftp
             uc.Send(pktbuf, pktbuf.Length, r);
             return false;
         }
-        public override void session_display(Func<int, string, int> log)
+        protected override string progress_info()
         {
-            string msg = "I: " + r.ToString() + " " + dirname + " " + dirinfo + " ";
-            msg += totalretry + " retries";
-            log(logidx, msg);
+            return "I: " + r.ToString() + " " + dirname + " " + dirinfo + " " + totalretry + " retries";
         }
     }
 }

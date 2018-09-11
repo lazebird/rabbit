@@ -101,7 +101,7 @@ namespace lazebird.rabbit.tftp
                 logidx = log(logidx, "I: " + r.ToString() + " " + filename + ": " + maxblkno + "/" + blkno + ((curretry == 0) ? "" : (" retry " + curretry)));
             }
         }
-        string progress_info()
+        protected virtual string progress_info()
         {
             int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
             long curlen = (maxblkno == blkno) ? filesize : (blksize * blkno);
@@ -114,13 +114,13 @@ namespace lazebird.rabbit.tftp
         }
         public virtual void session_display(Func<int, string, int> log)
         {
-            log(logidx, progress_info());
+            logidx = log(logidx, progress_info());
             //if (q != null) log(-1, "I: produce " + q.stat_produce + " consume " + q.stat_consume + " stopped " + q.is_stopped());
         }
 
         public void destroy(Func<int, string, int> log)
         {
-            log(logidx, progress_info() + " (destroyed)");
+            logidx = log(logidx, progress_info() + " (destroyed)");
             //log(-1, "I: Destroy session: " + r.ToString() + " " + cwd + filename);
             if (q != null) q.stop();
             if (t != null) t.Join();
