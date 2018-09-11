@@ -67,6 +67,7 @@
             this.btn_scan = new System.Windows.Forms.Button();
             this.fp_scan = new System.Windows.Forms.FlowLayoutPanel();
             this.HTTPD = new System.Windows.Forms.TabPage();
+            this.rtb_httpd = new System.Windows.Forms.RichTextBox();
             this.label_httpopt = new System.Windows.Forms.Label();
             this.text_httpopt = new System.Windows.Forms.TextBox();
             this.label_http_port = new System.Windows.Forms.Label();
@@ -93,6 +94,7 @@
             this.btn_tftpcget = new System.Windows.Forms.Button();
             this.btn_tftpcput = new System.Windows.Forms.Button();
             this.PLAN = new System.Windows.Forms.TabPage();
+            this.rtb_plan = new System.Windows.Forms.RichTextBox();
             this.text_planopt = new System.Windows.Forms.TextBox();
             this.label_planopt = new System.Windows.Forms.Label();
             this.dt1_plan = new System.Windows.Forms.DateTimePicker();
@@ -126,8 +128,6 @@
             this.label_ver = new System.Windows.Forms.Label();
             this.link_ver = new System.Windows.Forms.LinkLabel();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
-            this.rtb_httpd = new System.Windows.Forms.RichTextBox();
-            this.rtb_plan = new System.Windows.Forms.RichTextBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -327,6 +327,14 @@
             this.HTTPD.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.HTTPD, "HTTPD");
             this.HTTPD.Name = "HTTPD";
+            // 
+            // rtb_httpd
+            // 
+            this.rtb_httpd.BackColor = System.Drawing.Color.Gray;
+            this.rtb_httpd.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.rtb_httpd, "rtb_httpd");
+            this.rtb_httpd.ForeColor = System.Drawing.Color.White;
+            this.rtb_httpd.Name = "rtb_httpd";
             // 
             // label_httpopt
             // 
@@ -533,6 +541,14 @@
             this.PLAN.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.PLAN, "PLAN");
             this.PLAN.Name = "PLAN";
+            // 
+            // rtb_plan
+            // 
+            this.rtb_plan.BackColor = System.Drawing.Color.Gray;
+            this.rtb_plan.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.rtb_plan, "rtb_plan");
+            this.rtb_plan.ForeColor = System.Drawing.Color.White;
+            this.rtb_plan.Name = "rtb_plan";
             // 
             // text_planopt
             // 
@@ -767,22 +783,6 @@
             // ntfico
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
-            // 
-            // rtb_httpd
-            // 
-            this.rtb_httpd.BackColor = System.Drawing.Color.Gray;
-            this.rtb_httpd.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.rtb_httpd, "rtb_httpd");
-            this.rtb_httpd.ForeColor = System.Drawing.Color.White;
-            this.rtb_httpd.Name = "rtb_httpd";
-            // 
-            // rtb_plan
-            // 
-            this.rtb_plan.BackColor = System.Drawing.Color.Gray;
-            this.rtb_plan.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.rtb_plan, "rtb_plan");
-            this.rtb_plan.ForeColor = System.Drawing.Color.White;
-            this.rtb_plan.Name = "rtb_plan";
             // 
             // Form1
             // 

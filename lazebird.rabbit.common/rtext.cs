@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
@@ -11,7 +12,7 @@ namespace lazebird.rabbit.common
         public rtext(RichTextBox rtb)
         {
             this.rtb = rtb;
-            rtb.WordWrap = true;
+            rtb.BackColor = Color.FromArgb(64, 64, 64);
         }
         public void savefile(string name)
         {

@@ -16,6 +16,7 @@ namespace lazebird.rabbit.common
         public rpanel(FlowLayoutPanel fp, int width)
         {
             fp.AutoScroll = true;
+            fp.BackColor = Color.FromArgb(64, 64, 64);
             this.fp = fp;
             this.width = width;
             list = new ArrayList();
