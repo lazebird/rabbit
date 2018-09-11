@@ -19,7 +19,7 @@ namespace lazebird.rabbit.rabbit
         void init_form_chat()
         {
             chat_upanel = new rpanel(fp_chat, 160);
-            chatlog = new rpanel(fp_chat_log, 0);
+            chatlog = new rpanel(fp_chat_log);
             chatephash = new Hashtable();
             chatbtnhash = new Hashtable();
             chat = new rchat(chat_log_func, add_user);

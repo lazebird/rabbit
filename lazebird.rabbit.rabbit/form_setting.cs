@@ -24,7 +24,7 @@ namespace lazebird.rabbit.rabbit
         string binaryuri = "https://code.aliyun.com/lazebird/rabbit/raw/master/release/sRabbit.exe";
         void init_form_setting()
         {
-            setlog = new rpanel(fp_setting, 0);
+            setlog = new rpanel(fp_setting);
             pver = Assembly.GetExecutingAssembly().GetName().Version;
             List<string> list = new List<string>();
             list.Add("System");
@@ -32,7 +32,7 @@ namespace lazebird.rabbit.rabbit
             list.Add("中文");
             lang_cb.DataSource = list;
             lang_cb.Text = Language.Getlang();
-            setlog.write("Language: " + Language.Getlang());
+            //setlog.write("Language: " + Language.Getlang());
             lang_cb.SelectedIndexChanged += lang_opt_SelectedIndexChanged;
             cb_systray.CheckedChanged += systray_click;
             ntfico.DoubleClick += systray_double_click;

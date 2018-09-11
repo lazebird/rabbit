@@ -9,7 +9,7 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
-        rpanel pinglog;
+        rtext pinglog;
         Queue recq;
         rtaskbar bar;
         string ping_addr;
@@ -21,7 +21,7 @@ namespace lazebird.rabbit.rabbit
         string ping_logpath = "";
         void init_form_ping()
         {
-            pinglog = new rpanel(fp_ping, 0);
+            pinglog = new rtext(rtb_ping);
             btn_ping.Click += new EventHandler(ping_click);
             bar = new rtaskbar(pinglog.write, this.Handle);
             recq = new Queue();

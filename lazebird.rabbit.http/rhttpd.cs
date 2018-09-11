@@ -18,8 +18,9 @@ namespace lazebird.rabbit.http
         public rhttpd(Action<string> log)
         {
             this.log = log;
-            rfs = new rfs(log);
+            rfs = new rfs(log_null);
         }
+        void log_null(string msg) { }
         public void init_mime(string value)
         {
             mimehash = new Hashtable();

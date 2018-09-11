@@ -16,7 +16,7 @@ namespace lazebird.rabbit.rabbit
         string lasttftpcdir = Environment.CurrentDirectory;
         void init_form_tftpc()
         {
-            tftpclog = new rpanel(fp_tftpc_log, 0);
+            tftpclog = new rpanel(fp_tftpc_log);
             text_tftpclfile.DoubleClick += new EventHandler(tftpc_lfile_click);
             btn_tftpcput.Click += new EventHandler(tftpc_put_click);
             btn_tftpcget.Click += new EventHandler(tftpc_get_click);

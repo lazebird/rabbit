@@ -25,8 +25,8 @@ namespace lazebird.rabbit.rabbit
         string lasttftpddir = Environment.CurrentDirectory;
         void init_form_tftpd()
         {
-            tftpd_dpanel = new rpanel(fp_tftpd_dir, 0);
-            tftpdlog = new rpanel(fp_tftpd_log, 0);
+            tftpd_dpanel = new rpanel(fp_tftpd_dir);
+            tftpdlog = new rpanel(fp_tftpd_log);
             tftpd_dirs = new ArrayList();
             tftpd_tmr = new Timer();
             tftpd_tmr.Interval = 200; // 200ms

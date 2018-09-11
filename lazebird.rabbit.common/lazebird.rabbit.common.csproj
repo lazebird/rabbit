@@ -45,6 +45,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="rtext.cs" />
     <Compile Include="rpanel.cs" />
     <Compile Include="rlog.cs" />
     <Compile Include="ropt.cs" />

@@ -16,7 +16,7 @@ namespace lazebird.rabbit.rabbit
     {
         rpanel http_fpannel;
         rhttpd httpd;
-        rpanel httpdlog;
+        rtext httpdlog;
         rshell sh;
         Hashtable httpd_phash;
         int httpport;
@@ -24,12 +24,12 @@ namespace lazebird.rabbit.rabbit
         bool videoplay;
         void init_form_http()
         {
-            http_fpannel = new rpanel(fp_httpd_file, 0);
+            http_fpannel = new rpanel(fp_httpd_file);
             sh = new rshell("Rabbit", Application.ExecutablePath, "Add to Rabbit.http");
             httpd_phash = new Hashtable();
             //httpd_output.HorizontalScrollbar = true;
             //httpd_output.HorizontalExtent = 5000;
-            httpdlog = new rpanel(fp_httpd_log, 0);
+            httpdlog = new rtext(rtb_httpd);
             httpd = new rhttpd(httpd_log_func);
             httpd.init_mime(rconf.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);

@@ -17,9 +17,11 @@ namespace lazebird.rabbit.common
         {
             fp.AutoScroll = true;
             this.fp = fp;
-            if (width <= 0) this.width = fp.Width - 20; // default
-            else this.width = width;
+            this.width = width;
             list = new ArrayList();
+        }
+        public rpanel(FlowLayoutPanel fp) : this(fp, fp.Width - 20)
+        {
         }
         public void savefile(string name)
         {
