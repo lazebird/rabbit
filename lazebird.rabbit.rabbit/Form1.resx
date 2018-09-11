@@ -142,10 +142,10 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="fp_ping.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 59</value>
+    <value>0, 73</value>
   </data>
   <data name="fp_ping.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 473</value>
+    <value>776, 459</value>
   </data>
   <data name="fp_ping.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
@@ -1693,7 +1693,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 380</value>
+    <value>776, 383</value>
   </data>
   <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1924,7 +1924,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_chat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 396</value>
+    <value>776, 399</value>
   </data>
   <data name="fp_chat.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
