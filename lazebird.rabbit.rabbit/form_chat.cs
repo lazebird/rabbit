@@ -11,14 +11,14 @@ namespace lazebird.rabbit.rabbit
     public partial class Form1 : Form
     {
         rpanel chat_upanel;
-        rpanel chatlog;
+        rlog chatlog;
         rchat chat;
         Hashtable chatephash;
         Hashtable chatbtnhash;
         void init_form_chat()
         {
             chat_upanel = new rpanel(fp_chat, 160);
-            chatlog = new rpanel(fp_chat_log);
+            chatlog = new rlog(lb_chat);
             chatephash = new Hashtable();
             chatbtnhash = new Hashtable();
             chat = new rchat(chat_log_func, add_user);

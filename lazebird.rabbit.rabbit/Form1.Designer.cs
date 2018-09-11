@@ -50,7 +50,6 @@
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
             this.tabs = new System.Windows.Forms.TabControl();
             this.Ping = new System.Windows.Forms.TabPage();
-            this.rtb_ping = new System.Windows.Forms.RichTextBox();
             this.label_pingaddr = new System.Windows.Forms.Label();
             this.text_pingaddr = new System.Windows.Forms.TextBox();
             this.label_pingopt = new System.Windows.Forms.Label();
@@ -67,7 +66,6 @@
             this.btn_scan = new System.Windows.Forms.Button();
             this.fp_scan = new System.Windows.Forms.FlowLayoutPanel();
             this.HTTPD = new System.Windows.Forms.TabPage();
-            this.rtb_httpd = new System.Windows.Forms.RichTextBox();
             this.label_httpopt = new System.Windows.Forms.Label();
             this.text_httpopt = new System.Windows.Forms.TextBox();
             this.label_http_port = new System.Windows.Forms.Label();
@@ -94,7 +92,6 @@
             this.btn_tftpcget = new System.Windows.Forms.Button();
             this.btn_tftpcput = new System.Windows.Forms.Button();
             this.PLAN = new System.Windows.Forms.TabPage();
-            this.rtb_plan = new System.Windows.Forms.RichTextBox();
             this.text_planopt = new System.Windows.Forms.TextBox();
             this.label_planopt = new System.Windows.Forms.Label();
             this.dt1_plan = new System.Windows.Forms.DateTimePicker();
@@ -107,7 +104,6 @@
             this.btn_planadd = new System.Windows.Forms.Button();
             this.fp_plan = new System.Windows.Forms.FlowLayoutPanel();
             this.CHAT = new System.Windows.Forms.TabPage();
-            this.fp_chat_log = new System.Windows.Forms.FlowLayoutPanel();
             this.text_chatntf = new System.Windows.Forms.TextBox();
             this.text_chatname = new System.Windows.Forms.TextBox();
             this.btn_chat = new System.Windows.Forms.Button();
@@ -115,7 +111,6 @@
             this.btn_chatntf = new System.Windows.Forms.Button();
             this.fp_chat = new System.Windows.Forms.FlowLayoutPanel();
             this.Setting = new System.Windows.Forms.TabPage();
-            this.fp_setting = new System.Windows.Forms.FlowLayoutPanel();
             this.cb_autoupdate = new System.Windows.Forms.CheckBox();
             this.label_lang = new System.Windows.Forms.Label();
             this.lang_cb = new System.Windows.Forms.ComboBox();
@@ -128,6 +123,11 @@
             this.label_ver = new System.Windows.Forms.Label();
             this.link_ver = new System.Windows.Forms.LinkLabel();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
+            this.lb_ping = new System.Windows.Forms.ListBox();
+            this.lb_httpd = new System.Windows.Forms.ListBox();
+            this.lb_plan = new System.Windows.Forms.ListBox();
+            this.lb_chat = new System.Windows.Forms.ListBox();
+            this.lb_setting = new System.Windows.Forms.ListBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -173,7 +173,7 @@
             // Ping
             // 
             this.Ping.BackColor = System.Drawing.Color.DimGray;
-            this.Ping.Controls.Add(this.rtb_ping);
+            this.Ping.Controls.Add(this.lb_ping);
             this.Ping.Controls.Add(this.label_pingaddr);
             this.Ping.Controls.Add(this.text_pingaddr);
             this.Ping.Controls.Add(this.label_pingopt);
@@ -183,14 +183,6 @@
             this.Ping.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Ping, "Ping");
             this.Ping.Name = "Ping";
-            // 
-            // rtb_ping
-            // 
-            this.rtb_ping.BackColor = System.Drawing.Color.Gray;
-            this.rtb_ping.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.rtb_ping, "rtb_ping");
-            this.rtb_ping.ForeColor = System.Drawing.Color.White;
-            this.rtb_ping.Name = "rtb_ping";
             // 
             // label_pingaddr
             // 
@@ -316,7 +308,7 @@
             // HTTPD
             // 
             this.HTTPD.BackColor = System.Drawing.Color.DimGray;
-            this.HTTPD.Controls.Add(this.rtb_httpd);
+            this.HTTPD.Controls.Add(this.lb_httpd);
             this.HTTPD.Controls.Add(this.label_httpopt);
             this.HTTPD.Controls.Add(this.text_httpopt);
             this.HTTPD.Controls.Add(this.label_http_port);
@@ -327,14 +319,6 @@
             this.HTTPD.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.HTTPD, "HTTPD");
             this.HTTPD.Name = "HTTPD";
-            // 
-            // rtb_httpd
-            // 
-            this.rtb_httpd.BackColor = System.Drawing.Color.Gray;
-            this.rtb_httpd.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.rtb_httpd, "rtb_httpd");
-            this.rtb_httpd.ForeColor = System.Drawing.Color.White;
-            this.rtb_httpd.Name = "rtb_httpd";
             // 
             // label_httpopt
             // 
@@ -526,7 +510,7 @@
             // PLAN
             // 
             this.PLAN.BackColor = System.Drawing.Color.DimGray;
-            this.PLAN.Controls.Add(this.rtb_plan);
+            this.PLAN.Controls.Add(this.lb_plan);
             this.PLAN.Controls.Add(this.text_planopt);
             this.PLAN.Controls.Add(this.label_planopt);
             this.PLAN.Controls.Add(this.dt1_plan);
@@ -541,14 +525,6 @@
             this.PLAN.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.PLAN, "PLAN");
             this.PLAN.Name = "PLAN";
-            // 
-            // rtb_plan
-            // 
-            this.rtb_plan.BackColor = System.Drawing.Color.Gray;
-            this.rtb_plan.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.rtb_plan, "rtb_plan");
-            this.rtb_plan.ForeColor = System.Drawing.Color.White;
-            this.rtb_plan.Name = "rtb_plan";
             // 
             // text_planopt
             // 
@@ -628,7 +604,7 @@
             // CHAT
             // 
             this.CHAT.BackColor = System.Drawing.Color.DimGray;
-            this.CHAT.Controls.Add(this.fp_chat_log);
+            this.CHAT.Controls.Add(this.lb_chat);
             this.CHAT.Controls.Add(this.text_chatntf);
             this.CHAT.Controls.Add(this.text_chatname);
             this.CHAT.Controls.Add(this.btn_chat);
@@ -638,12 +614,6 @@
             this.CHAT.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.CHAT, "CHAT");
             this.CHAT.Name = "CHAT";
-            // 
-            // fp_chat_log
-            // 
-            this.fp_chat_log.BackColor = System.Drawing.Color.Gray;
-            resources.ApplyResources(this.fp_chat_log, "fp_chat_log");
-            this.fp_chat_log.Name = "fp_chat_log";
             // 
             // text_chatntf
             // 
@@ -693,7 +663,7 @@
             // Setting
             // 
             this.Setting.BackColor = System.Drawing.Color.DimGray;
-            this.Setting.Controls.Add(this.fp_setting);
+            this.Setting.Controls.Add(this.lb_setting);
             this.Setting.Controls.Add(this.cb_autoupdate);
             this.Setting.Controls.Add(this.label_lang);
             this.Setting.Controls.Add(this.lang_cb);
@@ -708,12 +678,6 @@
             this.Setting.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
-            // 
-            // fp_setting
-            // 
-            this.fp_setting.BackColor = System.Drawing.Color.Gray;
-            resources.ApplyResources(this.fp_setting, "fp_setting");
-            this.fp_setting.Name = "fp_setting";
             // 
             // cb_autoupdate
             // 
@@ -783,6 +747,51 @@
             // ntfico
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
+            // 
+            // lb_ping
+            // 
+            this.lb_ping.BackColor = System.Drawing.Color.DimGray;
+            this.lb_ping.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_ping, "lb_ping");
+            this.lb_ping.ForeColor = System.Drawing.Color.White;
+            this.lb_ping.FormattingEnabled = true;
+            this.lb_ping.Name = "lb_ping";
+            // 
+            // lb_httpd
+            // 
+            this.lb_httpd.BackColor = System.Drawing.Color.DimGray;
+            this.lb_httpd.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_httpd, "lb_httpd");
+            this.lb_httpd.ForeColor = System.Drawing.Color.White;
+            this.lb_httpd.FormattingEnabled = true;
+            this.lb_httpd.Name = "lb_httpd";
+            // 
+            // lb_plan
+            // 
+            this.lb_plan.BackColor = System.Drawing.Color.DimGray;
+            this.lb_plan.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_plan, "lb_plan");
+            this.lb_plan.ForeColor = System.Drawing.Color.White;
+            this.lb_plan.FormattingEnabled = true;
+            this.lb_plan.Name = "lb_plan";
+            // 
+            // lb_chat
+            // 
+            this.lb_chat.BackColor = System.Drawing.Color.DimGray;
+            this.lb_chat.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_chat, "lb_chat");
+            this.lb_chat.ForeColor = System.Drawing.Color.White;
+            this.lb_chat.FormattingEnabled = true;
+            this.lb_chat.Name = "lb_chat";
+            // 
+            // lb_setting
+            // 
+            this.lb_setting.BackColor = System.Drawing.Color.DimGray;
+            this.lb_setting.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_setting, "lb_setting");
+            this.lb_setting.ForeColor = System.Drawing.Color.White;
+            this.lb_setting.FormattingEnabled = true;
+            this.lb_setting.Name = "lb_setting";
             // 
             // Form1
             // 
@@ -895,11 +904,11 @@
         private System.Windows.Forms.CheckBox cb_autoupdate;
         private System.Windows.Forms.FlowLayoutPanel fp_tftpd_log;
         private System.Windows.Forms.FlowLayoutPanel fp_tftpc_log;
-        private System.Windows.Forms.FlowLayoutPanel fp_chat_log;
-        private System.Windows.Forms.FlowLayoutPanel fp_setting;
-        private System.Windows.Forms.RichTextBox rtb_ping;
-        private System.Windows.Forms.RichTextBox rtb_httpd;
-        private System.Windows.Forms.RichTextBox rtb_plan;
+        private System.Windows.Forms.ListBox lb_ping;
+        private System.Windows.Forms.ListBox lb_httpd;
+        private System.Windows.Forms.ListBox lb_plan;
+        private System.Windows.Forms.ListBox lb_chat;
+        private System.Windows.Forms.ListBox lb_setting;
     }
 }
 

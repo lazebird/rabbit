@@ -137,32 +137,32 @@
   <data name="toolStripContainer1.ContentPanel.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
   </data>
-  <data name="rtb_ping.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+  <data name="lb_ping.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
   </data>
+  <data name="lb_ping.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="rtb_ping.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="lb_ping.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 68</value>
   </data>
-  <data name="rtb_ping.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="lb_ping.Size" type="System.Drawing.Size, System.Drawing">
     <value>776, 464</value>
   </data>
-  <data name="rtb_ping.TabIndex" type="System.Int32, mscorlib">
+  <data name="lb_ping.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
   </data>
-  <data name="rtb_ping.Text" xml:space="preserve">
-    <value />
+  <data name="&gt;&gt;lb_ping.Name" xml:space="preserve">
+    <value>lb_ping</value>
   </data>
-  <data name="&gt;&gt;rtb_ping.Name" xml:space="preserve">
-    <value>rtb_ping</value>
+  <data name="&gt;&gt;lb_ping.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;rtb_ping.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RichTextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rtb_ping.Parent" xml:space="preserve">
+  <data name="&gt;&gt;lb_ping.Parent" xml:space="preserve">
     <value>Ping</value>
   </data>
-  <data name="&gt;&gt;rtb_ping.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;lb_ping.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <data name="label_pingaddr.AutoSize" type="System.Boolean, mscorlib">
@@ -621,31 +621,31 @@
   <data name="&gt;&gt;Scan.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="rtb_httpd.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+  <data name="lb_httpd.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
   </data>
-  <data name="rtb_httpd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 405</value>
+  <data name="lb_httpd.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
   </data>
-  <data name="rtb_httpd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 127</value>
+  <data name="lb_httpd.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 404</value>
   </data>
-  <data name="rtb_httpd.TabIndex" type="System.Int32, mscorlib">
+  <data name="lb_httpd.Size" type="System.Drawing.Size, System.Drawing">
+    <value>776, 128</value>
+  </data>
+  <data name="lb_httpd.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
   </data>
-  <data name="rtb_httpd.Text" xml:space="preserve">
-    <value />
+  <data name="&gt;&gt;lb_httpd.Name" xml:space="preserve">
+    <value>lb_httpd</value>
   </data>
-  <data name="&gt;&gt;rtb_httpd.Name" xml:space="preserve">
-    <value>rtb_httpd</value>
+  <data name="&gt;&gt;lb_httpd.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;rtb_httpd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RichTextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rtb_httpd.Parent" xml:space="preserve">
+  <data name="&gt;&gt;lb_httpd.Parent" xml:space="preserve">
     <value>HTTPD</value>
   </data>
-  <data name="&gt;&gt;rtb_httpd.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;lb_httpd.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <data name="label_httpopt.AutoSize" type="System.Boolean, mscorlib">
@@ -829,7 +829,7 @@
     <value>0, 36</value>
   </data>
   <data name="fp_httpd_file.Size" type="System.Drawing.Size, System.Drawing">
-    <value>777, 363</value>
+    <value>777, 356</value>
   </data>
   <data name="fp_httpd_file.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -1054,7 +1054,7 @@
     <value>0, 35</value>
   </data>
   <data name="fp_tftpd_dir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 364</value>
+    <value>776, 357</value>
   </data>
   <data name="fp_tftpd_dir.TabIndex" type="System.Int32, mscorlib">
     <value>17</value>
@@ -1380,31 +1380,31 @@
   <data name="&gt;&gt;TFTPC.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="rtb_plan.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+  <data name="lb_plan.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
   </data>
-  <data name="rtb_plan.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 421</value>
+  <data name="lb_plan.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
   </data>
-  <data name="rtb_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 111</value>
+  <data name="lb_plan.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 420</value>
   </data>
-  <data name="rtb_plan.TabIndex" type="System.Int32, mscorlib">
+  <data name="lb_plan.Size" type="System.Drawing.Size, System.Drawing">
+    <value>776, 112</value>
+  </data>
+  <data name="lb_plan.TabIndex" type="System.Int32, mscorlib">
     <value>24</value>
   </data>
-  <data name="rtb_plan.Text" xml:space="preserve">
-    <value />
+  <data name="&gt;&gt;lb_plan.Name" xml:space="preserve">
+    <value>lb_plan</value>
   </data>
-  <data name="&gt;&gt;rtb_plan.Name" xml:space="preserve">
-    <value>rtb_plan</value>
+  <data name="&gt;&gt;lb_plan.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;rtb_plan.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RichTextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;rtb_plan.Parent" xml:space="preserve">
+  <data name="&gt;&gt;lb_plan.Parent" xml:space="preserve">
     <value>PLAN</value>
   </data>
-  <data name="&gt;&gt;rtb_plan.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;lb_plan.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <data name="text_planopt.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
@@ -1705,7 +1705,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 380</value>
+    <value>776, 368</value>
   </data>
   <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1749,28 +1749,31 @@
   <data name="&gt;&gt;PLAN.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="fp_chat_log.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+  <data name="lb_chat.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
   </data>
-  <data name="fp_chat_log.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 432</value>
+  <data name="lb_chat.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
   </data>
-  <data name="fp_chat_log.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 100</value>
+  <data name="lb_chat.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 436</value>
   </data>
-  <data name="fp_chat_log.TabIndex" type="System.Int32, mscorlib">
+  <data name="lb_chat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>776, 96</value>
+  </data>
+  <data name="lb_chat.TabIndex" type="System.Int32, mscorlib">
     <value>19</value>
   </data>
-  <data name="&gt;&gt;fp_chat_log.Name" xml:space="preserve">
-    <value>fp_chat_log</value>
+  <data name="&gt;&gt;lb_chat.Name" xml:space="preserve">
+    <value>lb_chat</value>
   </data>
-  <data name="&gt;&gt;fp_chat_log.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;lb_chat.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;fp_chat_log.Parent" xml:space="preserve">
+  <data name="&gt;&gt;lb_chat.Parent" xml:space="preserve">
     <value>CHAT</value>
   </data>
-  <data name="&gt;&gt;fp_chat_log.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;lb_chat.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <data name="text_chatntf.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
@@ -1936,7 +1939,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_chat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 408</value>
+    <value>776, 385</value>
   </data>
   <data name="fp_chat.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1980,28 +1983,31 @@
   <data name="&gt;&gt;CHAT.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="fp_setting.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+  <data name="lb_setting.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
   </data>
-  <data name="fp_setting.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 70</value>
+  <data name="lb_setting.ItemHeight" type="System.Int32, mscorlib">
+    <value>16</value>
   </data>
-  <data name="fp_setting.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 462</value>
+  <data name="lb_setting.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 68</value>
   </data>
-  <data name="fp_setting.TabIndex" type="System.Int32, mscorlib">
+  <data name="lb_setting.Size" type="System.Drawing.Size, System.Drawing">
+    <value>776, 464</value>
+  </data>
+  <data name="lb_setting.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
   </data>
-  <data name="&gt;&gt;fp_setting.Name" xml:space="preserve">
-    <value>fp_setting</value>
+  <data name="&gt;&gt;lb_setting.Name" xml:space="preserve">
+    <value>lb_setting</value>
   </data>
-  <data name="&gt;&gt;fp_setting.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;lb_setting.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;fp_setting.Parent" xml:space="preserve">
+  <data name="&gt;&gt;lb_setting.Parent" xml:space="preserve">
     <value>Setting</value>
   </data>
-  <data name="&gt;&gt;fp_setting.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;lb_setting.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <data name="cb_autoupdate.AutoSize" type="System.Boolean, mscorlib">

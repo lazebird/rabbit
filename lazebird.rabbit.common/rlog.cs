@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
@@ -11,20 +12,19 @@ namespace lazebird.rabbit.common
 
         public rlog(ListBox logview)
         {
+            logview.BackColor = Color.FromArgb(64, 64, 64);
+            logview.DoubleClick += Logview_DoubleClick;
             this.logview = logview;
         }
-
-        public void setfile(string name)
+        void Logview_DoubleClick(object sender, EventArgs e)
         {
-            if (file != null)
-            {
-                file.Close();
-                file = null;
-            }
-            if (name != "")
-            {
-                file = new StreamWriter(name, true);
-            }
+            Clipboard.SetDataObject(logview.SelectedItem.ToString());
+        }
+        public void savefile(string name)
+        {
+            if (file != null) file.Close();
+            file = null;
+            if (name != "") file = new StreamWriter(name, true);
         }
         public void write(string msg)
         {
@@ -33,47 +33,32 @@ namespace lazebird.rabbit.common
                 file.WriteLine(DateTime.Now.ToString() + ": " + msg);
                 file.Flush();
             }
-            if (logview != null)
-            {
-                logview.Items.Add(msg);
-                logview.TopIndex = logview.Items.Count - (int)(logview.Height / logview.ItemHeight);
-                logview.Refresh();
-            }
+            logview.Items.Add(msg);
+            logview.TopIndex = logview.Items.Count - (int)(logview.Height / logview.ItemHeight);
+            logview.Refresh();
         }
         public void clear()
         {
-            if (logview != null)
-            {
-                logview.Items.Clear();
-            }
+            logview.Items.Clear();
         }
         public int write(int line, string msg)
         {
-            if (logview == null)
-            {
-                return -1;
-            }
-            if (line < 0)
-            {
-                line = logview.Items.Add(msg);
-                logview.TopIndex = logview.Items.Count - (int)(logview.Height / logview.ItemHeight);
-            }
+            if (line < 0) line = logview.Items.Add(msg);
             else
             {
                 logview.Items.Insert(line, msg);
                 logview.Items.RemoveAt(line + 1);
-                logview.TopIndex = logview.Items.Count - (int)(logview.Height / logview.ItemHeight);
             }
+            logview.TopIndex = logview.Items.Count - (int)(logview.Height / logview.ItemHeight);
             logview.Refresh();
             return line;
         }
-
         protected virtual void Dispose(bool disposing)
         {
             if (file != null) file.Close();
             file = null;
             if (!disposing) return;
-            logview = null;
+            logview.Dispose();
         }
         public void Dispose()
         {

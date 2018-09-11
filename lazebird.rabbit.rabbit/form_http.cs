@@ -16,7 +16,7 @@ namespace lazebird.rabbit.rabbit
     {
         rpanel http_fpannel;
         rhttpd httpd;
-        rtext httpdlog;
+        rlog httpdlog;
         rshell sh;
         Hashtable httpd_phash;
         int httpport;
@@ -29,7 +29,7 @@ namespace lazebird.rabbit.rabbit
             httpd_phash = new Hashtable();
             //httpd_output.HorizontalScrollbar = true;
             //httpd_output.HorizontalExtent = 5000;
-            httpdlog = new rtext(rtb_httpd);
+            httpdlog = new rlog(lb_httpd);
             httpd = new rhttpd(httpd_log_func);
             httpd.init_mime(rconf.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);

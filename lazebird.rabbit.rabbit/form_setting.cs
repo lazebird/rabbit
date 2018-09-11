@@ -14,7 +14,7 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
-        rpanel setlog;
+        rlog setlog;
         Version pver;
         string prjurl = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
         // Environment.ExpandEnvironmentVariables(@"%userprofile%\appdata\local");
@@ -24,7 +24,7 @@ namespace lazebird.rabbit.rabbit
         string binaryuri = "https://code.aliyun.com/lazebird/rabbit/raw/master/release/sRabbit.exe";
         void init_form_setting()
         {
-            setlog = new rpanel(fp_setting);
+            setlog = new rlog(lb_setting);
             pver = Assembly.GetExecutingAssembly().GetName().Version;
             List<string> list = new List<string>();
             list.Add("System");
