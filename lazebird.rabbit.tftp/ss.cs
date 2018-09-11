@@ -101,28 +101,27 @@ namespace lazebird.rabbit.tftp
                 logidx = log(logidx, "I: " + r.ToString() + " " + filename + ": " + maxblkno + "/" + blkno + ((curretry == 0) ? "" : (" retry " + curretry)));
             }
         }
-        public virtual void session_display(Func<int, string, int> log)
+        string progress_info()
         {
             int deltatm = Math.Max(1, (Environment.TickCount - starttm) / 1000);
             long curlen = (maxblkno == blkno) ? filesize : (blksize * blkno);
             string msg = "I: " + r.ToString() + " " + filename + " ";
-            if (maxblkno != 0 && maxblkno == blkno)
-            {
-                msg += filesize.ToString("###,###") + "B" + "/" + deltatm.ToString("###,###.0") + "s ";
-            }
-            else
-            {
-                msg += "Fail; " + maxblkno + "/" + blkno + "/" + deltatm.ToString("###,###.0") + "s ";
-            }
+            if (maxblkno != 0 && maxblkno == blkno) msg += filesize.ToString("###,###") + "B" + "/" + deltatm.ToString("###,###.0") + "s ";
+            else msg += "Fail; " + maxblkno + "/" + blkno + "/" + deltatm.ToString("###,###.0") + "s ";
             msg += "@" + (blkno / deltatm).ToString("###,###.0") + " pps/" + (curlen / deltatm).ToString("###,###.0") + " Bps; ";
             msg += totalretry + " retries";
-            log(logidx, msg);
+            return msg;
+        }
+        public virtual void session_display(Func<int, string, int> log)
+        {
+            log(logidx, progress_info());
             //if (q != null) log(-1, "I: produce " + q.stat_produce + " consume " + q.stat_consume + " stopped " + q.is_stopped());
         }
 
         public void destroy(Func<int, string, int> log)
         {
-            log(-1, "I: Destroy session: " + r.ToString() + " " + cwd + filename);
+            log(logidx, progress_info() + " (destroyed)");
+            //log(-1, "I: Destroy session: " + r.ToString() + " " + cwd + filename);
             if (q != null) q.stop();
             if (t != null) t.Join();
             Dispose(true);
