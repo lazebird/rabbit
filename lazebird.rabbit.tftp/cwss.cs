@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -8,7 +9,7 @@ namespace lazebird.rabbit.tftp
 {
     class cwss : ss // client write session
     {
-        public cwss(string localfile, UdpClient uc, IPEndPoint r, int maxretry, int timeout) : base(Path.GetDirectoryName(localfile), uc, r, maxretry, timeout)
+        public cwss(string localfile, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, Path.GetDirectoryName(localfile), uc, r, opts)
         {
             this.filename = Path.GetFileName(localfile);
         }

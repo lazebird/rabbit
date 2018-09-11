@@ -9,12 +9,14 @@ namespace lazebird.rabbit.tftp
     public class rtftpc
     {
         Func<int, string, int> log;
+        Hashtable opts;
         int timeout = 200;
         int maxretry = 10;
         int blksize = 1024;
         public rtftpc(Func<int, string, int> log, Hashtable opts)
         {
             this.log = log;
+            this.opts = opts;
             parse_args(opts);
         }
         void parse_args(Hashtable opts)
@@ -32,17 +34,17 @@ namespace lazebird.rabbit.tftp
                 byte[] buf;
                 if (oper == Opcodes.Read) // get
                 {
-                    s = new crss(localFile, new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
+                    s = new crss(localFile, log, new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), opts);
                     buf = new rrq_pkt(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
                 }
                 else if (oper == Opcodes.Write) // put
                 {
-                    s = new cwss(localFile, new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
+                    s = new cwss(localFile, log, new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), opts);
                     buf = new wrq_pkt(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
                 }
                 else if (oper == Opcodes.ReadDir)
                 {
-                    s = new crds(remoteFile, new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), maxretry, timeout);
+                    s = new crds(remoteFile, log, new UdpClient(), new IPEndPoint(IPAddress.Parse(srvip), srvport), opts);
                     buf = new rdq_pkt(remoteFile).pack();
                 }
                 else
@@ -62,10 +64,10 @@ namespace lazebird.rabbit.tftp
                     {
                         if (!s.retry()) break;
                     }
-                    s.progress_display(log);
+                    s.progress_display();
                 }
-                s.session_display(log);
-                s.destroy(log);
+                s.session_display();
+                s.destroy();
             }
             catch (Exception e)
             {

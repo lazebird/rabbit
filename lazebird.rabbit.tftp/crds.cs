@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -9,7 +10,7 @@ namespace lazebird.rabbit.tftp
     {
         string dirname;
         string dirinfo = "";
-        public crds(string dirname, UdpClient uc, IPEndPoint r, int maxretry, int timeout) : base(Environment.CurrentDirectory, uc, r, maxretry, timeout)
+        public crds(string dirname, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, Environment.CurrentDirectory, uc, r, opts)
         {
             this.dirname = dirname;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -10,7 +11,7 @@ namespace lazebird.rabbit.tftp
     {
         string dirname;
         string dirinfo;
-        public srds(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout) : base(cwd, uc, r, maxretry, timeout)
+        public srds(Func<int, string, int> log, string cwd, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, cwd, uc, r, opts)
         {
         }
         override public bool pkt_proc(byte[] buf)

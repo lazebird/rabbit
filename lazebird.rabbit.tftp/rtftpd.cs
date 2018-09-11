@@ -13,10 +13,7 @@ namespace lazebird.rabbit.tftp
         Thread tftpd;
         UdpClient uc;
         string cwd = "";    // used for wrq, set the first non-empty dir added as root dir
-        int timeout = 200;
-        int maxretry = 30;
-        int qsize = 2000;
-        bool override_flag = false;
+        Hashtable opts;
         object obj;
         public rtftpd(Func<int, string, int> log)
         {
@@ -42,11 +39,11 @@ namespace lazebird.rabbit.tftp
 
                 ss s;
                 if ((Opcodes)buf[1] == Opcodes.Read)
-                    s = new srss(cwd, new UdpClient(), r, maxretry, timeout, qsize);
+                    s = new srss(log, cwd, new UdpClient(), r, opts);
                 else if ((Opcodes)buf[1] == Opcodes.Write)
-                    s = new swss(cwd, new UdpClient(), r, maxretry, timeout, override_flag);
+                    s = new swss(log, cwd, new UdpClient(), r, opts);
                 else if ((Opcodes)buf[1] == Opcodes.ReadDir)
-                    s = new srds(cwd, new UdpClient(), r, maxretry, timeout);
+                    s = new srds(log, cwd, new UdpClient(), r, opts);
                 else
                     return;
                 if (s.pkt_proc(buf))
@@ -62,10 +59,10 @@ namespace lazebird.rabbit.tftp
                             if (!s.retry()) break;
                             //slog("I: retransmit block " + s.blkno + " pkt blkno " + (s.blkno & 0xffff));
                         }
-                        s.progress_display(ilog);
+                        s.progress_display();
                     }
-                s.session_display(ilog);
-                s.destroy(ilog);
+                s.session_display();
+                s.destroy();
             }
             catch (Exception e)
             {
@@ -92,16 +89,9 @@ namespace lazebird.rabbit.tftp
                 slog("!E: daemon " + e.ToString());
             }
         }
-        void parse_args(Hashtable opts)
-        {
-            if (opts.ContainsKey("timeout")) int.TryParse((string)opts["timeout"], out timeout);
-            if (opts.ContainsKey("retry")) int.TryParse((string)opts["retry"], out maxretry);
-            if (opts.ContainsKey("qsize")) int.TryParse((string)opts["qsize"], out qsize);
-            if (opts.ContainsKey("override")) bool.TryParse((string)opts["override"], out override_flag);
-        }
         public void start(int port, Hashtable opts)
         {
-            parse_args(opts);
+            this.opts = opts;
             if (tftpd == null)
             {
                 tftpd = new Thread(() => daemon_task(port));

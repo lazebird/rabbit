@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -8,7 +9,7 @@ namespace lazebird.rabbit.tftp
 {
     class srss : ss // server read session
     {
-        public srss(string cwd, UdpClient uc, IPEndPoint r, int maxretry, int timeout, int qsize) : base(cwd, uc, r, maxretry, timeout, qsize)
+        public srss(Func<int, string, int> log, string cwd, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, cwd, uc, r, opts)
         {
         }
 

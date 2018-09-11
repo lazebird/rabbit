@@ -39,9 +39,6 @@ namespace lazebird.rabbit.rabbit
             }
         }
         string tftpc_ip;
-        int tftpc_tout;
-        int tftpc_retry;
-        int tftpc_blksize;
         string tftpc_lfile;
         string tftpc_rfile;
         void tftpc_parse_args()
