@@ -50,7 +50,7 @@ namespace lazebird.rabbit.rabbit
                 }
                 plan_del(msg);
             }
-            return new rplan(plan_log_func, starttm, cycle, unit, msg);
+            return new rplan(plan_log_func, starttm, cycle, unit, msg, plan_panel.add(msg, null, plan_click));
         }
         void plan2ui(rplan p)
         {
@@ -70,9 +70,8 @@ namespace lazebird.rabbit.rabbit
         void plan_add(rplan p)
         {
             if (p == null) return;
-            TextBox tb = plan_panel.add(p.msg, null, plan_click);
-            plan_msghash.Add(p.msg, tb);
-            plan_tbhash.Add(tb, p);
+            plan_msghash.Add(p.msg, p.tb);
+            plan_tbhash.Add(p.tb, p);
         }
         void plan_del(string msg)
         {
@@ -108,7 +107,7 @@ namespace lazebird.rabbit.rabbit
         {
             string[] cfgs = rconf.get("plans").Split(';');
             foreach (string cfg in cfgs)
-                if (cfg.Length > 0) plan_add(new rplan(plan_log_func, cfg));
+                if (cfg.Length > 0) plan_add(new rplan(plan_log_func, cfg, plan_panel.add(cfg, null, plan_click)));
         }
         void plan_saveconf()
         {

@@ -17,33 +17,35 @@ namespace lazebird.rabbit.plan
             max
         }
         Action<string> log;
+        public TextBox tb;
+        public string msg;
         public DateTime starttm;
         DateTime firetm;
         public int cycle; // second
         public cycleunit unit;
         int duration = 180; // second
-        public string msg;
         Thread t;
         Thread t_ui;
 
-        public rplan(Action<string> log, string s) // format refer to tostring()
+        public rplan(Action<string> log, string s, TextBox tb) // format refer to tostring()
         {
             try
             {
                 string[] args = s.Split('|');
-                init(log, DateTime.Parse(args[0]), int.Parse(args[1]), str2unit(args[2]), args[3]);
+                init(log, DateTime.Parse(args[0]), int.Parse(args[1]), str2unit(args[2]), args[3], tb);
             }
             catch (Exception e)
             {
                 log("!E: " + s + ": " + e.ToString());
             }
         }
-        public rplan(Action<string> log, DateTime starttm, int cycle, cycleunit unit, string msg)
+        public rplan(Action<string> log, DateTime starttm, int cycle, cycleunit unit, string msg, TextBox tb)
         {
-            init(log, starttm, cycle, unit, msg);
+            init(log, starttm, cycle, unit, msg, tb);
         }
-        void init(Action<string> log, DateTime starttm, int cycle, cycleunit unit, string msg)
+        void init(Action<string> log, DateTime starttm, int cycle, cycleunit unit, string msg, TextBox tb)
         {
+            this.tb = tb;
             this.log = log;
             this.starttm = starttm;
             this.cycle = cycle;
@@ -90,16 +92,16 @@ namespace lazebird.rabbit.plan
                         if (curtm.CompareTo(firetm) >= 0) trigger();
                         if (!update_firetm(curtm)) break;
                         ulong firegap = (ulong)firetm.Subtract(curtm).TotalMilliseconds + 1; // round up
-                        log("I: set <" + msg + "> fire time " + firetm.ToString() + " (" + firegap + " ms | " + firegap / 60000 + " min. | " + firegap / (24 * 3600000) + " d)");
+                        tb.Text = msg + "\t @ " + firetm.ToString();// + " (" + firegap + " ms | " + firegap / 60000 + " min. | " + firegap / (24 * 3600000) + " d)";
                         Thread.Sleep((int)Math.Min(firegap, int.MaxValue));
                     }
             }
             catch (Exception) { }
-            log("I: <" + msg + "> stop for no fire");
+            tb.Text = msg + "\t stopped ";
         }
         public void trigger()
         {
-            log("I: <" + msg + "> triggered");
+            //log("I: <" + msg + "> triggered");
             if (t_ui != null) t_ui.Abort();
             t_ui = new Thread(() => Application.Run(new rplanform(msg, duration)));
             t_ui.IsBackground = true;
@@ -107,11 +109,12 @@ namespace lazebird.rabbit.plan
         }
         public void stop()
         {
-            log("I: stop <" + msg + ">");
+            tb.Text = msg + "\t stopped ";
             if (t != null) t.Abort();
             t = null;
             if (t_ui != null) t_ui.Abort();
             t_ui = null;
+            tb = null;
         }
         public static List<string> cycleunitlist()
         {
