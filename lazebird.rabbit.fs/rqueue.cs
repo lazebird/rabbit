@@ -10,29 +10,22 @@ namespace lazebird.rabbit.fs
         object l;
         Semaphore sc = null;
         Semaphore sp = null;
-        int maxsize = 100;
-        int timeout = 1000;
+        int maxsize;
+        int timeout;
         bool stop_flag = false;
         public int stat_produce = 0;
         public int stat_consume = 0;
-        public rqueue()
+        public rqueue(int maxsize, int timeout)
         {
+            this.maxsize = maxsize;
+            this.timeout = timeout;
             q = new Queue();
             l = new object();
             sc = new Semaphore(0, this.maxsize);
             sp = new Semaphore(this.maxsize, this.maxsize);
         }
-        public rqueue(int maxsize) : this()
-        {
-            this.maxsize = maxsize;
-        }
-        public rqueue(int maxsize, int timeout) : this()
-        {
-            if (maxsize < 1) maxsize = 1;
-            if (timeout < 100) timeout = 100; // at least wait for 100ms
-            this.maxsize = maxsize;
-            this.timeout = timeout;
-        }
+        public rqueue() : this(100, 1000) { }
+        public rqueue(int maxsize) : this(maxsize, 1000) { }
         public byte[] consume()
         {
             byte[] buf = null;
