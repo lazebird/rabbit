@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Net.NetworkInformation;
 using System.Threading;
 
@@ -8,28 +9,26 @@ namespace lazebird.rabbit.ping
     {
         Action<string> log;
         string addr;
-        int interval;
-        int count;
+        int interval = 1000;
+        int count = -1;
         bool stoponloss;
         bool runflag;
         DateTime opertm;
         int txcnt, rxcnt, losscnt;
         int mintm, maxtm, totaltm;
-
-        public rping(Action<string> log, string addr)
+        public rping(Action<string> log, string addr, Hashtable opts)
         {
             this.log = log;
             this.addr = addr;
-            interval = 1000;
-            count = -1;
-            stoponloss = false;
+            parse_args(opts);
         }
-        public rping(Action<string> log, string addr, int interval, int count, bool stoponloss) : this(log, addr)
+        void parse_args(Hashtable opts)
         {
-            this.interval = interval;
-            this.count = count;
-            this.stoponloss = stoponloss;
+            if (opts.ContainsKey("interval")) int.TryParse((string)opts["interval"], out interval);
+            if (opts.ContainsKey("count")) int.TryParse((string)opts["count"], out count);
+            if (opts.ContainsKey("stoponloss")) bool.TryParse((string)opts["stoponloss"], out stoponloss);
         }
+
         void ping_task(Action<PingReply, object> callback, object data)
         {
             Ping pingSender = new Ping();

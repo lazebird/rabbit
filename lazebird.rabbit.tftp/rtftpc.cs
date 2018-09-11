@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using static lazebird.rabbit.tftp.pkt;
@@ -11,16 +12,16 @@ namespace lazebird.rabbit.tftp
         int timeout = 200;
         int maxretry = 10;
         int blksize = 1024;
-
-        public rtftpc(Func<int, string, int> log)
+        public rtftpc(Func<int, string, int> log, Hashtable opts)
         {
             this.log = log;
+            parse_args(opts);
         }
-        public rtftpc(Func<int, string, int> log, int timeout, int maxretry, int blksize) : this(log)
+        void parse_args(Hashtable opts)
         {
-            this.timeout = timeout;
-            this.maxretry = maxretry;
-            this.blksize = blksize;
+            if (opts.ContainsKey("timeout")) int.TryParse((string)opts["timeout"], out timeout);
+            if (opts.ContainsKey("retry")) int.TryParse((string)opts["retry"], out maxretry);
+            if (opts.ContainsKey("blksize")) int.TryParse((string)opts["qsize"], out blksize);
         }
         void slog(string msg) { log(-1, msg); }
         void oper(Opcodes oper, string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)

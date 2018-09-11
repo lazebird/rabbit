@@ -1,5 +1,4 @@
-﻿using lazebird.rabbit.fs;
-using System;
+﻿using System;
 using System.Collections;
 using System.Net;
 using System.Net.Sockets;
@@ -93,12 +92,16 @@ namespace lazebird.rabbit.tftp
                 slog("!E: daemon " + e.ToString());
             }
         }
-        public void start(int port, int timeout, int maxretry, int qsize, bool override_flag)
+        void parse_args(Hashtable opts)
         {
-            this.timeout = timeout;
-            this.maxretry = maxretry;
-            this.qsize = qsize;
-            this.override_flag = override_flag;
+            if (opts.ContainsKey("timeout")) int.TryParse((string)opts["timeout"], out timeout);
+            if (opts.ContainsKey("retry")) int.TryParse((string)opts["retry"], out maxretry);
+            if (opts.ContainsKey("qsize")) int.TryParse((string)opts["qsize"], out qsize);
+            if (opts.ContainsKey("override")) bool.TryParse((string)opts["override"], out override_flag);
+        }
+        public void start(int port, Hashtable opts)
+        {
+            parse_args(opts);
             if (tftpd == null)
             {
                 tftpd = new Thread(() => daemon_task(port));

@@ -13,12 +13,10 @@ namespace lazebird.rabbit.rabbit
         Queue recq;
         rtaskbar bar;
         string ping_addr;
-        int ping_interval = 1000;
-        int ping_count = -1;
-        bool ping_stoponloss = false;
         bool ping_taskbar = false;
         rping ping;
         string ping_logpath = "";
+        Hashtable ping_opts;
         void init_form_ping()
         {
             pinglog = new rlog(lb_ping);
@@ -43,12 +41,9 @@ namespace lazebird.rabbit.rabbit
         void ping_parse_args()
         {
             ping_addr = ((TextBox)texthash["ping_addr"]).Text;
-            Hashtable opts = ropt.parse_opts(text_pingopt.Text);
-            if (opts.ContainsKey("interval")) int.TryParse((string)opts["interval"], out ping_interval);
-            if (opts.ContainsKey("count")) int.TryParse((string)opts["count"], out ping_count);
-            if (opts.ContainsKey("stoponloss")) bool.TryParse((string)opts["stoponloss"], out ping_stoponloss);
-            if (opts.ContainsKey("taskbar")) bool.TryParse((string)opts["taskbar"], out ping_taskbar);
-            if (opts.ContainsKey("log")) ping_logpath = (string)opts["log"];
+            ping_opts = ropt.parse_opts(text_pingopt.Text);
+            if (ping_opts.ContainsKey("taskbar")) bool.TryParse((string)ping_opts["taskbar"], out ping_taskbar);
+            if (ping_opts.ContainsKey("log")) ping_logpath = (string)ping_opts["log"];
             if (!string.IsNullOrEmpty(ping_logpath)) pinglog.savefile(ping_logpath);
         }
         void ping_click(object sender, EventArgs evt)
@@ -60,7 +55,7 @@ namespace lazebird.rabbit.rabbit
                 pinglog.clear();
                 ping_parse_args();
                 recq.Clear();
-                ping = new rping(ping_log_func, ping_addr, ping_interval, ping_count, ping_stoponloss);
+                ping = new rping(ping_log_func, ping_addr, ping_opts);
                 ping.start(ping_cb, null);
             }
             else

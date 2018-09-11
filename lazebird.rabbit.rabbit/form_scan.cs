@@ -14,9 +14,7 @@ namespace lazebird.rabbit.rabbit
         rpanel scan_panel;
         string scan_startip;
         int scan_lastbyte;
-        int scan_interval = 1000;
-        int scan_count = 1;
-        bool scan_stoponloss = false;
+        Hashtable scan_opts;
         Hashtable scansshash;
         void init_form_scan()
         {
@@ -32,11 +30,8 @@ namespace lazebird.rabbit.rabbit
         {
             scan_startip = ((TextBox)texthash["scan_ipstart"]).Text;
             int.TryParse(((TextBox)texthash["scan_ipend"]).Text, out scan_lastbyte);
-            Hashtable opts = ropt.parse_opts(text_scanopt.Text);
-            if (opts.ContainsKey("interval")) int.TryParse((string)opts["interval"], out scan_interval);
-            if (opts.ContainsKey("count")) int.TryParse((string)opts["count"], out scan_count);
-            if (opts.ContainsKey("stoponloss")) bool.TryParse((string)opts["stoponloss"], out scan_stoponloss);
-            if (opts.ContainsKey("hideunreachable")) bool.TryParse((string)opts["hideunreachable"], out scan_hideunreachable);
+            scan_opts = ropt.parse_opts(text_scanopt.Text);
+            if (scan_opts.ContainsKey("hideunreachable")) bool.TryParse((string)scan_opts["hideunreachable"], out scan_hideunreachable);
         }
         void scan_reply(PingReply reply, object data)
         {
@@ -62,7 +57,7 @@ namespace lazebird.rabbit.rabbit
                     tb.Width = tb.Height = 28;
                     tb.TextAlign = HorizontalAlignment.Center;
                     ipbytes[3] = (Byte)i;
-                    rping s = new rping(scan_log_func, (new IPAddress(ipbytes)).ToString(), scan_interval, scan_count, scan_stoponloss);
+                    rping s = new rping(scan_log_func, (new IPAddress(ipbytes)).ToString(), scan_opts);
                     s.start(scan_reply, tb);
                     scansshash.Add(tb, s);
                 }

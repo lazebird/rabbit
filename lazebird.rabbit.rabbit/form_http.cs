@@ -20,8 +20,7 @@ namespace lazebird.rabbit.rabbit
         rshell sh;
         Hashtable httpd_phash;
         int httpport;
-        bool autoindex;
-        bool videoplay;
+        Hashtable http_opts;
         void init_form_http()
         {
             http_fpannel = new rpanel(fp_httpd_file);
@@ -49,7 +48,7 @@ namespace lazebird.rabbit.rabbit
                 if (((Button)btnhash["http_btn"]).Text == Language.trans("开始"))
                 {
                     ((Button)btnhash["http_btn"]).Text = Language.trans("停止");
-                    httpd.start(httpport, autoindex, videoplay);
+                    httpd.start(httpport, http_opts);
                 }
                 else
                 {
@@ -123,9 +122,7 @@ namespace lazebird.rabbit.rabbit
         void http_parse_args()
         {
             int.TryParse(((TextBox)texthash["http_port"]).Text, out httpport);
-            Hashtable opts = ropt.parse_opts(text_httpopt.Text);
-            if (opts.ContainsKey("autoindex")) bool.TryParse((string)opts["autoindex"], out autoindex);
-            if (opts.ContainsKey("videoplay")) bool.TryParse((string)opts["videoplay"], out videoplay);
+            http_opts = ropt.parse_opts(text_httpopt.Text);
         }
         void httpd_readconf()
         {

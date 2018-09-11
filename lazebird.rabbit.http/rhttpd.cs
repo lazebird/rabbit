@@ -33,10 +33,14 @@ namespace lazebird.rabbit.http
             }
 
         }
-        public void start(int port, bool autoindex, bool videoplay)
+        void parse_args(Hashtable opts)
         {
-            this.autoindex = autoindex;
-            this.videoplay = videoplay;
+            if (opts.ContainsKey("autoindex")) bool.TryParse((string)opts["autoindex"], out autoindex);
+            if (opts.ContainsKey("videoplay")) bool.TryParse((string)opts["videoplay"], out videoplay);
+        }
+        public void start(int port, Hashtable opts)
+        {
+            parse_args(opts);
             if (hl != null) stop();
             hl = new HttpListener();
             hl.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
