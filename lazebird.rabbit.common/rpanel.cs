@@ -12,6 +12,7 @@ namespace lazebird.rabbit.common
         int width;
         ArrayList list;
         StreamWriter file = null;
+        int maxcount = 256;
         public rpanel(FlowLayoutPanel fp, int width)
         {
             fp.AutoScroll = true;
@@ -35,6 +36,7 @@ namespace lazebird.rabbit.common
                 file.WriteLine(DateTime.Now.ToString() + ": " + msg);
                 file.Flush();
             }
+            if (list.Count >= maxcount) del((TextBox)list[0]);
             TextBox tb = new TextBox();
             tb.ReadOnly = true;
             tb.BackColor = fp.BackColor;
