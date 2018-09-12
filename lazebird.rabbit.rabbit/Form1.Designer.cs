@@ -50,6 +50,7 @@
             this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
             this.tabs = new System.Windows.Forms.TabControl();
             this.Ping = new System.Windows.Forms.TabPage();
+            this.lb_ping = new System.Windows.Forms.ListBox();
             this.label_pingaddr = new System.Windows.Forms.Label();
             this.text_pingaddr = new System.Windows.Forms.TextBox();
             this.label_pingopt = new System.Windows.Forms.Label();
@@ -66,6 +67,7 @@
             this.btn_scan = new System.Windows.Forms.Button();
             this.fp_scan = new System.Windows.Forms.FlowLayoutPanel();
             this.HTTPD = new System.Windows.Forms.TabPage();
+            this.lb_httpd = new System.Windows.Forms.ListBox();
             this.label_httpopt = new System.Windows.Forms.Label();
             this.text_httpopt = new System.Windows.Forms.TextBox();
             this.label_http_port = new System.Windows.Forms.Label();
@@ -92,6 +94,7 @@
             this.btn_tftpcget = new System.Windows.Forms.Button();
             this.btn_tftpcput = new System.Windows.Forms.Button();
             this.PLAN = new System.Windows.Forms.TabPage();
+            this.lb_plan = new System.Windows.Forms.ListBox();
             this.text_planopt = new System.Windows.Forms.TextBox();
             this.label_planopt = new System.Windows.Forms.Label();
             this.dt1_plan = new System.Windows.Forms.DateTimePicker();
@@ -104,6 +107,7 @@
             this.btn_planadd = new System.Windows.Forms.Button();
             this.fp_plan = new System.Windows.Forms.FlowLayoutPanel();
             this.CHAT = new System.Windows.Forms.TabPage();
+            this.lb_chat = new System.Windows.Forms.ListBox();
             this.text_chatntf = new System.Windows.Forms.TextBox();
             this.text_chatname = new System.Windows.Forms.TextBox();
             this.btn_chat = new System.Windows.Forms.Button();
@@ -111,6 +115,7 @@
             this.btn_chatntf = new System.Windows.Forms.Button();
             this.fp_chat = new System.Windows.Forms.FlowLayoutPanel();
             this.Setting = new System.Windows.Forms.TabPage();
+            this.lb_setting = new System.Windows.Forms.ListBox();
             this.cb_autoupdate = new System.Windows.Forms.CheckBox();
             this.label_lang = new System.Windows.Forms.Label();
             this.lang_cb = new System.Windows.Forms.ComboBox();
@@ -123,11 +128,6 @@
             this.label_ver = new System.Windows.Forms.Label();
             this.link_ver = new System.Windows.Forms.LinkLabel();
             this.ntfico = new System.Windows.Forms.NotifyIcon(this.components);
-            this.lb_ping = new System.Windows.Forms.ListBox();
-            this.lb_httpd = new System.Windows.Forms.ListBox();
-            this.lb_plan = new System.Windows.Forms.ListBox();
-            this.lb_chat = new System.Windows.Forms.ListBox();
-            this.lb_setting = new System.Windows.Forms.ListBox();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.tabs.SuspendLayout();
@@ -183,6 +183,15 @@
             this.Ping.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Ping, "Ping");
             this.Ping.Name = "Ping";
+            // 
+            // lb_ping
+            // 
+            this.lb_ping.BackColor = System.Drawing.Color.DimGray;
+            this.lb_ping.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_ping, "lb_ping");
+            this.lb_ping.ForeColor = System.Drawing.Color.White;
+            this.lb_ping.FormattingEnabled = true;
+            this.lb_ping.Name = "lb_ping";
             // 
             // label_pingaddr
             // 
@@ -319,6 +328,15 @@
             this.HTTPD.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.HTTPD, "HTTPD");
             this.HTTPD.Name = "HTTPD";
+            // 
+            // lb_httpd
+            // 
+            this.lb_httpd.BackColor = System.Drawing.Color.Gray;
+            this.lb_httpd.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_httpd, "lb_httpd");
+            this.lb_httpd.ForeColor = System.Drawing.Color.White;
+            this.lb_httpd.FormattingEnabled = true;
+            this.lb_httpd.Name = "lb_httpd";
             // 
             // label_httpopt
             // 
@@ -526,6 +544,15 @@
             resources.ApplyResources(this.PLAN, "PLAN");
             this.PLAN.Name = "PLAN";
             // 
+            // lb_plan
+            // 
+            this.lb_plan.BackColor = System.Drawing.Color.Gray;
+            this.lb_plan.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_plan, "lb_plan");
+            this.lb_plan.ForeColor = System.Drawing.Color.White;
+            this.lb_plan.FormattingEnabled = true;
+            this.lb_plan.Name = "lb_plan";
+            // 
             // text_planopt
             // 
             resources.ApplyResources(this.text_planopt, "text_planopt");
@@ -615,6 +642,15 @@
             resources.ApplyResources(this.CHAT, "CHAT");
             this.CHAT.Name = "CHAT";
             // 
+            // lb_chat
+            // 
+            this.lb_chat.BackColor = System.Drawing.Color.Gray;
+            this.lb_chat.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_chat, "lb_chat");
+            this.lb_chat.ForeColor = System.Drawing.Color.White;
+            this.lb_chat.FormattingEnabled = true;
+            this.lb_chat.Name = "lb_chat";
+            // 
             // text_chatntf
             // 
             resources.ApplyResources(this.text_chatntf, "text_chatntf");
@@ -678,6 +714,15 @@
             this.Setting.ForeColor = System.Drawing.Color.White;
             resources.ApplyResources(this.Setting, "Setting");
             this.Setting.Name = "Setting";
+            // 
+            // lb_setting
+            // 
+            this.lb_setting.BackColor = System.Drawing.Color.DimGray;
+            this.lb_setting.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.lb_setting, "lb_setting");
+            this.lb_setting.ForeColor = System.Drawing.Color.White;
+            this.lb_setting.FormattingEnabled = true;
+            this.lb_setting.Name = "lb_setting";
             // 
             // cb_autoupdate
             // 
@@ -747,51 +792,6 @@
             // ntfico
             // 
             resources.ApplyResources(this.ntfico, "ntfico");
-            // 
-            // lb_ping
-            // 
-            this.lb_ping.BackColor = System.Drawing.Color.DimGray;
-            this.lb_ping.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_ping, "lb_ping");
-            this.lb_ping.ForeColor = System.Drawing.Color.White;
-            this.lb_ping.FormattingEnabled = true;
-            this.lb_ping.Name = "lb_ping";
-            // 
-            // lb_httpd
-            // 
-            this.lb_httpd.BackColor = System.Drawing.Color.DimGray;
-            this.lb_httpd.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_httpd, "lb_httpd");
-            this.lb_httpd.ForeColor = System.Drawing.Color.White;
-            this.lb_httpd.FormattingEnabled = true;
-            this.lb_httpd.Name = "lb_httpd";
-            // 
-            // lb_plan
-            // 
-            this.lb_plan.BackColor = System.Drawing.Color.DimGray;
-            this.lb_plan.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_plan, "lb_plan");
-            this.lb_plan.ForeColor = System.Drawing.Color.White;
-            this.lb_plan.FormattingEnabled = true;
-            this.lb_plan.Name = "lb_plan";
-            // 
-            // lb_chat
-            // 
-            this.lb_chat.BackColor = System.Drawing.Color.DimGray;
-            this.lb_chat.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_chat, "lb_chat");
-            this.lb_chat.ForeColor = System.Drawing.Color.White;
-            this.lb_chat.FormattingEnabled = true;
-            this.lb_chat.Name = "lb_chat";
-            // 
-            // lb_setting
-            // 
-            this.lb_setting.BackColor = System.Drawing.Color.DimGray;
-            this.lb_setting.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_setting, "lb_setting");
-            this.lb_setting.ForeColor = System.Drawing.Color.White;
-            this.lb_setting.FormattingEnabled = true;
-            this.lb_setting.Name = "lb_setting";
             // 
             // Form1
             // 

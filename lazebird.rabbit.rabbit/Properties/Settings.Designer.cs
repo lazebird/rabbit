@@ -322,5 +322,17 @@ namespace lazebird.rabbit.rabbit.Properties {
                 this["autoupdate"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string restartprompt {
+            get {
+                return ((string)(this["restartprompt"]));
+            }
+            set {
+                this["restartprompt"] = value;
+            }
+        }
     }
 }

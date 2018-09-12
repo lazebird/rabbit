@@ -120,7 +120,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="ver, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\lazebird.vgen.version.1.0.7\lib\net461\ver.dll</HintPath>
+      <HintPath>..\packages\lazebird.vgen.version.1.1.0\lib\net461\ver.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

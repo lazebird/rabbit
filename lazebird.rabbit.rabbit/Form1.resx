@@ -829,7 +829,7 @@
     <value>0, 36</value>
   </data>
   <data name="fp_httpd_file.Size" type="System.Drawing.Size, System.Drawing">
-    <value>777, 356</value>
+    <value>777, 359</value>
   </data>
   <data name="fp_httpd_file.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -1054,7 +1054,7 @@
     <value>0, 35</value>
   </data>
   <data name="fp_tftpd_dir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 357</value>
+    <value>776, 360</value>
   </data>
   <data name="fp_tftpd_dir.TabIndex" type="System.Int32, mscorlib">
     <value>17</value>
@@ -1705,7 +1705,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 368</value>
+    <value>776, 371</value>
   </data>
   <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1939,7 +1939,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_chat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 385</value>
+    <value>776, 388</value>
   </data>
   <data name="fp_chat.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -2017,7 +2017,7 @@
     <value>NoControl</value>
   </data>
   <data name="cb_autoupdate.Location" type="System.Drawing.Point, System.Drawing">
-    <value>463, 10</value>
+    <value>470, 10</value>
   </data>
   <data name="cb_autoupdate.Size" type="System.Drawing.Size, System.Drawing">
     <value>91, 20</value>
@@ -2098,16 +2098,16 @@
     <value>True</value>
   </data>
   <data name="cb_systray.Location" type="System.Drawing.Point, System.Drawing">
-    <value>218, 10</value>
+    <value>220, 10</value>
   </data>
   <data name="cb_systray.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 20</value>
+    <value>49, 20</value>
   </data>
   <data name="cb_systray.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
   </data>
   <data name="cb_systray.Text" xml:space="preserve">
-    <value>System Tray</value>
+    <value>Tray</value>
   </data>
   <data name="&gt;&gt;cb_systray.Name" xml:space="preserve">
     <value>cb_systray</value>
@@ -2128,7 +2128,7 @@
     <value>NoControl</value>
   </data>
   <data name="cb_top.Location" type="System.Drawing.Point, System.Drawing">
-    <value>317, 10</value>
+    <value>300, 10</value>
   </data>
   <data name="cb_top.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 20</value>
@@ -2158,7 +2158,7 @@
     <value>NoControl</value>
   </data>
   <data name="cb_autostart.Location" type="System.Drawing.Point, System.Drawing">
-    <value>374, 10</value>
+    <value>380, 10</value>
   </data>
   <data name="cb_autostart.Size" type="System.Drawing.Size, System.Drawing">
     <value>77, 20</value>
