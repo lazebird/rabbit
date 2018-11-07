@@ -36,7 +36,6 @@ namespace lazebird.rabbit.tftp
         {
             try
             {
-                slog("I: family " + r.AddressFamily + " ip " + r.ToString());
                 ss s;
                 Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
                 socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
