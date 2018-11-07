@@ -82,7 +82,7 @@ namespace lazebird.rabbit.ping
                 mintm = Math.Min(mintm, (int)reply.RoundtripTime);
                 maxtm = Math.Max(maxtm, (int)reply.RoundtripTime);
                 totaltm += (int)reply.RoundtripTime;
-                log("来自 " + reply.Address + " 的回复: 字节=" + reply.Buffer.Length + " 毫秒=" + reply.RoundtripTime + " TTL=" + reply.Options.Ttl);
+                log("来自 " + reply.Address + " 的回复: 字节=" + reply.Buffer.Length + " 毫秒=" + reply.RoundtripTime + ((reply.Options != null) ? (" TTL=" + reply.Options.Ttl) : ""));
                 if (interval > (int)reply.RoundtripTime) Thread.Sleep(interval - (int)reply.RoundtripTime);
             }
             else

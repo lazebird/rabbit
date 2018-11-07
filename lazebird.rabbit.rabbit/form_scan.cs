@@ -51,12 +51,13 @@ namespace lazebird.rabbit.rabbit
             {
                 scan_parse_args();
                 Byte[] ipbytes = IPAddress.Parse(scan_startip).GetAddressBytes();
-                for (int i = ipbytes[3]; i <= scan_lastbyte && i < 255; i++)
+                int iplen = ipbytes.Length;
+                for (int i = ipbytes[iplen - 1]; i <= scan_lastbyte && i < 255; i++)
                 {
                     TextBox tb = scan_panel.add(i.ToString(), null, null);
                     tb.Width = tb.Height = 28;
                     tb.TextAlign = HorizontalAlignment.Center;
-                    ipbytes[3] = (Byte)i;
+                    ipbytes[iplen - 1] = (Byte)i;
                     rping s = new rping(scan_log_func, (new IPAddress(ipbytes)).ToString(), scan_opts);
                     s.start(scan_reply, tb);
                     scansshash.Add(tb, s);

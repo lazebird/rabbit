@@ -39,11 +39,11 @@ namespace lazebird.rabbit.tftp
 
                 ss s;
                 if ((Opcodes)buf[1] == Opcodes.Read)
-                    s = new srss(log, cwd, new UdpClient(), r, opts);
+                    s = new srss(log, cwd, new UdpClient(r.AddressFamily), r, opts);
                 else if ((Opcodes)buf[1] == Opcodes.Write)
-                    s = new swss(log, cwd, new UdpClient(), r, opts);
+                    s = new swss(log, cwd, new UdpClient(r.AddressFamily), r, opts);
                 else if ((Opcodes)buf[1] == Opcodes.ReadDir)
-                    s = new srds(log, cwd, new UdpClient(), r, opts);
+                    s = new srds(log, cwd, new UdpClient(r.AddressFamily), r, opts);
                 else
                     return;
                 if (s.pkt_proc(buf))
@@ -73,7 +73,11 @@ namespace lazebird.rabbit.tftp
         {
             try
             {
-                uc = new UdpClient(port);
+                Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+                socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+                socket.Bind(new IPEndPoint(IPAddress.IPv6Any, port));
+                uc = new UdpClient();
+                uc.Client = socket;
                 IPEndPoint r = new IPEndPoint(IPAddress.Any, port);
                 byte[] rcvBuffer;
                 while (true)
