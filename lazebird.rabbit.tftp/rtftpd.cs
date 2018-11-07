@@ -73,11 +73,11 @@ namespace lazebird.rabbit.tftp
         {
             try
             {
-                Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-                socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
-                socket.Bind(new IPEndPoint(IPAddress.IPv6Any, port));
-                uc = new UdpClient();
-                uc.Client = socket;
+                //Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+                //socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+                //socket.Bind(new IPEndPoint(IPAddress.IPv6Any, port));
+                uc = new UdpClient(port);
+                //uc.Client = socket;
                 IPEndPoint r = new IPEndPoint(IPAddress.Any, port);
                 byte[] rcvBuffer;
                 while (true)
