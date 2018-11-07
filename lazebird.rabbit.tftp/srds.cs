@@ -24,6 +24,7 @@ namespace lazebird.rabbit.tftp
             read_dir(dirname, ref dirinfo);
             pktbuf = new data_pkt(++blkno, Encoding.Default.GetBytes(dirinfo)).pack();
             curretry = 0;   // reset retry cnt
+            log(-1, "I: family " + r.AddressFamily + " ip " + r.ToString() + " uc family "+uc.Client.AddressFamily);
             return uc.Send(pktbuf, pktbuf.Length, r) == pktbuf.Length;
         }
         protected override string progress_info()
