@@ -1,0 +1,6 @@
+date=2018/11/07
+time=16:13:38
+branch=master
+sha=5e501092fc38d456aca6e080d7e75b9ce602f149
+shashort=5e50109
+extra=Release

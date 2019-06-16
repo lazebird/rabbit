@@ -9,8 +9,9 @@ namespace lazebird.rabbit.tftp
 {
     public class rtftpd : IDisposable
     {
-        Func<int, string, int> log;
+        Func<int, string, int> log; // int index, string logmsg, int ret
         Thread tftpd;
+        Hashtable sshash;    // session thread table
         UdpClient uc;
         string cwd = "";    // used for wrq, set the first non-empty dir added as root dir
         Hashtable opts;
@@ -19,12 +20,12 @@ namespace lazebird.rabbit.tftp
         {
             this.log = log;
             obj = new object();
+            sshash = new Hashtable();
         }
         int ilog(int line, string msg)
         {
             int ret;
-            lock (obj)
-                ret = log(line, msg);
+            lock (obj) ret = log(line, msg);
             return ret;
         }
         void slog(string msg) { log(-1, msg); }
@@ -66,6 +67,7 @@ namespace lazebird.rabbit.tftp
                     }
                 s.session_display();
                 s.destroy();
+                if (sshash.ContainsKey(r)) sshash.Remove(r);
             }
             catch (Exception e)
             {
@@ -90,6 +92,7 @@ namespace lazebird.rabbit.tftp
                     Thread t = new Thread(() => session_task(rcvBuffer, r));
                     t.IsBackground = true;
                     t.Start();
+                    sshash.Add(r, t);
                 }
             }
             catch (Exception e)
@@ -100,28 +103,21 @@ namespace lazebird.rabbit.tftp
         public void start(int port, Hashtable opts)
         {
             this.opts = opts;
-            if (tftpd == null)
-            {
-                tftpd = new Thread(() => daemon_task(port));
-                tftpd.IsBackground = true;
-                tftpd.Start();
-            }
+            if (tftpd != null) throw new ArgumentException();
+            tftpd = new Thread(() => daemon_task(port));
+            tftpd.IsBackground = true;
+            tftpd.Start();
         }
         public void stop()
         {
-            try
-            {
-                Dispose();
-            }
-            catch (Exception e)
-            {
-                slog("!E: " + e.ToString());
-            }
+            Dispose();
         }
         protected virtual void Dispose(bool disposing)
         {
             if (uc != null) uc.Close();
             if (tftpd != null) tftpd.Abort();
+            foreach (Thread t in sshash.Values) t.Abort();
+            sshash = new Hashtable();
             uc = null;
             tftpd = null;
             if (!disposing) return;
