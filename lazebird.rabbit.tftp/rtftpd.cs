@@ -33,67 +33,75 @@ namespace lazebird.rabbit.tftp
         {
             cwd = path + "/";
         }
+        void session_handler(byte[] buf, IPEndPoint r)
+        {
+            ss s;
+            Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+            socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+            UdpClient s_uc = new UdpClient();
+            s_uc.Client = socket;
+            if ((Opcodes)buf[1] == Opcodes.Read)
+                s = new srss(log, cwd, s_uc, r, opts);
+            else if ((Opcodes)buf[1] == Opcodes.Write)
+                s = new swss(log, cwd, s_uc, r, opts);
+            else if ((Opcodes)buf[1] == Opcodes.ReadDir)
+                s = new srds(log, cwd, s_uc, r, opts);
+            else
+                return;
+            if (s.pkt_proc(buf))
+                while (true)
+                {
+                    try
+                    {
+                        buf = s.uc.Receive(ref r);
+                        if (!s.pkt_proc(buf)) break;
+                    }
+                    catch (Exception)
+                    {
+                        if (!s.retry()) break;
+                        //slog("I: retransmit block " + s.blkno + " pkt blkno " + (s.blkno & 0xffff));
+                    }
+                    s.progress_display();
+                }
+            s.session_display();
+            s.destroy();
+            if (sshash.ContainsKey(r)) sshash.Remove(r);
+        }
         void session_task(byte[] buf, IPEndPoint r)
         {
             try
             {
-                ss s;
-                Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-                socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
-                UdpClient s_uc = new UdpClient();
-                s_uc.Client = socket;
-                if ((Opcodes)buf[1] == Opcodes.Read)
-                    s = new srss(log, cwd, s_uc, r, opts);
-                else if ((Opcodes)buf[1] == Opcodes.Write)
-                    s = new swss(log, cwd, s_uc, r, opts);
-                else if ((Opcodes)buf[1] == Opcodes.ReadDir)
-                    s = new srds(log, cwd, s_uc, r, opts);
-                else
-                    return;
-                if (s.pkt_proc(buf))
-                    while (true)
-                    {
-                        try
-                        {
-                            buf = s.uc.Receive(ref r);
-                            if (!s.pkt_proc(buf)) break;
-                        }
-                        catch (Exception)
-                        {
-                            if (!s.retry()) break;
-                            //slog("I: retransmit block " + s.blkno + " pkt blkno " + (s.blkno & 0xffff));
-                        }
-                        s.progress_display();
-                    }
-                s.session_display();
-                s.destroy();
-                if (sshash.ContainsKey(r)) sshash.Remove(r);
+                session_handler(buf, r);
             }
             catch (Exception e)
             {
                 slog("!E: " + e.ToString());
             }
         }
+        void daemon_handler(int port)
+        {
+            Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+            socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+            socket.Bind(new IPEndPoint(IPAddress.IPv6Any, port));
+            uc = new UdpClient();
+            uc.Client = socket;
+            //uc = new UdpClient(port);
+            IPEndPoint r = new IPEndPoint(IPAddress.Any, port);
+            byte[] rcvBuffer;
+            while (true)
+            {
+                rcvBuffer = uc.Receive(ref r);
+                Thread t = new Thread(() => session_task(rcvBuffer, r));
+                t.IsBackground = true;
+                t.Start();
+                sshash.Add(r, t);
+            }
+        }
         void daemon_task(int port)
         {
             try
             {
-                Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-                socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
-                socket.Bind(new IPEndPoint(IPAddress.IPv6Any, port));
-                uc = new UdpClient();
-                uc.Client = socket;
-                //uc = new UdpClient(port);
-                IPEndPoint r = new IPEndPoint(IPAddress.Any, port);
-                byte[] rcvBuffer;
-                while (true)
-                {
-                    rcvBuffer = uc.Receive(ref r);
-                    Thread t = new Thread(() => session_task(rcvBuffer, r));
-                    t.IsBackground = true;
-                    t.Start();
-                    sshash.Add(r, t);
-                }
+                daemon_handler(port);
             }
             catch (Exception e)
             {
