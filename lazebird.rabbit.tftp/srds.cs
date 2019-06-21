@@ -11,7 +11,7 @@ namespace lazebird.rabbit.tftp
     {
         string dirname;
         string dirinfo;
-        public srds(Func<int, string, int> log, string cwd, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, cwd, uc, r, opts)
+        public srds(Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, uc, r, opts)
         {
         }
         override public bool pkt_proc(byte[] buf)

@@ -9,7 +9,7 @@ namespace lazebird.rabbit.tftp
 {
     class cwss : ss // client write session
     {
-        public cwss(string localfile, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, Path.GetDirectoryName(localfile), uc, r, opts)
+        public cwss(string localfile, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, uc, r, opts)
         {
             this.filename = Path.GetFileName(localfile);
         }
@@ -20,7 +20,7 @@ namespace lazebird.rabbit.tftp
             {
                 oack_pkt pkt = new oack_pkt();
                 if (!pkt.parse(buf)) return false;
-                set_param(pkt.timeout * 1000 / Math.Max(maxretry, 1), pkt.blksize);
+                set_param(pkt.timeout * 1000 / Math.Max(idic["maxretry"], 1), pkt.blksize);
                 read_file(filename);
                 data = q.consume();  //while ((data = q.consume()) == null) ; // may be infinite wait for a new msg here?
                 pktbuf = new data_pkt(++blkno, data).pack();

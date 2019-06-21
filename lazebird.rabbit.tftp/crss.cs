@@ -9,7 +9,7 @@ namespace lazebird.rabbit.tftp
 {
     class crss : ss // client read session
     {
-        public crss(string localfile, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, Path.GetDirectoryName(localfile), uc, r, opts)
+        public crss(string localfile, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, uc, r, opts)
         {
             this.filename = Path.GetFileName(localfile);
         }
@@ -19,7 +19,7 @@ namespace lazebird.rabbit.tftp
             {
                 oack_pkt pkt = new oack_pkt();
                 if (!pkt.parse(buf)) return false;
-                set_param(pkt.timeout * 1000 / Math.Max(maxretry, 1), pkt.blksize);
+                set_param(pkt.timeout * 1000 / Math.Max(idic["maxretry"], 1), pkt.blksize);
                 write_file(filename);
                 pktbuf = new ack_pkt(blkno++).pack();
             }
@@ -37,7 +37,7 @@ namespace lazebird.rabbit.tftp
                 if (pkt.data.Length > 0)
                     while (q.produce(pkt.data) == 0) ; // infinit produce this data
                 pktbuf = new ack_pkt(blkno++).pack();
-                if (pkt.data.Length < blksize) // stop
+                if (pkt.data.Length < idic["blksize"]) // stop
                 {
                     maxblkno = --blkno;
                     q.stop();

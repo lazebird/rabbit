@@ -9,7 +9,7 @@ namespace lazebird.rabbit.tftp
 {
     class srss : ss // server read session
     {
-        public srss(Func<int, string, int> log, string cwd, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, cwd, uc, r, opts)
+        public srss(Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, uc, r, opts)
         {
         }
 
@@ -23,8 +23,8 @@ namespace lazebird.rabbit.tftp
                 {
                     rrq_pkt pkt = new rrq_pkt();
                     if (!pkt.parse(buf)) return false;
-                    set_param(pkt.timeout * 1000 / Math.Max(maxretry, 1), pkt.blksize);
-                    if (!File.Exists(cwd + pkt.filename))
+                    set_param(pkt.timeout * 1000 / Math.Max(idic["maxretry"], 1), pkt.blksize);
+                    if (!File.Exists(sdic["cwd"] + pkt.filename))
                     {
                         pktbuf = new err_pkt(Errcodes.FileNotFound, pkt.filename).pack();
                         uc.Send(pktbuf, pktbuf.Length, r);

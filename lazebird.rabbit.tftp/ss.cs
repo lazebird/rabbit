@@ -1,10 +1,12 @@
 ﻿using lazebird.rabbit.fs;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using static lazebird.rabbit.tftp.pkt;
 
 namespace lazebird.rabbit.tftp
 {
@@ -13,9 +15,9 @@ namespace lazebird.rabbit.tftp
         public UdpClient uc;
         public IPEndPoint r;
         public byte[] pktbuf = null;
-        Dictionary<string, string> sdic;
-        Dictionary<string, int> idic;
-        Dictionary<string, bool> bdic;
+        protected Dictionary<string, string> sdic;
+        protected Dictionary<string, int> idic;
+        protected Dictionary<string, bool> bdic;
         protected Func<int, string, int> log;
         protected string filename = null;
         protected long filesize = 0;
@@ -25,29 +27,35 @@ namespace lazebird.rabbit.tftp
         protected int logidx = -1, logtm = 0;
         protected int curretry = 0, totalretry = 0;
         protected int starttm = Environment.TickCount;
-        public ss(Func<int, string, int> log, string cwd, UdpClient uc, IPEndPoint r, Dictionary<string, string> sdic, Dictionary<string, int> idic, Dictionary<string, bool> bdic)
+        public ss(Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts)
         {
             this.log = log;
-            this.sdic = sdic;
-            this.idic = idic;
-            this.bdic = bdic;
-            parse_args();
             this.uc = uc;
             this.r = r;
+            init_args(opts);
             uc.Client.ReceiveTimeout = idic["timeout"];
         }
         void slog(string msg) { log?.Invoke(-1, msg); }
-        void parse_args()
+        void init_args(Hashtable opts)
         {
-            if (!sdic.ContainsKey("cwd")) sdic.Add("cwd", "");
+            sdic = new Dictionary<string, string>();
+            idic = new Dictionary<string, int>();
+            bdic = new Dictionary<string, bool>();
+            sdic.Add("cwd", Environment.CurrentDirectory);
+            idic.Add("blksize", 512);
+            idic.Add("timeout", 200); // ms
+            idic.Add("retry", 10);
+            idic.Add("qsize", 2000);
+            idic.Add("qtout", 1000);    // ms
+            bdic.Add("override", false);
+            bdic.Add("fslog", false);
+            foreach (string key in opts.Keys)
+            {
+                if (sdic.ContainsKey(key)) sdic[key] = (string)opts[key];
+                else if (idic.ContainsKey(key)) idic[key] = int.Parse((string)opts[key]);
+                else if (bdic.ContainsKey(key)) bdic[key] = bool.Parse((string)opts[key]);
+            }
             if (sdic["cwd"].Length > 0 && sdic["cwd"][sdic["cwd"].Length - 1] != '/') sdic["cwd"] += "/"; // fix dir ending
-            if (!idic.ContainsKey("blksize")) idic.Add("blksize", 512);
-            if (!idic.ContainsKey("timeout")) idic.Add("timeout", 200); // ms
-            if (!idic.ContainsKey("retry")) idic.Add("retry", 10);
-            if (!idic.ContainsKey("qsize")) idic.Add("qsize", 2000);
-            if (!idic.ContainsKey("qtout")) idic.Add("qtout", 1000);    // ms
-            if (!bdic.ContainsKey("override")) bdic.Add("override", false);
-            if (!bdic.ContainsKey("fslog")) bdic.Add("fslog", false);
         }
         public void set_param(int timeout, int blksize)
         {
@@ -139,6 +147,21 @@ namespace lazebird.rabbit.tftp
         public void Dispose()
         {
             Dispose(true);
+        }
+        public static ss get_session(Func<int, string, int> log, byte[] buf, IPEndPoint r, Hashtable opts)
+        {
+            Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+            socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+            UdpClient s_uc = new UdpClient();
+            s_uc.Client = socket;
+            if ((Opcodes)buf[1] == Opcodes.Read)
+                return new srss(log, s_uc, r, opts);
+            else if ((Opcodes)buf[1] == Opcodes.Write)
+                return new swss(log, s_uc, r, opts);
+            else if ((Opcodes)buf[1] == Opcodes.ReadDir)
+                return new srds(log, s_uc, r, opts);
+            else
+              throw new ArgumentException();
         }
     }
 }

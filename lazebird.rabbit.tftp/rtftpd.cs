@@ -35,19 +35,7 @@ namespace lazebird.rabbit.tftp
         }
         void session_handler(byte[] buf, IPEndPoint r)
         {
-            ss s;
-            Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-            socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
-            UdpClient s_uc = new UdpClient();
-            s_uc.Client = socket;
-            if ((Opcodes)buf[1] == Opcodes.Read)
-                s = new srss(log, cwd, s_uc, r, opts);
-            else if ((Opcodes)buf[1] == Opcodes.Write)
-                s = new swss(log, cwd, s_uc, r, opts);
-            else if ((Opcodes)buf[1] == Opcodes.ReadDir)
-                s = new srds(log, cwd, s_uc, r, opts);
-            else
-                return;
+            ss s = ss.get_session(log, buf, r, opts);
             if (s.pkt_proc(buf))
                 while (true)
                 {
@@ -85,7 +73,6 @@ namespace lazebird.rabbit.tftp
             socket.Bind(new IPEndPoint(IPAddress.IPv6Any, port));
             uc = new UdpClient();
             uc.Client = socket;
-            //uc = new UdpClient(port);
             IPEndPoint r = new IPEndPoint(IPAddress.Any, port);
             byte[] rcvBuffer;
             while (true)

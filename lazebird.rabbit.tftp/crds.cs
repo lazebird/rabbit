@@ -10,7 +10,7 @@ namespace lazebird.rabbit.tftp
     {
         string dirname;
         string dirinfo = "";
-        public crds(string dirname, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, Environment.CurrentDirectory, uc, r, opts)
+        public crds(string dirname, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, uc, r, opts)
         {
             this.dirname = dirname;
         }
