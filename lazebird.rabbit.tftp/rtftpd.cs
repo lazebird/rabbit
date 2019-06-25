@@ -77,6 +77,7 @@ namespace lazebird.rabbit.tftp
             while (true)
             {
                 rcvBuffer = uc.Receive(ref r);
+                if (sshash.ContainsKey(r)) continue;    // avoid repeat pkts
                 Thread t = new Thread(() => session_task(rcvBuffer, r));
                 t.IsBackground = true;
                 t.Start();

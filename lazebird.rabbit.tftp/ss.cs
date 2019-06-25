@@ -44,7 +44,7 @@ namespace lazebird.rabbit.tftp
             sdic.Add("cwd", Environment.CurrentDirectory);
             idic.Add("blksize", 512);
             idic.Add("timeout", 200); // ms
-            idic.Add("retry", 10);
+            idic.Add("maxretry", 10);
             idic.Add("qsize", 2000);
             idic.Add("qtout", 1000);    // ms
             bdic.Add("override", false);
@@ -98,7 +98,7 @@ namespace lazebird.rabbit.tftp
         virtual public bool pkt_proc(byte[] buf) { return false; }
         public bool retry()
         {
-            if (++curretry > (idic["retry"])) return false;
+            if (++curretry > (idic["maxretry"])) return false;
             totalretry++;
             return uc.Send(pktbuf, pktbuf.Length, r) == pktbuf.Length;
         }
@@ -169,7 +169,7 @@ namespace lazebird.rabbit.tftp
             int maxretry = 10;
             int blksize = 1024;
             if (opts.ContainsKey("timeout")) int.TryParse((string)opts["timeout"], out timeout);
-            if (opts.ContainsKey("retry")) int.TryParse((string)opts["retry"], out maxretry);
+            if (opts.ContainsKey("maxretry")) int.TryParse((string)opts["maxretry"], out maxretry);
             if (opts.ContainsKey("blksize")) int.TryParse((string)opts["qsize"], out blksize);
             if (oper == Opcodes.Read) // get
             {
