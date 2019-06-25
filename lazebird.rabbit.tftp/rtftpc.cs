@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Net;
-using System.Net.Sockets;
 using static lazebird.rabbit.tftp.pkt;
 
 namespace lazebird.rabbit.tftp
@@ -28,52 +27,25 @@ namespace lazebird.rabbit.tftp
         void slog(string msg) { log(-1, msg); }
         void oper(Opcodes oper, string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)
         {
-            try
+            byte[] buf = null;
+            ss s = ss.get_clnt_session(localFile, remoteFile, oper, tftpmode, log, ref buf, new IPEndPoint(IPAddress.Parse(srvip), srvport), opts);
+            s.uc.Send(buf, buf.Length, s.r);
+            s.pktbuf = buf;
+            while (true)
             {
-                ss s;
-                byte[] buf;
-                IPEndPoint r = new IPEndPoint(IPAddress.Parse(srvip), srvport);
-                if (oper == Opcodes.Read) // get
+                try
                 {
-                    s = new crss(localFile, log, new UdpClient(r.AddressFamily), r, opts);
-                    buf = new rrq_pkt(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
+                    buf = s.uc.Receive(ref s.r);   // change remote port automatically
+                    if (!s.pkt_proc(buf)) break;
                 }
-                else if (oper == Opcodes.Write) // put
+                catch (Exception)
                 {
-                    s = new cwss(localFile, log, new UdpClient(r.AddressFamily), r, opts);
-                    buf = new wrq_pkt(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
+                    if (!s.retry()) break;
                 }
-                else if (oper == Opcodes.ReadDir)
-                {
-                    s = new crds(remoteFile, log, new UdpClient(r.AddressFamily), r, opts);
-                    buf = new rdq_pkt(remoteFile).pack();
-                }
-                else
-                {
-                    return;
-                }
-                s.uc.Send(buf, buf.Length, s.r);
-                s.pktbuf = buf;
-                while (true)
-                {
-                    try
-                    {
-                        buf = s.uc.Receive(ref s.r);   // change remote port automatically
-                        if (!s.pkt_proc(buf)) break;
-                    }
-                    catch (Exception)
-                    {
-                        if (!s.retry()) break;
-                    }
-                    s.progress_display();
-                }
-                s.session_display();
-                s.destroy();
+                s.progress_display();
             }
-            catch (Exception e)
-            {
-                slog("!E: " + e.ToString());
-            }
+            s.session_display();
+            s.destroy();
         }
         bool is_dirpath(string s)
         {
@@ -81,14 +53,25 @@ namespace lazebird.rabbit.tftp
         }
         public void get(string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)
         {
-            if (is_dirpath(remoteFile))
-                oper(Opcodes.ReadDir, srvip, srvport, remoteFile, localFile, tftpmode);
-            else
-                oper(Opcodes.Read, srvip, srvport, remoteFile, localFile, tftpmode);
+            try
+            {
+                oper(is_dirpath(remoteFile) ? Opcodes.ReadDir : Opcodes.Read, srvip, srvport, remoteFile, localFile, tftpmode);
+            }
+            catch (Exception e)
+            {
+                slog("!E: " + e.ToString());
+            }
         }
         public void put(string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)
         {
-            oper(Opcodes.Write, srvip, srvport, remoteFile, localFile, tftpmode);
+            try
+            {
+                oper(Opcodes.Write, srvip, srvport, remoteFile, localFile, tftpmode);
+            }
+            catch (Exception e)
+            {
+                slog("!E: " + e.ToString());
+            }
         }
     }
 }

@@ -7,9 +7,9 @@ using static lazebird.rabbit.tftp.pkt;
 
 namespace lazebird.rabbit.tftp
 {
-    class swss : ss // server write session
+    class ss_sw : ss // server write session
     {
-        public swss(Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, uc, r, opts)
+        public ss_sw(Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, uc, r, opts)
         {
         }
 
@@ -17,12 +17,12 @@ namespace lazebird.rabbit.tftp
         {
             if (blkno == 0)
             {
-                wrq_pkt pkt = new wrq_pkt();
+                pkt_wrq pkt = new pkt_wrq();
                 if (!pkt.parse(buf)) return false;
-                set_param(pkt.timeout * 1000 / Math.Max(idic["maxretry"], 1), pkt.blksize);
+                update_param(pkt.timeout * 1000 / Math.Max(idic["maxretry"], 1), pkt.blksize);
                 if (File.Exists(sdic["cwd"] + pkt.filename) && !bdic["override_flag"])
                 {
-                    pktbuf = new err_pkt(Errcodes.FileAlreadyExists, pkt.filename).pack();
+                    pktbuf = new pkt_err(Errcodes.FileAlreadyExists, pkt.filename).pack();
                     uc.Send(pktbuf, pktbuf.Length, r);
                     filename = pkt.filename; // set filename for log
                     return false;
@@ -36,18 +36,18 @@ namespace lazebird.rabbit.tftp
                 }
                 else
                 {
-                    pktbuf = new ack_pkt(blkno++).pack();
+                    pktbuf = new pkt_ack(blkno++).pack();
                 }
             }
             else
             {
-                data_pkt pkt = new data_pkt();
+                pkt_data pkt = new pkt_data();
                 if (!pkt.parse(buf)) return false;
                 if (pkt.blkno != (blkno & 0xffff)) return true;  // ignore expired data?
                 filesize += pkt.data.Length;
                 if (pkt.data.Length > 0)
                     while (q.produce(pkt.data) == 0) ; // infinit produce this data
-                pktbuf = new ack_pkt(blkno++).pack();
+                pktbuf = new pkt_ack(blkno++).pack();
                 if (pkt.data.Length < idic["blksize"]) // stop
                 {
                     maxblkno = --blkno;

@@ -2,16 +2,16 @@
 
 namespace lazebird.rabbit.tftp
 {
-    class err_pkt : pkt
+    class pkt_err : pkt
     {
         public Errcodes errno = 0;
         public string errmsg = null;
 
-        public err_pkt()
+        public pkt_err()
         {
             op = Opcodes.Error;
         }
-        public err_pkt(Errcodes errno, string errmsg) : this()
+        public pkt_err(Errcodes errno, string errmsg) : this()
         {
             this.errno = errno;
             this.errmsg = errmsg;

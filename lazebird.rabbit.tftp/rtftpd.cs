@@ -3,7 +3,6 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using static lazebird.rabbit.tftp.pkt;
 
 namespace lazebird.rabbit.tftp
 {
@@ -35,7 +34,7 @@ namespace lazebird.rabbit.tftp
         }
         void session_handler(byte[] buf, IPEndPoint r)
         {
-            ss s = ss.get_session(log, buf, r, opts);
+            ss s = ss.get_srv_session(log, buf, r, opts);
             if (s.pkt_proc(buf))
                 while (true)
                 {

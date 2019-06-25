@@ -1,6 +1,6 @@
 ﻿namespace lazebird.rabbit.tftp
 {
-    class wrq_pkt : pkt
+    class pkt_wrq : pkt
     {
         public string filename = null;
         public string filepath = null;
@@ -8,12 +8,12 @@
         public int timeout = 0;
         public int blksize = 0;
 
-        public wrq_pkt()
+        public pkt_wrq()
         {
             op = Opcodes.Write;
         }
 
-        public wrq_pkt(string filename, string mode, int timeout, int blksize) : this()
+        public pkt_wrq(string filename, string mode, int timeout, int blksize) : this()
         {
             this.filename = filename;
             this.filepath = "/" + filename;

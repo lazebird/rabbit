@@ -1,15 +1,15 @@
 ﻿namespace lazebird.rabbit.tftp
 {
-    class rdq_pkt : pkt
+    class pkt_rdq : pkt
     {
         public string dirname = null;
 
-        public rdq_pkt()
+        public pkt_rdq()
         {
             op = Opcodes.ReadDir;
         }
 
-        public rdq_pkt(string dirname) : this()
+        public pkt_rdq(string dirname) : this()
         {
             this.dirname = dirname;
         }

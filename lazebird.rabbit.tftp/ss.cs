@@ -57,7 +57,7 @@ namespace lazebird.rabbit.tftp
             }
             if (sdic["cwd"].Length > 0 && sdic["cwd"][sdic["cwd"].Length - 1] != '/') sdic["cwd"] += "/"; // fix dir ending
         }
-        public void set_param(int timeout, int blksize)
+        public void update_param(int timeout, int blksize)
         {
             idic["timeout"] = timeout;
             idic["blksize"] = blksize;
@@ -148,20 +148,46 @@ namespace lazebird.rabbit.tftp
         {
             Dispose(true);
         }
-        public static ss get_session(Func<int, string, int> log, byte[] buf, IPEndPoint r, Hashtable opts)
+        public static ss get_srv_session(Func<int, string, int> log, byte[] buf, IPEndPoint r, Hashtable opts)
         {
             Socket socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
             socket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
             UdpClient s_uc = new UdpClient();
             s_uc.Client = socket;
             if ((Opcodes)buf[1] == Opcodes.Read)
-                return new srss(log, s_uc, r, opts);
+                return new ss_sr(log, s_uc, r, opts);
             else if ((Opcodes)buf[1] == Opcodes.Write)
-                return new swss(log, s_uc, r, opts);
+                return new ss_sw(log, s_uc, r, opts);
             else if ((Opcodes)buf[1] == Opcodes.ReadDir)
-                return new srds(log, s_uc, r, opts);
+                return new ss_srd(log, s_uc, r, opts);
             else
               throw new ArgumentException();
+        }
+        public static ss get_clnt_session(string localFile, string remoteFile, Opcodes oper, Modes tftpmode, Func<int, string, int> log, ref byte[] buf, IPEndPoint r, Hashtable opts)
+        {
+            int timeout = 200;
+            int maxretry = 10;
+            int blksize = 1024;
+            if (opts.ContainsKey("timeout")) int.TryParse((string)opts["timeout"], out timeout);
+            if (opts.ContainsKey("retry")) int.TryParse((string)opts["retry"], out maxretry);
+            if (opts.ContainsKey("blksize")) int.TryParse((string)opts["qsize"], out blksize);
+            if (oper == Opcodes.Read) // get
+            {
+                buf = new pkt_rrq(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
+                return new ss_cr(localFile, log, new UdpClient(r.AddressFamily), r, opts);
+            }
+            else if (oper == Opcodes.Write) // put
+            {
+                buf = new pkt_wrq(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
+                return new ss_cw(localFile, log, new UdpClient(r.AddressFamily), r, opts);
+            }
+            else if (oper == Opcodes.ReadDir)
+            {
+                buf = new pkt_rdq(remoteFile).pack();
+                return new ss_crd(remoteFile, log, new UdpClient(r.AddressFamily), r, opts);
+            }
+            else
+                throw new ArgumentException();
         }
     }
 }

@@ -2,17 +2,17 @@
 
 namespace lazebird.rabbit.tftp
 {
-    class data_pkt : pkt
+    class pkt_data : pkt
     {
         public int blkno = 0;
         public byte[] data = null;
 
-        public data_pkt()
+        public pkt_data()
         {
             op = Opcodes.Data;
         }
 
-        public data_pkt(int blkno, byte[] data) : this()
+        public pkt_data(int blkno, byte[] data) : this()
         {
             this.blkno = blkno;
             this.data = data;

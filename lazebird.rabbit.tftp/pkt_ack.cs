@@ -1,15 +1,15 @@
 ﻿namespace lazebird.rabbit.tftp
 {
-    class ack_pkt : pkt
+    class pkt_ack : pkt
     {
         public int blkno = 0;
 
-        public ack_pkt()
+        public pkt_ack()
         {
             op = Opcodes.Ack;
         }
 
-        public ack_pkt(int blkno) : this()
+        public pkt_ack(int blkno) : this()
         {
             this.blkno = blkno;
         }
