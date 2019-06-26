@@ -20,7 +20,7 @@ namespace lazebird.rabbit.tftp
                 pkt_wrq pkt = new pkt_wrq();
                 if (!pkt.parse(buf)) return false;
                 update_param(pkt.timeout * 1000 / Math.Max(idic["maxretry"], 1), pkt.blksize);
-                if (File.Exists(sdic["cwd"] + pkt.filename) && !bdic["override_flag"])
+                if (File.Exists(sdic["cwd"] + pkt.filename) && !bdic["override"])
                 {
                     pktbuf = new pkt_err(Errcodes.FileAlreadyExists, pkt.filename).pack();
                     uc.Send(pktbuf, pktbuf.Length, r);

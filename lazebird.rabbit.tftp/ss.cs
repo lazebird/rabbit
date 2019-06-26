@@ -161,31 +161,16 @@ namespace lazebird.rabbit.tftp
             else if ((Opcodes)buf[1] == Opcodes.ReadDir)
                 return new ss_srd(log, s_uc, r, opts);
             else
-              throw new ArgumentException();
+                throw new ArgumentException();
         }
-        public static ss get_clnt_session(string localFile, string remoteFile, Opcodes oper, Modes tftpmode, Func<int, string, int> log, ref byte[] buf, IPEndPoint r, Hashtable opts)
+        public static ss get_clnt_session(string localFile, string remoteFile, Opcodes oper, Modes tftpmode, Func<int, string, int> log, IPEndPoint r, Hashtable opts)
         {
-            int timeout = 200;
-            int maxretry = 10;
-            int blksize = 1024;
-            if (opts.ContainsKey("timeout")) int.TryParse((string)opts["timeout"], out timeout);
-            if (opts.ContainsKey("maxretry")) int.TryParse((string)opts["maxretry"], out maxretry);
-            if (opts.ContainsKey("blksize")) int.TryParse((string)opts["qsize"], out blksize);
             if (oper == Opcodes.Read) // get
-            {
-                buf = new pkt_rrq(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
-                return new ss_cr(localFile, log, new UdpClient(r.AddressFamily), r, opts);
-            }
+                return new ss_cr(localFile, remoteFile, tftpmode, log, new UdpClient(r.AddressFamily), r, opts);
             else if (oper == Opcodes.Write) // put
-            {
-                buf = new pkt_wrq(remoteFile, tftpmode.ToString(), timeout * maxretry / 1000, blksize).pack();
-                return new ss_cw(localFile, log, new UdpClient(r.AddressFamily), r, opts);
-            }
+                return new ss_cw(localFile, remoteFile, tftpmode, log, new UdpClient(r.AddressFamily), r, opts);
             else if (oper == Opcodes.ReadDir)
-            {
-                buf = new pkt_rdq(remoteFile).pack();
                 return new ss_crd(remoteFile, log, new UdpClient(r.AddressFamily), r, opts);
-            }
             else
                 throw new ArgumentException();
         }

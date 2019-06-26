@@ -9,13 +9,21 @@ namespace lazebird.rabbit.tftp
 {
     class ss_cr : ss // client read session
     {
-        public ss_cr(string localfile, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, uc, r, opts)
+        string remoteFile;
+        Modes tftpmode;
+        public ss_cr(string localfile, string remoteFile, Modes tftpmode, Func<int, string, int> log, UdpClient uc, IPEndPoint r, Hashtable opts) : base(log, uc, r, opts)
         {
             this.filename = Path.GetFileName(localfile);
+            this.remoteFile = remoteFile;
+            this.tftpmode = tftpmode;
         }
         override public bool pkt_proc(byte[] buf)
         {
-            if (blkno == 0 && (Opcodes)buf[1] == Opcodes.OAck) // oack
+            if (buf == null)
+            {
+                pktbuf = new pkt_rrq(remoteFile, tftpmode.ToString(), idic["timeout"] * idic["maxretry"] / 1000, idic["blksize"]).pack();
+            }
+            else if (blkno == 0 && (Opcodes)buf[1] == Opcodes.OAck) // oack
             {
                 pkt_oack pkt = new pkt_oack();
                 if (!pkt.parse(buf)) return false;

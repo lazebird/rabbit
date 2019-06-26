@@ -98,7 +98,7 @@ namespace lazebird.rabbit.tftp
         }
         public void start(int port, Hashtable opts)
         {
-            opts["cwd"] = cwd;
+            if (!opts.ContainsKey("cwd")) opts.Add("cwd", cwd);
             this.opts = opts;
             if (tftpd != null) throw new ArgumentException();
             tftpd = new Thread(() => daemon_task(port));

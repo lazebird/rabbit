@@ -16,6 +16,12 @@ namespace lazebird.rabbit.tftp
         }
         override public bool pkt_proc(byte[] buf)
         {
+            if (buf == null)
+            {
+                pktbuf = new pkt_rdq(dirname).pack();
+                uc.Send(pktbuf, pktbuf.Length, r);
+                return true;
+            }
             if (blkno == 0) blkno++;
             pkt_data pkt = new pkt_data();
             if (!pkt.parse(buf)) return false;

@@ -9,28 +9,17 @@ namespace lazebird.rabbit.tftp
     {
         Func<int, string, int> log;
         Hashtable opts;
-        int timeout = 200;
-        int maxretry = 10;
-        int blksize = 1024;
         public rtftpc(Func<int, string, int> log, Hashtable opts)
         {
             this.log = log;
             this.opts = opts;
-            parse_args(opts);
-        }
-        void parse_args(Hashtable opts)
-        {
-            if (opts.ContainsKey("timeout")) int.TryParse((string)opts["timeout"], out timeout);
-            if (opts.ContainsKey("retry")) int.TryParse((string)opts["retry"], out maxretry);
-            if (opts.ContainsKey("blksize")) int.TryParse((string)opts["qsize"], out blksize);
         }
         void slog(string msg) { log(-1, msg); }
         void oper(Opcodes oper, string srvip, int srvport, string remoteFile, string localFile, Modes tftpmode)
         {
-            byte[] buf = null;
-            ss s = ss.get_clnt_session(localFile, remoteFile, oper, tftpmode, log, ref buf, new IPEndPoint(IPAddress.Parse(srvip), srvport), opts);
-            s.uc.Send(buf, buf.Length, s.r);
-            s.pktbuf = buf;
+            byte[] buf;
+            ss s = ss.get_clnt_session(localFile, remoteFile, oper, tftpmode, log, new IPEndPoint(IPAddress.Parse(srvip), srvport), opts);
+            s.pkt_proc(null);
             while (true)
             {
                 try
