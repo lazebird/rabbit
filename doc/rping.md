@@ -5,16 +5,17 @@
 ## Target
 
 ## API
-1. public rping(Action<string> log, string addr) public rping(Action<string> log, string addr, int interval, int count, bool stoponloss)
+1. public rping(Action<string> log)
     - Constructor
     - log: log output interface
-    - addr: ping destination address
-    - interval: ping interval, also used to be timeout,default 1000ms
-    - count: ping send count, default -1, means infinit
-    - stoponloss: stop ping if there is a pkt loss
 
-2. public void start(Action<PingReply, object> callback, object data)
+2. public void start(string addr, Hashtable opts, Action<PingReply, object> callback, object data)
     - ping session start
+    - addr: ping destination address
+    - opts:
+        - interval: ping interval, also used to be timeout,default 1000ms
+        - count: ping send count, default -1, means infinit
+        - stoponloss: stop ping if there is a pkt loss
     - callback: a callback function, which will be called for all ping replies; when ping stopped, callback called with PingReply=null
     - data: argument for callback
 
@@ -35,8 +36,9 @@
             ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
         }
         else display_taskbar(reply.Status == IPStatus.Success);
-        if (ping != null) text_pingstat.Text = ping.ToString();
+        text_pingstat.Text = ping.ToString();
     }
-    rping ping = new rping(ping_log_func, ping_addr, ping_interval, ping_count, ping_stoponloss);
-    ping.start(ping_cb, null);
+    rping ping = new rping(ping_log_func);
+    Hashtable ping_opts = ropt.parse_opts(text_pingopt.Text);
+    ping.start(ping_addr, ping_opts, ping_cb, null);
     ```

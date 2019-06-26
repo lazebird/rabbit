@@ -32,30 +32,29 @@
     mime += "*:application/octet-stream;";
     ```
 
-3. public bool start(int port)  
+3. public void start(int port, Hashtable opts)
     - Start rhttpd
     - Port: http port number
+    - opts:
+        - autoindex: Open the file if there is an index.html or index.htm file under it when opening the directory.
+        - videoplay: When the video file is opened, the player is enabled by default instead of downloading
 
 4. public void stop()  
     - Stop rhttpd
 
-5. public void set_root(string path)  deleted
-    - Set the server root directory, the default is empty directory
-    - use add_file/add_dir instead for all files/subdirs in root
-
-6. public void add_dir(string path)  
+5. public void add_dir(string path)  
     - Add a folder to the root directory
     - Path: folder path
 
-7. public void del_dir(string path)  
+6. public void del_dir(string path)  
     - Delete a folder from the root directory
     - Path: folder path
 
-8. public void add_file(string path)  
+7. public void add_file(string path)  
     - Add files from the root directory
     - Path: file path
 
-9. public void del_file(string path)  
+8. public void del_file(string path)  
     - Delete files from the root directory
     - Path: file path
 
@@ -64,7 +63,8 @@
     rhttpd rhttpd = new rhttpd(rhttpd_log_func);
     rhttpd.init_mime(myconf.get("mime"));
     rhttpd.set_root(".");
-    rhttpd.start(8000);
+    Hashtable http_opts = ropt.parse_opts(text_httpopt.Text);
+    rhttpd.start(80, http_opts);
     void rhttpd_log_func(string msg)
     {
         console.write(msg);

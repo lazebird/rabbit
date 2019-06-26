@@ -5,16 +5,17 @@
 ## 目标
 
 ## API
-1. public rping(Action<string> log, string addr) public rping(Action<string> log, string addr, int interval, int count, bool stoponloss)
+1. public rping(Action<string> log)
     - 构造函数
     - log: 日志输出接口
-    - addr: ping目的地址
-    - interval: ping间隔，也用作超时，默认1000ms
-    - count: ping次数，默认-1，表示持续ping
-    - stoponloss: 丢包时停止ping操作标识
 
-2. public void start(Action<PingReply, object> callback, object data)
+2. public void start(string addr, Hashtable opts, Action<PingReply, object> callback, object data)
     - 启动ping会话
+    - addr: ping目的地址
+    - opts:
+        - interval: ping间隔，也用作超时，默认1000ms
+        - count: ping次数，默认-1，表示持续ping
+        - stoponloss: 丢包时停止ping操作标识
     - callback: 回调函数，在每个ping响应处理时回调；同时在ping结束时也会回调，并且reply信息参数为null
     - data: 回调参数
 
@@ -35,8 +36,9 @@
             ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
         }
         else display_taskbar(reply.Status == IPStatus.Success);
-        if (ping != null) text_pingstat.Text = ping.ToString();
+        text_pingstat.Text = ping.ToString();
     }
-    rping ping = new rping(ping_log_func, ping_addr, ping_interval, ping_count, ping_stoponloss);
-    ping.start(ping_cb, null);
+    rping ping = new rping(ping_log_func);
+    Hashtable ping_opts = ropt.parse_opts(text_pingopt.Text);
+    ping.start(ping_addr, ping_opts, ping_cb, null);
     ```

@@ -2,10 +2,10 @@
 using lazebird.rabbit.fs;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace lazebird.rabbit.http
@@ -16,14 +16,10 @@ namespace lazebird.rabbit.http
         HttpListenerRequest request;
         HttpListenerResponse response;
         rfs rfs;
-        string method;
         string uri;
-        string args;
-        Hashtable opthash;
         rqueue q;
         Thread t;
-        bool autoindex;
-        bool videoplay;
+        Dictionary<string, bool> bdic;
 
         public ss(HttpListenerRequest request, HttpListenerResponse response, rfs rfs)
         {
@@ -31,15 +27,11 @@ namespace lazebird.rabbit.http
             this.request = request;
             this.response = response;
             this.rfs = rfs;
-            method = request.HttpMethod;
             try
             {
                 string[] s = Uri.UnescapeDataString(request.RawUrl).Split('?');
                 uri = s[0];
-                args = s.Length > 1 ? s[1] : "";
-                opthash = ropt.parse_opts(args);
-                if (opthash.ContainsKey("autoindex")) bool.TryParse((string)opthash["autoindex"], out autoindex);
-                if (opthash.ContainsKey("videoplay")) bool.TryParse((string)opthash["videoplay"], out videoplay);
+                init_args(s.Length > 1 ? ropt.parse_opts(s[1]) : new Hashtable());
             }
             catch (Exception) { }
             response.ContentEncoding = Encoding.UTF8;
@@ -48,10 +40,22 @@ namespace lazebird.rabbit.http
         {
             this.log = log;
         }
-        public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs, bool autoindex, bool videoplay) : this(log, request, response, rfs)
+        public ss(Action<string> log, HttpListenerRequest request, HttpListenerResponse response, rfs rfs, Hashtable opts) : this(log, request, response, rfs)
         {
-            if (!opthash.ContainsKey("autoindex")) this.autoindex = autoindex;
-            if (!opthash.ContainsKey("videoplay")) this.videoplay = videoplay;
+            foreach (string key in opts.Keys)
+            {
+                if (bdic.ContainsKey(key)) bdic[key] = bool.Parse((string)opts[key]);
+            }
+        }
+        void init_args(Hashtable opts)
+        {
+            bdic = new Dictionary<string, bool>();
+            bdic.Add("autoindex", false);
+            bdic.Add("videoplay", false);
+            foreach (string key in opts.Keys)
+            {
+                if (bdic.ContainsKey(key)) bdic[key] = bool.Parse((string)opts[key]);
+            }
         }
         void log_func(string msg) { }
         string uri2rpath(string uri)
@@ -81,7 +85,7 @@ namespace lazebird.rabbit.http
         }
         bool loadvideo(Hashtable mimehash, string path)
         {
-            if (!videoplay) return false;
+            if (!bdic["videoplay"]) return false;
             string mime = uri2mime(mimehash, path);
             if (!mime.Contains("video/")) return false;
             string s = @"
@@ -135,7 +139,7 @@ namespace lazebird.rabbit.http
         bool loadindex(Hashtable mimehash, string rdir)
         {
             string indexpath;
-            if (!autoindex) return false;
+            if (!bdic["autoindex"]) return false;
             if (rdir != "")
             {
                 indexpath = rdir + "index.html";

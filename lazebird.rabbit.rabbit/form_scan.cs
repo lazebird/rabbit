@@ -47,23 +47,19 @@ namespace lazebird.rabbit.rabbit
         }
         void start_scan()
         {
-            try
+            scan_parse_args();
+            Byte[] ipbytes = IPAddress.Parse(scan_startip).GetAddressBytes();
+            int iplen = ipbytes.Length;
+            for (int i = ipbytes[iplen - 1]; i <= scan_lastbyte && i < 255; i++)
             {
-                scan_parse_args();
-                Byte[] ipbytes = IPAddress.Parse(scan_startip).GetAddressBytes();
-                int iplen = ipbytes.Length;
-                for (int i = ipbytes[iplen - 1]; i <= scan_lastbyte && i < 255; i++)
-                {
-                    TextBox tb = scan_panel.add(i.ToString(), null, null);
-                    tb.Width = tb.Height = 28;
-                    tb.TextAlign = HorizontalAlignment.Center;
-                    ipbytes[iplen - 1] = (Byte)i;
-                    rping s = new rping(scan_log_func, (new IPAddress(ipbytes)).ToString(), scan_opts);
-                    s.start(scan_reply, tb);
-                    scansshash.Add(tb, s);
-                }
+                TextBox tb = scan_panel.add(i.ToString(), null, null);
+                tb.Width = tb.Height = 28;
+                tb.TextAlign = HorizontalAlignment.Center;
+                ipbytes[iplen - 1] = (Byte)i;
+                rping s = new rping(scan_log_func);
+                s.start((new IPAddress(ipbytes)).ToString(), scan_opts, scan_reply, tb);
+                scansshash.Add(tb, s);
             }
-            catch (Exception) { }
         }
         void stop_scan()
         {
@@ -74,18 +70,22 @@ namespace lazebird.rabbit.rabbit
         }
         void scan_click(object sender, EventArgs e)
         {
-            if (btn_scan.Text == "Start")
+            try
             {
-                btn_scan.Text = "Stop";
-                scan_panel.clear();
-                start_scan();
+                if (btn_scan.Text == "Start")
+                {
+                    btn_scan.Text = "Stop";
+                    scan_panel.clear();
+                    start_scan();
+                }
+                else
+                {
+                    btn_scan.Text = "Start";
+                    stop_scan();
+                }
+                saveconf();
             }
-            else
-            {
-                btn_scan.Text = "Start";
-                stop_scan();
-            }
-            saveconf();
+            catch (Exception) { }
         }
     }
 }

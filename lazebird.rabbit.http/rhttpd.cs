@@ -13,8 +13,7 @@ namespace lazebird.rabbit.http
         HttpListener hl = null;
         Hashtable mimehash;
         rfs rfs;
-        bool autoindex;
-        bool videoplay;
+        Hashtable opts;
         public rhttpd(Action<string> log)
         {
             this.log = log;
@@ -33,14 +32,9 @@ namespace lazebird.rabbit.http
             }
 
         }
-        void parse_args(Hashtable opts)
-        {
-            if (opts.ContainsKey("autoindex")) bool.TryParse((string)opts["autoindex"], out autoindex);
-            if (opts.ContainsKey("videoplay")) bool.TryParse((string)opts["videoplay"], out videoplay);
-        }
         public void start(int port, Hashtable opts)
         {
-            parse_args(opts);
+            this.opts = opts;
             if (hl != null) stop();
             hl = new HttpListener();
             hl.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
@@ -64,7 +58,7 @@ namespace lazebird.rabbit.http
         }
         void session_task(HttpListenerRequest request, HttpListenerResponse response)
         {
-            ss s = new ss(log, request, response, rfs, autoindex, videoplay);
+            ss s = new ss(log, request, response, rfs, opts);
             s.proc_req(mimehash);
             s.destroy();
         }
@@ -81,15 +75,6 @@ namespace lazebird.rabbit.http
             catch (Exception) { }
         }
 
-        string rootpath;
-        public void set_root(string path)
-        {
-            if (path == null || path == "" || this.rootpath == path) return;
-            this.rootpath = path;
-            log("R: " + path);
-            //log("I: parent " + Path.GetDirectoryName(path) + " " + Path.GetFileName(path));
-            rfs.adddir("/", path);
-        }
         public void add_dir(string path)
         {
             rfs.adddir("/" + Path.GetFileName(path), path);

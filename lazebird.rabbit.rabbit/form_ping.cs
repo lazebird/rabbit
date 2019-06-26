@@ -23,6 +23,7 @@ namespace lazebird.rabbit.rabbit
             btn_ping.Click += new EventHandler(ping_click);
             bar = new rtaskbar(pinglog.write, this.Handle);
             recq = new Queue();
+            ping = new rping(ping_log_func);
         }
         void ping_log_func(string msg)
         {
@@ -36,7 +37,7 @@ namespace lazebird.rabbit.rabbit
                 ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
             }
             else display_taskbar(reply.Status == IPStatus.Success);
-            if (ping != null) text_pingstat.Text = ping.ToString();
+            text_pingstat.Text = ping.ToString();
         }
         void ping_parse_args()
         {
@@ -48,24 +49,27 @@ namespace lazebird.rabbit.rabbit
         }
         void ping_click(object sender, EventArgs evt)
         {
-            if (((Button)btnhash["ping_btn"]).Text == Language.trans("开始"))
+            try
             {
-                ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
-                ((Button)btnhash["ping_btn"]).Text = Language.trans("停止");
-                pinglog.clear();
-                ping_parse_args();
-                recq.Clear();
-                ping = new rping(ping_log_func, ping_addr, ping_opts);
-                ping.start(ping_cb, null);
+                if (((Button)btnhash["ping_btn"]).Text == Language.trans("开始"))
+                {
+                    ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
+                    ((Button)btnhash["ping_btn"]).Text = Language.trans("停止");
+                    pinglog.clear();
+                    ping_parse_args();
+                    recq.Clear();
+                    ping.start(ping_addr, ping_opts, ping_cb, null);
+                }
+                else
+                {
+                    ping.stop();
+                    ((Form)formhash["form"]).Text = "Rabbit";
+                    ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
+                }
+                saveconf();
+
             }
-            else
-            {
-                if (ping != null) ping.stop();
-                ping = null;
-                ((Form)formhash["form"]).Text = "Rabbit";
-                ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
-            }
-            saveconf();
+            catch (Exception) { }
         }
         void display_taskbar(bool state)
         {
