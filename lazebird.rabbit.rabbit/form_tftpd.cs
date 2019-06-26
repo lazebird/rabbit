@@ -16,7 +16,6 @@ namespace lazebird.rabbit.rabbit
         Hashtable tftpd_dirhash;
         int curtftpd_dir = -1;
         ArrayList tftpd_dirs;
-        Hashtable tftpd_opts;
         Timer tftpd_tmr;
         TextBox lastclicked = null;  // donot support two different dir clicked at the same time
         string lasttftpddir = Environment.CurrentDirectory;
@@ -117,10 +116,6 @@ namespace lazebird.rabbit.rabbit
             curtftpd_dir = -1;  // reset cur index, to avoid problems
             if (tftpd_dirs.Count > 0) tftpd_active_dir((TextBox)tftpd_dirs[tftpd_dirs.Count - 1]);
         }
-        void tftpd_parse_args()
-        {
-            tftpd_opts = ropt.parse_opts(text_tftpdopt.Text);
-        }
         void tftpd_click(object sender, EventArgs evt)
         {
             try
@@ -129,8 +124,7 @@ namespace lazebird.rabbit.rabbit
                 {
                     tftpdlog.clear();
                     ((Button)btnhash["tftpd_btn"]).Text = Language.trans("停止");
-                    tftpd_parse_args();
-                    tftpd.start(69, tftpd_opts);
+                    tftpd.start(69, ropt.parse_opts(text_tftpdopt.Text));
                 }
                 else
                 {

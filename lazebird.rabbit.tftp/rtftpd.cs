@@ -12,7 +12,7 @@ namespace lazebird.rabbit.tftp
         Thread tftpd;
         Hashtable sshash;    // session thread table
         UdpClient uc;
-        string cwd = "";    // used for wrq, set the first non-empty dir added as root dir
+        string cwd = Environment.CurrentDirectory;    // used for wrq, set the first non-empty dir added as root dir
         Hashtable opts;
         object obj;
         public rtftpd(Func<int, string, int> log)
@@ -31,6 +31,7 @@ namespace lazebird.rabbit.tftp
         public void set_cwd(string path)
         {
             cwd = path + "/";
+            opts["cwd"] = cwd;
         }
         void session_handler(byte[] buf, IPEndPoint r)
         {
@@ -97,6 +98,7 @@ namespace lazebird.rabbit.tftp
         }
         public void start(int port, Hashtable opts)
         {
+            opts["cwd"] = cwd;
             this.opts = opts;
             if (tftpd != null) throw new ArgumentException();
             tftpd = new Thread(() => daemon_task(port));
