@@ -60,7 +60,7 @@ namespace lazebird.rabbit.ping
                     log("!E: " + e.ToString());
                 }
                 if (reply == null) Thread.Sleep(idic["interval"]);
-                else if (idic["interval"] > (int)reply.RoundtripTime) Thread.Sleep(idic["interval"] - (int)reply.RoundtripTime);
+                else if (reply.Status == IPStatus.Success && idic["interval"] > (int)reply.RoundtripTime) Thread.Sleep(idic["interval"] - (int)reply.RoundtripTime);
             }
             session_display();
             opertm = DateTime.Now;
