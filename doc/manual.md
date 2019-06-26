@@ -1,82 +1,82 @@
 # Rabbit
-- Windows平台下的小工具集合。
-- 功能列表：ping，IP扫描，HTTP服务器，TFTP服务器，TFTP客户端，定时提醒，局域网聊天
+- A collection of gadgets under the Windows platform.
+- Function list: ping, IP scan, HTTP server, TFTP server, TFTP client, timed reminder, LAN chat
 
-## 目录
+## table of Contents
 [TOC]
 
-## 通用
-### 配置项
-- 默认Esc键会退出当前窗口
-- 默认Enter键会执行当前标签中的Start/Stop按钮
-- 程序中的交互除了明确的按钮外，主要是鼠标单击/双击
+## General
+### Configuration Item
+- The default Esc key will exit the current window
+- The default Enter key will execute the Start/Stop button in the current tab.
+- The interaction in the program is mainly a mouse click/double click except for the explicit button
 
-## 设置（Setting）
-### 配置项
-- Language： 语言选择，当前无效
-- System Tray： 激活系统托盘图标，使得程序可以最小化到系统托盘中；该功能和任务栏进度条冲突，效果不能兼得
-- Home： 单击访问项目主页
-- Profile： 单击访问程序配置文件目录
-- Help： 单击访问本手册
-- Version： 程序版本信息，单击可自动更新
-- restartprompt: 版本升级时是否弹出重启完成升级的提示，默认不提示；该字段必须手动修改配置文件，仅用于问题定位
+## Settings (Setting)
+### Configuration Item
+- Language: language selection, currently invalid
+- System Tray: Activate the system tray icon so that the program can be minimized to the system tray; this function conflicts with the taskbar progress bar, the effect can not be both
+- Home: Click to access the project home page
+- Profile: Click to access the program configuration file directory
+- Help: Click to access this manual
+- Version: Program version information, click to update automatically
+- restartprompt: Whether to restart the upgrade when the version is upgraded, the default is not prompted; this field must manually modify the configuration file, only for problem location
 
 ## Ping
-### 配置项
-- Addr.：Ping的地址，可以是一个IP或一个域名
-- interval： Ping周期，单位毫秒，默认1000ms
-- count： Ping次数，默认-1，表示持续Ping
-- taskbar： 任务栏状态，为true时表示任务栏可用；默认为true
-- log： 日志文件名，可以是相对路径文件名，也可以是绝对路径文件名，默认为空，不写文件
+### Configuration Item
+- Addr.: Ping's address, which can be an IP or a domain name
+- interval: Ping period, in milliseconds, default 1000ms
+- count: number of pings, default -1, indicating continuous ping
+- taskbar: taskbar status, when true, indicates that the taskbar is available; default is true
+- log: log file name, which can be a relative path file name, or an absolute path file name. The default is empty, not writing files.
 
-## IP扫描（Scan）
-### 配置项
-- IP： 扫描的IP地址范围，前面方框内为完整的起始IP，后面方框内为结束IP的最后字节值
-- filter：显示过滤选项，true表示仅显示可达的IP，false表示显示全部IP；默认为true
+## IP Scan (Scan)
+### Configuration Item
+- IP: The range of scanned IP addresses. The previous box is the complete starting IP, and the last box is the last byte value of the ending IP.
+- filter: display filtering options, true means only display reachable IP, false means show all IP; default is true
 
-## HTTP服务器（HTTPD）
-### 配置项
-- Port：HTTP服务器端口，默认为8000
-- shell： 是否启用文件系统右键shell，默认不启用；取消勾选删除右键菜单项
-- index： 是否启用目录自动索引，即在访问一个目录时，如果目录内存在索引文件，不加载目录结构信息，而是转而直接加载索引文件
+## HTTP Server (HTTPD)
+### Configuration Item
+- Port: HTTP server port, default is 8000
+- shell: Whether to enable the file system right-click shell, it is not enabled by default; uncheck the delete right-click menu item
+- index: Whether to enable automatic indexing of directories, that is, when accessing a directory, if there is an index file in the directory, the directory structure information is not loaded, but the index file is directly loaded instead.
 
-## TFTP服务器（TFTPD）
-### 配置项
-- +： 添加TFTP服务器目录，点击后会弹出目录选择框，选择好后默认会将新目录作为当前服务器工作目录
-- -： 删除当前工作目录
-- timeout： 服务器报文传输超时时间配置，单位为毫秒，默认200ms
-- retry： 服务器报文重传次数，默认重传30次
-- override： 文件上传时是否自动覆盖，默认为否，false
-- qsize： 生产者消费者队列大小，内存足够时大队列有利于并发；网络共享路径下的文件也可以通过大队列来优化性能
-- 单击目录项事件： 选择目录为当前服务器工作目录
-- 双击目录项事件： 弹出目录选择框，修改目录项为新的路径
+## TFTP Server (TFTPD)
+### Configuration Item
+- +: Add the TFTP server directory. After clicking it, the directory selection box will pop up. After selecting it, the new directory will be used as the current server working directory by default.
+- -: Delete current working directory
+- timeout: Server packet transmission timeout configuration, in milliseconds, default 200ms
+- retry: The number of retransmissions of the server packet. The default retransmission is 30 times.
+- override: Whether to automatically overwrite when the file is uploaded, the default is no, false
+- qsize: producer consumer queue size, large queues are conducive to concurrency when there is enough memory; files in the network share path can also optimize performance through large queues
+- Click on the directory entry event: Select directory as current server working directory
+- Double-click the directory entry event: Pop-up directory selection box, modify the directory entry to the new path
 
-## TFTP客户端（TFTPC）
-### 配置项
-- IP： 服务器IP地址
-- timeout： 服务器报文传输超时时间配置，单位为毫秒，默认200ms
-- retry： 服务器报文重传次数，默认重传30次
-- blksize： 传输的块大小，单位字节，默认为1468字节
-- Put输入框： 双击选择本地文件作为put的文件
-- Get输入框： 输入需要获取的远端文件名
+## TFTP Client (TFTPC)
+### Configuration Item
+- IP: Server IP Address
+- timeout: Server packet transmission timeout configuration, in milliseconds, default 200ms
+- retry: The number of retransmissions of the server packet. The default retransmission is 30 times.
+- blksize: the block size of the transfer, in bytes, defaults to 1468 bytes
+- Put input box: Double-click to select the local file as the put file
+- Get input box: Enter the remote file name to be obtained
 
-## 计划提醒（PLAN）
-### 配置项
-- 日期： 计划起始日期
-- 时间： 计划起始时间
-- Repeat：计划重复的数值和单位
-- 文本框： 计划名称，确保唯一性
-- override: 如果新添加的计划和之前的存在冲突，是否自动覆盖，默认不覆盖
-- -： 删除计划；删除计划是依据计划名称进行的
-- +： 添加计划；添加计划是依据计划名称进行的
-- 计划项双击： 将计划项信息导出到输入框；如果需要删除一个计划，可以直接在文本框中输入计划名称然后点击删除，也可以在对应计划上双击，然后点击删除；修改计划需要先删除再重新添加
-- 计划到期时会弹出黑屏提醒框，上面显示计划名称，默认持续3分钟；可以通过双击屏上的计划名称来关闭该提醒
+## Planning reminder (PLAN)
+### Configuration Item
+- Date: Planned start date
+- Time: Planned start time
+- Repeat: Plan repeated values ​​and units
+- Text box: Plan name to ensure uniqueness
+- override: If the newly added plan conflicts with the previous one, it is automatically overwritten and the default is not overwritten.
+- -: Delete the plan; delete the plan based on the plan name
+- +: Add a plan; add a plan based on the plan name
+- Double-click the plan item: Export the plan item information to the input box; if you need to delete a plan, you can directly enter the plan name in the text box and click delete, or double-click on the corresponding plan, and then click delete; modify the plan needs to delete first Re-add
+- A black screen reminder box will pop up when the plan expires. The plan name is displayed above. The default is 3 minutes. You can turn off the reminder by double-clicking the plan name on the screen.
 
-## 局域网聊天（CHAT）
-### 配置项
-- 名称文本框： 作为聊天时的昵称；默认使用账户名@机器名作为聊天名
-- Start/Stop： 聊天服务启动/关闭按钮，默认会随APP启动自动启动
-- 广播地址： 广播发现和通知时的目的地址，默认为255.255.255.255；当存在多网卡/网段时，为了避免网段选择错误，建议手动配置为子网广播地址，比如常见的192.168.1.255
-- Notify： 点击发送广播通知
-- Refresh： 点击可以刷新当前局域网在线用户信息；在线用户信息中会包含自己的信息
-- 用户信息单击： 和用户开始聊天会话
+## LAN chat (CHAT)
+### Configuration Item
+- Name text box: as a nickname for chat; default use account name @machine name as chat name
+- Start/Stop: Chat service start/stop button, the default will automatically start with the APP startup
+- Broadcast address: The destination address for broadcast discovery and notification. The default is 255.255.255.255. When there are multiple NICs/network segments, it is recommended to manually configure the subnet broadcast address, such as the common 192.168.1.255, in order to avoid network segment selection errors.
+- Notify: Click to send a broadcast notification
+- Refresh: Click to refresh the current LAN online user information; online user information will contain your own information
+- User information click: Start a chat session with the user

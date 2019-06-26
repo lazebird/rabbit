@@ -31,7 +31,13 @@ Windows平台下的小工具集合。
 ```
 
 ## 截图
-1. ![Alt ?](/doc/Screenshots.PNG)  
+1. ping ![Alt ?](./resources/ping.PNG)  
+2. scan ![Alt ?](./resources/scan.PNG)  
+3. httpd ![Alt ?](./resources/httpd.PNG)  
+4. tftpd ![Alt ?](./resources/tftpd.PNG)  
+5. tftpc ![Alt ?](./resources/tftpc.PNG)  
+6. plan ![Alt ?](./resources/plan.PNG)  
+7. setting ![Alt ?](./resources/setting.PNG)  
 
 ## 发布说明
 参考/doc/releasenotes.md
