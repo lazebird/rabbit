@@ -30,7 +30,13 @@ library APIs please refer to doc/{library name}.mk, such as doc/ping.mk, here is
 	```
 
 ## SCREENSHOTS
-1. ![Alt ?](/doc/Screenshots.PNG)  
+1. ping ![Alt ?](/doc/resources/ping.PNG)  
+2. scan ![Alt ?](/doc/resources/scan.PNG)  
+3. httpd ![Alt ?](/doc/resources/httpd.PNG)  
+4. tftpd ![Alt ?](/doc/resources/tftpd.PNG)  
+5. tftpc ![Alt ?](/doc/resources/tftpc.PNG)  
+6. plan ![Alt ?](/doc/resources/plan.PNG)  
+7. setting ![Alt ?](/doc/resources/setting.PNG)  
 
 ## RELEASE NOTES
 refer to /doc/releasenotes.md
