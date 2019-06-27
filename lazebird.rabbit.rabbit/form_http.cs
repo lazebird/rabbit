@@ -30,7 +30,7 @@ namespace lazebird.rabbit.rabbit
             //httpd_output.HorizontalExtent = 5000;
             httpdlog = new rlog(lb_httpd);
             httpd = new rhttpd(httpd_log_func);
-            httpd.init_mime(rconf.get("mime"));
+            httpd.init_mime(rconf2.get("mime"));
             btn_httpd.Click += new EventHandler(httpd_click);
             if (sh.file_exist()) cb_http_shell.Checked = true;
             cb_http_shell.CheckedChanged += new EventHandler(http_shell_click);
@@ -126,7 +126,7 @@ namespace lazebird.rabbit.rabbit
         }
         void httpd_readconf()
         {
-            string[] paths = rconf.get("http_dirs").Split(';');
+            string[] paths = rconf2.get("http_dirs").Split(';');
             foreach (string path in paths) if (path != "") httpd_add_path(path);
         }
         void httpd_saveconf()
@@ -137,7 +137,7 @@ namespace lazebird.rabbit.rabbit
             {
                 dirs += path + ";";
             }
-            rconf.set("http_dirs", dirs);
+            rconf2.set("http_dirs", dirs);
         }
     }
 }

@@ -83,20 +83,20 @@ namespace lazebird.rabbit.rabbit
         {
             foreach (string key in texthash.Keys)
             {
-                conf_log("G: " + key + " - " + rconf.get(key));
-                ((TextBox)texthash[key]).Text = rconf.get(key);
+                conf_log("G: " + key + " - " + rconf2.get(key));
+                ((TextBox)texthash[key]).Text = rconf2.get(key);
             }
             foreach (string key in btnhash.Keys)
             {
-                conf_log("G: " + key + " - " + rconf.get(key));
-                if (rconf.get(key) != "" && Language.trans(rconf.get(key)) != ((Button)btnhash[key]).Text)
+                conf_log("G: " + key + " - " + rconf2.get(key));
+                if (rconf2.get(key) != "" && Language.trans(rconf2.get(key)) != ((Button)btnhash[key]).Text)
                 {
                     tabs.SelectedIndex = (int)indexhash[key];
                     ((Button)btnhash[key]).PerformClick();
                 }
             }
-            conf_log("G: " + "tabindex" + " - " + rconf.get("tabindex"));
-            tabs.SelectedIndex = int.Parse(rconf.get("tabindex"));
+            conf_log("G: " + "tabindex" + " - " + rconf2.get("tabindex"));
+            tabs.SelectedIndex = int.Parse(rconf2.get("tabindex"));
             httpd_readconf();
             tftpd_readconf();
             plan_readconf();
@@ -111,14 +111,14 @@ namespace lazebird.rabbit.rabbit
             }
             foreach (string key in texthash.Keys)
             {
-                rconf.set(key, ((TextBox)texthash[key]).Text);
+                rconf2.set(key, ((TextBox)texthash[key]).Text);
                 conf_log("S: " + key + " - " + ((TextBox)texthash[key]).Text);
             }
-            rconf.set("tabindex", tabs.SelectedIndex.ToString());
+            rconf2.set("tabindex", tabs.SelectedIndex.ToString());
             conf_log("S: " + "tabindex" + " - " + tabs.SelectedIndex.ToString());
             foreach (string key in btnhash.Keys)
             {
-                rconf.set(key, ((Button)btnhash[key]).Text);
+                rconf2.set(key, ((Button)btnhash[key]).Text);
                 conf_log("S: " + key + " - " + ((Button)btnhash[key]).Text);
             }
             httpd_saveconf();

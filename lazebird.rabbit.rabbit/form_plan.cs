@@ -105,7 +105,7 @@ namespace lazebird.rabbit.rabbit
         }
         void plan_readconf()
         {
-            string[] cfgs = rconf.get("plans").Split(';');
+            string[] cfgs = rconf2.get("plans").Split(';');
             foreach (string cfg in cfgs)
                 if (cfg.Length > 0) plan_add(new rplan(plan_log_func, cfg, plan_panel.add(cfg, null, plan_click)));
         }
@@ -115,7 +115,7 @@ namespace lazebird.rabbit.rabbit
             string cfgs = "";
             foreach (rplan p in plan_tbhash.Values)
                 cfgs += p.ToString() + ";";
-            rconf.set("plans", cfgs);
+            rconf2.set("plans", cfgs);
         }
     }
 }

@@ -148,7 +148,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="lang.cs" />
-    <Compile Include="rconf.cs" />
+    <Compile Include="rconf2.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

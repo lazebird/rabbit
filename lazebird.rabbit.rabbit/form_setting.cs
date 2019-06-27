@@ -59,8 +59,8 @@ namespace lazebird.rabbit.rabbit
         void lang_opt_SelectedIndexChanged(object sender, EventArgs e)
         {
             string lang = lang_cb.SelectedItem as string;
-            if (lang_cb.Text == "System") rconf.set("lang", "");
-            else rconf.set("lang", lang_cb.Text);
+            if (lang_cb.Text == "System") rconf2.set("lang", "");
+            else rconf2.set("lang", lang_cb.Text);
             setlog.write("Set Language: " + lang_cb.Text);
             setlog.write("Restart App to take effect!");
         }
@@ -171,16 +171,16 @@ namespace lazebird.rabbit.rabbit
         void setting_readconf()
         {
             if (File.Exists(upgrade.scriptname)) File.Delete(upgrade.scriptname);
-            if (rconf.get("systray") == "true") cb_systray.Checked = true;
-            if (rconf.get("restartprompt") == "true") restartprompt = true;
-            if (rconf.get("autoupdate") == "true") cb_autoupdate.Checked = true;
+            if (rconf2.get("systray") == "true") cb_systray.Checked = true;
+            if (rconf2.get("restartprompt") == "true") restartprompt = true;
+            if (rconf2.get("autoupdate") == "true") cb_autoupdate.Checked = true;
         }
         void setting_saveconf()
         {
             if (onloading) return;
-            rconf.set("systray", cb_systray.Checked ? "true" : "false");
-            rconf.set("restartprompt", "false");
-            rconf.set("autoupdate", cb_autoupdate.Checked ? "true" : "false");
+            rconf2.set("systray", cb_systray.Checked ? "true" : "false");
+            rconf2.set("restartprompt", "false");
+            rconf2.set("autoupdate", cb_autoupdate.Checked ? "true" : "false");
         }
         void on_dispose()
         {

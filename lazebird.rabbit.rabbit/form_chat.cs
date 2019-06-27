@@ -84,9 +84,9 @@ namespace lazebird.rabbit.rabbit
         }
         void chat_readconf()
         {
-            text_chatname.Text = rconf.get("chatname");
+            text_chatname.Text = rconf2.get("chatname");
             chat.set_name(text_chatname.Text);
-            text_chatntf.Text = rconf.get("chatbrdip");
+            text_chatntf.Text = rconf2.get("chatbrdip");
             chat_click(null, null);
             chat_refresh_click(null, null);
             Thread.Sleep(100);
@@ -95,8 +95,8 @@ namespace lazebird.rabbit.rabbit
         void chat_saveconf()
         {
             if (onloading) return;
-            rconf.set("chatname", text_chatname.Text);
-            rconf.set("chatbrdip", text_chatntf.Text);
+            rconf2.set("chatname", text_chatname.Text);
+            rconf2.set("chatbrdip", text_chatntf.Text);
         }
     }
 }
