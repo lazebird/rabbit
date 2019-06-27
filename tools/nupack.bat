@@ -11,6 +11,9 @@ call:prjpack lazebird.rabbit.tftp
 call:prjpack lazebird.rabbit.fs
 call:prjpack lazebird.rabbit.plan
 call:prjpack lazebird.rabbit.chat
+
+echo %date% %time% > ../nupack/%v%
+
 popd
 pause
 GOTO:EOF
