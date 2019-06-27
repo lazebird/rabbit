@@ -20,6 +20,7 @@ namespace lazebird.rabbit.tftp
             this.log = log;
             obj = new object();
             sshash = new Hashtable();
+            opts = new Hashtable();
         }
         int ilog(int line, string msg)
         {
