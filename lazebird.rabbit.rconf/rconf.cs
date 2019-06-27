@@ -37,8 +37,8 @@ namespace lazebird.rabbit.rconf
         public void bind(Button btn, string name)
         {
             btn.Name = name;
-            if (!datas.ContainsKey(name)) datas.Add(name, "");
-            btn.Text = (string)datas[name];  // load from conf file/default conf
+            if (!datas.ContainsKey(name)) datas.Add(name, init(name));  // load from conf file/default conf
+            btn.Text = (string)datas[name];
             btn.Click += new EventHandler(btn_click);
         }
         public int getint(string name)
