@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.plan", "laz
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.chat", "lazebird.rabbit.chat\lazebird.rabbit.chat.csproj", "{F0AA2F5F-8548-4814-BE83-FFDED999202A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.conf", "lazebird.rabbit.rconf\lazebird.rabbit.conf.csproj", "{7F9C962E-01CC-4489-8BF9-F052F18CA2C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lazebird.rabbit.conf", "lazebird.rabbit.conf\lazebird.rabbit.conf.csproj", "{7F9C962E-01CC-4489-8BF9-F052F18CA2C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

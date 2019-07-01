@@ -216,6 +216,10 @@
       <Project>{6c93b9cb-1bad-42fd-a497-ac81c64b5d33}</Project>
       <Name>lazebird.rabbit.common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\lazebird.rabbit.conf\lazebird.rabbit.conf.csproj">
+      <Project>{7F9C962E-01CC-4489-8BF9-F052F18CA2C5}</Project>
+      <Name>lazebird.rabbit.conf</Name>
+    </ProjectReference>
     <ProjectReference Include="..\lazebird.rabbit.fs\lazebird.rabbit.fs.csproj">
       <Project>{9D8C34CF-12BF-4360-9CA3-4D0A7D4D8CBC}</Project>
       <Name>lazebird.rabbit.fs</Name>
@@ -231,10 +235,6 @@
     <ProjectReference Include="..\lazebird.rabbit.plan\lazebird.rabbit.plan.csproj">
       <Project>{AB2E0B0B-54CE-4F5E-B24F-319D1E3F1C9F}</Project>
       <Name>lazebird.rabbit.plan</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\lazebird.rabbit.rconf\lazebird.rabbit.conf.csproj">
-      <Project>{7F9C962E-01CC-4489-8BF9-F052F18CA2C5}</Project>
-      <Name>lazebird.rabbit.conf</Name>
     </ProjectReference>
     <ProjectReference Include="..\lazebird.rabbit.tftp\lazebird.rabbit.tftp.csproj">
       <Project>{6d969711-be11-48ec-8f9c-af8aa185d032}</Project>

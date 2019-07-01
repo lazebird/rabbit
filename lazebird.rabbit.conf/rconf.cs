@@ -8,6 +8,7 @@ namespace lazebird.rabbit.conf
     {
         Hashtable datas;
         Hashtable autosave;
+        Hashtable texts, btns, cbs;
         Func<string, string> init;
         Action<Hashtable> save;
         public rconf(Func<string, string> init, Action<Hashtable> save)
@@ -16,6 +17,9 @@ namespace lazebird.rabbit.conf
             this.save = save;
             datas = Hashtable.Synchronized(new Hashtable());
             autosave = Hashtable.Synchronized(new Hashtable());
+            texts = Hashtable.Synchronized(new Hashtable());
+            btns = Hashtable.Synchronized(new Hashtable());
+            cbs = Hashtable.Synchronized(new Hashtable());
         }
         void tb_leave(object sender, EventArgs e)
         {
@@ -24,6 +28,7 @@ namespace lazebird.rabbit.conf
         }
         public void bind(TextBox tb, string name)
         {
+            texts[name] = tb;
             tb.Name = name;
             if (!datas.ContainsKey(name)) datas.Add(name, init(name));
             tb.Text = (string)datas[name];
@@ -35,13 +40,15 @@ namespace lazebird.rabbit.conf
             datas[btn.Name] = btn.Text;
             if (autosave.ContainsKey(btn.Name)) save(datas);
         }
-        public void bind(Button btn, string name, bool autosave_flag) // consider button click problem, not only view
+        public void bind(Button btn, string name, bool autosave_flag, Action<object, string> callback) // consider button click problem, not only view
         {
+            btns[name] = btn;
             btn.Name = name;
             if (!datas.ContainsKey(name)) datas.Add(name, init(name));
             btn.Text = (string)datas[name];
             btn.Click += new EventHandler(btn_click);
             if (autosave_flag && !autosave.ContainsKey(name)) autosave.Add(name, true);
+            callback(btn, btn.Text);
         }
         void cb_click(object sender, EventArgs e)
         {
@@ -50,6 +57,7 @@ namespace lazebird.rabbit.conf
         }
         public void bind(CheckBox cb, string name)
         {
+            cbs[name] = cb;
             cb.Name = name;
             if (!datas.ContainsKey(name)) datas.Add(name, init(name));
             cb.Checked = bool.Parse((string)datas[name]);
@@ -86,9 +94,12 @@ namespace lazebird.rabbit.conf
             if (!datas.ContainsKey(name)) return "";
             return (string)datas[name];
         }
-        public void set(string name, string value)
+        public void set(string name, string val)
         {
-            datas[name] = value;
+            datas[name] = val;
+            if (texts.ContainsKey(name)) ((TextBox)texts[name]).Text = val;
+            if (btns.ContainsKey(name)) ((Button)btns[name]).Text = val;
+            if (cbs.ContainsKey(name)) ((CheckBox)cbs[name]).Checked = bool.Parse(val);
         }
     }
 }

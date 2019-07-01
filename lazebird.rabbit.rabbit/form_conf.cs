@@ -26,9 +26,9 @@ namespace lazebird.rabbit.rabbit
             cfg.bind(text_tftpcaddr, "tftpc_addr");
             cfg.bind(text_tftpcopt, "tftpc_opt");
             cfg.bind(text_planopt, "plan_opt");
-            cfg.bind(btn_ping, "ping_btn", true);
-            cfg.bind(btn_httpd, "http_btn", true);
-            cfg.bind(tftpd_btn, "tftpd_btn", true);
+            cfg.bind(btn_ping, "ping_btn", true, btn_callback);
+            cfg.bind(btn_httpd, "http_btn", true, btn_callback);
+            cfg.bind(tftpd_btn, "tftpd_btn", true, btn_callback);
             cfg.bind(text_chatname, "chatname");
             cfg.bind(text_chatntf, "chatbrdip");
             cfg.bind("http_dirs");
@@ -39,6 +39,18 @@ namespace lazebird.rabbit.rabbit
             cfg.bind("tftpd_dir_index");
             cfg.bind("tftpd_dirs");
             cfg.bind("lang");
+        }
+        void btn_callback(object sender, string val)
+        {
+            if (val == "Start") return;
+            Button btn = (Button)sender;
+            cfg.set(btn.Name, "Start");
+            int oldtabindex = tabs.SelectedIndex;
+            if (btn == btn_ping) tabs.SelectedIndex = 0;
+            if (btn == btn_httpd) tabs.SelectedIndex = 2;
+            if (btn == tftpd_btn) tabs.SelectedIndex = 3;
+            btn.PerformClick();
+            tabs.SelectedIndex = oldtabindex;
         }
         string conf_init(string key)   // property.setting must be set to avoid exception
         {

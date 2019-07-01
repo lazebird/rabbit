@@ -33,8 +33,8 @@ namespace lazebird.rabbit.rabbit
         {
             if (reply == null)
             {
-                ((Form)formhash["form"]).Text = "Rabbit";
-                ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
+                this.Text = "Rabbit";
+                cfg.set("ping_btn", Language.trans("开始"));
             }
             else display_taskbar(reply.Status == IPStatus.Success);
             text_pingstat.Text = ping.ToString();
@@ -51,10 +51,10 @@ namespace lazebird.rabbit.rabbit
         {
             try
             {
-                if (((Button)btnhash["ping_btn"]).Text == Language.trans("开始"))
+                if (cfg.getstr("ping_btn") == Language.trans("开始"))
                 {
-                    ((Form)formhash["form"]).Text = ((TextBox)texthash["ping_addr"]).Text;
-                    ((Button)btnhash["ping_btn"]).Text = Language.trans("停止");
+                    this.Text = ((TextBox)texthash["ping_addr"]).Text;
+                    cfg.set("ping_btn",Language.trans("停止"));
                     pinglog.clear();
                     ping_parse_args();
                     recq.Clear();
@@ -63,8 +63,8 @@ namespace lazebird.rabbit.rabbit
                 else
                 {
                     ping.stop();
-                    ((Form)formhash["form"]).Text = "Rabbit";
-                    ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
+                    this.Text = "Rabbit";
+                    cfg.set("ping_btn", Language.trans("开始"));
                 }
             }
             catch (Exception) { }
