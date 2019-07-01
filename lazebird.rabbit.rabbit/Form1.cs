@@ -14,6 +14,7 @@ namespace lazebird.rabbit.rabbit
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
+            init_form_conf();
             init_form_ping();
             init_form_scan();
             init_form_http();
@@ -29,7 +30,7 @@ namespace lazebird.rabbit.rabbit
         {
             base.OnLoad(e);
             onloading = true;
-            readconf();
+            init_conf_bind();
             onloading = false;
         }
         protected override bool ProcessDialogKey(Keys keyData)
@@ -78,54 +79,6 @@ namespace lazebird.rabbit.rabbit
         void conf_log(string msg)
         {
             //tftpdlog.write(msg);
-        }
-        void readconf()
-        {
-            foreach (string key in texthash.Keys)
-            {
-                conf_log("G: " + key + " - " + rconf2.get(key));
-                ((TextBox)texthash[key]).Text = rconf2.get(key);
-            }
-            foreach (string key in btnhash.Keys)
-            {
-                conf_log("G: " + key + " - " + rconf2.get(key));
-                if (rconf2.get(key) != "" && Language.trans(rconf2.get(key)) != ((Button)btnhash[key]).Text)
-                {
-                    tabs.SelectedIndex = (int)indexhash[key];
-                    ((Button)btnhash[key]).PerformClick();
-                }
-            }
-            conf_log("G: " + "tabindex" + " - " + rconf2.get("tabindex"));
-            tabs.SelectedIndex = int.Parse(rconf2.get("tabindex"));
-            httpd_readconf();
-            tftpd_readconf();
-            plan_readconf();
-            chat_readconf();
-            setting_readconf();
-        }
-        void saveconf()
-        {
-            if (onloading)
-            {
-                return;
-            }
-            foreach (string key in texthash.Keys)
-            {
-                rconf2.set(key, ((TextBox)texthash[key]).Text);
-                conf_log("S: " + key + " - " + ((TextBox)texthash[key]).Text);
-            }
-            rconf2.set("tabindex", tabs.SelectedIndex.ToString());
-            conf_log("S: " + "tabindex" + " - " + tabs.SelectedIndex.ToString());
-            foreach (string key in btnhash.Keys)
-            {
-                rconf2.set(key, ((Button)btnhash[key]).Text);
-                conf_log("S: " + key + " - " + ((Button)btnhash[key]).Text);
-            }
-            httpd_saveconf();
-            tftpd_saveconf();
-            plan_saveconf();
-            chat_saveconf();
-            setting_saveconf();
         }
     }
 }

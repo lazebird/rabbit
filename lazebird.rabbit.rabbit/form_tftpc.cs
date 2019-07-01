@@ -47,7 +47,6 @@ namespace lazebird.rabbit.rabbit
             tftpc_opts = ropt.parse_opts(text_tftpcopt.Text);
             tftpc_lfile = text_tftpclfile.Text;
             tftpc_rfile = text_tftpcrfile.Text;
-            saveconf();
         }
         void tftpc_get_click(object sender, EventArgs evt)
         {

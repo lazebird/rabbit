@@ -1,21 +1,56 @@
-﻿using System;
+﻿using lazebird.rabbit.conf;
+using System;
 using System.Collections;
+using System.Windows.Forms;
 
 namespace lazebird.rabbit.rabbit
 {
-    class rconf2
+    public partial class Form1 : Form
     {
-        public static string get(string key)   // property.setting must be set to avoid exception
+        rconf cfg;
+        void init_form_conf()
+        {
+            cfg = new rconf(conf_init, conf_save);
+        }
+        void init_conf_bind()
+        {
+            cfg.bind(tabs, "tabindex");
+            cfg.bind(text_pingaddr, "ping_addr");
+            cfg.bind(text_pingopt, "ping_opt");
+            cfg.bind(text_http_port, "http_port");
+            cfg.bind(text_httpopt, "http_opt");
+            cfg.bind(text_tftpdopt, "tftpd_opt");
+            cfg.bind(text_scanstart, "scan_ipstart");
+            cfg.bind(text_scanend, "scan_ipend");
+            cfg.bind(text_scanopt, "scan_opt");
+            cfg.bind(text_tftpcaddr, "tftpc_addr");
+            cfg.bind(text_tftpcopt, "tftpc_opt");
+            cfg.bind(text_planopt, "plan_opt");
+            cfg.bind(btn_ping, "ping_btn", true);
+            cfg.bind(btn_httpd, "http_btn", true);
+            cfg.bind(tftpd_btn, "tftpd_btn", true);
+            cfg.bind(text_chatname, "chatname");
+            cfg.bind(text_chatntf, "chatbrdip");
+            cfg.bind("http_dirs");
+            cfg.bind("plans");
+            cfg.bind(cb_systray, "systray");
+            cfg.bind(cb_autoupdate, "autoupdate");
+            cfg.bind("restartprompt");
+            cfg.bind("tftpd_dir_index");
+            cfg.bind("tftpd_dirs");
+            cfg.bind("lang");
+        }
+        string conf_init(string key)   // property.setting must be set to avoid exception
         {
             return string.IsNullOrEmpty((string)Properties.Settings.Default[key]) ? get_default(key) : (string)Properties.Settings.Default[key];
         }
-        public static void set(string key, string value)
+        void conf_save(Hashtable c)
         {
-            Properties.Settings.Default[key] = value;
+            foreach (string name in c.Keys) Properties.Settings.Default[name] = c[name];
             Properties.Settings.Default.Save();
             Properties.Settings.Default.Upgrade();
         }
-        static string get_default(string key) // effective only when settings have been set to ""
+        string get_default(string key) // effective only when settings have been set to ""
         {
             Hashtable cfg = new Hashtable();
             cfg.Add("tabindex", "0");
@@ -234,6 +269,5 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("mime", mime);
             return String.IsNullOrEmpty((string)cfg[key]) ? "" : (string)cfg[key];
         }
-
     }
 }

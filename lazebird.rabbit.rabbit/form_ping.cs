@@ -66,8 +66,6 @@ namespace lazebird.rabbit.rabbit
                     ((Form)formhash["form"]).Text = "Rabbit";
                     ((Button)btnhash["ping_btn"]).Text = Language.trans("开始");
                 }
-                saveconf();
-
             }
             catch (Exception) { }
         }

@@ -16,7 +16,6 @@ namespace lazebird.rabbit.rabbit
     {
         rlog setlog;
         Version pver;
-        bool restartprompt;
         string prjurl = "https://code.aliyun.com/lazebird/rabbit/tree/master/release";
         // Environment.ExpandEnvironmentVariables(@"%userprofile%\appdata\local");
         string profileuri = Path.GetDirectoryName(ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath);
@@ -49,6 +48,7 @@ namespace lazebird.rabbit.rabbit
             link_ver.Text = pver.ToString() + " (" + appver.v.ToString() + ")";
             link_ver.LinkClicked += ver_click;
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            if (File.Exists(upgrade.scriptname)) File.Delete(upgrade.scriptname);
         }
         void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
@@ -59,8 +59,8 @@ namespace lazebird.rabbit.rabbit
         void lang_opt_SelectedIndexChanged(object sender, EventArgs e)
         {
             string lang = lang_cb.SelectedItem as string;
-            if (lang_cb.Text == "System") rconf2.set("lang", "");
-            else rconf2.set("lang", lang_cb.Text);
+            //if (lang_cb.Text == "System") rconf2.set("lang", "");
+            //else rconf2.set("lang", lang_cb.Text);
             setlog.write("Set Language: " + lang_cb.Text);
             setlog.write("Restart App to take effect!");
         }
@@ -109,7 +109,7 @@ namespace lazebird.rabbit.rabbit
                 if (res == DialogResult.Yes)
                 {
                     download2file(binaryuri, newbinpath);
-                    if (restartprompt) res = MessageBox.Show("Restart & Upgrade?", "Rabbit Upgrade", mbox);
+                    if (cfg.getbool("restartprompt")) res = MessageBox.Show("Restart & Upgrade?", "Rabbit Upgrade", mbox);
                     if (res == DialogResult.Yes)
                     {
                         new upgrade(Application.ExecutablePath).run();
@@ -146,7 +146,6 @@ namespace lazebird.rabbit.rabbit
             ntfico.Visible = ((CheckBox)sender).Checked;
             ShowInTaskbar = !ntfico.Visible;
             if (ShowInTaskbar) bar = new rtaskbar(pinglog.write, this.Handle); // reset taskbar
-            setting_saveconf();
         }
         void systray_double_click(object sender, EventArgs e)
         {
@@ -166,21 +165,6 @@ namespace lazebird.rabbit.rabbit
         void autoupdate_click(object sender, EventArgs e)
         {
             if (((CheckBox)sender).Checked) ver_click(null, null);
-            setting_saveconf();
-        }
-        void setting_readconf()
-        {
-            if (File.Exists(upgrade.scriptname)) File.Delete(upgrade.scriptname);
-            if (rconf2.get("systray") == "true") cb_systray.Checked = true;
-            if (rconf2.get("restartprompt") == "true") restartprompt = true;
-            if (rconf2.get("autoupdate") == "true") cb_autoupdate.Checked = true;
-        }
-        void setting_saveconf()
-        {
-            if (onloading) return;
-            rconf2.set("systray", cb_systray.Checked ? "true" : "false");
-            rconf2.set("restartprompt", "false");
-            rconf2.set("autoupdate", cb_autoupdate.Checked ? "true" : "false");
         }
         void on_dispose()
         {

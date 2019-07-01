@@ -56,7 +56,6 @@ namespace lazebird.rabbit.rabbit
             tb.BackColor = Color.YellowGreen;
             curtftpd_dir = newidx;
             tftpd.set_cwd((string)tftpd_dirhash[tb]);
-            saveconf();
             //tftpd_log_func(0, "I: Activate " + tftpd_dirhash[b]);
         }
         TextBox tftpd_dir_select(TextBox tb)
@@ -131,7 +130,6 @@ namespace lazebird.rabbit.rabbit
                     ((Button)btnhash["tftpd_btn"]).Text = Language.trans("开始");
                     tftpd.stop();
                 }
-                saveconf();
             }
             catch (Exception e)
             {
@@ -140,26 +138,26 @@ namespace lazebird.rabbit.rabbit
         }
         void tftpd_readconf()
         {
-            string[] dirs = rconf2.get("tftpd_dirs").Split(';');
+            string[] dirs = cfg.getstr("tftpd_dirs").Split(';');
             foreach (string path in dirs)
             {
                 if (path != "")
                     tftpd_set_dir(tftpd_add_dir(), path);
             }
-            int index = int.Parse(rconf2.get("tftpd_dir_index"));
+            int index = cfg.getint("tftpd_dir_index");
             if (index >= 0 && index < tftpd_dirs.Count)
                 tftpd_active_dir((TextBox)tftpd_dirs[index]);
         }
         void tftpd_saveconf()
         {
             if (onloading) return;
-            rconf2.set("tftpd_dir_index", curtftpd_dir.ToString());
+            cfg.set("tftpd_dir_index", curtftpd_dir.ToString());
             string dirs = "";
             for (int i = 0; i < tftpd_dirs.Count; i++)
             {
                 dirs += tftpd_dirhash[tftpd_dirs[i]] + ";";
             }
-            rconf2.set("tftpd_dirs", dirs);
+            cfg.set("tftpd_dirs", dirs);
         }
     }
 }

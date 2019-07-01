@@ -7,8 +7,8 @@
     <ProjectGuid>{7F9C962E-01CC-4489-8BF9-F052F18CA2C5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>lazebird.rabbit.rconf</RootNamespace>
-    <AssemblyName>lazebird.rabbit.rconf</AssemblyName>
+    <RootNamespace>lazebird.rabbit.conf</RootNamespace>
+    <AssemblyName>lazebird.rabbit.conf</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

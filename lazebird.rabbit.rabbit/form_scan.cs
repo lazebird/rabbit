@@ -83,7 +83,6 @@ namespace lazebird.rabbit.rabbit
                     btn_scan.Text = "Start";
                     stop_scan();
                 }
-                saveconf();
             }
             catch (Exception) { }
         }

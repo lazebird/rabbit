@@ -96,16 +96,14 @@ namespace lazebird.rabbit.rabbit
         {
             plan_parse_args();
             plan_add(ui2plan());
-            saveconf();
         }
         void plan_del_click(object sender, EventArgs e)
         {
             plan_del(text_planmsg.Text);
-            saveconf();
         }
         void plan_readconf()
         {
-            string[] cfgs = rconf2.get("plans").Split(';');
+            string[] cfgs = cfg.getstr("plans").Split(';');
             foreach (string cfg in cfgs)
                 if (cfg.Length > 0) plan_add(new rplan(plan_log_func, cfg, plan_panel.add(cfg, null, plan_click)));
         }
@@ -115,7 +113,7 @@ namespace lazebird.rabbit.rabbit
             string cfgs = "";
             foreach (rplan p in plan_tbhash.Values)
                 cfgs += p.ToString() + ";";
-            rconf2.set("plans", cfgs);
+            cfg.set("plans", cfgs);
         }
     }
 }

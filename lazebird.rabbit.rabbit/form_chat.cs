@@ -3,7 +3,6 @@ using lazebird.rabbit.common;
 using System;
 using System.Collections;
 using System.Net;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace lazebird.rabbit.rabbit
@@ -47,7 +46,6 @@ namespace lazebird.rabbit.rabbit
                 btn_chat.Text = Language.trans("开始");
                 chat.stop();
             }
-            saveconf();
         }
         void user_click(object sender, EventArgs e)
         {
@@ -75,28 +73,10 @@ namespace lazebird.rabbit.rabbit
             chatbtnhash.Clear();
             chat_upanel.clear();
             chat.new_query(text_chatntf.Text, 1314);
-            if (sender != null) saveconf();
         }
         void chat_notify_click(object sender, EventArgs e)
         {
             chat.new_notification(text_chatntf.Text, 1314);
-            saveconf();
-        }
-        void chat_readconf()
-        {
-            text_chatname.Text = rconf2.get("chatname");
-            chat.set_name(text_chatname.Text);
-            text_chatntf.Text = rconf2.get("chatbrdip");
-            chat_click(null, null);
-            chat_refresh_click(null, null);
-            Thread.Sleep(100);
-            chat_refresh_click(null, null);
-        }
-        void chat_saveconf()
-        {
-            if (onloading) return;
-            rconf2.set("chatname", text_chatname.Text);
-            rconf2.set("chatbrdip", text_chatntf.Text);
         }
     }
 }
