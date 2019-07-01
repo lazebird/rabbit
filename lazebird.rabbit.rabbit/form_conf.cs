@@ -26,21 +26,21 @@ namespace lazebird.rabbit.rabbit
             cfg.bind(text_tftpcaddr, "tftpc_addr");
             cfg.bind(text_tftpcopt, "tftpc_opt");
             cfg.bind(text_planopt, "plan_opt");
-            cfg.bind(btn_ping, "ping_btn", true, btn_callback);
-            cfg.bind(btn_httpd, "http_btn", true, btn_callback);
-            cfg.bind(tftpd_btn, "tftpd_btn", true, btn_callback);
+            cfg.bind(btn_ping, "ping_btn", true, btn_init_cb);
+            cfg.bind(btn_httpd, "http_btn", true, btn_init_cb);
+            cfg.bind(tftpd_btn, "tftpd_btn", true, btn_init_cb);
             cfg.bind(text_chatname, "chatname");
             cfg.bind(text_chatntf, "chatbrdip");
-            cfg.bind("http_dirs");
-            cfg.bind("plans");
+            cfg.bind("http_dirs", httpd_readconf, httpd_saveconf);
+            cfg.bind("plans", plan_readconf, plan_saveconf);
             cfg.bind(cb_systray, "systray");
             cfg.bind(cb_autoupdate, "autoupdate");
-            cfg.bind("restartprompt");
-            cfg.bind("tftpd_dir_index");
-            cfg.bind("tftpd_dirs");
-            cfg.bind("lang");
+            cfg.bind("restartprompt", null, null);
+            cfg.bind("tftpd_dir_index", tftpd_readconf, tftpd_saveconf);
+            cfg.bind("tftpd_dirs", tftpd_readconf, tftpd_saveconf);
+            cfg.bind("lang", null, null);
         }
-        void btn_callback(object sender, string val)
+        void btn_init_cb(object sender, string val)
         {
             if (val == "Start") return;
             Button btn = (Button)sender;

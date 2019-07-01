@@ -101,13 +101,13 @@ namespace lazebird.rabbit.rabbit
         {
             plan_del(text_planmsg.Text);
         }
-        void plan_readconf()
+        void plan_readconf(string name, string val)
         {
-            string[] cfgs = cfg.getstr("plans").Split(';');
+            string[] cfgs = val.Split(';');
             foreach (string cfg in cfgs)
                 if (cfg.Length > 0) plan_add(new rplan(plan_log_func, cfg, plan_panel.add(cfg, null, plan_click)));
         }
-        void plan_saveconf()
+        void plan_saveconf(string name)
         {
             if (onloading) return;
             string cfgs = "";

@@ -121,19 +121,16 @@ namespace lazebird.rabbit.rabbit
             int.TryParse(((TextBox)texthash["http_port"]).Text, out httpport);
             http_opts = ropt.parse_opts(text_httpopt.Text);
         }
-        void httpd_readconf()
+        void httpd_readconf(string name, string val)
         {
-            string[] paths = cfg.getstr("http_dirs").Split(';');
+            string[] paths = val.Split(';');
             foreach (string path in paths) if (path != "") httpd_add_path(path);
         }
-        void httpd_saveconf()
+        void httpd_saveconf(string name)
         {
             if (onloading) return;
             string dirs = "";
-            foreach (string path in httpd_phash.Values)
-            {
-                dirs += path + ";";
-            }
+            foreach (string path in httpd_phash.Values) dirs += path + ";";
             cfg.set("http_dirs", dirs);
         }
     }

@@ -9,6 +9,7 @@ namespace lazebird.rabbit.conf
         Hashtable datas;
         Hashtable autosave;
         Hashtable texts, btns, cbs;
+        Hashtable savecbs;
         Func<string, string> init;
         Action<Hashtable> save;
         public rconf(Func<string, string> init, Action<Hashtable> save)
@@ -20,6 +21,12 @@ namespace lazebird.rabbit.conf
             texts = Hashtable.Synchronized(new Hashtable());
             btns = Hashtable.Synchronized(new Hashtable());
             cbs = Hashtable.Synchronized(new Hashtable());
+            savecbs = Hashtable.Synchronized(new Hashtable());
+        }
+        void save_all()
+        {
+            foreach (string name in savecbs.Keys) ((Action<string>)savecbs[name])(name);
+            save(datas);
         }
         void tb_leave(object sender, EventArgs e)
         {
@@ -38,9 +45,9 @@ namespace lazebird.rabbit.conf
         {
             Button btn = (Button)sender;
             datas[btn.Name] = btn.Text;
-            if (autosave.ContainsKey(btn.Name)) save(datas);
+            if (autosave.ContainsKey(btn.Name)) save_all();
         }
-        public void bind(Button btn, string name, bool autosave_flag, Action<object, string> callback) // consider button click problem, not only view
+        public void bind(Button btn, string name, bool autosave_flag, Action<object, string> initcb) // consider button click problem, not only view
         {
             btns[name] = btn;
             btn.Name = name;
@@ -48,7 +55,7 @@ namespace lazebird.rabbit.conf
             btn.Text = (string)datas[name];
             btn.Click += new EventHandler(btn_click);
             if (autosave_flag && !autosave.ContainsKey(name)) autosave.Add(name, true);
-            callback(btn, btn.Text);
+            if (initcb != null) initcb(btn, btn.Text);
         }
         void cb_click(object sender, EventArgs e)
         {
@@ -75,9 +82,11 @@ namespace lazebird.rabbit.conf
             tc.SelectedIndex = int.Parse((string)datas[name]);
             tc.SelectedIndexChanged += new EventHandler(tc_changed);
         }
-        public void bind(string name)
+        public void bind(string name, Action<string, string> initcb, Action<string> savecb)
         {
-            if (!datas.ContainsKey(name)) datas.Add(name, init(name));
+            string val = init(name);
+            if (!datas.ContainsKey(name)) datas.Add(name, val);
+            if (initcb != null) initcb(name, val);
         }
         public int getint(string name)
         {

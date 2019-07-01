@@ -136,22 +136,28 @@ namespace lazebird.rabbit.rabbit
                 tftpd_log_func(-1, "!E: " + e.ToString());
             }
         }
-        void tftpd_readconf()
+        void tftpd_readconf(string name, string val)
         {
-            string[] dirs = cfg.getstr("tftpd_dirs").Split(';');
-            foreach (string path in dirs)
+            if (name == "tftpd_dirs")
             {
-                if (path != "")
-                    tftpd_set_dir(tftpd_add_dir(), path);
+                string[] dirs = val.Split(';');
+                foreach (string path in dirs)
+                {
+                    if (path != "") tftpd_set_dir(tftpd_add_dir(), path);
+                }
+                return;
             }
-            int index = cfg.getint("tftpd_dir_index");
-            if (index >= 0 && index < tftpd_dirs.Count)
-                tftpd_active_dir((TextBox)tftpd_dirs[index]);
+            int index = int.Parse(val);
+            if (index >= 0 && index < tftpd_dirs.Count) tftpd_active_dir((TextBox)tftpd_dirs[index]);
         }
-        void tftpd_saveconf()
+        void tftpd_saveconf(string name)
         {
             if (onloading) return;
-            cfg.set("tftpd_dir_index", curtftpd_dir.ToString());
+            if (name == "tftpd_dir_index")
+            {
+                cfg.set("tftpd_dir_index", curtftpd_dir.ToString());
+                return;
+            }
             string dirs = "";
             for (int i = 0; i < tftpd_dirs.Count; i++)
             {
