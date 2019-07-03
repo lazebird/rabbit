@@ -25,13 +25,10 @@ namespace lazebird.rabbit.rabbit
             init_form_setting();
             init_hash();
         }
-        bool onloading = false;
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            onloading = true;
             init_conf_bind();
-            onloading = false;
         }
         protected override bool ProcessDialogKey(Keys keyData)
         {

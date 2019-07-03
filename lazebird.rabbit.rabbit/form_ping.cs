@@ -20,7 +20,6 @@ namespace lazebird.rabbit.rabbit
         void init_form_ping()
         {
             pinglog = new rlog(lb_ping);
-            btn_ping.Click += new EventHandler(ping_click);
             bar = new rtaskbar(pinglog.write, this.Handle);
             recq = new Queue();
             ping = new rping(ping_log_func);

@@ -101,19 +101,18 @@ namespace lazebird.rabbit.rabbit
         {
             plan_del(text_planmsg.Text);
         }
-        void plan_readconf(string name, string val)
+        void plan_conf_set(string name, string val)
         {
             string[] cfgs = val.Split(';');
             foreach (string cfg in cfgs)
                 if (cfg.Length > 0) plan_add(new rplan(plan_log_func, cfg, plan_panel.add(cfg, null, plan_click)));
         }
-        void plan_saveconf(string name)
+        string plan_conf_get(string name)
         {
-            if (onloading) return;
             string cfgs = "";
             foreach (rplan p in plan_tbhash.Values)
                 cfgs += p.ToString() + ";";
-            cfg.set("plans", cfgs);
+            return cfgs;
         }
     }
 }

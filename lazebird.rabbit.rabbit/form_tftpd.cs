@@ -31,7 +31,6 @@ namespace lazebird.rabbit.rabbit
             tftpd = new rtftpd(tftpd_log_func);
             tftpd_adddir.Click += tftpd_adddir_click;
             tftpd_deldir.Click += tftpd_deldir_click;
-            tftpd_btn.Click += tftpd_click;
             fp_tftpd_dir.AutoScroll = true;
         }
         int tftpd_log_func(int id, string msg)
@@ -136,7 +135,7 @@ namespace lazebird.rabbit.rabbit
                 tftpd_log_func(-1, "!E: " + e.ToString());
             }
         }
-        void tftpd_readconf(string name, string val)
+        void tftpd_conf_set(string name, string val)
         {
             if (name == "tftpd_dirs")
             {
@@ -150,20 +149,18 @@ namespace lazebird.rabbit.rabbit
             int index = int.Parse(val);
             if (index >= 0 && index < tftpd_dirs.Count) tftpd_active_dir((TextBox)tftpd_dirs[index]);
         }
-        void tftpd_saveconf(string name)
+        string tftpd_conf_get(string name)
         {
-            if (onloading) return;
             if (name == "tftpd_dir_index")
             {
-                cfg.set("tftpd_dir_index", curtftpd_dir.ToString());
-                return;
+                return curtftpd_dir.ToString();
             }
             string dirs = "";
             for (int i = 0; i < tftpd_dirs.Count; i++)
             {
                 dirs += tftpd_dirhash[tftpd_dirs[i]] + ";";
             }
-            cfg.set("tftpd_dirs", dirs);
+            return dirs;
         }
     }
 }
