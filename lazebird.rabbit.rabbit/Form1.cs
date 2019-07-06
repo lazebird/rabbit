@@ -6,10 +6,6 @@ namespace lazebird.rabbit.rabbit
 {
     public partial class Form1 : Form
     {
-        Hashtable texthash;
-        Hashtable btnhash;
-        Hashtable formhash;
-        Hashtable indexhash;
         public Form1()
         {
             InitializeComponent();
@@ -23,13 +19,14 @@ namespace lazebird.rabbit.rabbit
             init_form_plan();
             init_form_chat();
             init_form_setting();
-            init_hash();
         }
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
             init_conf_bind();
         }
+        Hashtable btnhash = new Hashtable();
+        Hashtable indexhash = new Hashtable();
         protected override bool ProcessDialogKey(Keys keyData)
         {
             if (keyData == Keys.Escape)
@@ -47,35 +44,6 @@ namespace lazebird.rabbit.rabbit
                 }
             }
             return base.ProcessDialogKey(keyData);
-        }
-        void init_hash()
-        {
-            texthash = new Hashtable();
-            btnhash = new Hashtable();
-            formhash = new Hashtable();
-            indexhash = new Hashtable();
-            texthash.Add("ping_addr", text_pingaddr);
-            texthash.Add("ping_opt", text_pingopt);
-            texthash.Add("http_port", text_http_port);
-            texthash.Add("http_opt", text_httpopt);
-            texthash.Add("tftpd_opt", text_tftpdopt);
-            texthash.Add("scan_ipstart", text_scanstart);
-            texthash.Add("scan_ipend", text_scanend);
-            texthash.Add("scan_opt", text_scanopt);
-            texthash.Add("tftpc_addr", text_tftpcaddr);
-            texthash.Add("tftpc_opt", text_tftpcopt);
-            texthash.Add("plan_opt", text_planopt);
-            btnhash.Add("ping_btn", btn_ping);
-            indexhash.Add("ping_btn", 0);
-            btnhash.Add("http_btn", btn_httpd);
-            indexhash.Add("http_btn", 2);
-            btnhash.Add("tftpd_btn", tftpd_btn);
-            indexhash.Add("tftpd_btn", 3);
-            formhash.Add("form", this);
-        }
-        void conf_log(string msg)
-        {
-            //tftpdlog.write(msg);
         }
     }
 }

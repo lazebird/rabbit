@@ -31,6 +31,7 @@ namespace lazebird.rabbit.rabbit
             tftpd = new rtftpd(tftpd_log_func);
             tftpd_adddir.Click += tftpd_adddir_click;
             tftpd_deldir.Click += tftpd_deldir_click;
+            tftpd_btn.Click += tftpd_click;
             fp_tftpd_dir.AutoScroll = true;
         }
         int tftpd_log_func(int id, string msg)
@@ -118,15 +119,15 @@ namespace lazebird.rabbit.rabbit
         {
             try
             {
-                if (((Button)btnhash["tftpd_btn"]).Text == Language.trans("开始"))
+                if (cfg.getstr("tftpd_btn") == Language.trans("开始"))
                 {
                     tftpdlog.clear();
-                    ((Button)btnhash["tftpd_btn"]).Text = Language.trans("停止");
+                    cfg.set("tftpd_btn", Language.trans("停止"));
                     tftpd.start(69, ropt.parse_opts(text_tftpdopt.Text));
                 }
                 else
                 {
-                    ((Button)btnhash["tftpd_btn"]).Text = Language.trans("开始");
+                    cfg.set("tftpd_btn", Language.trans("开始"));
                     tftpd.stop();
                 }
             }

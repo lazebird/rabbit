@@ -12,34 +12,50 @@ namespace lazebird.rabbit.rabbit
         {
             cfg = new rconf(conf_init, conf_save);
         }
+        void btn_init_cb(object o, string val)
+        {
+            Button b = (Button)o;
+            if (b.Text == "Start") return;
+            b.Text = "Start";
+            if (b == btn_ping) ping_click(b, new EventArgs());
+            if (b == btn_httpd) httpd_click(b, new EventArgs());
+            if (b == tftpd_btn) tftpd_click(b, new EventArgs());
+        }
         void init_conf_bind()
         {
-            cfg.bind(tabs, "tabindex");
-            cfg.bind(text_pingaddr, "ping_addr");
-            cfg.bind(text_pingopt, "ping_opt");
-            cfg.bind(text_http_port, "http_port");
-            cfg.bind(text_httpopt, "http_opt");
-            cfg.bind(text_tftpdopt, "tftpd_opt");
-            cfg.bind(text_scanstart, "scan_ipstart");
-            cfg.bind(text_scanend, "scan_ipend");
-            cfg.bind(text_scanopt, "scan_opt");
-            cfg.bind(text_tftpcaddr, "tftpc_addr");
-            cfg.bind(text_tftpcopt, "tftpc_opt");
-            cfg.bind(text_planopt, "plan_opt");
-            cfg.bind(btn_ping, "ping_btn", true, "Start", ping_click);
-            cfg.bind(btn_httpd, "http_btn", true, "Start", httpd_click);
-            cfg.bind(tftpd_btn, "tftpd_btn", true, "Start", tftpd_click);
-            cfg.bind(text_chatname, "chatname");
-            cfg.bind(text_chatntf, "chatbrdip");
-            cfg.bind("http_dirs", httpd_conf_get, httpd_conf_set);
-            cfg.bind("plans", plan_conf_get, plan_conf_set);
-            cfg.bind(cb_systray, "systray");
-            cfg.bind(cb_autoupdate, "autoupdate");
-            cfg.bind("restartprompt", null, null);
-            cfg.bind("tftpd_dir_index", tftpd_conf_get, tftpd_conf_set);
-            cfg.bind("tftpd_dirs", tftpd_conf_get, tftpd_conf_set);
-            cfg.bind("lang", null, null);
-            cfg.bind("mime", null, null);
+            cfg.bind(tabs, "tabindex", null, false);
+            cfg.bind(text_pingaddr, "ping_addr", null, false);
+            cfg.bind(text_pingopt, "ping_opt", null, false);
+            cfg.bind(text_http_port, "http_port", null, false);
+            cfg.bind(text_httpopt, "http_opt", null, false);
+            cfg.bind(text_tftpdopt, "tftpd_opt", null, false);
+            cfg.bind(text_scanstart, "scan_ipstart", null, false);
+            cfg.bind(text_scanend, "scan_ipend", null, false);
+            cfg.bind(text_scanopt, "scan_opt", null, false);
+            cfg.bind(text_tftpcaddr, "tftpc_addr", null, false);
+            cfg.bind(text_tftpcopt, "tftpc_opt", null, false);
+            cfg.bind(text_planopt, "plan_opt", null, false);
+            cfg.bind(btn_ping, "ping_btn", btn_init_cb, true);
+            cfg.bind(btn_httpd, "http_btn", btn_init_cb, true);
+            cfg.bind(tftpd_btn, "tftpd_btn", btn_init_cb, true);
+            cfg.bind(text_chatname, "chatname", null, false);
+            cfg.bind(text_chatntf, "chatbrdip", null, false);
+            rstr httpdirs = new rstr("http_dirs", httpd_conf_get, httpd_conf_set);
+            cfg.bind(httpdirs, "http_dirs", null, false);
+            rstr plans = new rstr("plans", plan_conf_get, plan_conf_set);
+            cfg.bind(plans, "plans", null, false);
+            cfg.bind(cb_systray, "systray", null, false);
+            cfg.bind(cb_autoupdate, "autoupdate", null, false);
+            rstr restartprompt = new rstr("restartprompt", null, null);
+            cfg.bind(restartprompt, "restartprompt", null, false);
+            rstr tftpd_dir_index = new rstr("tftpd_dir_index", tftpd_conf_get, tftpd_conf_set);
+            cfg.bind(tftpd_dir_index, "tftpd_dir_index", null, false);
+            rstr tftpd_dirs = new rstr("tftpd_dirs", tftpd_conf_get, tftpd_conf_set);
+            cfg.bind(tftpd_dirs, "tftpd_dirs", null, false);
+            rstr lang = new rstr("lang", null, null);
+            cfg.bind(lang, "lang", null, false);
+            rstr mime = new rstr("mime", null, null);
+            cfg.bind(mime, "mime", null, false);
             httpd.init_mime(cfg.getstr("mime"));
         }
         string conf_init(string key)   // property.setting must be set to avoid exception

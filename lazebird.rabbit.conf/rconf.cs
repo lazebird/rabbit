@@ -6,89 +6,101 @@ namespace lazebird.rabbit.conf
 {
     public class rconf
     {
-        Hashtable datas;        // name - value
-        Hashtable autosave;     // name - autosave_flag
-        Hashtable texts, btns, cbs; // name - UI elements
-        Hashtable get_cbs, set_cbs, click_cbs;      // name - callback
-        Func<string, string> init;
-        Action<Hashtable> save;
-        public rconf(Func<string, string> init, Action<Hashtable> save)
+        Hashtable items;        // name - object
+        Hashtable types;        // name - type: { textbox, tab, checkbox, button, combobox, rstr, rint }
+        Hashtable autosave;     // name - autosave_flag; only effective by set action
+        Func<string, string> conf_init_cb;
+        Action<Hashtable> conf_save_cb;
+        bool is_initing = false;        // no autosave when binding or initing a new item
+        public rconf(Func<string, string> initcb, Action<Hashtable> savecb)
         {
-            this.init = init;
-            this.save = save;
-            datas = Hashtable.Synchronized(new Hashtable());
+            this.conf_init_cb = initcb;
+            this.conf_save_cb = savecb;
+            items = Hashtable.Synchronized(new Hashtable());
             autosave = Hashtable.Synchronized(new Hashtable());
-            texts = Hashtable.Synchronized(new Hashtable());
-            btns = Hashtable.Synchronized(new Hashtable());
-            cbs = Hashtable.Synchronized(new Hashtable());
-            get_cbs = Hashtable.Synchronized(new Hashtable());
-            set_cbs = Hashtable.Synchronized(new Hashtable());
-            click_cbs = Hashtable.Synchronized(new Hashtable());
+            types = Hashtable.Synchronized(new Hashtable());
         }
         void save_all()
         {
-            foreach (string name in get_cbs.Keys) datas[name] = ((Func<string, string>)get_cbs[name])(name);
-            save(datas);
+            Hashtable datas = new Hashtable();
+            foreach (string name in items.Keys) datas[name] = get(name);
+            conf_save_cb(datas);
         }
-        public bool bind(TextBox tb, string name)
+        bool bind(object o, string name, Action<object, string> initcb, bool autosave_flag)
         {
-            if (datas.ContainsKey(name)) return false;
-            texts[name] = tb;
-            datas[name] = tb.Text = init(name);
+            if (items.ContainsKey(name)) return false;
+            items[name] = o;
+            types[name] = o.GetType();
+            autosave[name] = autosave_flag;
+            is_initing = true;
+            if (initcb != null) initcb(o, conf_init_cb(name));
+            is_initing = false;
             return true;
         }
-        void btn_click(object sender, EventArgs e)
+        public bool bind(TextBox b, string name, Action<object, string> initcb, bool autosave_flag)
         {
-            Button btn = (Button)sender;
-            if (click_cbs.ContainsKey(btn.Name)) ((Action<object, EventArgs>)click_cbs[btn.Name])(btn, e);
-            datas[btn.Name] = btn.Text;
-            if (autosave.ContainsKey(btn.Name)) save_all();
+            b.Text = conf_init_cb(name);
+            return bind((object)b, name, initcb, autosave_flag);
         }
-        public bool bind(Button btn, string name, bool autosave_flag, string defval, Action<object, EventArgs> clickcb) // consider button click problem, not only view
+        public bool bind(Button b, string name, Action<object, string> initcb, bool autosave_flag)
         {
-            if (datas.ContainsKey(name)) return false;
-            btns[name] = btn;
-            click_cbs[name] = clickcb;
-            btn.Name = name;
-            datas[name] = init(name);
-            btn.Click += btn_click;
-            if (autosave_flag) autosave[name] = true;
-            if (init(name) != defval) clickcb(btn, new EventArgs());
-            return true;
+            b.Text = conf_init_cb(name);
+            return bind((object)b, name, initcb, autosave_flag);
         }
-        public bool bind(CheckBox cb, string name)
+        public bool bind(CheckBox b, string name, Action<object, string> initcb, bool autosave_flag)
         {
-            if (datas.ContainsKey(name)) return false;
-            cbs[name] = cb;
-            datas[name] = init(name);
-            cb.Checked = bool.Parse((string)datas[name]);
-            return true;
+            b.Checked = bool.Parse(conf_init_cb(name));
+            return bind((object)b, name, initcb, autosave_flag);
         }
-        public bool bind(TabControl tc, string name)
+        public bool bind(TabControl b, string name, Action<object, string> initcb, bool autosave_flag)
         {
-            if (datas.ContainsKey(name)) return false;
-            tc.Name = name;
-            datas[name] = init(name);
-            tc.SelectedIndex = int.Parse((string)datas[name]);
-            return true;
+            b.SelectedIndex = int.Parse(conf_init_cb(name));
+            return bind((object)b, name, initcb, autosave_flag);
         }
-        public bool bind(string name, Func<string, string> getcb, Action<string, string> setcb)
+        public bool bind(rstr b, string name, Action<object, string> initcb, bool autosave_flag)
         {
-            if (datas.ContainsKey(name)) return false;
-            datas[name] = init(name);
-            if (getcb != null) get_cbs[name] = getcb;
-            if (setcb != null) set_cbs[name] = setcb;
-            if (setcb != null) setcb(name, init(name));
-            return true;
+            b.set(name, conf_init_cb(name));
+            return bind((object)b, name, initcb, autosave_flag);
+        }
+        public bool bind(rint b, string name, Action<object, string> initcb, bool autosave_flag)
+        {
+            b.set(name, int.Parse(conf_init_cb(name)));
+            return bind((object)b, name, initcb, autosave_flag);
         }
         string get(string name)
         {
-            if (!datas.ContainsKey(name)) throw new ArgumentException();
-            if (texts.ContainsKey(name)) return ((TextBox)texts[name]).Text;
-            if (btns.ContainsKey(name)) return ((Button)btns[name]).Text;
-            if (cbs.ContainsKey(name)) return ((CheckBox)cbs[name]).Checked.ToString();
-            if (get_cbs.ContainsKey(name)) return ((Func<string, string>)get_cbs[name])(name);
-            return (string)datas[name];
+            if (!items.ContainsKey(name)) throw new ArgumentException();
+            if ((Type)types[name] == typeof(TextBox))
+            {
+                TextBox b = (TextBox)items[name];
+                return b.Text;
+            }
+            else if ((Type)types[name] == typeof(Button))
+            {
+                Button b = (Button)items[name];
+                return b.Text;
+            }
+            else if ((Type)types[name] == typeof(CheckBox))
+            {
+                CheckBox b = (CheckBox)items[name];
+                return b.Checked.ToString();
+            }
+            else if ((Type)types[name] == typeof(TabControl))
+            {
+                TabControl b = (TabControl)items[name];
+                return b.TabIndex.ToString();
+            }
+            else if ((Type)types[name] == typeof(rstr))
+            {
+                rstr b = (rstr)items[name];
+                return b.get("");
+            }
+            else if ((Type)types[name] == typeof(rint))
+            {
+                rint b = (rint)items[name];
+                return b.get("").ToString();
+            }
+            return "";
         }
         public int getint(string name)
         {
@@ -104,11 +116,28 @@ namespace lazebird.rabbit.conf
         }
         public void set(string name, string val)
         {
-            datas[name] = val;
-            if (texts.ContainsKey(name)) ((TextBox)texts[name]).Text = val;
-            if (btns.ContainsKey(name)) ((Button)btns[name]).Text = val;
-            if (cbs.ContainsKey(name)) ((CheckBox)cbs[name]).Checked = bool.Parse(val);
-            if (set_cbs.ContainsKey(name)) ((Action<string, string>)set_cbs[name])(name, val);
+            if (!items.ContainsKey(name)) throw new ArgumentException();
+            if ((Type)types[name] == typeof(TextBox))
+            {
+                TextBox b = (TextBox)items[name];
+                b.Text = val;
+            }
+            else if ((Type)types[name] == typeof(Button))
+            {
+                Button b = (Button)items[name];
+                b.Text = val;
+            }
+            else if ((Type)types[name] == typeof(CheckBox))
+            {
+                CheckBox b = (CheckBox)items[name];
+                b.Checked = bool.Parse(val);
+            }
+            else if ((Type)types[name] == typeof(TabControl))
+            {
+                TabControl b = (TabControl)items[name];
+                b.TabIndex = int.Parse(val);
+            }
+            if (!is_initing && (bool)autosave[name]) save_all();
         }
     }
 }

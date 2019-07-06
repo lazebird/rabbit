@@ -19,7 +19,6 @@ namespace lazebird.rabbit.rabbit
         rlog httpdlog;
         rshell sh;
         Hashtable httpd_phash;
-        int httpport;
         Hashtable http_opts;
         void init_form_http()
         {
@@ -30,6 +29,7 @@ namespace lazebird.rabbit.rabbit
             //httpd_output.HorizontalExtent = 5000;
             httpdlog = new rlog(lb_httpd);
             httpd = new rhttpd(httpd_log_func);
+            btn_httpd.Click += httpd_click;
             if (sh.file_exist()) cb_http_shell.Checked = true;
             cb_http_shell.CheckedChanged += new EventHandler(http_shell_click);
             init_comsrv();
@@ -43,14 +43,14 @@ namespace lazebird.rabbit.rabbit
             try
             {
                 http_parse_args();
-                if (((Button)btnhash["http_btn"]).Text == Language.trans("开始"))
+                if (cfg.getstr("http_btn") == Language.trans("开始"))
                 {
-                    ((Button)btnhash["http_btn"]).Text = Language.trans("停止");
-                    httpd.start(httpport, http_opts);
+                    cfg.set("http_btn", Language.trans("停止"));
+                    httpd.start(cfg.getint("http_port"), http_opts);
                 }
                 else
                 {
-                    ((Button)btnhash["http_btn"]).Text = Language.trans("开始");
+                    cfg.set("http_btn", Language.trans("开始"));
                     httpd.stop();
                 }
             }
@@ -116,7 +116,6 @@ namespace lazebird.rabbit.rabbit
         }
         void http_parse_args()
         {
-            int.TryParse(((TextBox)texthash["http_port"]).Text, out httpport);
             http_opts = ropt.parse_opts(text_httpopt.Text);
         }
         void httpd_conf_set(string name, string val)

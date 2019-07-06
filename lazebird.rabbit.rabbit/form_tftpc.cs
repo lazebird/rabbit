@@ -38,12 +38,10 @@ namespace lazebird.rabbit.rabbit
                 text_tftpclfile.Text = fd.FileName;
             }
         }
-        string tftpc_ip;
         string tftpc_lfile;
         string tftpc_rfile;
         void tftpc_parse_args()
         {
-            tftpc_ip = ((TextBox)texthash["tftpc_addr"]).Text;
             tftpc_opts = ropt.parse_opts(text_tftpcopt.Text);
             tftpc_lfile = text_tftpclfile.Text;
             tftpc_rfile = text_tftpcrfile.Text;
@@ -54,7 +52,7 @@ namespace lazebird.rabbit.rabbit
             {
                 tftpc_parse_args();
                 tftpc = new rtftpc(tftpc_log_func, tftpc_opts);
-                Thread t = new Thread(() => tftpc.get(tftpc_ip, 69, tftpc_rfile, tftpc_rfile, Modes.octet));
+                Thread t = new Thread(() => tftpc.get(cfg.getstr("tftpc_addr"), 69, tftpc_rfile, tftpc_rfile, Modes.octet));
                 t.IsBackground = true;
                 t.Start();
             }
@@ -69,7 +67,7 @@ namespace lazebird.rabbit.rabbit
             {
                 tftpc_parse_args();
                 tftpc = new rtftpc(tftpc_log_func, tftpc_opts);
-                Thread t = new Thread(() => tftpc.put(tftpc_ip, 69, Path.GetFileName(tftpc_lfile), tftpc_lfile, Modes.octet));
+                Thread t = new Thread(() => tftpc.put(cfg.getstr("tftpc_addr"), 69, Path.GetFileName(tftpc_lfile), tftpc_lfile, Modes.octet));
                 t.IsBackground = true;
                 t.Start();
             }

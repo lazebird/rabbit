@@ -23,6 +23,7 @@ namespace lazebird.rabbit.rabbit
             bar = new rtaskbar(pinglog.write, this.Handle);
             recq = new Queue();
             ping = new rping(ping_log_func);
+            btn_ping.Click += ping_click;
         }
         void ping_log_func(string msg)
         {
@@ -40,7 +41,7 @@ namespace lazebird.rabbit.rabbit
         }
         void ping_parse_args()
         {
-            ping_addr = ((TextBox)texthash["ping_addr"]).Text;
+            ping_addr = cfg.getstr("ping_addr");
             ping_opts = ropt.parse_opts(text_pingopt.Text);
             if (ping_opts.ContainsKey("taskbar")) bool.TryParse((string)ping_opts["taskbar"], out ping_taskbar);
             if (ping_opts.ContainsKey("log")) ping_logpath = (string)ping_opts["log"];
@@ -52,7 +53,7 @@ namespace lazebird.rabbit.rabbit
             {
                 if (cfg.getstr("ping_btn") == Language.trans("开始"))
                 {
-                    this.Text = ((TextBox)texthash["ping_addr"]).Text;
+                    this.Text = cfg.getstr("ping_addr");
                     cfg.set("ping_btn",Language.trans("停止"));
                     pinglog.clear();
                     ping_parse_args();
