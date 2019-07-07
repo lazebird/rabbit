@@ -48,7 +48,7 @@ namespace lazebird.rabbit.rabbit
             link_ver.Text = pver.ToString() + " (" + appver.v.ToString() + ")";
             link_ver.LinkClicked += ver_click;
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
-            if (File.Exists(vgen.ver.upgrade.scriptname)) File.Delete(vgen.ver.upgrade.scriptname);
+            if (File.Exists(upgrade.scriptname)) File.Delete(upgrade.scriptname);
             key.bind(key.globalindex, Keys.F1, new Action(() => System.Diagnostics.Process.Start(helpurl)));
             key.bind(key.globalindex, Keys.F2, new Action(() => System.Diagnostics.Process.Start(prjurl)));
             key.bind(key.globalindex, Keys.F3, new Action(() => System.Diagnostics.Process.Start(profileuri)));
@@ -95,7 +95,7 @@ namespace lazebird.rabbit.rabbit
             wc.DownloadFile(uri, filepath);
             wc.Dispose();
         }
-        void upgrade()
+        void upgrade_handler()
         {
             try
             {
@@ -112,6 +112,7 @@ namespace lazebird.rabbit.rabbit
                 if (res == DialogResult.Yes)
                 {
                     download2file(binaryuri, newbinpath);
+                    setlog.write("New version saved to " + newbinpath);
                     if (cfg.getbool("restartprompt")) res = MessageBox.Show("Restart & Upgrade?", "Rabbit Upgrade", mbox);
                     if (res == DialogResult.Yes)
                     {
@@ -120,8 +121,7 @@ namespace lazebird.rabbit.rabbit
                     }
                     else
                     {
-                        new upgrade(Application.ExecutablePath);
-                        MessageBox.Show("New version saved to " + newbinpath, "Rabbit Upgrade");
+                        new upgrade(Application.ExecutablePath);    // create upgrade script for debug
                     }
 
                 }
@@ -136,7 +136,7 @@ namespace lazebird.rabbit.rabbit
         void ver_click(object sender, LinkLabelLinkClickedEventArgs evt)
         {
             Clipboard.SetDataObject(link_ver.Text);
-            Thread t = new Thread(upgrade);
+            Thread t = new Thread(upgrade_handler);
             t.IsBackground = true;
             t.Start();
         }
