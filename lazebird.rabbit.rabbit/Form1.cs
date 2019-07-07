@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Windows.Forms;
 
 namespace lazebird.rabbit.rabbit
@@ -10,6 +9,7 @@ namespace lazebird.rabbit.rabbit
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
+            init_form_key();
             init_form_conf();
             init_form_ping();
             init_form_scan();
@@ -24,26 +24,7 @@ namespace lazebird.rabbit.rabbit
         {
             base.OnLoad(e);
             init_conf_bind();
-        }
-        Hashtable btnhash = new Hashtable();
-        Hashtable indexhash = new Hashtable();
-        protected override bool ProcessDialogKey(Keys keyData)
-        {
-            if (keyData == Keys.Escape)
-            {
-                this.Close();
-                return true;
-            }
-            else if (keyData == Keys.Enter)
-            {
-                foreach (DictionaryEntry de in indexhash)
-                {
-                    if ((int)de.Value == tabs.SelectedIndex)
-                        if (btnhash.ContainsKey(de.Key))
-                            ((Button)btnhash[de.Key]).PerformClick();
-                }
-            }
-            return base.ProcessDialogKey(keyData);
+            chat_click(null, null);
         }
     }
 }

@@ -21,6 +21,7 @@ namespace lazebird.rabbit.rabbit
             text_tftpclfile.DoubleClick += new EventHandler(tftpc_lfile_click);
             btn_tftpcput.Click += new EventHandler(tftpc_put_click);
             btn_tftpcget.Click += new EventHandler(tftpc_get_click);
+            key.bind(4, Keys.Enter, tftpc_get_click);
         }
         int tftpc_log_func(int id, string msg)
         {

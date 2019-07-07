@@ -24,6 +24,7 @@ namespace lazebird.rabbit.rabbit
             recq = new Queue();
             ping = new rping(ping_log_func);
             btn_ping.Click += ping_click;
+            key.bind(0, Keys.Enter, ping_click);
         }
         void ping_log_func(string msg)
         {

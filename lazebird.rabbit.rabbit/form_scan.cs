@@ -17,8 +17,9 @@ namespace lazebird.rabbit.rabbit
         void init_form_scan()
         {
             scan_panel = new rpanel(fp_scan, 28);
-            btn_scan.Click += new EventHandler(scan_click);
+            btn_scan.Click += scan_click;
             scansshash = Hashtable.Synchronized(new Hashtable());
+            key.bind(1, Keys.Enter, scan_click);
         }
         void scan_log_func(string msg)
         {

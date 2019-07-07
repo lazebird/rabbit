@@ -126,6 +126,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="form_key.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="form_http.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -227,6 +230,10 @@
     <ProjectReference Include="..\lazebird.rabbit.http\lazebird.rabbit.http.csproj">
       <Project>{66efb1d8-8785-4ad9-b135-f8d699e186f6}</Project>
       <Name>lazebird.rabbit.http</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lazebird.rabbit.key\lazebird.rabbit.key.csproj">
+      <Project>{3EDA28CF-0C87-47B0-B096-C4995D415C15}</Project>
+      <Name>lazebird.rabbit.key</Name>
     </ProjectReference>
     <ProjectReference Include="..\lazebird.rabbit.ping\lazebird.rabbit.ping.csproj">
       <Project>{3fb652a4-a6d7-40d1-907d-33f0e6d78b63}</Project>

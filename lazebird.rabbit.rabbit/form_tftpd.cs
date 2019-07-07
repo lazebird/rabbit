@@ -33,6 +33,7 @@ namespace lazebird.rabbit.rabbit
             tftpd_deldir.Click += tftpd_deldir_click;
             tftpd_btn.Click += tftpd_click;
             fp_tftpd_dir.AutoScroll = true;
+            key.bind(3, Keys.Enter, tftpd_click);
         }
         int tftpd_log_func(int id, string msg)
         {

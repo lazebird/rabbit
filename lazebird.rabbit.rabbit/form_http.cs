@@ -33,6 +33,7 @@ namespace lazebird.rabbit.rabbit
             if (sh.file_exist()) cb_http_shell.Checked = true;
             cb_http_shell.CheckedChanged += new EventHandler(http_shell_click);
             init_comsrv();
+            key.bind(2, Keys.Enter, httpd_click);
         }
         void httpd_log_func(string msg)
         {

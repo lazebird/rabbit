@@ -49,6 +49,9 @@ namespace lazebird.rabbit.rabbit
             link_ver.LinkClicked += ver_click;
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
             if (File.Exists(upgrade.scriptname)) File.Delete(upgrade.scriptname);
+            key.bind(key.globalindex, Keys.F1, new Action(() => System.Diagnostics.Process.Start(helpurl)));
+            key.bind(key.globalindex, Keys.F2, new Action(() => System.Diagnostics.Process.Start(prjurl)));
+            key.bind(key.globalindex, Keys.F3, new Action(() => System.Diagnostics.Process.Start(profileuri)));
         }
         void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
