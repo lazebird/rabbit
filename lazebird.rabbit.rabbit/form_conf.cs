@@ -91,6 +91,7 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("autoupdate", "true");
             cfg.Add("chatname", Environment.UserName + "@" + Environment.MachineName);
             cfg.Add("chatbrdip", "255.255.255.255");
+            cfg.Add("restartprompt", "false");
             string mime = "";
             mime += "*:application/octet-stream;";
             mime += ".323:text/h323;";
