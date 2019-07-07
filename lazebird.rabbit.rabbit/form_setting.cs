@@ -48,7 +48,7 @@ namespace lazebird.rabbit.rabbit
             link_ver.Text = pver.ToString() + " (" + appver.v.ToString() + ")";
             link_ver.LinkClicked += ver_click;
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
-            if (File.Exists(upgrade.scriptname)) File.Delete(upgrade.scriptname);
+            if (File.Exists(vgen.ver.upgrade.scriptname)) File.Delete(vgen.ver.upgrade.scriptname);
             key.bind(key.globalindex, Keys.F1, new Action(() => System.Diagnostics.Process.Start(helpurl)));
             key.bind(key.globalindex, Keys.F2, new Action(() => System.Diagnostics.Process.Start(prjurl)));
             key.bind(key.globalindex, Keys.F3, new Action(() => System.Diagnostics.Process.Start(profileuri)));
@@ -95,7 +95,7 @@ namespace lazebird.rabbit.rabbit
             wc.DownloadFile(uri, filepath);
             wc.Dispose();
         }
-        void ver_check()
+        void upgrade()
         {
             try
             {
@@ -136,7 +136,7 @@ namespace lazebird.rabbit.rabbit
         void ver_click(object sender, LinkLabelLinkClickedEventArgs evt)
         {
             Clipboard.SetDataObject(link_ver.Text);
-            Thread t = new Thread(ver_check);
+            Thread t = new Thread(upgrade);
             t.IsBackground = true;
             t.Start();
         }
