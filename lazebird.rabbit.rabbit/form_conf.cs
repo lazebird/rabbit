@@ -48,10 +48,10 @@ namespace lazebird.rabbit.rabbit
             cfg.bind(cb_autoupdate, "autoupdate", null, false);
             rstr restartprompt = new rstr("restartprompt", null, null);
             cfg.bind(restartprompt, "restartprompt", null, false);
-            rstr tftpd_dir_index = new rstr("tftpd_dir_index", tftpd_conf_get, tftpd_conf_set);
-            cfg.bind(tftpd_dir_index, "tftpd_dir_index", null, false);
             rstr tftpd_dirs = new rstr("tftpd_dirs", tftpd_conf_get, tftpd_conf_set);
             cfg.bind(tftpd_dirs, "tftpd_dirs", null, false);
+            rstr tftpd_dir_index = new rstr("tftpd_dir_index", tftpd_conf_get, tftpd_conf_set);
+            cfg.bind(tftpd_dir_index, "tftpd_dir_index", null, false);      // depend on & must behind tftpd_dirs
             rstr lang = new rstr("lang", null, null);
             cfg.bind(lang, "lang", null, false);
             rstr mime = new rstr("mime", null, null);

@@ -88,7 +88,7 @@ namespace lazebird.rabbit.conf
             else if ((Type)types[name] == typeof(TabControl))
             {
                 TabControl b = (TabControl)items[name];
-                return b.TabIndex.ToString();
+                return b.SelectedIndex.ToString();
             }
             else if ((Type)types[name] == typeof(rstr))
             {
@@ -135,7 +135,7 @@ namespace lazebird.rabbit.conf
             else if ((Type)types[name] == typeof(TabControl))
             {
                 TabControl b = (TabControl)items[name];
-                b.TabIndex = int.Parse(val);
+                b.SelectedIndex = int.Parse(val);
             }
             if (!is_initing && (bool)autosave[name]) save_all();
         }
