@@ -20,8 +20,9 @@ namespace lazebird.rabbit.conf
             autosave = Hashtable.Synchronized(new Hashtable());
             types = Hashtable.Synchronized(new Hashtable());
         }
-        void save_all()
+        public void save()
         {
+            if (is_initing) return;
             Hashtable datas = new Hashtable();
             foreach (string name in items.Keys) datas[name] = get(name);
             conf_save_cb(datas);
@@ -137,7 +138,7 @@ namespace lazebird.rabbit.conf
                 TabControl b = (TabControl)items[name];
                 b.SelectedIndex = int.Parse(val);
             }
-            if (!is_initing && (bool)autosave[name]) save_all();
+            if ((bool)autosave[name]) save();
         }
     }
 }

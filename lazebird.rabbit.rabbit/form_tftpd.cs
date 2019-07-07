@@ -57,6 +57,7 @@ namespace lazebird.rabbit.rabbit
             tb.BackColor = Color.YellowGreen;
             curtftpd_dir = newidx;
             tftpd.set_cwd((string)tftpd_dirhash[tb]);
+            cfg.save(); // add auto save here
             //tftpd_log_func(0, "I: Activate " + tftpd_dirhash[b]);
         }
         TextBox tftpd_dir_select(TextBox tb)
