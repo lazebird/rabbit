@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>2.0.0</version>
+    <title>$title$</title>
+    <authors>lazebird</authors>
+    <owners>lazebird</owners>
+    <licenseUrl>https://github.com/lazebird/rabbit/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/lazebird/rabbit</projectUrl>
+    <iconUrl>https://github.com/lazebird/rabbit/blob/master/lazebird.rabbit.rabbit/easter%20Bunny.ico</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>an stupid winform configuration management lib</description>
+    <releaseNotes>support TextBox, Button, CheckBox, TabControl, rstr, rint classes</releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>lazebird rabbit conf</tags>
+  </metadata>
+</package>
