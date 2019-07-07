@@ -11,6 +11,8 @@ call:prjpack lazebird.rabbit.tftp
 call:prjpack lazebird.rabbit.fs
 call:prjpack lazebird.rabbit.plan
 call:prjpack lazebird.rabbit.chat
+call:prjpack lazebird.rabbit.conf
+call:prjpack lazebird.rabbit.key
 
 echo %date% %time% > ../nupack/%v%
 

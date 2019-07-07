@@ -40,22 +40,15 @@ namespace lazebird.rabbit.rabbit
             cfg.bind(tftpd_btn, "tftpd_btn", btn_init_cb, true);
             cfg.bind(text_chatname, "chatname", null, false);
             cfg.bind(text_chatntf, "chatbrdip", null, false);
-            rstr httpdirs = new rstr("http_dirs", httpd_conf_get, httpd_conf_set);
-            cfg.bind(httpdirs, "http_dirs", null, false);
-            rstr plans = new rstr("plans", plan_conf_get, plan_conf_set);
-            cfg.bind(plans, "plans", null, false);
+            cfg.bind(new rstr("http_dirs", httpd_conf_get, httpd_conf_set), "http_dirs", null, false);
+            cfg.bind(new rstr("plans", plan_conf_get, plan_conf_set), "plans", null, false);
             cfg.bind(cb_systray, "systray", null, false);
             cfg.bind(cb_autoupdate, "autoupdate", null, false);
-            rstr restartprompt = new rstr("restartprompt", null, null);
-            cfg.bind(restartprompt, "restartprompt", null, false);
-            rstr tftpd_dirs = new rstr("tftpd_dirs", tftpd_conf_get, tftpd_conf_set);
-            cfg.bind(tftpd_dirs, "tftpd_dirs", null, false);
-            rstr tftpd_dir_index = new rstr("tftpd_dir_index", tftpd_conf_get, tftpd_conf_set);
-            cfg.bind(tftpd_dir_index, "tftpd_dir_index", null, false);      // depend on & must behind tftpd_dirs
-            rstr lang = new rstr("lang", null, null);
-            cfg.bind(lang, "lang", null, false);
-            rstr mime = new rstr("mime", null, null);
-            cfg.bind(mime, "mime", null, false);
+            cfg.bind(new rstr("restartprompt", null, null), "restartprompt", null, false);
+            cfg.bind(new rstr("tftpd_dirs", tftpd_conf_get, tftpd_conf_set), "tftpd_dirs", null, false);
+            cfg.bind(new rstr("tftpd_dir_index", tftpd_conf_get, tftpd_conf_set), "tftpd_dir_index", null, false);      // depend on & must behind tftpd_dirs
+            cfg.bind(new rstr("lang", null, null), "lang", null, false);
+            cfg.bind(new rstr("mime", null, null), "mime", null, false);
             httpd.init_mime(cfg.getstr("mime"));
         }
         string conf_init(string key)   // property.setting must be set to avoid exception

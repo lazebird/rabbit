@@ -20,13 +20,6 @@ namespace lazebird.rabbit.conf
             autosave = Hashtable.Synchronized(new Hashtable());
             types = Hashtable.Synchronized(new Hashtable());
         }
-        public void save()
-        {
-            if (is_initing) return;
-            Hashtable datas = new Hashtable();
-            foreach (string name in items.Keys) datas[name] = get(name);
-            conf_save_cb(datas);
-        }
         bool bind(object o, string name, Action<object, string> initcb, bool autosave_flag)
         {
             if (items.ContainsKey(name)) return false;
@@ -139,6 +132,13 @@ namespace lazebird.rabbit.conf
                 b.SelectedIndex = int.Parse(val);
             }
             if ((bool)autosave[name]) save();
+        }
+        public void save()
+        {
+            if (is_initing) return;
+            Hashtable datas = new Hashtable();
+            foreach (string name in items.Keys) datas[name] = get(name);
+            conf_save_cb(datas);
         }
     }
 }
