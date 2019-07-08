@@ -20,7 +20,7 @@ namespace lazebird.rabbit.fs
             RegistryKey custom = parent.CreateSubKey(appname);
             custom.SetValue("", menuname);
             RegistryKey cmd = custom.CreateSubKey("command");
-            cmd.SetValue("", "\"" + apppath + "\"" + " %1");
+            cmd.SetValue("", "\"" + apppath + "\"" + " \"%1\"");
             cmd.Close();
             custom.Close();
             parent.Close();
