@@ -8,24 +8,24 @@ namespace lazebird.rabbit.tftp
 {
     public class rtftpd : IDisposable
     {
-        Func<int, string, int> log; // int index, string logmsg, int ret
+        Func<int, string, int> logcb; // int index, string logmsg, int ret
         Thread tftpd;
         Hashtable sshash;    // session thread table
         UdpClient uc;
         string cwd = Environment.CurrentDirectory;    // used for wrq, set the first non-empty dir added as root dir
         Hashtable opts;
         object obj;
-        public rtftpd(Func<int, string, int> log)
+        public rtftpd(Func<int, string, int> logcb)
         {
-            this.log = log;
+            this.logcb = logcb;
             obj = new object();
             sshash = new Hashtable();
             opts = new Hashtable();
         }
-        int ilog(int line, string msg)
+        int log(int line, string msg)
         {
             int ret;
-            lock (obj) ret = log(line, msg);
+            lock (obj) ret = logcb(line, msg);
             return ret;
         }
         void slog(string msg) { log(-1, msg); }
