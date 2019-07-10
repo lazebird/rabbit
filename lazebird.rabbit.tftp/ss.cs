@@ -59,6 +59,8 @@ namespace lazebird.rabbit.tftp
         }
         public void update_param(int timeout, int blksize)
         {
+            if (timeout < 10) timeout = 10;
+            if (blksize < 512) blksize = 512;     // add check for exception problem
             idic["timeout"] = timeout;
             idic["blksize"] = blksize;
             uc.Client.ReceiveTimeout = timeout;
@@ -70,7 +72,7 @@ namespace lazebird.rabbit.tftp
             this.filename = filename;
             this.filesize = fs.Length;
             this.q = new rqueue(idic["qsize"], idic["qtout"]);
-            maxblkno = (int)(this.filesize + idic["blksize"]) / idic["blksize"];   // if len % blksize = 0, an empty data pkt sent at last
+            maxblkno = (int)(this.filesize + idic["blksize"]) / Math.Max(idic["blksize"], 1);   // if len % blksize = 0, an empty data pkt sent at last
             if (bdic["fslog"]) t = new Thread(() => rfs.readstream_log(fs, this.q, idic["blksize"], this.filename, slog));
             else t = new Thread(() => rfs.readstream(fs, this.q, idic["blksize"]));
             t.IsBackground = true;
