@@ -11,6 +11,7 @@ namespace lazebird.rabbit.rabbit
         void init_form_conf()
         {
             cfg = new rconf(conf_init, conf_save);
+            key.bind(key.globalindex, Keys.Control | Keys.F5, conf_reset);
         }
         void btn_init_cb(object o, string val)
         {
@@ -60,6 +61,12 @@ namespace lazebird.rabbit.rabbit
             foreach (string name in c.Keys) Properties.Settings.Default[name] = c[name];
             Properties.Settings.Default.Save();
             Properties.Settings.Default.Upgrade();
+        }
+        void conf_reset()
+        {
+            Properties.Settings.Default.Reset();
+            Application.Restart();
+            Application.Exit();
         }
         string get_default(string key) // effective only when settings have been set to ""
         {

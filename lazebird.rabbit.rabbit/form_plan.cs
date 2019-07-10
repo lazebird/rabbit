@@ -96,10 +96,12 @@ namespace lazebird.rabbit.rabbit
         {
             plan_parse_args();
             plan_add(ui2plan());
+            cfg.save();
         }
         void plan_del_click(object sender, EventArgs e)
         {
             plan_del(text_planmsg.Text);
+            cfg.save();
         }
         void plan_conf_set(string name, string val)
         {

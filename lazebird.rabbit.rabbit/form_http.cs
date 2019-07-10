@@ -100,6 +100,7 @@ namespace lazebird.rabbit.rabbit
             else if (Directory.Exists(p)) httpd.del_dir(p);
             httpd_phash.Remove(tb);
             http_fpannel.del(tb);
+            cfg.save();
         }
         void httpd_add_path(string p)
         {
@@ -114,6 +115,7 @@ namespace lazebird.rabbit.rabbit
             httpd_phash.Add(tb, p);
             if (File.Exists(p)) httpd.add_file(p);
             else if (Directory.Exists(p)) httpd.add_dir(p);
+            cfg.save();
         }
         void http_parse_args()
         {
