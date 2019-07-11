@@ -135,7 +135,7 @@ namespace lazebird.rabbit.rabbit
         }
         void ver_click(object sender, LinkLabelLinkClickedEventArgs evt)
         {
-            Clipboard.SetDataObject(link_ver.Text);
+            try { Clipboard.SetDataObject(link_ver.Text); } catch (Exception) { };
             Thread t = new Thread(upgrade_handler);
             t.IsBackground = true;
             t.Start();
