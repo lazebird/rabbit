@@ -186,9 +186,9 @@
             // 
             // lb_ping
             // 
+            resources.ApplyResources(this.lb_ping, "lb_ping");
             this.lb_ping.BackColor = System.Drawing.Color.DimGray;
             this.lb_ping.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_ping, "lb_ping");
             this.lb_ping.ForeColor = System.Drawing.Color.White;
             this.lb_ping.FormattingEnabled = true;
             this.lb_ping.Name = "lb_ping";
@@ -309,8 +309,8 @@
             // 
             // fp_scan
             // 
-            this.fp_scan.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             resources.ApplyResources(this.fp_scan, "fp_scan");
+            this.fp_scan.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.fp_scan.ForeColor = System.Drawing.Color.White;
             this.fp_scan.Name = "fp_scan";
             // 
@@ -331,9 +331,9 @@
             // 
             // lb_httpd
             // 
+            resources.ApplyResources(this.lb_httpd, "lb_httpd");
             this.lb_httpd.BackColor = System.Drawing.Color.Gray;
             this.lb_httpd.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_httpd, "lb_httpd");
             this.lb_httpd.ForeColor = System.Drawing.Color.White;
             this.lb_httpd.FormattingEnabled = true;
             this.lb_httpd.Name = "lb_httpd";
@@ -399,8 +399,8 @@
             // 
             // fp_tftpd_log
             // 
-            this.fp_tftpd_log.BackColor = System.Drawing.Color.Gray;
             resources.ApplyResources(this.fp_tftpd_log, "fp_tftpd_log");
+            this.fp_tftpd_log.BackColor = System.Drawing.Color.Gray;
             this.fp_tftpd_log.Name = "fp_tftpd_log";
             // 
             // tftpd_adddir
@@ -463,8 +463,8 @@
             // 
             // fp_tftpc_log
             // 
-            this.fp_tftpc_log.BackColor = System.Drawing.Color.Gray;
             resources.ApplyResources(this.fp_tftpc_log, "fp_tftpc_log");
+            this.fp_tftpc_log.BackColor = System.Drawing.Color.Gray;
             this.fp_tftpc_log.Name = "fp_tftpc_log";
             // 
             // label_tftpcaddr
@@ -546,9 +546,9 @@
             // 
             // lb_plan
             // 
+            resources.ApplyResources(this.lb_plan, "lb_plan");
             this.lb_plan.BackColor = System.Drawing.Color.Gray;
             this.lb_plan.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_plan, "lb_plan");
             this.lb_plan.ForeColor = System.Drawing.Color.White;
             this.lb_plan.FormattingEnabled = true;
             this.lb_plan.Name = "lb_plan";
@@ -644,9 +644,9 @@
             // 
             // lb_chat
             // 
+            resources.ApplyResources(this.lb_chat, "lb_chat");
             this.lb_chat.BackColor = System.Drawing.Color.Gray;
             this.lb_chat.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_chat, "lb_chat");
             this.lb_chat.ForeColor = System.Drawing.Color.White;
             this.lb_chat.FormattingEnabled = true;
             this.lb_chat.Name = "lb_chat";
@@ -717,9 +717,9 @@
             // 
             // lb_setting
             // 
+            resources.ApplyResources(this.lb_setting, "lb_setting");
             this.lb_setting.BackColor = System.Drawing.Color.DimGray;
             this.lb_setting.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.lb_setting, "lb_setting");
             this.lb_setting.ForeColor = System.Drawing.Color.White;
             this.lb_setting.FormattingEnabled = true;
             this.lb_setting.Name = "lb_setting";
@@ -796,7 +796,7 @@
             // Form1
             // 
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.Controls.Add(this.toolStripContainer1);
             this.DoubleBuffered = true;

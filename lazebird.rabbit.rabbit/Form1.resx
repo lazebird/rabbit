@@ -137,8 +137,8 @@
   <data name="toolStripContainer1.ContentPanel.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
   </data>
-  <data name="lb_ping.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Bottom</value>
+  <data name="lb_ping.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="lb_ping.ItemHeight" type="System.Int32, mscorlib">
     <value>16</value>
@@ -567,8 +567,8 @@
   <data name="&gt;&gt;btn_scan.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="fp_scan.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Bottom</value>
+  <data name="fp_scan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="fp_scan.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 36</value>
@@ -621,8 +621,8 @@
   <data name="&gt;&gt;Scan.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="lb_httpd.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Bottom</value>
+  <data name="lb_httpd.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left, Right</value>
   </data>
   <data name="lb_httpd.ItemHeight" type="System.Int32, mscorlib">
     <value>16</value>
@@ -829,7 +829,7 @@
     <value>0, 36</value>
   </data>
   <data name="fp_httpd_file.Size" type="System.Drawing.Size, System.Drawing">
-    <value>777, 359</value>
+    <value>777, 365</value>
   </data>
   <data name="fp_httpd_file.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -873,8 +873,8 @@
   <data name="&gt;&gt;HTTPD.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="fp_tftpd_log.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Bottom</value>
+  <data name="fp_tftpd_log.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left, Right</value>
   </data>
   <data name="fp_tftpd_log.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 405</value>
@@ -1054,7 +1054,7 @@
     <value>0, 35</value>
   </data>
   <data name="fp_tftpd_dir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 360</value>
+    <value>776, 366</value>
   </data>
   <data name="fp_tftpd_dir.TabIndex" type="System.Int32, mscorlib">
     <value>17</value>
@@ -1098,8 +1098,8 @@
   <data name="&gt;&gt;TFTPD.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="fp_tftpc_log.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Bottom</value>
+  <data name="fp_tftpc_log.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="fp_tftpc_log.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 95</value>
@@ -1380,8 +1380,8 @@
   <data name="&gt;&gt;TFTPC.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="lb_plan.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Bottom</value>
+  <data name="lb_plan.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left, Right</value>
   </data>
   <data name="lb_plan.ItemHeight" type="System.Int32, mscorlib">
     <value>16</value>
@@ -1705,7 +1705,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_plan.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 371</value>
+    <value>776, 377</value>
   </data>
   <data name="fp_plan.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1749,8 +1749,8 @@
   <data name="&gt;&gt;PLAN.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="lb_chat.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Bottom</value>
+  <data name="lb_chat.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left, Right</value>
   </data>
   <data name="lb_chat.ItemHeight" type="System.Int32, mscorlib">
     <value>16</value>
@@ -1939,7 +1939,7 @@
     <value>3, 2, 3, 2</value>
   </data>
   <data name="fp_chat.Size" type="System.Drawing.Size, System.Drawing">
-    <value>776, 388</value>
+    <value>776, 394</value>
   </data>
   <data name="fp_chat.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -1983,8 +1983,8 @@
   <data name="&gt;&gt;CHAT.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="lb_setting.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Bottom</value>
+  <data name="lb_setting.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="lb_setting.ItemHeight" type="System.Int32, mscorlib">
     <value>16</value>
@@ -2485,7 +2485,7 @@
     <value>25</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>7, 16</value>
+    <value>96, 96</value>
   </data>
   <data name="$this.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Zoom</value>
