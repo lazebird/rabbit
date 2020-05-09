@@ -9,7 +9,8 @@ cd bin\Release\
 ..\..\..\tools\ILMerge.exe /targetplatform:v4 /ndebug /target:winexe /out:../../../release/sRabbit.exe lazebird.rabbit.rabbit.exe /wildcards *.dll
 REM add backup
 cd ..\..\..\release\
-set dirname=%date:~0,4%-%date:~5,2%-%date:~8,2%
+for /f "tokens=1" %%i in ('wmic os get localdatetime /value ^| find /i "LocalDateTime"') do set today=%%i  
+set dirname=%today:~14,4%-%today:~19,2%-%today:~22,2%
 md %dirname%
 copy version.txt %dirname%\version.txt
 copy sRabbit.exe %dirname%\sRabbit.exe

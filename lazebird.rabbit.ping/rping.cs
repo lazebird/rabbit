@@ -95,7 +95,7 @@ namespace lazebird.rabbit.ping
         public override string ToString()
         {
             float avgtm = (float)totaltm / Math.Max(1, rxcnt);
-            return opertm.ToString() + " Tx " + txcnt + " Rx " + rxcnt + " Loss " + losscnt
+            return opertm.ToString("yyyy/M/d HH:mm:ss") + " Tx " + txcnt + " Rx " + rxcnt + " Loss " + losscnt
                  + " Min " + mintm + " Max " + maxtm + " Avg " + avgtm;
         }
         void progress_display(PingReply reply)

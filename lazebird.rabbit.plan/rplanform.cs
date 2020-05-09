@@ -14,7 +14,7 @@ namespace lazebird.rabbit.plan
             this.msg = msg;
             this.duration = duration;
             InitializeComponent();
-            Text = msg + " " + DateTime.Now;
+            Text = msg + " " + DateTime.Now.ToString("yyyy/M/d HH:mm:ss");
             label_msg.DoubleClick += label_click;
         }
         protected override void OnLoad(EventArgs e)

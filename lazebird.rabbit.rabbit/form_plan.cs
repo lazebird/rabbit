@@ -54,8 +54,8 @@ namespace lazebird.rabbit.rabbit
         }
         void plan2ui(rplan p)
         {
-            dt1_plan.Text = p.starttm.ToString("D");
-            dt2_plan.Text = p.starttm.ToString("t");
+            dt1_plan.Text = p.starttm.ToString("yyyy/M/d");
+            dt2_plan.Text = p.starttm.ToString("HH:mm:ss");
             text_plancycle.Text = p.cycle.ToString();
             cb_planunit.Text = p.unit.ToString();
             text_planmsg.Text = p.msg;

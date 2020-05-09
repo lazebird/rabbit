@@ -24,7 +24,7 @@ namespace lazebird.rabbit.common
         {
             if (file != null)
             {
-                file.WriteLine(DateTime.Now.ToString() + ": " + msg);
+                file.WriteLine(DateTime.Now.ToString("yyyy/M/d HH:mm:ss") + ": " + msg);
                 file.Flush();
             }
             //rtb.AppendText(msg + "\r\n"); // cause plan no response

@@ -86,7 +86,7 @@ namespace lazebird.rabbit.rabbit
             cfg.Add("tftpc_addr", "127.0.0.1");
             cfg.Add("tftpc_opt", "timeout=200;retry=10;blksize=1468;");
             cfg.Add("plan_opt", "override=false;");
-            cfg.Add("plans", DateTime.Now + "|0|minute|Have a rest!;");
+            cfg.Add("plans", DateTime.Now.ToString("yyyy/M/d HH:mm:ss") + "|0|minute|Have a rest!;");
             cfg.Add("systray", "false");
             cfg.Add("autoupdate", "true");
             cfg.Add("chatname", Environment.UserName + "@" + Environment.MachineName);

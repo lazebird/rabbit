@@ -92,7 +92,7 @@ namespace lazebird.rabbit.plan
                         if (curtm.CompareTo(firetm) >= 0) trigger();
                         if (!update_firetm(curtm)) break;
                         ulong firegap = (ulong)firetm.Subtract(curtm).TotalMilliseconds + 1; // round up
-                        tb.Text = msg + "\t @ " + firetm.ToString();// + " (" + firegap + " ms | " + firegap / 60000 + " min. | " + firegap / (24 * 3600000) + " d)";
+                        tb.Text = msg + "\t @ " + firetm.ToString("yyyy/M/d HH:mm:ss");// + " (" + firegap + " ms | " + firegap / 60000 + " min. | " + firegap / (24 * 3600000) + " d)";
                         Thread.Sleep((int)Math.Min(firegap, int.MaxValue));
                     }
             }
@@ -130,7 +130,7 @@ namespace lazebird.rabbit.plan
         }
         public override string ToString()
         {
-            return starttm.ToString() + "|" + cycle + "|" + unit + "|" + msg;
+            return starttm.ToString("yyyy/M/d HH:mm:ss") + "|" + cycle + "|" + unit + "|" + msg;
         }
     }
 }

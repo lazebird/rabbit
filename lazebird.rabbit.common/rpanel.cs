@@ -36,7 +36,7 @@ namespace lazebird.rabbit.common
             if (fp.InvokeRequired) return (TextBox)fp.Invoke(new tb_invoker(() => add(msg, mousedown, mousedoubleclick)));
             if (file != null)
             {
-                file.WriteLine(DateTime.Now.ToString() + ": " + msg);
+                file.WriteLine(DateTime.Now.ToString("yyyy/M/d HH:mm:ss") + ": " + msg);
                 file.Flush();
             }
             if (list.Count >= maxcount) del((TextBox)list[0]);
