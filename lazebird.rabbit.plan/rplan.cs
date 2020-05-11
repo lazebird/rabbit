@@ -33,7 +33,7 @@ namespace lazebird.rabbit.plan
             {
                 string[] args = s.Split('|');
                 DateTime tmp = DateTime.Now; // fix crash
-                DateTime.TryParse(s, out tmp);
+                DateTime.TryParse(args[0], out tmp);
                 init(log, tmp, int.Parse(args[1]), str2unit(args[2]), args[3], tb);
             }
             catch (Exception e)

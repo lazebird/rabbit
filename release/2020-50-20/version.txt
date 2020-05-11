@@ -1,6 +1,0 @@
-date=2020/05/09
-time=20:33:25
-branch=master
-sha=bb603874112dc5f8771352ab7bf7b30087846a31
-shashort=bb60387
-extra=Release
