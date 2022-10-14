@@ -67,20 +67,20 @@ namespace lazebird.rabbit.fs
         }
         public void reg_autostart()
         {
-            RegistryKey parent = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+            RegistryKey parent = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\wow6432node\Microsoft\Windows\CurrentVersion\Run", true);
             parent.SetValue(appname, apppath);
             parent.Close();
         }
         public void dereg_autostart()
         {
-            RegistryKey parent = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+            RegistryKey parent = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\wow6432node\Microsoft\Windows\CurrentVersion\Run", true);
             parent.DeleteValue(appname);
             parent.Close();
         }
         public bool autostart_exist()
         {
             bool ret;
-            RegistryKey parent = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", false);
+            RegistryKey parent = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\wow6432node\Microsoft\Windows\CurrentVersion\Run", false);
             ret = parent.GetValue(appname) != null;
             parent.Close();
             return ret;
