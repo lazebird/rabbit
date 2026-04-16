@@ -1,6 +1,0 @@
-date=2019/07/10
-time=11:26:42
-branch=master
-sha=93f6f0bfb991da59890e83b1efe2851592c39904
-shashort=93f6f0b
-extra=Release

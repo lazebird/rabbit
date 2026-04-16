@@ -1,6 +1,27 @@
-.vs/
-obj/
-bin/
-packages/
-*.tt.cs
-*.auto.*
+# Rust
+/target/
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.pdb
+
+# Test
+/coverage/
+
+# Dist
+/dist/
