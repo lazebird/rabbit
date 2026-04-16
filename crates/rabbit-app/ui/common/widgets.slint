@@ -1,7 +1,13 @@
 // Common Reusable Widgets for Rabbit UI
 
-import { Button, LineEdit, ScrollView } from "std-widgets.slint";
+import { Button, LineEdit, ScrollView, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "styles.slint";
+
+// Aligned row container - ensures all children are vertically centered
+export component AlignedRow inherits HorizontalBox {
+    alignment: center;
+    height: Sizes.row-height;
+}
 
 // Card container with border and padding
 export component Card inherits Rectangle {
@@ -146,6 +152,90 @@ export component PrimaryButton inherits Button {
 // Secondary action button
 export component SecondaryButton inherits Button {
     height: Sizes.button-height;
+}
+
+// Icon button for small buttons like +/- 
+export component IconButton inherits Rectangle {
+    in property <string> icon: "+";
+    in property <bool> enabled: true;
+    in property <bool> primary: false;
+
+    callback clicked();
+
+    height: 24px;
+    width: 28px;
+    border-radius: 2px;
+    background: root.primary ? Colors.primary : Colors.surface;
+    border-width: 1px;
+    border-color: root.primary ? Colors.primary-dark : Colors.border;
+
+    Text {
+        text: root.icon;
+        color: root.primary ? #FFFFFF : (root.enabled ? Colors.text-primary : Colors.text-hint);
+        font-size: 16px;
+        font-weight: 600;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+    }
+
+    TouchArea {
+        enabled: root.enabled;
+        clicked => { root.clicked(); }
+    }
+}
+
+// Custom LineEdit with X icon for clear button
+export component LineEditWithClear inherits Rectangle {
+    in-out property <string> text;
+    in property <bool> enabled: true;
+    in property <string> placeholder-text: "";
+
+    callback accepted();
+    callback edited();
+
+    height: Sizes.input-height;
+    background: Colors.surface;
+    border-color: input.has-focus ? Colors.primary : Colors.border;
+    border-width: 1px;
+    border-radius: 2px;
+
+    HorizontalLayout {
+        padding-left: Spacing.xs;
+        padding-right: Spacing.xs;
+        spacing: 2px;
+
+        input := TextInput {
+            text <=> root.text;
+            enabled: root.enabled;
+            color: Colors.text-primary;
+            font-size: Typography.font-size-normal;
+            vertical-alignment: center;
+            height: parent.height;
+
+            accepted => { root.accepted(); }
+            edited => { root.edited(); }
+        }
+
+        // X clear button
+        if root.text != "": Rectangle {
+            width: 16px;
+            height: parent.height;
+
+            Text {
+                text: "×";
+                color: Colors.text-secondary;
+                font-size: 16px;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+            }
+
+            TouchArea {
+                width: parent.width;
+                height: parent.height;
+                clicked => { root.text = ""; }
+            }
+        }
+    }
 }
 
 // Status bar at bottom

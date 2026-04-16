@@ -1,8 +1,8 @@
-// HTTP Server Tab Component
+// HTTP Server Tab Component - Perfect alignment using Rectangle with manual positioning
 
-import { Button, CheckBox, LineEdit, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Button, CheckBox, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
-import { Card, LogArea, DirList, SectionHeader } from "../common/widgets.slint";
+import { LogArea, LineEditWithClear, IconButton } from "../common/widgets.slint";
 
 export component HttpTab inherits VerticalBox {
     callback http-toggle();
@@ -12,137 +12,159 @@ export component HttpTab inherits VerticalBox {
 
     in property <bool> running: false;
     in property <string> access-log: "HTTP access log will appear here...";
-    in-out property <int> port: 8080;
-    in-out property <string> opts: "";
+    in-out property <int> port: 8000;
+    in-out property <string> opts: "autoindex=false;videoplay=false;shell=false;";
     in property <[string]> dirs: [];
-    in property <int> selected-dir: -1;
+    in-out property <int> selected-dir: -1;
 
     padding: Spacing.padding-tab;
-    spacing: Spacing.md;
+    spacing: Spacing.sm;
 
-    // Server Control Section
-    Card {
+    // Control Bar - using Rectangle with manual y positioning
+    Rectangle {
+        height: Sizes.row-height;
+
+        // Label "Port"
+        Text {
+            x: 0;
+            y: (parent.height - self.height) / 2;
+            text: "Port";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
+
+        // Port input
+        SpinBox {
+            x: 36px;
+            y: (parent.height - self.height) / 2;
+            value: root.port;
+            minimum: 1;
+            maximum: 65535;
+            enabled: !root.running;
+            height: Sizes.input-height;
+            width: 80px;
+        }
+
+        // Label "Opt."
+        Text {
+            x: 126px;
+            y: (parent.height - self.height) / 2;
+            text: "Opt.";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
+
+        // Options input - shows default value
+        LineEditWithClear {
+            x: 158px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.opts;
+            enabled: !root.running;
+            height: Sizes.input-height;
+            width: 280px;
+        }
+
+        // Shell checkbox
+        CheckBox {
+            x: 450px;
+            y: (parent.height - self.height) / 2;
+            text: "shell";
+            checked: root.opts == "shell=true";
+            enabled: !root.running;
+            height: Sizes.input-height;
+
+            toggled => {
+                if (self.checked) {
+                    root.opts = "shell=true";
+                } else {
+                    root.opts = "";
+                }
+            }
+        }
+
+        // Start/Stop button
+        Button {
+            x: 520px;
+            y: (parent.height - self.height) / 2;
+            text: root.running ? "Stop" : "Start";
+            height: Sizes.button-height;
+            width: 70px;
+            primary: true;
+
+            clicked => { root.http-toggle(); }
+        }
+    }
+
+    // Directory list
+    Rectangle {
+        background: Colors.surface;
+        border-color: Colors.border;
+        border-width: 1px;
+        border-radius: 2px;
+        preferred-height: 120px;
+
         VerticalBox {
-            spacing: Spacing.md;
+            padding: Spacing.xs;
 
-            // Port and Status Row
-            HorizontalBox {
-                spacing: Spacing.md;
-                alignment: start;
+            for dir[idx] in root.dirs: Rectangle {
+                height: 24px;
+                background: root.selected-dir == idx ? Colors.primary : transparent;
 
-                // Port configuration
-                VerticalBox {
+                HorizontalBox {
                     spacing: Spacing.xs;
+                    padding: Spacing.xs;
 
                     Text {
-                        text: "Port";
+                        text: dir;
                         font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    SpinBox {
-                        value: root.port;
-                        minimum: 1;
-                        maximum: 65535;
-                        enabled: !root.running;
-                        height: Sizes.input-height;
+                        color: root.selected-dir == idx ? #FFFFFF : Colors.text-primary;
+                        overflow: elide;
                     }
                 }
 
-                // Server toggle
-                VerticalBox {
-                    spacing: Spacing.xs;
-
-                    Text {
-                        text: "Server Status";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    CheckBox {
-                        text: root.running ? "Running on port " + root.port : "Start Server";
-                        checked: root.running;
-                        enabled: true;
-
-                        toggled => { root.http-toggle(); }
-                    }
-                }
-
-                // Options
-                VerticalBox {
-                    spacing: Spacing.xs;
-                    preferred-width: 300px;
-
-                    Text {
-                        text: "Options (shell=false;autoindex=false)";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    LineEdit {
-                        placeholder-text: "shell=false;autoindex=false;videoplay=false";
-                        text: root.opts;
-                        enabled: !root.running;
-                        height: Sizes.input-height;
-                    }
+                TouchArea {
+                    clicked => { root.selected-dir = idx; }
                 }
             }
 
-            // Directories Section
-            VerticalBox {
-                spacing: Spacing.xs;
-
-                SectionHeader {
-                    text: "Virtual Directories";
-                }
-
-                HorizontalBox {
-                    spacing: Spacing.sm;
-
-                    DirList {
-                        dirs: root.dirs;
-                        selected-index: root.selected-dir;
-                        enabled: !root.running;
-
-                        dir-selected(index) => { }
-                    }
-
-                    VerticalBox {
-                        spacing: Spacing.xs;
-
-                        Button {
-                            text: "+";
-                            enabled: !root.running;
-                            height: 28px;
-                            width: 32px;
-
-                            clicked => { root.http-add-dir(); }
-                        }
-
-                        Button {
-                            text: "-";
-                            enabled: !root.running && root.selected-dir >= 0;
-                            height: 28px;
-                            width: 32px;
-
-                            clicked => { root.http-remove-dir(root.selected-dir); }
-                        }
-                    }
-                }
+            if root.dirs.length == 0: Text {
+                text: "No directories added";
+                font-size: Typography.font-size-small;
+                color: Colors.text-hint;
+                padding: Spacing.sm;
             }
         }
     }
 
-    // Access Log Section
-    VerticalBox {
-        spacing: Spacing.xs;
+    // Add/Remove buttons row
+    Rectangle {
+        height: 24px;
 
-        SectionHeader {
-            text: "Access Log";
+        IconButton {
+            x: 0;
+            y: (parent.height - self.height) / 2;
+            icon: "+";
+            enabled: !root.running;
+
+            clicked => { root.http-add-dir(); }
         }
 
-        LogArea {
-            text: root.access-log;
+        IconButton {
+            x: 32px;
+            y: (parent.height - self.height) / 2;
+            icon: "-";
+            enabled: !root.running && root.selected-dir >= 0;
+
+            clicked => { root.http-remove-dir(root.selected-dir); }
         }
+    }
+
+    // Access Log
+    LogArea {
+        text: root.access-log;
     }
 }

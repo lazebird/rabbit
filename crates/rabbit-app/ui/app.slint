@@ -91,8 +91,8 @@ export component AppWindow inherits Window {
     in property <int> scan_progress: 0;
     in property <int> scan_found: 0;
     in-out property <string> scan_start_ip: "192.168.1.1";
-    in-out property <string> scan_end_ip: "192.168.1.254";
-    in-out property <bool> scan_filter_online: true;
+    in-out property <string> scan_end_ip: "254";
+    in-out property <string> scan_opts: "filter=true";
 
     // Chat properties
     in property <string> chat_messages: "Chat messages will appear here...";
@@ -145,7 +145,7 @@ export component AppWindow inherits Window {
                 ScanTab {
                     start-ip <=> root.scan_start_ip;
                     end-ip <=> root.scan_end_ip;
-                    filter-online <=> root.scan_filter_online;
+                    scan-opts <=> root.scan_opts;
                     results: root.scan_results;
                     scanning: root.scan_running;
                     progress: root.scan_progress;

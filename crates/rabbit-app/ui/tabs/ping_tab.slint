@@ -1,12 +1,12 @@
-// Ping Tab Component
+// Ping Tab Component - Perfect alignment using Rectangle with manual positioning
 
-import { Button, LineEdit, ScrollView, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Button, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
-import { Card, LogArea, FormRow, SectionHeader } from "../common/widgets.slint";
+import { LogArea, LineEditWithClear } from "../common/widgets.slint";
 
 export component PingTab inherits VerticalBox {
-    in-out property <string> target: "";
-    in-out property <string> opts: "";
+    in-out property <string> target: "1.1.1.1";
+    in-out property <string> opts: "interval=1000;count=-1;stoponloss=false";
     in property <string> results: "Ping results will appear here...";
     in property <bool> running: false;
     in property <string> stats: "";
@@ -15,85 +15,85 @@ export component PingTab inherits VerticalBox {
     callback ping-stop();
 
     padding: Spacing.padding-tab;
-    spacing: Spacing.md;
+    spacing: Spacing.sm;
 
-    // Control Section
-    Card {
-        HorizontalBox {
-            spacing: Spacing.md;
+    // Control Bar - using Rectangle with manual y positioning for perfect alignment
+    Rectangle {
+        height: Sizes.row-height;
 
-            // Target input
-            VerticalBox {
-                width: 240px;
-                spacing: Spacing.xs;
+        // Label "Addr."
+        Text {
+            x: 0;
+            y: (parent.height - self.height) / 2;
+            text: "Addr.";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
 
-                Text {
-                    text: "Target Address";
-                    font-size: Typography.font-size-small;
-                    color: Colors.text-secondary;
-                }
+        // Target input - shows default value
+        LineEditWithClear {
+            x: 40px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.target;
+            enabled: !root.running;
+            height: Sizes.input-height;
+            width: 140px;
+        }
 
-                LineEdit {
-                    placeholder-text: "IP or hostname (e.g., 8.8.8.8)";
-                    text <=> root.target;
-                    enabled: !root.running;
-                    height: Sizes.input-height;
-                }
-            }
+        // Label "Opt."
+        Text {
+            x: 190px;
+            y: (parent.height - self.height) / 2;
+            text: "Opt.";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
 
-            // Options input
-            VerticalBox {
-                spacing: Spacing.xs;
-                preferred-width: 300px;
+        // Options input - shows default value
+        LineEditWithClear {
+            x: 220px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.opts;
+            enabled: !root.running;
+            height: Sizes.input-height;
+            width: 280px;
+        }
 
-                Text {
-                    text: "Options (interval=1000;count=4;stoponloss=false)";
-                    font-size: Typography.font-size-small;
-                    color: Colors.text-secondary;
-                }
+        // Start/Stop button
+        Button {
+            x: 510px;
+            y: (parent.height - self.height) / 2;
+            text: root.running ? "Stop" : "Start";
+            height: Sizes.button-height;
+            width: 70px;
+            primary: true;
 
-                LineEdit {
-                    placeholder-text: "interval=1000;count=4;stoponloss=false";
-                    text <=> root.opts;
-                    enabled: !root.running;
-                    height: Sizes.input-height;
-                }
-            }
-
-            // Start/Stop button
-            VerticalBox {
-                spacing: Spacing.xs;
-
-                Text {
-                    text: "Action";
-                    font-size: Typography.font-size-small;
-                    color: Colors.text-secondary;
-                }
-
-                Button {
-                    text: root.running ? "Stop" : "Start";
-                    height: Sizes.input-height;
-                    primary: root.running ? false : true;
-
-                    clicked => {
-                        if (root.running) {
-                            root.ping-stop();
-                        } else {
-                            root.ping-start();
-                        }
-                    }
+            clicked => {
+                if (root.running) {
+                    root.ping-stop();
+                } else {
+                    root.ping-start();
                 }
             }
         }
     }
 
-    // Statistics Section
+    // Statistics Bar
     Rectangle {
         visible: root.stats != "";
         height: 24px;
+        background: Colors.surface;
+        border-radius: 2px;
 
         HorizontalBox {
             spacing: Spacing.sm;
+            padding-left: Spacing.xs;
+            padding-right: Spacing.xs;
+            alignment: center;
 
             Rectangle {
                 width: 8px;
@@ -105,21 +105,15 @@ export component PingTab inherits VerticalBox {
             Text {
                 text: root.stats;
                 font-size: Typography.font-size-small;
-                color: Colors.text-secondary;
+                color: Colors.text-primary;
+                vertical-alignment: center;
+                height: 24px;
             }
         }
     }
 
     // Results Section
-    VerticalBox {
-        spacing: Spacing.xs;
-
-        SectionHeader {
-            text: "Ping Results";
-        }
-
-        LogArea {
-            text: root.results;
-        }
+    LogArea {
+        text: root.results;
     }
 }

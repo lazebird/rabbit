@@ -330,8 +330,12 @@ fn test_scanner_config_defaults() {
 fn test_app_config_defaults() {
     let config = rabbit_models::AppConfig::default();
 
-    assert_eq!(config.language, rabbit_models::Language::English);
+    assert_eq!(config.language, rabbit_models::Language::System);
     assert_eq!(config.theme, rabbit_models::Theme::System);
+    assert!(config.systray);
+    assert!(!config.top);
+    assert!(!config.autostart);
+    assert!(config.autoupdate);
 }
 
 #[test]
@@ -339,13 +343,13 @@ fn test_module_configs() {
     let config = rabbit_models::AppConfig::default();
 
     // HTTP module config
-    assert_eq!(config.modules.http.default_port, 8080);
+    assert_eq!(config.modules.http.port, 8000);
 
     // TFTP module config
-    assert_eq!(config.modules.tftp.server_port, 69);
+    assert_eq!(config.modules.tftpd.port, 69);
 
     // Chat module config
-    assert_eq!(config.modules.chat.default_port, 5000);
+    assert_eq!(config.modules.chat.port, 1314);
 }
 
 // ============================================================================

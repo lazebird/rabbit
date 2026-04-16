@@ -3,6 +3,7 @@
 use crate::view_model::AppViewModel;
 use crate::AppWindow;
 use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpService};
+use rabbit_models::config::Language;
 use rabbit_models::ping::PingTarget;
 use rabbit_models::scan::ScanRange;
 use rabbit_platform::config::{load_config, save_config};
@@ -39,25 +40,25 @@ impl App {
         let mut http_service = HttpService::new();
         http_service.init(rabbit_models::http::HttpServerConfig {
             enabled: false,
-            port: config.modules.http.default_port,
-            root_path: config.modules.http.default_root.clone(),
+            port: config.modules.http.port,
+            root_path: String::from("."),
             allow_upload: false,
             allow_delete: false,
-            shell: false,
-            auto_index: false,
-            video_play: false,
+            shell: config.modules.http.shell,
+            auto_index: config.modules.http.autoindex,
+            video_play: config.modules.http.videoplay,
         }).await?;
 
         let mut tftp_service = TftpService::new();
         tftp_service.init(
             rabbit_models::tftp::TftpServerConfig {
                 enabled: false,
-                bind_addr: "0.0.0.0:69".to_string(),
-                root_path: config.modules.tftp.default_root.clone(),
-                block_size: config.modules.tftp.block_size,
-                timeout_secs: config.modules.tftp.timeout_secs,
+                bind_addr: format!("0.0.0.0:{}", config.modules.tftpd.port),
+                root_path: String::from("."),
+                block_size: config.modules.tftpd.blksize as usize,
+                timeout_secs: config.modules.tftpd.timeout as u64 / 1000,
                 window_size: 1,
-                allow_overwrite: false,
+                allow_overwrite: config.modules.tftpd.override_conflicts,
             },
             rabbit_models::tftp::TftpClientConfig::default(),
         ).await?;
@@ -69,9 +70,9 @@ impl App {
         let mut chat_service = ChatService::new();
         chat_service.init(rabbit_models::chat::ChatConfig {
             enabled: false,
-            username: config.modules.chat.default_username.clone(),
-            port: config.modules.chat.default_port,
-            multicast_addr: "239.255.255.250".to_string(),
+            username: config.modules.chat.username.clone(),
+            port: config.modules.chat.port,
+            multicast_addr: config.modules.chat.broadcast_addr.clone(),
         }).await?;
 
         let mut scan_service = ScanService::new();
@@ -97,6 +98,9 @@ impl App {
 
         // Create UI
         let ui = AppWindow::new()?;
+
+        // Initialize UI with config defaults
+        self.init_ui_defaults(&ui).await;
 
         // Setup UI callbacks and bindings
         self.setup_ui_callbacks(&ui).await?;
@@ -302,6 +306,60 @@ impl App {
                 }
             }
         });
+    }
+
+    /// Initialize UI with default values from config
+    async fn init_ui_defaults(&self, ui: &AppWindow) {
+        let view_model = self.view_model.read().await;
+        let config = view_model.get_config();
+
+        // Ping defaults
+        ui.set_ping_target(config.modules.ping.target.clone().into());
+        ui.set_ping_opts(config.modules.ping.opts_string().into());
+
+        // Scan defaults
+        ui.set_scan_start_ip(config.modules.scan.start_ip.clone().into());
+        ui.set_scan_end_ip(config.modules.scan.end_ip.clone().into());
+        ui.set_scan_opts(config.modules.scan.opts_string().into());
+
+        // HTTP defaults
+        ui.set_http_port(config.modules.http.port as i32);
+        ui.set_http_opts(config.modules.http.opts_string().into());
+
+        // TFTPD defaults
+        ui.set_tftp_server_port(config.modules.tftpd.port as i32);
+        ui.set_tftp_server_opts(config.modules.tftpd.opts_string().into());
+
+        // TFTPC defaults
+        ui.set_tftp_client_server_addr(config.modules.tftpc.server_addr.clone().into());
+        ui.set_tftp_client_server_port(config.modules.tftpc.server_port as i32);
+        ui.set_tftp_client_local_path(config.modules.tftpc.local_path.clone().into());
+        ui.set_tftp_client_remote_file(config.modules.tftpc.remote_file.clone().into());
+        ui.set_tftp_client_opts(config.modules.tftpc.opts_string().into());
+
+        // Plan defaults
+        ui.set_plan_date(config.modules.plan.date.clone().into());
+        ui.set_plan_time(config.modules.plan.time.clone().into());
+        ui.set_plan_cycle(config.modules.plan.cycle);
+        ui.set_plan_unit(config.modules.plan.unit.clone().into());
+        ui.set_plan_msg(config.modules.plan.msg.clone().into());
+        ui.set_plan_override(config.modules.plan.override_conflicts);
+
+        // Chat defaults
+        ui.set_chat_username(config.modules.chat.username.clone().into());
+        ui.set_chat_port(config.modules.chat.port as i32);
+        ui.set_chat_broadcast_addr(config.modules.chat.broadcast_addr.clone().into());
+
+        // Settings defaults
+        ui.set_settings_language(match config.language {
+            Language::Chinese => "zh".into(),
+            Language::English => "en".into(),
+            Language::System => "en".into(),
+        });
+        ui.set_settings_systray(config.systray);
+        ui.set_settings_top(config.top);
+        ui.set_settings_autostart(config.autostart);
+        ui.set_settings_autoupdate(config.autoupdate);
     }
 
     /// Setup UI callbacks

@@ -1,8 +1,8 @@
-// TFTP Server (TFTPD) Tab Component
+// TFTP Server (TFTPD) Tab Component - Perfect alignment using Rectangle with manual positioning
 
-import { Button, CheckBox, LineEdit, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Button, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
-import { Card, LogArea, DirList, SectionHeader } from "../common/widgets.slint";
+import { LogArea, LineEditWithClear, IconButton } from "../common/widgets.slint";
 
 export component TftpdTab inherits VerticalBox {
     callback tftp-server-toggle();
@@ -12,135 +12,114 @@ export component TftpdTab inherits VerticalBox {
     in property <bool> server-running: false;
     in property <string> server-log: "TFTP server log will appear here...";
     in-out property <int> server-port: 69;
-    in-out property <string> server-opts: "";
+    in-out property <string> server-opts: "timeout=200;retry=10;blksize=512;override=false;qsize=2000;qtout=1000;fslog=false;";
     in property <[string]> work-dirs: [];
-    in property <int> selected-dir: -1;
+    in-out property <int> selected-dir: -1;
 
     padding: Spacing.padding-tab;
-    spacing: Spacing.md;
+    spacing: Spacing.sm;
 
-    // Server Control Section
-    Card {
+    // Control Bar - using Rectangle with manual y positioning
+    Rectangle {
+        height: Sizes.row-height;
+
+        // Add button
+        IconButton {
+            x: 0;
+            y: (parent.height - self.height) / 2;
+            icon: "+";
+            enabled: !root.server-running;
+
+            clicked => { root.tftp-add-dir(); }
+        }
+
+        // Remove button
+        IconButton {
+            x: 32px;
+            y: (parent.height - self.height) / 2;
+            icon: "-";
+            enabled: !root.server-running && root.selected-dir >= 0;
+
+            clicked => { root.tftp-remove-dir(root.selected-dir); }
+        }
+
+        // Label "Opt."
+        Text {
+            x: 74px;
+            y: (parent.height - self.height) / 2;
+            text: "Opt.";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
+
+        // Options input - shows default value
+        LineEditWithClear {
+            x: 106px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.server-opts;
+            enabled: !root.server-running;
+            height: Sizes.input-height;
+            width: 380px;
+        }
+
+        // Start/Stop button
+        Button {
+            x: 500px;
+            y: (parent.height - self.height) / 2;
+            text: root.server-running ? "Stop" : "Start";
+            height: Sizes.button-height;
+            width: 70px;
+            primary: true;
+
+            clicked => { root.tftp-server-toggle(); }
+        }
+    }
+
+    // Work directories list
+    Rectangle {
+        background: Colors.surface;
+        border-color: Colors.border;
+        border-width: 1px;
+        border-radius: 2px;
+        preferred-height: 120px;
+
         VerticalBox {
-            spacing: Spacing.md;
+            padding: Spacing.xs;
 
-            // Port and Status Row
-            HorizontalBox {
-                spacing: Spacing.md;
-                alignment: start;
+            for dir[idx] in root.work-dirs: Rectangle {
+                height: 24px;
+                background: root.selected-dir == idx ? Colors.primary : transparent;
 
-                // Port configuration
-                VerticalBox {
+                HorizontalBox {
                     spacing: Spacing.xs;
+                    padding: Spacing.xs;
 
                     Text {
-                        text: "Port (UDP)";
+                        text: dir;
                         font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    SpinBox {
-                        value: root.server-port;
-                        minimum: 1;
-                        maximum: 65535;
-                        enabled: !root.server-running;
-                        height: Sizes.input-height;
+                        color: root.selected-dir == idx ? #FFFFFF : Colors.text-primary;
+                        overflow: elide;
                     }
                 }
 
-                // Server toggle
-                VerticalBox {
-                    spacing: Spacing.xs;
-
-                    Text {
-                        text: "Server Status";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    CheckBox {
-                        text: root.server-running ? "Running on port " + root.server-port : "Start TFTP Server";
-                        checked: root.server-running;
-
-                        toggled => { root.tftp-server-toggle(); }
-                    }
-                }
-
-                // Options
-                VerticalBox {
-                    spacing: Spacing.xs;
-                    preferred-width: 300px;
-
-                    Text {
-                        text: "Options (timeout=200;blksize=512)";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    LineEdit {
-                        placeholder-text: "timeout=200;maxretry=10;blksize=512";
-                        text: root.server-opts;
-                        enabled: !root.server-running;
-                        height: Sizes.input-height;
-                    }
+                TouchArea {
+                    clicked => { root.selected-dir = idx; }
                 }
             }
 
-            // Work Directories Section
-            VerticalBox {
-                spacing: Spacing.xs;
-
-                SectionHeader {
-                    text: "Work Directories";
-                }
-
-                HorizontalBox {
-                    spacing: Spacing.sm;
-
-                    DirList {
-                        dirs: root.work-dirs;
-                        selected-index: root.selected-dir;
-                        enabled: !root.server-running;
-
-                        dir-selected(index) => { }
-                    }
-
-                    VerticalBox {
-                        spacing: Spacing.xs;
-
-                        Button {
-                            text: "+";
-                            enabled: !root.server-running;
-                            height: 28px;
-                            width: 32px;
-
-                            clicked => { root.tftp-add-dir(); }
-                        }
-
-                        Button {
-                            text: "-";
-                            enabled: !root.server-running && root.selected-dir >= 0;
-                            height: 28px;
-                            width: 32px;
-
-                            clicked => { root.tftp-remove-dir(root.selected-dir); }
-                        }
-                    }
-                }
+            if root.work-dirs.length == 0: Text {
+                text: "No work directories added";
+                font-size: Typography.font-size-small;
+                color: Colors.text-hint;
+                padding: Spacing.sm;
             }
         }
     }
 
-    // Server Log Section
-    VerticalBox {
-        spacing: Spacing.xs;
-
-        SectionHeader {
-            text: "Server Log";
-        }
-
-        LogArea {
-            text: root.server-log;
-        }
+    // Server Log
+    LogArea {
+        text: root.server-log;
     }
 }

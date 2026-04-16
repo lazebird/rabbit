@@ -1,8 +1,8 @@
-// Plan (Task Scheduler) Tab Component
+// Plan (Task Scheduler) Tab Component - Perfect alignment using Rectangle with manual positioning
 
-import { Button, CheckBox, ComboBox, LineEdit, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Button, CheckBox, ComboBox, ScrollView, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
-import { Card, LogArea, SectionHeader } from "../common/widgets.slint";
+import { LogArea, LineEditWithClear, IconButton } from "../common/widgets.slint";
 
 export component PlanTab inherits VerticalBox {
     callback plan-add();
@@ -13,183 +13,134 @@ export component PlanTab inherits VerticalBox {
     in property <int> task-count: 0;
     in property <int> selected-task: -1;
 
-    // Task input fields
-    in-out property <string> plan-date: "";
-    in-out property <string> plan-time: "";
+    in-out property <string> plan-date: "2019/6/26";
+    in-out property <string> plan-time: "11:53";
     in-out property <int> plan-cycle: 0;
     in-out property <string> plan-unit: "minutes";
-    in-out property <string> plan-msg: "";
+    in-out property <string> plan-msg: "Have a rest!";
     in-out property <bool> plan-override: false;
 
     padding: Spacing.padding-tab;
-    spacing: Spacing.md;
+    spacing: Spacing.sm;
 
-    // Task Input Section
-    Card {
-        VerticalBox {
-            spacing: Spacing.md;
+    // Control Bar - using Rectangle with manual y positioning
+    Rectangle {
+        height: Sizes.row-height;
 
-            // Date and Time Row
-            HorizontalBox {
-                spacing: Spacing.md;
-                alignment: start;
+        // Date input - shows default value
+        LineEditWithClear {
+            x: 0;
+            y: (parent.height - self.height) / 2;
+            text <=> root.plan-date;
+            height: Sizes.input-height;
+            width: 100px;
+        }
 
-                // Date
-                VerticalBox {
-                    spacing: Spacing.xs;
+        // Time input - shows default value
+        LineEditWithClear {
+            x: 108px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.plan-time;
+            height: Sizes.input-height;
+            width: 60px;
+        }
 
-                    Text {
-                        text: "Date";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
+        // Repeat label
+        Text {
+            x: 176px;
+            y: (parent.height - self.height) / 2;
+            text: "Repeat /";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
 
-                    LineEdit {
-                        placeholder-text: "YYYY-MM-DD";
-                        text <=> root.plan-date;
-                        preferred-width: 120px;
-                        height: Sizes.input-height;
-                    }
-                }
+        // Cycle number
+        SpinBox {
+            x: 230px;
+            y: (parent.height - self.height) / 2;
+            value: root.plan-cycle;
+            minimum: 0;
+            preferred-width: 60px;
+            height: Sizes.input-height;
+        }
 
-                // Time
-                VerticalBox {
-                    spacing: Spacing.xs;
+        // Unit dropdown
+        ComboBox {
+            x: 298px;
+            y: (parent.height - self.height) / 2;
+            model: ["minute", "hour", "day", "week"];
+            current-index: root.plan-unit == "hours" ? 1 : root.plan-unit == "days" ? 2 : root.plan-unit == "weeks" ? 3 : 0;
+            height: Sizes.input-height;
+            preferred-width: 80px;
 
-                    Text {
-                        text: "Time";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    LineEdit {
-                        placeholder-text: "HH:MM:SS";
-                        text <=> root.plan-time;
-                        preferred-width: 100px;
-                        height: Sizes.input-height;
-                    }
-                }
-
-                // Repeat Cycle
-                VerticalBox {
-                    spacing: Spacing.xs;
-
-                    Text {
-                        text: "Repeat Every";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    HorizontalBox {
-                        spacing: Spacing.xs;
-
-                        SpinBox {
-                            value: root.plan-cycle;
-                            minimum: 0;
-                            preferred-width: 80px;
-                            height: Sizes.input-height;
-                        }
-
-                        ComboBox {
-                            model: ["minutes", "hours", "days", "weeks"];
-                            current-index: root.plan-unit == "hours" ? 1 : root.plan-unit == "days" ? 2 : root.plan-unit == "weeks" ? 3 : 0;
-                            height: Sizes.input-height;
-
-                            selected => {
-                                root.plan-unit = self.current-index == 1 ? "hours" : self.current-index == 2 ? "days" : self.current-index == 3 ? "weeks" : "minutes";
-                            }
-                        }
-                    }
-                }
-
-                // Override checkbox
-                VerticalBox {
-                    spacing: Spacing.xs;
-
-                    Text {
-                        text: "Options";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    CheckBox {
-                        text: "Override conflicts";
-                        checked: root.plan-override;
-
-                        toggled => { root.plan-override = !root.plan-override; }
-                    }
-                }
+            selected => {
+                root.plan-unit = self.current-index == 1 ? "hours" : self.current-index == 2 ? "days" : self.current-index == 3 ? "weeks" : "minutes";
             }
+        }
 
-            // Message Row
-            HorizontalBox {
-                spacing: Spacing.md;
-                alignment: start;
+        // Message input - shows default value
+        LineEditWithClear {
+            x: 386px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.plan-msg;
+            height: Sizes.input-height;
+            width: 150px;
+        }
 
-                VerticalBox {
-                    spacing: Spacing.xs;
-                    preferred-width: 400px;
+        // Override checkbox
+        CheckBox {
+            x: 544px;
+            y: (parent.height - self.height) / 2;
+            text: "Override";
+            checked: root.plan-override;
+            height: Sizes.input-height;
 
-                    Text {
-                        text: "Message (Task ID)";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
+            toggled => { root.plan-override = !root.plan-override; }
+        }
 
-                    LineEdit {
-                        placeholder-text: "Reminder message (unique identifier)";
-                        text <=> root.plan-msg;
-                        height: Sizes.input-height;
-                    }
-                }
+        // Add button
+        IconButton {
+            x: 630px;
+            y: (parent.height - self.height) / 2;
+            icon: "+";
+            primary: true;
 
-                // Action Buttons
-                VerticalBox {
-                    spacing: Spacing.xs;
+            clicked => { root.plan-add(); }
+        }
 
-                    Text {
-                        text: "Actions";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
+        // Remove button
+        IconButton {
+            x: 662px;
+            y: (parent.height - self.height) / 2;
+            icon: "-";
+            enabled: root.selected-task >= 0;
 
-                    HorizontalBox {
-                        spacing: Spacing.sm;
-
-                        Button {
-                            text: "Add Task";
-                            height: Sizes.input-height;
-
-                            clicked => { root.plan-add(); }
-                        }
-
-                        Button {
-                            text: "Remove";
-                            enabled: root.selected-task >= 0;
-                            height: Sizes.input-height;
-
-                            clicked => { root.plan-remove(root.selected-task); }
-                        }
-                    }
-                }
-            }
+            clicked => { root.plan-remove(root.selected-task); }
         }
     }
 
-    // Task List Section
-    VerticalBox {
-        spacing: Spacing.xs;
+    // Task List
+    Rectangle {
+        background: Colors.surface;
+        border-color: Colors.border;
+        border-width: 1px;
+        border-radius: 2px;
 
-        HorizontalBox {
-            spacing: Spacing.sm;
+        ScrollView {
+            padding: Spacing.xs;
 
-            SectionHeader {
-                text: "Scheduled Tasks (" + root.task-count + ")";
+            VerticalBox {
+                spacing: 2px;
+
+                Text {
+                    text: root.tasks;
+                    font-size: Typography.font-size-small;
+                    color: Colors.text-primary;
+                    wrap: word-wrap;
+                }
             }
-        }
-
-        LogArea {
-            text: root.tasks;
         }
     }
 }

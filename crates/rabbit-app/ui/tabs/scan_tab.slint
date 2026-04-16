@@ -1,8 +1,8 @@
-// Scan Tab Component
+// Scan Tab Component - Perfect alignment using Rectangle with manual positioning
 
-import { Button, CheckBox, LineEdit, ScrollView, HorizontalBox, VerticalBox, SpinBox } from "std-widgets.slint";
+import { Button, ScrollView, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
-import { Card, LogArea, FormRow, SectionHeader, StatusDot } from "../common/widgets.slint";
+import { LogArea, StatusDot, LineEditWithClear } from "../common/widgets.slint";
 
 export component ScanTab inherits VerticalBox {
     callback scan-start();
@@ -14,143 +14,156 @@ export component ScanTab inherits VerticalBox {
     in property <int> progress: 0;
     in property <int> found: 0;
     in-out property <string> start-ip: "192.168.1.1";
-    in-out property <string> end-ip: "192.168.1.254";
-    in-out property <bool> filter-online: true;
+    in-out property <string> end-ip: "254";
+    in-out property <string> scan-opts: "filter=true";
 
     padding: Spacing.padding-tab;
-    spacing: Spacing.md;
+    spacing: Spacing.sm;
 
-    // Control Section
-    Card {
-        HorizontalBox {
-            spacing: Spacing.md;
-            alignment: start;
+    // Control Bar - using Rectangle with manual y positioning
+    Rectangle {
+        height: Sizes.row-height;
 
-            // IP Range
-            VerticalBox {
-                spacing: Spacing.xs;
+        // Label "IP"
+        Text {
+            x: 0;
+            y: (parent.height - self.height) / 2;
+            text: "IP";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
 
-                Text {
-                    text: "IP Range";
-                    font-size: Typography.font-size-small;
-                    color: Colors.text-secondary;
-                }
+        // Start IP input - shows default value
+        LineEditWithClear {
+            x: 24px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.start-ip;
+            enabled: !root.scanning;
+            height: Sizes.input-height;
+            width: 120px;
+        }
 
-                HorizontalBox {
-                    spacing: Spacing.xs;
+        // Dash separator
+        Text {
+            x: 150px;
+            y: (parent.height - self.height) / 2;
+            text: "-";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
 
-                    LineEdit {
-                        placeholder-text: "Start IP";
-                        text <=> root.start-ip;
-                        preferred-width: 130px;
-                        height: Sizes.input-height;
-                        enabled: !root.scanning;
-                    }
+        // End IP input - shows default value
+        LineEditWithClear {
+            x: 162px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.end-ip;
+            enabled: !root.scanning;
+            height: Sizes.input-height;
+            width: 50px;
+        }
 
-                    Text {
-                        text: "-";
-                        vertical-alignment: center;
-                        color: Colors.text-secondary;
-                    }
+        // Label "Opt."
+        Text {
+            x: 220px;
+            y: (parent.height - self.height) / 2;
+            text: "Opt.";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
 
-                    LineEdit {
-                        placeholder-text: "End IP";
-                        text <=> root.end-ip;
-                        preferred-width: 130px;
-                        height: Sizes.input-height;
-                        enabled: !root.scanning;
-                    }
-                }
+        // Options input - shows default value with filter parameter
+        LineEditWithClear {
+            x: 248px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.scan-opts;
+            enabled: !root.scanning;
+            height: Sizes.input-height;
+            width: 200px;
+        }
+
+        // Status indicator (visible when scanning)
+        Rectangle {
+            x: 460px;
+            y: (parent.height - self.height) / 2;
+            height: Sizes.row-height;
+            visible: root.scanning || root.found > 0;
+
+            StatusDot {
+                x: 0;
+                y: (parent.height - self.height) / 2;
+                active: root.scanning;
             }
 
-            // Filter option
-            VerticalBox {
-                spacing: Spacing.xs;
+            Text {
+                x: 16px;
+                y: (parent.height - self.height) / 2;
+                text: root.scanning
+                    ? "Scanning... " + root.progress + "% (" + root.found + " found)"
+                    : root.found + " hosts found";
+                color: root.scanning ? Colors.running : Colors.text-secondary;
+                font-size: Typography.font-size-small;
+                height: Sizes.text-height;
+                vertical-alignment: center;
+            }
+        }
 
-                Text {
-                    text: "Display Filter";
-                    font-size: Typography.font-size-small;
-                    color: Colors.text-secondary;
-                }
+        // Start/Stop button
+        Button {
+            x: 600px;
+            y: (parent.height - self.height) / 2;
+            text: root.scanning ? "Stop" : "Start";
+            height: Sizes.button-height;
+            width: 70px;
+            primary: !root.scanning;
 
-                CheckBox {
-                    text: "Online hosts only";
-                    checked: root.filter-online;
-                    enabled: !root.scanning;
-
-                    toggled => { root.filter-online = !root.filter-online; }
+            clicked => {
+                if (root.scanning) {
+                    root.scan-stop();
+                } else {
+                    root.scan-start();
                 }
             }
+        }
 
-            // Progress info
-            VerticalBox {
-                spacing: Spacing.xs;
-                visible: root.scanning || root.found > 0;
+        // Export button
+        Button {
+            x: 680px;
+            y: (parent.height - self.height) / 2;
+            text: "Export";
+            height: Sizes.button-height;
+            width: 60px;
+            enabled: !root.scanning && root.found > 0;
 
-                Text {
-                    text: "Status";
-                    font-size: Typography.font-size-small;
-                    color: Colors.text-secondary;
-                }
-
-                HorizontalBox {
-                    spacing: Spacing.sm;
-
-                    StatusDot {
-                        active: root.scanning;
-                    }
-
-                    Text {
-                        text: root.scanning
-                            ? "Scanning... " + root.progress + "% (" + root.found + " found)"
-                            : root.found + " hosts found";
-                        color: root.scanning ? Colors.running : Colors.text-secondary;
-                        font-size: Typography.font-size-normal;
-                        vertical-alignment: center;
-                    }
-                }
-            }
-
-            // Buttons
-            HorizontalBox {
-                spacing: Spacing.sm;
-                alignment: end;
-
-                Button {
-                    text: root.scanning ? "Stop" : "Start Scan";
-                    height: Sizes.input-height;
-                    primary: !root.scanning;
-
-                    clicked => {
-                        if (root.scanning) {
-                            root.scan-stop();
-                        } else {
-                            root.scan-start();
-                        }
-                    }
-                }
-
-                Button {
-                    text: "Export";
-                    height: Sizes.input-height;
-                    enabled: !root.scanning && root.found > 0;
-
-                    clicked => { root.scan-export("scan_results.txt"); }
-                }
-            }
+            clicked => { root.scan-export("scan_results.txt"); }
         }
     }
 
-    // Results Section
-    VerticalBox {
-        spacing: Spacing.xs;
+    // IP Grid Display
+    Rectangle {
+        background: Colors.surface;
+        border-color: Colors.border;
+        border-width: 1px;
+        border-radius: 2px;
 
-        SectionHeader {
-            text: "Scan Results";
-        }
+        ScrollView {
+            padding: Spacing.sm;
 
-        LogArea {
-            text: root.results;
+            VerticalBox {
+                spacing: 2px;
+
+                Text {
+                    text: root.results;
+                    font-size: Typography.font-size-small;
+                    color: Colors.text-primary;
+                    wrap: word-wrap;
+                }
+            }
         }
     }
 }

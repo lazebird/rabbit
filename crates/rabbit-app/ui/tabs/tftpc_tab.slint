@@ -1,8 +1,8 @@
-// TFTP Client (TFTPC) Tab Component
+// TFTP Client (TFTPC) Tab Component - Perfect alignment using Rectangle with manual positioning
 
-import { Button, LineEdit, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Button, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
-import { Card, LogArea, FormRow, SectionHeader } from "../common/widgets.slint";
+import { LogArea, LineEditWithClear } from "../common/widgets.slint";
 
 export component TftpcTab inherits VerticalBox {
     callback tftp-get();
@@ -10,170 +10,150 @@ export component TftpcTab inherits VerticalBox {
     callback tftp-browse-local();
 
     in property <string> transfer-log: "TFTP client log will appear here...";
-    in-out property <string> server-addr: "";
+    in-out property <string> server-addr: "127.0.0.1";
     in-out property <int> server-port: 69;
-    in-out property <string> local-path: "";
-    in-out property <string> remote-file: "";
-    in-out property <string> client-opts: "";
+    in-out property <string> local-path: "C:\\Users\\liulang\\Desktop\\logo.png";
+    in-out property <string> remote-file: "logo.png";
+    in-out property <string> client-opts: "timeout=200;retry=10;blksize=1024;";
     in property <bool> transfer-in-progress: false;
 
     padding: Spacing.padding-tab;
-    spacing: Spacing.md;
+    spacing: Spacing.sm;
 
-    // Transfer Control Section
-    Card {
-        VerticalBox {
-            spacing: Spacing.md;
+    // First row - Server IP, Port, Options
+    Rectangle {
+        height: Sizes.row-height;
 
-            // Server Address Row
-            HorizontalBox {
-                spacing: Spacing.md;
-                alignment: start;
+        // Label "IP"
+        Text {
+            x: 0;
+            y: (parent.height - self.height) / 2;
+            text: "IP";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
 
-                // Server IP
-                VerticalBox {
-                    spacing: Spacing.xs;
+        // Server IP input - shows default value
+        LineEditWithClear {
+            x: 20px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.server-addr;
+            enabled: !root.transfer-in-progress;
+            height: Sizes.input-height;
+            width: 120px;
+        }
 
-                    Text {
-                        text: "Server IP";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
+        // Label "Port"
+        Text {
+            x: 150px;
+            y: (parent.height - self.height) / 2;
+            text: "Port";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
 
-                    LineEdit {
-                        placeholder-text: "192.168.1.1";
-                        text <=> root.server-addr;
-                        preferred-width: 150px;
-                        height: Sizes.input-height;
-                    }
-                }
+        // Port input
+        SpinBox {
+            x: 186px;
+            y: (parent.height - self.height) / 2;
+            value: root.server-port;
+            minimum: 1;
+            maximum: 65535;
+            preferred-width: 70px;
+            height: Sizes.input-height;
+            enabled: !root.transfer-in-progress;
+        }
 
-                // Server Port
-                VerticalBox {
-                    spacing: Spacing.xs;
+        // Label "Opt."
+        Text {
+            x: 268px;
+            y: (parent.height - self.height) / 2;
+            text: "Opt.";
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            height: Sizes.text-height;
+            vertical-alignment: center;
+        }
 
-                    Text {
-                        text: "Port";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    SpinBox {
-                        value: root.server-port;
-                        minimum: 1;
-                        maximum: 65535;
-                        preferred-width: 80px;
-                        height: Sizes.input-height;
-                        enabled: !root.transfer-in-progress;
-                    }
-                }
-
-                // Options
-                VerticalBox {
-                    spacing: Spacing.xs;
-                    preferred-width: 250px;
-
-                    Text {
-                        text: "Options (timeout=200;blksize=1024)";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    LineEdit {
-                        placeholder-text: "timeout=200;maxretry=10;blksize=1024";
-                        text: root.client-opts;
-                        height: Sizes.input-height;
-                    }
-                }
-            }
-
-            // File Paths Row
-            HorizontalBox {
-                spacing: Spacing.md;
-                alignment: start;
-
-                // Local File
-                VerticalBox {
-                    spacing: Spacing.xs;
-
-                    Text {
-                        text: "Local File";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    HorizontalBox {
-                        spacing: Spacing.xs;
-
-                        LineEdit {
-                            placeholder-text: "Double-click to browse";
-                            text <=> root.local-path;
-                            preferred-width: 280px;
-                            height: Sizes.input-height;
-                        }
-
-                        Button {
-                            text: "Browse";
-                            height: Sizes.input-height;
-
-                            clicked => { root.tftp-browse-local(); }
-                        }
-                    }
-                }
-
-                // Remote File
-                VerticalBox {
-                    spacing: Spacing.xs;
-
-                    Text {
-                        text: "Remote File";
-                        font-size: Typography.font-size-small;
-                        color: Colors.text-secondary;
-                    }
-
-                    LineEdit {
-                        placeholder-text: "filename.txt";
-                        text <=> root.remote-file;
-                        preferred-width: 200px;
-                        height: Sizes.input-height;
-                    }
-                }
-            }
-
-            // Action Buttons
-            HorizontalBox {
-                spacing: Spacing.sm;
-
-                Button {
-                    text: "GET (Download)";
-                    enabled: !root.transfer-in-progress && root.server-addr != "" && root.remote-file != "";
-                    height: Sizes.input-height;
-                    primary: true;
-
-                    clicked => { root.tftp-get(); }
-                }
-
-                Button {
-                    text: "PUT (Upload)";
-                    enabled: !root.transfer-in-progress && root.server-addr != "" && root.local-path != "" && root.remote-file != "";
-                    height: Sizes.input-height;
-
-                    clicked => { root.tftp-put(); }
-                }
-            }
+        // Options input - shows default value
+        LineEditWithClear {
+            x: 300px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.client-opts;
+            enabled: !root.transfer-in-progress;
+            height: Sizes.input-height;
+            width: 240px;
         }
     }
 
-    // Transfer Log Section
-    VerticalBox {
-        spacing: Spacing.xs;
+    // Second row - Local file, Remote file, Buttons
+    Rectangle {
+        height: Sizes.row-height;
 
-        SectionHeader {
-            text: "Transfer Log";
+        // Local file input - shows default value
+        LineEditWithClear {
+            x: 0;
+            y: (parent.height - self.height) / 2;
+            text <=> root.local-path;
+            enabled: !root.transfer-in-progress;
+            height: Sizes.input-height;
+            width: 280px;
         }
 
-        LogArea {
-            text: root.transfer-log;
+        // Browse button
+        Button {
+            x: 288px;
+            y: (parent.height - self.height) / 2;
+            text: "Browse";
+            height: Sizes.button-height;
+            width: 60px;
+
+            clicked => { root.tftp-browse-local(); }
         }
+
+        // Remote file input - shows default value
+        LineEditWithClear {
+            x: 360px;
+            y: (parent.height - self.height) / 2;
+            text <=> root.remote-file;
+            enabled: !root.transfer-in-progress;
+            height: Sizes.input-height;
+            width: 150px;
+        }
+
+        // Put button
+        Button {
+            x: 520px;
+            y: (parent.height - self.height) / 2;
+            text: "Put";
+            enabled: !root.transfer-in-progress && root.server-addr != "" && root.local-path != "" && root.remote-file != "";
+            height: Sizes.button-height;
+            width: 50px;
+            primary: true;
+
+            clicked => { root.tftp-put(); }
+        }
+
+        // Get button
+        Button {
+            x: 578px;
+            y: (parent.height - self.height) / 2;
+            text: "Get";
+            enabled: !root.transfer-in-progress && root.server-addr != "" && root.remote-file != "";
+            height: Sizes.button-height;
+            width: 50px;
+            primary: true;
+
+            clicked => { root.tftp-get(); }
+        }
+    }
+
+    // Transfer Log
+    LogArea {
+        text: root.transfer-log;
     }
 }
