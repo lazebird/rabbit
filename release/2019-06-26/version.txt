@@ -1,0 +1,6 @@
+date=2019/06/26
+time=11:41:59
+branch=refact
+sha=eca69798406e8c92a5182ccbc712a9f5d5d2b10f
+shashort=eca6979
+extra=Release

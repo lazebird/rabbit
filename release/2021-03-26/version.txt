@@ -1,0 +1,6 @@
+date=2021/03/26
+time=19:34:01
+branch=master
+sha=333269bcb484bf4cef56dcbb63ba28bb02916e5a
+shashort=333269b
+extra=Release

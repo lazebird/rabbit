@@ -1,0 +1,6 @@
+date=2019/07/11
+time=17:14:07
+branch=master
+sha=e7dde4aeabd8c2f8678d258ed3c45b9e2d29820f
+shashort=e7dde4a
+extra=Release
