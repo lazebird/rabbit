@@ -1,4 +1,4 @@
-// Chat (LAN Messenger) Tab Component - Perfect alignment using Rectangle with manual positioning
+// Chat (LAN Messenger) Tab Component - Dark theme compact layout
 
 import { Button, CheckBox, ScrollView, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
@@ -19,85 +19,85 @@ export component ChatTab inherits VerticalBox {
     in property <[string]> users: [];
     in property <int> selected-user: -1;
 
-    padding: Spacing.padding-tab;
-    spacing: Spacing.sm;
+    padding: 8px;
+    spacing: 4px;
 
-    // Control Bar - using Rectangle with manual y positioning
+    // Control Bar - compact single row
     Rectangle {
-        height: Sizes.row-height;
+        height: 24px;
 
         // Label "Name"
         Text {
             x: 0;
             y: (parent.height - self.height) / 2;
             text: "Name";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 20px;
             vertical-alignment: center;
         }
 
-        // Nickname input - shows default value
+        // Nickname input
         LineEditWithClear {
-            x: 40px;
+            x: 36px;
             y: (parent.height - self.height) / 2;
             text <=> root.username;
-            preferred-width: 120px;
-            height: Sizes.input-height;
+            height: 22px;
+            width: 100px;
             enabled: !root.enabled;
         }
 
         // Label "Port"
         Text {
-            x: 170px;
+            x: 144px;
             y: (parent.height - self.height) / 2;
             text: "Port";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 20px;
             vertical-alignment: center;
         }
 
         // Port input
         SpinBox {
-            x: 204px;
+            x: 176px;
             y: (parent.height - self.height) / 2;
             value: root.port;
             minimum: 1;
             maximum: 65535;
-            preferred-width: 70px;
-            height: Sizes.input-height;
+            height: 22px;
+            width: 70px;
             enabled: !root.enabled;
         }
 
         // Label "Brd"
         Text {
-            x: 286px;
+            x: 254px;
             y: (parent.height - self.height) / 2;
             text: "Brd";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 20px;
             vertical-alignment: center;
         }
 
-        // Broadcast input - shows default value
+        // Broadcast input
         LineEditWithClear {
-            x: 316px;
+            x: 282px;
             y: (parent.height - self.height) / 2;
             text <=> root.broadcast-addr;
-            preferred-width: 120px;
-            height: Sizes.input-height;
+            height: 22px;
+            width: 110px;
             enabled: !root.enabled;
         }
 
         // Start/Stop button
         Button {
-            x: 448px;
+            x: 400px;
             y: (parent.height - self.height) / 2;
             text: root.enabled ? "Stop" : "Start";
-            height: Sizes.button-height;
-            width: 70px;
+            height: 22px;
+            width: 60px;
             primary: !root.enabled;
 
             clicked => { root.chat-toggle(); }
@@ -105,11 +105,11 @@ export component ChatTab inherits VerticalBox {
 
         // Refresh button
         Button {
-            x: 526px;
+            x: 468px;
             y: (parent.height - self.height) / 2;
             text: "Refresh";
             enabled: root.enabled;
-            height: Sizes.button-height;
+            height: 22px;
             width: 60px;
 
             clicked => { root.chat-refresh(); }
@@ -117,11 +117,11 @@ export component ChatTab inherits VerticalBox {
 
         // Notify button
         Button {
-            x: 594px;
+            x: 536px;
             y: (parent.height - self.height) / 2;
             text: "Notify";
             enabled: root.enabled;
-            height: Sizes.button-height;
+            height: 22px;
             width: 50px;
 
             clicked => { root.chat-notify(); }
@@ -130,18 +130,19 @@ export component ChatTab inherits VerticalBox {
 
     // Chat Area with User List
     HorizontalBox {
-        spacing: Spacing.sm;
+        spacing: 4px;
         preferred-height: 300px;
 
         // User List
         VerticalBox {
-            width: 120px;
-            spacing: Spacing.xs;
+            width: 100px;
+            spacing: 4px;
 
             Text {
                 text: "Users";
-                font-size: Typography.font-size-small;
+                font-size: 11px;
                 color: Colors.text-secondary;
+                height: 16px;
             }
 
             Rectangle {
@@ -151,20 +152,20 @@ export component ChatTab inherits VerticalBox {
                 border-radius: 2px;
 
                 ScrollView {
-                    padding: Spacing.xs;
-
                     VerticalBox {
+                        x: 4px;
+                        y: 4px;
                         spacing: 2px;
 
                         for user in root.users: Text {
                             text: user;
-                            font-size: Typography.font-size-small;
+                            font-size: 11px;
                             color: Colors.text-primary;
                         }
 
                         if root.users.length == 0: Text {
                             text: "No users";
-                            font-size: Typography.font-size-small;
+                            font-size: 11px;
                             color: Colors.text-hint;
                         }
                     }
@@ -175,7 +176,7 @@ export component ChatTab inherits VerticalBox {
         // Messages
         VerticalBox {
             preferred-width: 600px;
-            spacing: Spacing.xs;
+            spacing: 4px;
 
             LogArea {
                 text: root.messages;
@@ -185,23 +186,23 @@ export component ChatTab inherits VerticalBox {
 
     // Message Input
     Rectangle {
-        height: Sizes.row-height;
+        height: 24px;
 
         LineEditWithClear {
             x: 0;
             y: (parent.height - self.height) / 2;
             text <=> root.message;
-            preferred-width: 600px;
-            height: Sizes.input-height;
+            height: 22px;
+            width: 520px;
             enabled: root.enabled;
         }
 
         Button {
-            x: 608px;
+            x: 528px;
             y: (parent.height - self.height) / 2;
             text: "Send";
             enabled: root.enabled && root.message != "";
-            height: Sizes.button-height;
+            height: 22px;
             width: 60px;
             primary: true;
 

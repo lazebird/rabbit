@@ -47,25 +47,30 @@ export component StatusDot inherits Rectangle {
     }
 }
 
-// Log output area with monospace font
+// Log output area - matching old version dark theme
 export component LogArea inherits Rectangle {
     in property <string> text: "";
 
-    background: #1E1E1E;
+    background: Colors.log-background;
     border-color: Colors.border;
-    border-width: 1px;
-    border-radius: 4px;
+    border-width: 0;
     preferred-height: Sizes.log-area-height;
 
     ScrollView {
-        padding: Spacing.sm;
+        padding: Spacing.xs;
 
-        Text {
-            text: root.text;
-            color: #D4D4D4;
-            font-family: "Consolas";
-            font-size: Typography.font-size-small;
-            wrap: word-wrap;
+        VerticalLayout {
+            alignment: start;
+
+            Text {
+                text: root.text;
+                color: Colors.log-text;
+                font-family: "Consolas";
+                font-size: 12px;
+                wrap: word-wrap;
+                horizontal-alignment: left;
+                vertical-alignment: top;
+            }
         }
     }
 }
@@ -154,7 +159,7 @@ export component SecondaryButton inherits Button {
     height: Sizes.button-height;
 }
 
-// Icon button for small buttons like +/- 
+// Icon button for small buttons like +/- - matching old version green buttons
 export component IconButton inherits Rectangle {
     in property <string> icon: "+";
     in property <bool> enabled: true;
@@ -162,17 +167,16 @@ export component IconButton inherits Rectangle {
 
     callback clicked();
 
-    height: 24px;
-    width: 28px;
+    height: 22px;
+    width: 26px;
     border-radius: 2px;
     background: root.primary ? Colors.primary : Colors.surface;
-    border-width: 1px;
-    border-color: root.primary ? Colors.primary-dark : Colors.border;
+    border-width: 0;
 
     Text {
         text: root.icon;
         color: root.primary ? #FFFFFF : (root.enabled ? Colors.text-primary : Colors.text-hint);
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 600;
         vertical-alignment: center;
         horizontal-alignment: center;
@@ -184,7 +188,7 @@ export component IconButton inherits Rectangle {
     }
 }
 
-// Custom LineEdit with X icon for clear button
+// Custom LineEdit with X icon for clear button - dark theme
 export component LineEditWithClear inherits Rectangle {
     in-out property <string> text;
     in property <bool> enabled: true;
@@ -194,10 +198,8 @@ export component LineEditWithClear inherits Rectangle {
     callback edited();
 
     height: Sizes.input-height;
-    background: Colors.surface;
-    border-color: input.has-focus ? Colors.primary : Colors.border;
-    border-width: 1px;
-    border-radius: 2px;
+    background: #555555;
+    border-width: 0;
 
     HorizontalLayout {
         padding-left: Spacing.xs;
@@ -208,7 +210,7 @@ export component LineEditWithClear inherits Rectangle {
             text <=> root.text;
             enabled: root.enabled;
             color: Colors.text-primary;
-            font-size: Typography.font-size-normal;
+            font-size: 12px;
             vertical-alignment: center;
             height: parent.height;
 
@@ -224,7 +226,7 @@ export component LineEditWithClear inherits Rectangle {
             Text {
                 text: "×";
                 color: Colors.text-secondary;
-                font-size: 16px;
+                font-size: 14px;
                 vertical-alignment: center;
                 horizontal-alignment: center;
             }
@@ -238,31 +240,23 @@ export component LineEditWithClear inherits Rectangle {
     }
 }
 
-// Status bar at bottom
+// Status bar at bottom - dark theme
 export component StatusBar inherits Rectangle {
     in property <string> text: "Ready";
 
-    background: #F5F5F5;
+    background: Colors.surface;
     border-color: Colors.border;
     border-width: 0;
-    height: 28px;
-
-    Rectangle {
-        y: 0;
-        width: parent.width;
-        height: 1px;
-        background: Colors.border;
-    }
+    height: 24px;
 
     HorizontalLayout {
-        y: 1px;
-        height: parent.height - 1px;
-        padding-left: Spacing.md;
-        padding-right: Spacing.md;
+        height: parent.height;
+        padding-left: Spacing.sm;
+        padding-right: Spacing.sm;
 
         Text {
             text: root.text;
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
             vertical-alignment: center;
         }

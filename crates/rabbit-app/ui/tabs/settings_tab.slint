@@ -1,4 +1,4 @@
-// Settings Tab Component - Perfect alignment using Rectangle with manual positioning
+// Settings Tab Component - Dark theme compact layout
 
 import { Button, CheckBox, ComboBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
@@ -12,28 +12,28 @@ export component SettingsTab inherits VerticalBox {
     callback settings-check-update();
 
     in-out property <string> language: "en";
-    in-out property <string> theme: "light";
+    in-out property <string> theme: "dark";
     in-out property <bool> systray: true;
     in-out property <bool> top: false;
     in-out property <bool> autostart: false;
     in-out property <bool> autoupdate: true;
     in property <string> version: "1.0.0";
 
-    padding: Spacing.padding-tab;
-    spacing: Spacing.sm;
+    padding: 8px;
+    spacing: 4px;
 
     // First row - Language, Checkboxes, Links
     Rectangle {
-        height: Sizes.row-height;
+        height: 22px;
 
         // Label "Language"
         Text {
             x: 0;
             y: (parent.height - self.height) / 2;
             text: "Language";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
 
@@ -43,7 +43,7 @@ export component SettingsTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             model: ["English", "简体中文"];
             current-index: root.language == "zh" ? 1 : 0;
-            height: Sizes.input-height;
+            height: 22px;
             width: 90px;
 
             selected => {
@@ -57,7 +57,7 @@ export component SettingsTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text: "Tray";
             checked: root.systray;
-            height: Sizes.input-height;
+            height: 22px;
 
             toggled => { root.systray = !root.systray; }
         }
@@ -68,7 +68,7 @@ export component SettingsTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text: "Top";
             checked: root.top;
-            height: Sizes.input-height;
+            height: 22px;
 
             toggled => { root.top = !root.top; }
         }
@@ -79,7 +79,7 @@ export component SettingsTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text: "AutoStart";
             checked: root.autostart;
-            height: Sizes.input-height;
+            height: 22px;
 
             toggled => { root.autostart = !root.autostart; }
         }
@@ -90,7 +90,7 @@ export component SettingsTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text: "AutoUpdate";
             checked: root.autoupdate;
-            height: Sizes.input-height;
+            height: 22px;
 
             toggled => { root.autoupdate = !root.autoupdate; }
         }
@@ -100,9 +100,9 @@ export component SettingsTab inherits VerticalBox {
             x: 480px;
             y: (parent.height - self.height) / 2;
             text: "Home";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.accent;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
 
             TouchArea {
@@ -115,9 +115,9 @@ export component SettingsTab inherits VerticalBox {
             x: 530px;
             y: (parent.height - self.height) / 2;
             text: "Profile";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.accent;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
 
             TouchArea {
@@ -130,9 +130,9 @@ export component SettingsTab inherits VerticalBox {
             x: 590px;
             y: (parent.height - self.height) / 2;
             text: "Help";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.accent;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
 
             TouchArea {
@@ -143,15 +143,15 @@ export component SettingsTab inherits VerticalBox {
 
     // Second row - Version info
     Rectangle {
-        height: 24px;
+        height: 22px;
 
         Text {
             x: 0;
             y: (parent.height - self.height) / 2;
             text: "Version";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
 
@@ -159,9 +159,9 @@ export component SettingsTab inherits VerticalBox {
             x: 50px;
             y: (parent.height - self.height) / 2;
             text: root.version;
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.accent;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
 
             TouchArea {
@@ -173,9 +173,9 @@ export component SettingsTab inherits VerticalBox {
             x: 100px;
             y: (parent.height - self.height) / 2;
             text: "(click to check update)";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-hint;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
     }
@@ -189,11 +189,11 @@ export component SettingsTab inherits VerticalBox {
         preferred-height: 200px;
 
         VerticalBox {
-            padding: Spacing.sm;
+            padding: 8px;
 
             Text {
                 text: "Settings will be saved automatically.";
-                font-size: Typography.font-size-small;
+                font-size: 11px;
                 color: Colors.text-secondary;
             }
         }

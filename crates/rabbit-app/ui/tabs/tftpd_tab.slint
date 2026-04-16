@@ -1,4 +1,4 @@
-// TFTP Server (TFTPD) Tab Component - Perfect alignment using Rectangle with manual positioning
+// TFTP Server (TFTPD) Tab Component - Dark theme compact layout
 
 import { Button, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
@@ -16,12 +16,12 @@ export component TftpdTab inherits VerticalBox {
     in property <[string]> work-dirs: [];
     in-out property <int> selected-dir: -1;
 
-    padding: Spacing.padding-tab;
-    spacing: Spacing.sm;
+    padding: 8px;
+    spacing: 4px;
 
     // Control Bar - using Rectangle with manual y positioning
     Rectangle {
-        height: Sizes.row-height;
+        height: 22px;
 
         // Add button
         IconButton {
@@ -48,9 +48,9 @@ export component TftpdTab inherits VerticalBox {
             x: 74px;
             y: (parent.height - self.height) / 2;
             text: "Opt.";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
 
@@ -60,7 +60,7 @@ export component TftpdTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text <=> root.server-opts;
             enabled: !root.server-running;
-            height: Sizes.input-height;
+            height: 22px;
             width: 380px;
         }
 
@@ -69,7 +69,7 @@ export component TftpdTab inherits VerticalBox {
             x: 500px;
             y: (parent.height - self.height) / 2;
             text: root.server-running ? "Stop" : "Start";
-            height: Sizes.button-height;
+            height: 22px;
             width: 70px;
             primary: true;
 
@@ -86,20 +86,20 @@ export component TftpdTab inherits VerticalBox {
         preferred-height: 120px;
 
         VerticalBox {
-            padding: Spacing.xs;
+            padding: 4px;
 
             for dir[idx] in root.work-dirs: Rectangle {
-                height: 24px;
+                height: 22px;
                 background: root.selected-dir == idx ? Colors.primary : transparent;
 
                 HorizontalBox {
-                    spacing: Spacing.xs;
-                    padding: Spacing.xs;
+                    spacing: 4px;
+                    padding: 4px;
 
                     Text {
                         text: dir;
-                        font-size: Typography.font-size-small;
-                        color: root.selected-dir == idx ? #FFFFFF : Colors.text-primary;
+                        font-size: 11px;
+                        color: root.selected-dir == idx ? #FFFFFF : Colors.text-secondary;
                         overflow: elide;
                     }
                 }
@@ -111,9 +111,9 @@ export component TftpdTab inherits VerticalBox {
 
             if root.work-dirs.length == 0: Text {
                 text: "No work directories added";
-                font-size: Typography.font-size-small;
+                font-size: 11px;
                 color: Colors.text-hint;
-                padding: Spacing.sm;
+                padding: 4px;
             }
         }
     }

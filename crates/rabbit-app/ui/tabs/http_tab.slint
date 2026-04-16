@@ -1,4 +1,4 @@
-// HTTP Server Tab Component - Perfect alignment using Rectangle with manual positioning
+// HTTP Server Tab Component - Dark theme compact layout
 
 import { Button, CheckBox, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
@@ -17,21 +17,21 @@ export component HttpTab inherits VerticalBox {
     in property <[string]> dirs: [];
     in-out property <int> selected-dir: -1;
 
-    padding: Spacing.padding-tab;
-    spacing: Spacing.sm;
+    padding: 8px;
+    spacing: 4px;
 
-    // Control Bar - using Rectangle with manual y positioning
+    // Control Bar - compact dark theme layout
     Rectangle {
-        height: Sizes.row-height;
+        height: 22px;
 
         // Label "Port"
         Text {
             x: 0;
             y: (parent.height - self.height) / 2;
             text: "Port";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
 
@@ -43,7 +43,7 @@ export component HttpTab inherits VerticalBox {
             minimum: 1;
             maximum: 65535;
             enabled: !root.running;
-            height: Sizes.input-height;
+            height: 22px;
             width: 80px;
         }
 
@@ -52,9 +52,9 @@ export component HttpTab inherits VerticalBox {
             x: 126px;
             y: (parent.height - self.height) / 2;
             text: "Opt.";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
 
@@ -64,7 +64,7 @@ export component HttpTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text <=> root.opts;
             enabled: !root.running;
-            height: Sizes.input-height;
+            height: 22px;
             width: 280px;
         }
 
@@ -75,7 +75,7 @@ export component HttpTab inherits VerticalBox {
             text: "shell";
             checked: root.opts == "shell=true";
             enabled: !root.running;
-            height: Sizes.input-height;
+            height: 22px;
 
             toggled => {
                 if (self.checked) {
@@ -91,7 +91,7 @@ export component HttpTab inherits VerticalBox {
             x: 520px;
             y: (parent.height - self.height) / 2;
             text: root.running ? "Stop" : "Start";
-            height: Sizes.button-height;
+            height: 22px;
             width: 70px;
             primary: true;
 
@@ -99,7 +99,7 @@ export component HttpTab inherits VerticalBox {
         }
     }
 
-    // Directory list
+    // Directory list - compact dark theme
     Rectangle {
         background: Colors.surface;
         border-color: Colors.border;
@@ -108,19 +108,20 @@ export component HttpTab inherits VerticalBox {
         preferred-height: 120px;
 
         VerticalBox {
-            padding: Spacing.xs;
+            padding: 4px;
+            spacing: 4px;
 
             for dir[idx] in root.dirs: Rectangle {
-                height: 24px;
+                height: 22px;
                 background: root.selected-dir == idx ? Colors.primary : transparent;
 
                 HorizontalBox {
-                    spacing: Spacing.xs;
-                    padding: Spacing.xs;
+                    spacing: 4px;
+                    padding: 4px;
 
                     Text {
                         text: dir;
-                        font-size: Typography.font-size-small;
+                        font-size: 11px;
                         color: root.selected-dir == idx ? #FFFFFF : Colors.text-primary;
                         overflow: elide;
                     }
@@ -133,16 +134,16 @@ export component HttpTab inherits VerticalBox {
 
             if root.dirs.length == 0: Text {
                 text: "No directories added";
-                font-size: Typography.font-size-small;
+                font-size: 11px;
                 color: Colors.text-hint;
-                padding: Spacing.sm;
+                padding: 8px;
             }
         }
     }
 
-    // Add/Remove buttons row
+    // Add/Remove buttons row - compact
     Rectangle {
-        height: 24px;
+        height: 22px;
 
         IconButton {
             x: 0;

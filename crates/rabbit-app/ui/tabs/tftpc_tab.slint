@@ -1,4 +1,4 @@
-// TFTP Client (TFTPC) Tab Component - Perfect alignment using Rectangle with manual positioning
+// TFTP Client (TFTPC) Tab Component - Dark theme compact layout
 
 import { Button, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
@@ -17,21 +17,21 @@ export component TftpcTab inherits VerticalBox {
     in-out property <string> client-opts: "timeout=200;retry=10;blksize=1024;";
     in property <bool> transfer-in-progress: false;
 
-    padding: Spacing.padding-tab;
-    spacing: Spacing.sm;
+    padding: 8px;
+    spacing: 4px;
 
     // First row - Server IP, Port, Options
     Rectangle {
-        height: Sizes.row-height;
+        height: 22px;
 
         // Label "IP"
         Text {
             x: 0;
             y: (parent.height - self.height) / 2;
             text: "IP";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
 
@@ -41,7 +41,7 @@ export component TftpcTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text <=> root.server-addr;
             enabled: !root.transfer-in-progress;
-            height: Sizes.input-height;
+            height: 22px;
             width: 120px;
         }
 
@@ -50,9 +50,9 @@ export component TftpcTab inherits VerticalBox {
             x: 150px;
             y: (parent.height - self.height) / 2;
             text: "Port";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
 
@@ -64,7 +64,7 @@ export component TftpcTab inherits VerticalBox {
             minimum: 1;
             maximum: 65535;
             preferred-width: 70px;
-            height: Sizes.input-height;
+            height: 22px;
             enabled: !root.transfer-in-progress;
         }
 
@@ -73,9 +73,9 @@ export component TftpcTab inherits VerticalBox {
             x: 268px;
             y: (parent.height - self.height) / 2;
             text: "Opt.";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
 
@@ -85,14 +85,14 @@ export component TftpcTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text <=> root.client-opts;
             enabled: !root.transfer-in-progress;
-            height: Sizes.input-height;
+            height: 22px;
             width: 240px;
         }
     }
 
     // Second row - Local file, Remote file, Buttons
     Rectangle {
-        height: Sizes.row-height;
+        height: 22px;
 
         // Local file input - shows default value
         LineEditWithClear {
@@ -100,7 +100,7 @@ export component TftpcTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text <=> root.local-path;
             enabled: !root.transfer-in-progress;
-            height: Sizes.input-height;
+            height: 22px;
             width: 280px;
         }
 
@@ -109,7 +109,7 @@ export component TftpcTab inherits VerticalBox {
             x: 288px;
             y: (parent.height - self.height) / 2;
             text: "Browse";
-            height: Sizes.button-height;
+            height: 22px;
             width: 60px;
 
             clicked => { root.tftp-browse-local(); }
@@ -121,7 +121,7 @@ export component TftpcTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text <=> root.remote-file;
             enabled: !root.transfer-in-progress;
-            height: Sizes.input-height;
+            height: 22px;
             width: 150px;
         }
 
@@ -131,7 +131,7 @@ export component TftpcTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text: "Put";
             enabled: !root.transfer-in-progress && root.server-addr != "" && root.local-path != "" && root.remote-file != "";
-            height: Sizes.button-height;
+            height: 22px;
             width: 50px;
             primary: true;
 
@@ -144,7 +144,7 @@ export component TftpcTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text: "Get";
             enabled: !root.transfer-in-progress && root.server-addr != "" && root.remote-file != "";
-            height: Sizes.button-height;
+            height: 22px;
             width: 50px;
             primary: true;
 

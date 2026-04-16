@@ -29,6 +29,8 @@ impl PlatformPing {
             seq: 0,
             success: false,
             duration_ms: None,
+            ttl: None,
+            bytes: 0,
             error: Some("Not implemented".into()),
         })
     }

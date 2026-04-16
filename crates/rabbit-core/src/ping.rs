@@ -225,6 +225,8 @@ impl PingService {
                     seq,
                     success: false,
                     duration_ms: None,
+                    ttl: None,
+                    bytes: 0,
                     error: Some(format!("Failed to resolve: {}", target.address)),
                 };
             }
@@ -237,12 +239,18 @@ impl PingService {
         let payload = [0; 56];
 
         match pinger.ping(PingSequence(seq), &payload).await {
-            Ok((_packet, duration)) => {
+            Ok((packet, duration)) => {
                 let duration_ms = duration.as_secs_f64() * 1000.0;
+                let (ttl, bytes) = match &packet {
+                    surge_ping::IcmpPacket::V4(p) => (p.get_ttl(), p.get_size()),
+                    surge_ping::IcmpPacket::V6(p) => (None, 0), // IPv6 doesn't have TTL
+                };
                 PingResult {
                     seq,
                     success: true,
                     duration_ms: Some(duration_ms),
+                    ttl,
+                    bytes,
                     error: None,
                 }
             }
@@ -251,6 +259,8 @@ impl PingService {
                     seq,
                     success: false,
                     duration_ms: None,
+                    ttl: None,
+                    bytes: 0,
                     error: Some(format!("Ping failed: {}", e)),
                 }
             }

@@ -1,4 +1,4 @@
-// Plan (Task Scheduler) Tab Component - Perfect alignment using Rectangle with manual positioning
+// Plan (Task Scheduler) Tab Component - Dark theme compact layout
 
 import { Button, CheckBox, ComboBox, ScrollView, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
@@ -20,19 +20,19 @@ export component PlanTab inherits VerticalBox {
     in-out property <string> plan-msg: "Have a rest!";
     in-out property <bool> plan-override: false;
 
-    padding: Spacing.padding-tab;
-    spacing: Spacing.sm;
+    padding: 8px;
+    spacing: 4px;
 
     // Control Bar - using Rectangle with manual y positioning
     Rectangle {
-        height: Sizes.row-height;
+        height: 22px;
 
         // Date input - shows default value
         LineEditWithClear {
             x: 0;
             y: (parent.height - self.height) / 2;
             text <=> root.plan-date;
-            height: Sizes.input-height;
+            height: 22px;
             width: 100px;
         }
 
@@ -41,7 +41,7 @@ export component PlanTab inherits VerticalBox {
             x: 108px;
             y: (parent.height - self.height) / 2;
             text <=> root.plan-time;
-            height: Sizes.input-height;
+            height: 22px;
             width: 60px;
         }
 
@@ -50,9 +50,9 @@ export component PlanTab inherits VerticalBox {
             x: 176px;
             y: (parent.height - self.height) / 2;
             text: "Repeat /";
-            font-size: Typography.font-size-small;
+            font-size: 11px;
             color: Colors.text-secondary;
-            height: Sizes.text-height;
+            height: 22px;
             vertical-alignment: center;
         }
 
@@ -63,7 +63,7 @@ export component PlanTab inherits VerticalBox {
             value: root.plan-cycle;
             minimum: 0;
             preferred-width: 60px;
-            height: Sizes.input-height;
+            height: 22px;
         }
 
         // Unit dropdown
@@ -72,7 +72,7 @@ export component PlanTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             model: ["minute", "hour", "day", "week"];
             current-index: root.plan-unit == "hours" ? 1 : root.plan-unit == "days" ? 2 : root.plan-unit == "weeks" ? 3 : 0;
-            height: Sizes.input-height;
+            height: 22px;
             preferred-width: 80px;
 
             selected => {
@@ -85,7 +85,7 @@ export component PlanTab inherits VerticalBox {
             x: 386px;
             y: (parent.height - self.height) / 2;
             text <=> root.plan-msg;
-            height: Sizes.input-height;
+            height: 22px;
             width: 150px;
         }
 
@@ -95,7 +95,7 @@ export component PlanTab inherits VerticalBox {
             y: (parent.height - self.height) / 2;
             text: "Override";
             checked: root.plan-override;
-            height: Sizes.input-height;
+            height: 22px;
 
             toggled => { root.plan-override = !root.plan-override; }
         }
@@ -129,16 +129,19 @@ export component PlanTab inherits VerticalBox {
         border-radius: 2px;
 
         ScrollView {
-            padding: Spacing.xs;
+            padding: 4px;
 
-            VerticalBox {
+            VerticalLayout {
                 spacing: 2px;
+                alignment: start;
 
                 Text {
                     text: root.tasks;
-                    font-size: Typography.font-size-small;
+                    font-size: 11px;
                     color: Colors.text-primary;
                     wrap: word-wrap;
+                    horizontal-alignment: left;
+                    vertical-alignment: top;
                 }
             }
         }

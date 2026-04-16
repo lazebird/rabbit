@@ -33,6 +33,8 @@ pub struct PingResult {
     pub seq: u16,
     pub success: bool,
     pub duration_ms: Option<f64>,
+    pub ttl: Option<u8>,
+    pub bytes: usize,
     pub error: Option<String>,
 }
 
@@ -87,6 +89,8 @@ mod tests {
             seq: 1,
             success: true,
             duration_ms: Some(15.5),
+            ttl: Some(64),
+            bytes: 32,
             error: None,
         };
         assert!(result.success);
@@ -100,6 +104,8 @@ mod tests {
             seq: 2,
             success: false,
             duration_ms: None,
+            ttl: None,
+            bytes: 32,
             error: Some("Timeout".to_string()),
         };
         assert!(!result.success);

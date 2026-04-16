@@ -130,25 +130,54 @@ impl App {
                 interval.tick().await;
 
                 // Collect data first
-                let (targets, results_text) = {
+                let (targets, results_text, stats_text) = {
                     let service = ping_service.read().await;
                     let targets = service.get_targets().await;
                     let mut text = String::new();
+                    let mut stats = String::new();
                     if !targets.is_empty() {
-                        let results = service.get_results(&targets[0].address).await;
+                        let target = &targets[0];
+                        let results = service.get_results(&target.address).await;
+                        
+                        // Format ping results like old version: "来自 1.1.1.1 的回复: 字节=32 毫秒=1 TTL=253"
                         text = results.iter()
                             .map(|r| {
-                                let time = chrono::Local::now().format("%H:%M:%S");
                                 if let Some(duration) = r.duration_ms {
-                                    format!("[{}] Seq {}: {:.1}ms", time, r.seq, duration)
+                                    let ttl_str = r.ttl.map(|t| format!(" TTL={}", t)).unwrap_or_default();
+                                    format!("来自 {} 的回复: 字节={} 毫秒={}{}", 
+                                        target.address, r.bytes, duration as u32, ttl_str)
                                 } else {
-                                    format!("[{}] Seq {}: Failed", time, r.seq)
+                                    format!("来自 {} 的回复: 请求超时", target.address)
                                 }
                             })
                             .collect::<Vec<_>>()
                             .join("\n");
+                        
+                        // Calculate statistics
+                        let sent = results.len() as u32;
+                        let received = results.iter().filter(|r| r.success).count() as u32;
+                        let lost = sent - received;
+                        let loss_rate = if sent > 0 { (lost as f64 / sent as f64) * 100.0 } else { 0.0 };
+                        
+                        let times: Vec<f64> = results.iter()
+                            .filter_map(|r| r.duration_ms)
+                            .collect();
+                        
+                        let min_ms = times.iter().cloned().fold(f64::INFINITY, f64::min);
+                        let max_ms = times.iter().cloned().fold(0.0, f64::max);
+                        let avg_ms = if !times.is_empty() { 
+                            times.iter().sum::<f64>() / times.len() as f64 
+                        } else { 0.0 };
+                        
+                        let now = chrono::Local::now();
+                        stats = format!("{} Tx {} Rx {} Loss {} Min {} Max {} Avg {:.6}",
+                            now.format("%Y/%m/%d %H:%M:%S"),
+                            sent, received, lost,
+                            if min_ms == f64::INFINITY { 0.0 } else { min_ms } as u32,
+                            max_ms as u32, avg_ms
+                        );
                     }
-                    (targets, text)
+                    (targets, text, stats)
                 };
 
                 // Update UI from UI thread
@@ -157,6 +186,7 @@ impl App {
                     slint::invoke_from_event_loop(move || {
                         if let Some(ui) = ui.upgrade() {
                             ui.set_ping_results(results_text.into());
+                            ui.set_ping_stats(stats_text.into());
                         }
                     }).ok();
                 }
