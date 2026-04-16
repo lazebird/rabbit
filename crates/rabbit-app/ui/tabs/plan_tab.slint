@@ -1,0 +1,195 @@
+// Plan (Task Scheduler) Tab Component
+
+import { Button, CheckBox, ComboBox, LineEdit, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
+import { Card, LogArea, SectionHeader } from "../common/widgets.slint";
+
+export component PlanTab inherits VerticalBox {
+    callback plan-add();
+    callback plan-remove(int);
+    callback plan-select(int);
+
+    in property <string> tasks: "No tasks scheduled.";
+    in property <int> task-count: 0;
+    in property <int> selected-task: -1;
+
+    // Task input fields
+    in-out property <string> plan-date: "";
+    in-out property <string> plan-time: "";
+    in-out property <int> plan-cycle: 0;
+    in-out property <string> plan-unit: "minutes";
+    in-out property <string> plan-msg: "";
+    in-out property <bool> plan-override: false;
+
+    padding: Spacing.padding-tab;
+    spacing: Spacing.md;
+
+    // Task Input Section
+    Card {
+        VerticalBox {
+            spacing: Spacing.md;
+
+            // Date and Time Row
+            HorizontalBox {
+                spacing: Spacing.md;
+                alignment: start;
+
+                // Date
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Date";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    LineEdit {
+                        placeholder-text: "YYYY-MM-DD";
+                        text <=> root.plan-date;
+                        preferred-width: 120px;
+                        height: Sizes.input-height;
+                    }
+                }
+
+                // Time
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Time";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    LineEdit {
+                        placeholder-text: "HH:MM:SS";
+                        text <=> root.plan-time;
+                        preferred-width: 100px;
+                        height: Sizes.input-height;
+                    }
+                }
+
+                // Repeat Cycle
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Repeat Every";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    HorizontalBox {
+                        spacing: Spacing.xs;
+
+                        SpinBox {
+                            value: root.plan-cycle;
+                            minimum: 0;
+                            preferred-width: 80px;
+                            height: Sizes.input-height;
+                        }
+
+                        ComboBox {
+                            model: ["minutes", "hours", "days", "weeks"];
+                            current-index: root.plan-unit == "hours" ? 1 : root.plan-unit == "days" ? 2 : root.plan-unit == "weeks" ? 3 : 0;
+                            height: Sizes.input-height;
+
+                            selected => {
+                                root.plan-unit = self.current-index == 1 ? "hours" : self.current-index == 2 ? "days" : self.current-index == 3 ? "weeks" : "minutes";
+                            }
+                        }
+                    }
+                }
+
+                // Override checkbox
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Options";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    CheckBox {
+                        text: "Override conflicts";
+                        checked: root.plan-override;
+
+                        toggled => { root.plan-override = !root.plan-override; }
+                    }
+                }
+            }
+
+            // Message Row
+            HorizontalBox {
+                spacing: Spacing.md;
+                alignment: start;
+
+                VerticalBox {
+                    spacing: Spacing.xs;
+                    preferred-width: 400px;
+
+                    Text {
+                        text: "Message (Task ID)";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    LineEdit {
+                        placeholder-text: "Reminder message (unique identifier)";
+                        text <=> root.plan-msg;
+                        height: Sizes.input-height;
+                    }
+                }
+
+                // Action Buttons
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Actions";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    HorizontalBox {
+                        spacing: Spacing.sm;
+
+                        Button {
+                            text: "Add Task";
+                            height: Sizes.input-height;
+
+                            clicked => { root.plan-add(); }
+                        }
+
+                        Button {
+                            text: "Remove";
+                            enabled: root.selected-task >= 0;
+                            height: Sizes.input-height;
+
+                            clicked => { root.plan-remove(root.selected-task); }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Task List Section
+    VerticalBox {
+        spacing: Spacing.xs;
+
+        HorizontalBox {
+            spacing: Spacing.sm;
+
+            SectionHeader {
+                text: "Scheduled Tasks (" + root.task-count + ")";
+            }
+        }
+
+        LogArea {
+            text: root.tasks;
+        }
+    }
+}

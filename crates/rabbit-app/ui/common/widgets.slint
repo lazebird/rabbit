@@ -1,0 +1,180 @@
+// Common Reusable Widgets for Rabbit UI
+
+import { Button, LineEdit, ScrollView } from "std-widgets.slint";
+import { Colors, Typography, Spacing, Sizes } from "styles.slint";
+
+// Card container with border and padding
+export component Card inherits Rectangle {
+    background: Colors.surface;
+    border-color: Colors.border;
+    border-width: 1px;
+    border-radius: 4px;
+
+    VerticalLayout {
+        padding: Spacing.md;
+        spacing: Spacing.sm;
+        @children
+    }
+}
+
+// Section header with title
+export component SectionHeader inherits Text {
+    font-size: Typography.font-size-medium;
+    font-weight: Typography.font-weight-bold;
+    color: Colors.text-primary;
+    height: 24px;
+}
+
+// Status indicator dot
+export component StatusDot inherits Rectangle {
+    in property <bool> active: false;
+    in property <string> status-text: "";
+
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background: active ? Colors.running : Colors.stopped;
+
+    TouchArea {
+        width: parent.width;
+        height: parent.height;
+    }
+}
+
+// Log output area with monospace font
+export component LogArea inherits Rectangle {
+    in property <string> text: "";
+
+    background: #1E1E1E;
+    border-color: Colors.border;
+    border-width: 1px;
+    border-radius: 4px;
+    preferred-height: Sizes.log-area-height;
+
+    ScrollView {
+        padding: Spacing.sm;
+
+        Text {
+            text: root.text;
+            color: #D4D4D4;
+            font-family: "Consolas";
+            font-size: Typography.font-size-small;
+            wrap: word-wrap;
+        }
+    }
+}
+
+// Directory list with add/remove buttons
+export component DirList inherits Rectangle {
+    in property <[string]> dirs: [];
+    in property <int> selected-index: -1;
+    in property <bool> enabled: true;
+
+    callback add-clicked();
+    callback remove-clicked(int);
+    callback dir-selected(int);
+
+    background: Colors.surface;
+    border-color: Colors.border;
+    border-width: 1px;
+    border-radius: 4px;
+    preferred-height: Sizes.dir-list-height;
+
+    ScrollView {
+        VerticalLayout {
+            padding: Spacing.xs;
+            spacing: 2px;
+
+            for dir[index] in root.dirs: Rectangle {
+                height: 22px;
+                background: root.selected-index == index ? #E3F2FD : transparent;
+                border-radius: 2px;
+
+                HorizontalLayout {
+                    padding-left: Spacing.xs;
+                    padding-right: Spacing.xs;
+
+                    Text {
+                        text: dir;
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-primary;
+                        vertical-alignment: center;
+                    }
+                }
+
+                TouchArea {
+                    enabled: root.enabled;
+                    clicked => { root.dir-selected(index); }
+                }
+            }
+
+            if root.dirs.length == 0: Text {
+                text: "No directories configured";
+                font-size: Typography.font-size-small;
+                color: Colors.text-hint;
+                padding: Spacing.xs;
+            }
+        }
+    }
+}
+
+// Form row with label and control
+export component FormRow inherits HorizontalLayout {
+    in property <string> label: "";
+    in property <length> label-width: 100px;
+
+    spacing: Spacing.sm;
+    height: Sizes.row-height;
+
+    Text {
+        text: root.label;
+        width: root.label-width;
+        font-size: Typography.font-size-normal;
+        color: Colors.text-primary;
+        vertical-alignment: center;
+    }
+
+    @children
+}
+
+// Primary action button
+export component PrimaryButton inherits Button {
+    height: Sizes.button-height;
+    primary: true;
+}
+
+// Secondary action button
+export component SecondaryButton inherits Button {
+    height: Sizes.button-height;
+}
+
+// Status bar at bottom
+export component StatusBar inherits Rectangle {
+    in property <string> text: "Ready";
+
+    background: #F5F5F5;
+    border-color: Colors.border;
+    border-width: 0;
+    height: 28px;
+
+    Rectangle {
+        y: 0;
+        width: parent.width;
+        height: 1px;
+        background: Colors.border;
+    }
+
+    HorizontalLayout {
+        y: 1px;
+        height: parent.height - 1px;
+        padding-left: Spacing.md;
+        padding-right: Spacing.md;
+
+        Text {
+            text: root.text;
+            font-size: Typography.font-size-small;
+            color: Colors.text-secondary;
+            vertical-alignment: center;
+        }
+    }
+}

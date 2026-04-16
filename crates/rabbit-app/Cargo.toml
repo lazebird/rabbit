@@ -1,0 +1,33 @@
+[package]
+name = "rabbit-app"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+description = "Main application for Rabbit - UI and entry point"
+
+[[bin]]
+name = "rabbit"
+path = "src/main.rs"
+
+[dependencies]
+rabbit-models = { path = "../rabbit-models" }
+rabbit-platform = { path = "../rabbit-platform" }
+rabbit-core = { path = "../rabbit-core" }
+
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+
+# UI Framework
+slint = { workspace = true }
+
+[build-dependencies]
+slint-build = "1.10"

@@ -1,0 +1,148 @@
+// HTTP Server Tab Component
+
+import { Button, CheckBox, LineEdit, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
+import { Card, LogArea, DirList, SectionHeader } from "../common/widgets.slint";
+
+export component HttpTab inherits VerticalBox {
+    callback http-toggle();
+    callback http-browse();
+    callback http-add-dir();
+    callback http-remove-dir(int);
+
+    in property <bool> running: false;
+    in property <string> access-log: "HTTP access log will appear here...";
+    in-out property <int> port: 8080;
+    in-out property <string> opts: "";
+    in property <[string]> dirs: [];
+    in property <int> selected-dir: -1;
+
+    padding: Spacing.padding-tab;
+    spacing: Spacing.md;
+
+    // Server Control Section
+    Card {
+        VerticalBox {
+            spacing: Spacing.md;
+
+            // Port and Status Row
+            HorizontalBox {
+                spacing: Spacing.md;
+                alignment: start;
+
+                // Port configuration
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Port";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    SpinBox {
+                        value: root.port;
+                        minimum: 1;
+                        maximum: 65535;
+                        enabled: !root.running;
+                        height: Sizes.input-height;
+                    }
+                }
+
+                // Server toggle
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Server Status";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    CheckBox {
+                        text: root.running ? "Running on port " + root.port : "Start Server";
+                        checked: root.running;
+                        enabled: true;
+
+                        toggled => { root.http-toggle(); }
+                    }
+                }
+
+                // Options
+                VerticalBox {
+                    spacing: Spacing.xs;
+                    preferred-width: 300px;
+
+                    Text {
+                        text: "Options (shell=false;autoindex=false)";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    LineEdit {
+                        placeholder-text: "shell=false;autoindex=false;videoplay=false";
+                        text: root.opts;
+                        enabled: !root.running;
+                        height: Sizes.input-height;
+                    }
+                }
+            }
+
+            // Directories Section
+            VerticalBox {
+                spacing: Spacing.xs;
+
+                SectionHeader {
+                    text: "Virtual Directories";
+                }
+
+                HorizontalBox {
+                    spacing: Spacing.sm;
+
+                    DirList {
+                        dirs: root.dirs;
+                        selected-index: root.selected-dir;
+                        enabled: !root.running;
+
+                        dir-selected(index) => { }
+                    }
+
+                    VerticalBox {
+                        spacing: Spacing.xs;
+
+                        Button {
+                            text: "+";
+                            enabled: !root.running;
+                            height: 28px;
+                            width: 32px;
+
+                            clicked => { root.http-add-dir(); }
+                        }
+
+                        Button {
+                            text: "-";
+                            enabled: !root.running && root.selected-dir >= 0;
+                            height: 28px;
+                            width: 32px;
+
+                            clicked => { root.http-remove-dir(root.selected-dir); }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Access Log Section
+    VerticalBox {
+        spacing: Spacing.xs;
+
+        SectionHeader {
+            text: "Access Log";
+        }
+
+        LogArea {
+            text: root.access-log;
+        }
+    }
+}

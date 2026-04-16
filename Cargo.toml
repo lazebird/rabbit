@@ -1,0 +1,76 @@
+[workspace]
+members = [
+    "crates/rabbit-models",
+    "crates/rabbit-platform",
+    "crates/rabbit-core",
+    "crates/rabbit-app",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Rabbit Team"]
+license = "MIT"
+repository = "https://github.com/lazebird/rabbit"
+rust-version = "1.75"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1.44", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+
+# Configuration
+config = "0.15"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Random
+rand = "0.9"
+
+# UI Framework
+slint = "1.10"
+
+# HTTP Server
+axum = "0.8"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["fs"] }
+
+# TFTP
+async-tftp = "0.4"
+
+# Ping
+surge-ping = "0.8"
+
+# Network
+tokio-util = "0.7"
+bytes = "1.10"
+
+# Platform
+dirs = "6.0"
+libc = "0.2"
+windows-sys = "0.59"
+
+[profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"
+strip = true
+codegen-units = 1
+
+[profile.release-opt]
+inherits = "release"
+opt-level = 3

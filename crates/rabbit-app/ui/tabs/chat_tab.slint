@@ -1,0 +1,212 @@
+// Chat (LAN Messenger) Tab Component
+
+import { Button, CheckBox, LineEdit, ScrollView, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
+import { Card, LogArea, SectionHeader } from "../common/widgets.slint";
+
+export component ChatTab inherits VerticalBox {
+    callback chat-send(string);
+    callback chat-toggle();
+    callback chat-refresh();
+    callback chat-notify();
+
+    in-out property <string> message: "";
+    in property <string> messages: "Chat messages will appear here...";
+    in property <bool> enabled: false;
+    in-out property <string> username: "";
+    in-out property <string> broadcast-addr: "255.255.255.255";
+    in-out property <int> port: 1314;
+    in property <[string]> users: [];
+    in property <int> selected-user: -1;
+
+    padding: Spacing.padding-tab;
+    spacing: Spacing.md;
+
+    // Connection Control Section
+    Card {
+        VerticalBox {
+            spacing: Spacing.md;
+
+            // User Info Row
+            HorizontalBox {
+                spacing: Spacing.md;
+                alignment: start;
+
+                // Nickname
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Nickname";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    LineEdit {
+                        placeholder-text: "Your name";
+                        text <=> root.username;
+                        preferred-width: 120px;
+                        height: Sizes.input-height;
+                        enabled: !root.enabled;
+                    }
+                }
+
+                // Port
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Port";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    SpinBox {
+                        value: root.port;
+                        minimum: 1;
+                        maximum: 65535;
+                        preferred-width: 80px;
+                        height: Sizes.input-height;
+                        enabled: !root.enabled;
+                    }
+                }
+
+                // Broadcast Address
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Broadcast";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    LineEdit {
+                        placeholder-text: "255.255.255.255";
+                        text <=> root.broadcast-addr;
+                        preferred-width: 120px;
+                        height: Sizes.input-height;
+                        enabled: !root.enabled;
+                    }
+                }
+
+                // Enable/Disable Chat
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Status";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    CheckBox {
+                        text: root.enabled ? "Connected" : "Join Chat";
+                        checked: root.enabled;
+
+                        toggled => { root.chat-toggle(); }
+                    }
+                }
+            }
+
+            // Action Buttons Row
+            HorizontalBox {
+                spacing: Spacing.sm;
+
+                Button {
+                    text: "Refresh Users";
+                    enabled: root.enabled;
+                    height: Sizes.input-height;
+
+                    clicked => { root.chat-refresh(); }
+                }
+
+                Button {
+                    text: "Notify All";
+                    enabled: root.enabled;
+                    height: Sizes.input-height;
+
+                    clicked => { root.chat-notify(); }
+                }
+            }
+        }
+    }
+
+    // Chat Area Section
+    HorizontalBox {
+        spacing: Spacing.md;
+        preferred-height: 300px;
+
+        // User List
+        VerticalBox {
+            width: 150px;
+            spacing: Spacing.xs;
+
+            SectionHeader {
+                text: "Online Users";
+            }
+
+            Rectangle {
+                background: Colors.surface;
+                border-color: Colors.border;
+                border-width: 1px;
+                border-radius: 4px;
+
+                ScrollView {
+                    VerticalLayout {
+                        padding: Spacing.xs;
+                        spacing: 2px;
+
+                        for user in root.users: Text {
+                            text: user;
+                            font-size: Typography.font-size-small;
+                            color: Colors.text-primary;
+                        }
+
+                        if root.users.length == 0: Text {
+                            text: "No users online";
+                            font-size: Typography.font-size-small;
+                            color: Colors.text-hint;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Messages
+        VerticalBox {
+            preferred-width: 600px;
+            spacing: Spacing.xs;
+
+            SectionHeader {
+                text: "Messages";
+            }
+
+            LogArea {
+                text: root.messages;
+            }
+        }
+    }
+
+    // Message Input
+    HorizontalBox {
+        spacing: Spacing.sm;
+
+        LineEdit {
+            placeholder-text: "Type a message...";
+            text <=> root.message;
+            preferred-width: 600px;
+            height: Sizes.input-height;
+            enabled: root.enabled;
+        }
+
+        Button {
+            text: "Send";
+            enabled: root.enabled && root.message != "";
+            height: Sizes.input-height;
+            primary: true;
+
+            clicked => { root.chat-send(root.message); }
+        }
+    }
+}

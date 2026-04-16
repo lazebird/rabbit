@@ -1,0 +1,39 @@
+[package]
+name = "rabbit-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+description = "Business logic services for Rabbit"
+
+[dependencies]
+rabbit-models = { path = "../rabbit-models" }
+rabbit-platform = { path = "../rabbit-platform" }
+
+tokio = { workspace = true }
+tokio-util = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+bytes = { workspace = true }
+rand = { workspace = true }
+
+# HTTP Server
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+
+# TFTP
+async-tftp = { workspace = true }
+
+# Ping
+surge-ping = { workspace = true }
+
+[dev-dependencies]
+tokio-test = "0.4"

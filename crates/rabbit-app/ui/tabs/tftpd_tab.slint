@@ -1,0 +1,146 @@
+// TFTP Server (TFTPD) Tab Component
+
+import { Button, CheckBox, LineEdit, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
+import { Card, LogArea, DirList, SectionHeader } from "../common/widgets.slint";
+
+export component TftpdTab inherits VerticalBox {
+    callback tftp-server-toggle();
+    callback tftp-add-dir();
+    callback tftp-remove-dir(int);
+
+    in property <bool> server-running: false;
+    in property <string> server-log: "TFTP server log will appear here...";
+    in-out property <int> server-port: 69;
+    in-out property <string> server-opts: "";
+    in property <[string]> work-dirs: [];
+    in property <int> selected-dir: -1;
+
+    padding: Spacing.padding-tab;
+    spacing: Spacing.md;
+
+    // Server Control Section
+    Card {
+        VerticalBox {
+            spacing: Spacing.md;
+
+            // Port and Status Row
+            HorizontalBox {
+                spacing: Spacing.md;
+                alignment: start;
+
+                // Port configuration
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Port (UDP)";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    SpinBox {
+                        value: root.server-port;
+                        minimum: 1;
+                        maximum: 65535;
+                        enabled: !root.server-running;
+                        height: Sizes.input-height;
+                    }
+                }
+
+                // Server toggle
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Server Status";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    CheckBox {
+                        text: root.server-running ? "Running on port " + root.server-port : "Start TFTP Server";
+                        checked: root.server-running;
+
+                        toggled => { root.tftp-server-toggle(); }
+                    }
+                }
+
+                // Options
+                VerticalBox {
+                    spacing: Spacing.xs;
+                    preferred-width: 300px;
+
+                    Text {
+                        text: "Options (timeout=200;blksize=512)";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    LineEdit {
+                        placeholder-text: "timeout=200;maxretry=10;blksize=512";
+                        text: root.server-opts;
+                        enabled: !root.server-running;
+                        height: Sizes.input-height;
+                    }
+                }
+            }
+
+            // Work Directories Section
+            VerticalBox {
+                spacing: Spacing.xs;
+
+                SectionHeader {
+                    text: "Work Directories";
+                }
+
+                HorizontalBox {
+                    spacing: Spacing.sm;
+
+                    DirList {
+                        dirs: root.work-dirs;
+                        selected-index: root.selected-dir;
+                        enabled: !root.server-running;
+
+                        dir-selected(index) => { }
+                    }
+
+                    VerticalBox {
+                        spacing: Spacing.xs;
+
+                        Button {
+                            text: "+";
+                            enabled: !root.server-running;
+                            height: 28px;
+                            width: 32px;
+
+                            clicked => { root.tftp-add-dir(); }
+                        }
+
+                        Button {
+                            text: "-";
+                            enabled: !root.server-running && root.selected-dir >= 0;
+                            height: 28px;
+                            width: 32px;
+
+                            clicked => { root.tftp-remove-dir(root.selected-dir); }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Server Log Section
+    VerticalBox {
+        spacing: Spacing.xs;
+
+        SectionHeader {
+            text: "Server Log";
+        }
+
+        LogArea {
+            text: root.server-log;
+        }
+    }
+}

@@ -1,0 +1,202 @@
+// Settings Tab Component
+
+import { Button, CheckBox, ComboBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
+import { Card, SectionHeader } from "../common/widgets.slint";
+
+export component SettingsTab inherits VerticalBox {
+    callback settings-save();
+    callback settings-reset();
+    callback settings-open-home();
+    callback settings-open-config();
+    callback settings-open-help();
+    callback settings-check-update();
+
+    in-out property <string> language: "en";
+    in-out property <string> theme: "light";
+    in-out property <bool> systray: true;
+    in-out property <bool> top: false;
+    in-out property <bool> autostart: false;
+    in-out property <bool> autoupdate: true;
+    in property <string> version: "1.0.0";
+
+    padding: Spacing.padding-tab;
+    spacing: Spacing.lg;
+
+    // Appearance Section
+    Card {
+        VerticalBox {
+            spacing: Spacing.md;
+
+            SectionHeader {
+                text: "Appearance";
+            }
+
+            HorizontalBox {
+                spacing: Spacing.lg;
+                alignment: start;
+
+                // Language
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Language";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    ComboBox {
+                        model: ["English", "简体中文"];
+                        current-index: root.language == "zh" ? 1 : 0;
+                        height: Sizes.input-height;
+
+                        selected => {
+                            root.language = self.current-index == 1 ? "zh" : "en";
+                        }
+                    }
+                }
+
+                // Theme
+                VerticalBox {
+                    spacing: Spacing.xs;
+
+                    Text {
+                        text: "Theme";
+                        font-size: Typography.font-size-small;
+                        color: Colors.text-secondary;
+                    }
+
+                    ComboBox {
+                        model: ["Light", "Dark"];
+                        current-index: root.theme == "dark" ? 1 : 0;
+                        height: Sizes.input-height;
+
+                        selected => {
+                            root.theme = self.current-index == 1 ? "dark" : "light";
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // System Options Section
+    Card {
+        VerticalBox {
+            spacing: Spacing.md;
+
+            SectionHeader {
+                text: "System Options";
+            }
+
+            VerticalBox {
+                spacing: Spacing.sm;
+                alignment: start;
+
+                // System Tray
+                CheckBox {
+                    text: "Minimize to system tray";
+                    checked: root.systray;
+                    toggled => { root.systray = !root.systray; }
+                }
+
+                // Always on Top
+                CheckBox {
+                    text: "Always on top";
+                    checked: root.top;
+                    toggled => { root.top = !root.top; }
+                }
+
+                // Auto Start
+                CheckBox {
+                    text: "Start with system";
+                    checked: root.autostart;
+                    toggled => { root.autostart = !root.autostart; }
+                }
+
+                // Auto Update
+                CheckBox {
+                    text: "Check for updates automatically";
+                    checked: root.autoupdate;
+                    toggled => { root.autoupdate = !root.autoupdate; }
+                }
+            }
+        }
+    }
+
+    // Actions Section
+    Card {
+        VerticalBox {
+            spacing: Spacing.md;
+
+            SectionHeader {
+                text: "Actions";
+            }
+
+            HorizontalBox {
+                spacing: Spacing.sm;
+                alignment: start;
+
+                Button {
+                    text: "Save Settings";
+                    height: Sizes.input-height;
+                    primary: true;
+
+                    clicked => { root.settings-save(); }
+                }
+
+                Button {
+                    text: "Reset to Defaults";
+                    height: Sizes.input-height;
+
+                    clicked => { root.settings-reset(); }
+                }
+            }
+        }
+    }
+
+    // Links Section
+    Card {
+        VerticalBox {
+            spacing: Spacing.md;
+
+            SectionHeader {
+                text: "Links & Info";
+            }
+
+            HorizontalBox {
+                spacing: Spacing.sm;
+                alignment: start;
+
+                Button {
+                    text: "Home Page";
+                    height: Sizes.input-height;
+
+                    clicked => { root.settings-open-home(); }
+                }
+
+                Button {
+                    text: "Config Directory";
+                    height: Sizes.input-height;
+
+                    clicked => { root.settings-open-config(); }
+                }
+
+                Button {
+                    text: "Help";
+                    height: Sizes.input-height;
+
+                    clicked => { root.settings-open-help(); }
+                }
+
+                Button {
+                    text: "Check Update (v" + root.version + ")";
+                    height: Sizes.input-height;
+
+                    clicked => { root.settings-check-update(); }
+                }
+            }
+        }
+    }
+}

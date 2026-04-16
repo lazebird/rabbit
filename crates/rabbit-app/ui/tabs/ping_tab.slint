@@ -1,0 +1,125 @@
+// Ping Tab Component
+
+import { Button, LineEdit, ScrollView, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
+import { Card, LogArea, FormRow, SectionHeader } from "../common/widgets.slint";
+
+export component PingTab inherits VerticalBox {
+    in-out property <string> target: "";
+    in-out property <string> opts: "";
+    in property <string> results: "Ping results will appear here...";
+    in property <bool> running: false;
+    in property <string> stats: "";
+
+    callback ping-start();
+    callback ping-stop();
+
+    padding: Spacing.padding-tab;
+    spacing: Spacing.md;
+
+    // Control Section
+    Card {
+        HorizontalBox {
+            spacing: Spacing.md;
+
+            // Target input
+            VerticalBox {
+                width: 240px;
+                spacing: Spacing.xs;
+
+                Text {
+                    text: "Target Address";
+                    font-size: Typography.font-size-small;
+                    color: Colors.text-secondary;
+                }
+
+                LineEdit {
+                    placeholder-text: "IP or hostname (e.g., 8.8.8.8)";
+                    text <=> root.target;
+                    enabled: !root.running;
+                    height: Sizes.input-height;
+                }
+            }
+
+            // Options input
+            VerticalBox {
+                spacing: Spacing.xs;
+                preferred-width: 300px;
+
+                Text {
+                    text: "Options (interval=1000;count=4;stoponloss=false)";
+                    font-size: Typography.font-size-small;
+                    color: Colors.text-secondary;
+                }
+
+                LineEdit {
+                    placeholder-text: "interval=1000;count=4;stoponloss=false";
+                    text <=> root.opts;
+                    enabled: !root.running;
+                    height: Sizes.input-height;
+                }
+            }
+
+            // Start/Stop button
+            VerticalBox {
+                spacing: Spacing.xs;
+
+                Text {
+                    text: "Action";
+                    font-size: Typography.font-size-small;
+                    color: Colors.text-secondary;
+                }
+
+                Button {
+                    text: root.running ? "Stop" : "Start";
+                    height: Sizes.input-height;
+                    primary: root.running ? false : true;
+
+                    clicked => {
+                        if (root.running) {
+                            root.ping-stop();
+                        } else {
+                            root.ping-start();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Statistics Section
+    Rectangle {
+        visible: root.stats != "";
+        height: 24px;
+
+        HorizontalBox {
+            spacing: Spacing.sm;
+
+            Rectangle {
+                width: 8px;
+                height: 8px;
+                border-radius: 4px;
+                background: root.running ? Colors.running : Colors.stopped;
+            }
+
+            Text {
+                text: root.stats;
+                font-size: Typography.font-size-small;
+                color: Colors.text-secondary;
+            }
+        }
+    }
+
+    // Results Section
+    VerticalBox {
+        spacing: Spacing.xs;
+
+        SectionHeader {
+            text: "Ping Results";
+        }
+
+        LogArea {
+            text: root.results;
+        }
+    }
+}

@@ -1,0 +1,48 @@
+//! Rabbit Platform Abstraction Layer
+//!
+//! Provides platform-specific implementations for:
+//! - Configuration storage
+//! - Network interface enumeration
+//! - ICMP ping (raw socket requirements)
+//! - Taskbar/system tray integration
+//! - Notifications
+
+pub mod config;
+pub mod network;
+pub mod notification;
+pub mod ping;
+
+pub use config::*;
+pub use network::*;
+pub use notification::*;
+pub use ping::*;
+
+use std::path::PathBuf;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum PlatformError {
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+    
+    #[error("Configuration error: {0}")]
+    Config(String),
+    
+    #[error("Network error: {0}")]
+    Network(String),
+    
+    #[error("Not supported on this platform")]
+    NotSupported,
+}
+
+pub type Result<T> = std::result::Result<T, PlatformError>;
+
+/// Get the configuration directory for the application
+pub fn config_dir() -> Result<PathBuf> {
+    config::get_config_dir()
+}
+
+/// Get the data directory for the application
+pub fn data_dir() -> Result<PathBuf> {
+    config::get_data_dir()
+}

@@ -1,0 +1,198 @@
+//! Task Planner Service
+
+use crate::{Result, ServiceError};
+use chrono::Datelike;
+use rabbit_models::plan::{Schedule, Task, TaskLog};
+use rabbit_platform::notification::show_task_reminder;
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use tokio::time::{interval, Duration};
+use tracing::{error, info};
+
+/// Task planner service
+pub struct PlanService {
+    tasks: Arc<RwLock<HashMap<String, Task>>>,
+    logs: Arc<RwLock<Vec<TaskLog>>>,
+    running: Arc<RwLock<bool>>,
+}
+
+impl PlanService {
+    pub fn new() -> Self {
+        Self {
+            tasks: Arc::new(RwLock::new(HashMap::new())),
+            logs: Arc::new(RwLock::new(Vec::new())),
+            running: Arc::new(RwLock::new(false)),
+        }
+    }
+
+    /// Initialize the service
+    pub async fn init(&mut self) -> Result<()> {
+        info!("Plan service initialized");
+        Ok(())
+    }
+
+    /// Start the scheduler
+    pub async fn start(&mut self) -> Result<()> {
+        let mut running = self.running.write().await;
+        if *running {
+            return Err(ServiceError::AlreadyRunning);
+        }
+        *running = true;
+        drop(running);
+
+        let tasks = Arc::clone(&self.tasks);
+        let logs = Arc::clone(&self.logs);
+        let running = Arc::clone(&self.running);
+
+        tokio::spawn(async move {
+            let mut check_interval = interval(Duration::from_secs(30));
+
+            while *running.read().await {
+                check_interval.tick().await;
+                Self::check_tasks(&tasks, &logs).await;
+            }
+        });
+
+        info!("Plan service started");
+        Ok(())
+    }
+
+    /// Stop the scheduler
+    pub async fn stop(&mut self) -> Result<()> {
+        *self.running.write().await = false;
+        info!("Plan service stopped");
+        Ok(())
+    }
+
+    /// Add a new task
+    pub async fn add_task(&self, task: Task) -> Result<()> {
+        let id = task.id.clone();
+        self.tasks.write().await.insert(id.clone(), task);
+        info!("Added task: {}", id);
+        Ok(())
+    }
+
+    /// Remove a task
+    pub async fn remove_task(&self, id: &str) -> Result<()> {
+        self.tasks.write().await.remove(id);
+        info!("Removed task: {}", id);
+        Ok(())
+    }
+
+    /// Update a task
+    pub async fn update_task(&self, task: Task) -> Result<()> {
+        let id = task.id.clone();
+        self.tasks.write().await.insert(id.clone(), task);
+        info!("Updated task: {}", id);
+        Ok(())
+    }
+
+    /// Get a task by ID
+    pub async fn get_task(&self, id: &str) -> Option<Task> {
+        self.tasks.read().await.get(id).cloned()
+    }
+
+    /// Get all tasks
+    pub async fn get_all_tasks(&self) -> Vec<Task> {
+        self.tasks.read().await.values().cloned().collect()
+    }
+
+    /// Get enabled tasks
+    pub async fn get_enabled_tasks(&self) -> Vec<Task> {
+        self.tasks.read().await
+            .values()
+            .filter(|t| t.enabled)
+            .cloned()
+            .collect()
+    }
+
+    /// Acknowledge a triggered task
+    pub async fn acknowledge_task(&self, id: &str) -> Result<()> {
+        let mut tasks = self.tasks.write().await;
+        if let Some(_task) = tasks.get_mut(id) {
+            // Update task state
+            info!("Task acknowledged: {}", id);
+        }
+        Ok(())
+    }
+
+    /// Snooze a task
+    pub async fn snooze_task(&self, id: &str, minutes: u32) -> Result<()> {
+        info!("Task {} snoozed for {} minutes", id, minutes);
+        Ok(())
+    }
+
+    /// Get task logs
+    pub async fn get_logs(&self) -> Vec<TaskLog> {
+        self.logs.read().await.clone()
+    }
+
+    /// Check and trigger tasks
+    async fn check_tasks(
+        tasks: &Arc<RwLock<HashMap<String, Task>>>,
+        logs: &Arc<RwLock<Vec<TaskLog>>>,
+    ) {
+        let now = chrono::Local::now();
+        let tasks_to_trigger: Vec<Task> = tasks.read().await
+            .values()
+            .filter(|t| t.enabled && Self::should_trigger(&t.schedule, now))
+            .cloned()
+            .collect();
+
+        for task in tasks_to_trigger {
+            if let Err(e) = show_task_reminder(&task) {
+                error!("Failed to show notification: {}", e);
+            }
+
+            logs.write().await.push(TaskLog {
+                task_id: task.id.clone(),
+                triggered_at: now,
+                acknowledged_at: None,
+            });
+        }
+    }
+
+    /// Check if a schedule should trigger at given time
+    fn should_trigger(schedule: &Schedule, now: chrono::DateTime<chrono::Local>) -> bool {
+        
+
+        match schedule {
+            Schedule::Once { datetime } => {
+                let diff = (*datetime - now).num_seconds();
+                diff >= 0 && diff < 30
+            }
+            Schedule::Daily { time } => {
+                let now_time = now.time();
+                let diff = (now_time - *time).num_seconds();
+                diff >= 0 && diff < 30
+            }
+            Schedule::Weekly { day, time } => {
+                let weekday = now.weekday();
+                let matches_day = match day {
+                    rabbit_models::plan::WeekDay::Monday => weekday == chrono::Weekday::Mon,
+                    rabbit_models::plan::WeekDay::Tuesday => weekday == chrono::Weekday::Tue,
+                    rabbit_models::plan::WeekDay::Wednesday => weekday == chrono::Weekday::Wed,
+                    rabbit_models::plan::WeekDay::Thursday => weekday == chrono::Weekday::Thu,
+                    rabbit_models::plan::WeekDay::Friday => weekday == chrono::Weekday::Fri,
+                    rabbit_models::plan::WeekDay::Saturday => weekday == chrono::Weekday::Sat,
+                    rabbit_models::plan::WeekDay::Sunday => weekday == chrono::Weekday::Sun,
+                };
+
+                if !matches_day {
+                    return false;
+                }
+
+                let now_time = now.time();
+                let diff = (now_time - *time).num_seconds();
+                diff >= 0 && diff < 30
+            }
+        }
+    }
+}
+
+impl Default for PlanService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
