@@ -13,6 +13,7 @@ pub mod tftpc_tab;
 pub mod plan_tab;
 pub mod chat_tab;
 pub mod settings_tab;
+pub mod ui_refresh;
 
 pub use styles::{Colors, Spacing, format_ping_stats, format_ping_result, format_bytes};
 pub use defaults::*;

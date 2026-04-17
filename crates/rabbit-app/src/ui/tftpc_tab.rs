@@ -1,10 +1,10 @@
 //! TFTP Client Tab UI Component
 //!
-//! Layout based on old version screenshot:
-//! - Row 1: IP | Opt. configuration
-//! - Row 2: Local file path | Put button
-//! - Row 3: Remote filename | Get button
-//! - Transfer log
+//! Layout matching old version:
+//! - Row 1: IP [input] Opt. [long input]
+//! - Row 2: Local [long input] [Put button]
+//! - Row 3: Remote [long input] [Get button]
+//! - Transfer log fills remaining space
 
 use fltk::{
     button::Button,
@@ -12,12 +12,12 @@ use fltk::{
     group::Flex,
     input::Input,
     prelude::*,
-    text::{TextBuffer, TextDisplay},
+    text::{TextBuffer, TextDisplay, WrapMode},
 };
 
 use crate::ui_events::{UiEvent, send_event};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors, Spacing, defaults};
+use super::{TabComponent, Colors, defaults};
 
 /// TFTP Client Tab Component
 pub struct TftpcTab;
@@ -25,55 +25,55 @@ pub struct TftpcTab;
 impl TabComponent for TftpcTab {
     fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
         let colors = Colors::new();
-        let spacing = Spacing::new();
 
         let mut grp = Flex::new(x, y, w, h, "TFTPC").column();
-        grp.set_margin(spacing.margin);
-        grp.set_spacing(spacing.padding);
+        grp.set_margin(8);
+        grp.set_spacing(5);
 
         // Row 1: IP and Opt
         let mut row1 = Flex::default().row();
-        row1.set_spacing(spacing.padding);
+        row1.set_spacing(5);
 
         let _ip_label = Frame::default().with_label("IP");
+        row1.fixed(&_ip_label, 20);
 
         let mut server_input = Input::default();
         server_input.set_value(&defaults::tftpc_server());
+        row1.fixed(&server_input, 120);
 
         let _opt_label = Frame::default().with_label("Opt.");
+        row1.fixed(&_opt_label, 30);
 
         let mut opt_input = Input::default();
         opt_input.set_value(&defaults::tftpc_options());
 
-        Frame::default(); // Spacer
         row1.end();
-        grp.fixed(&row1, spacing.row_height);
+        grp.fixed(&row1, 28);
 
         // Row 2: Local file and Put button
         let mut row2 = Flex::default().row();
-        row2.set_spacing(spacing.padding);
+        row2.set_spacing(5);
 
         let _local_label = Frame::default().with_label("Local:");
+        row2.fixed(&_local_label, 40);
 
         let mut local_input = Input::default();
         local_input.set_value("");
 
-        let mut browse_btn = Button::default().with_label("...");
-        browse_btn.set_color(colors.accent);
-
         let mut put_btn = Button::default().with_label("Put");
         put_btn.set_color(colors.accent);
         put_btn.set_label_color(fltk::enums::Color::White);
+        row2.fixed(&put_btn, 70);
 
-        Frame::default(); // Spacer
         row2.end();
-        grp.fixed(&row2, spacing.row_height);
+        grp.fixed(&row2, 28);
 
         // Row 3: Remote filename and Get button
         let mut row3 = Flex::default().row();
-        row3.set_spacing(spacing.padding);
+        row3.set_spacing(5);
 
         let _remote_label = Frame::default().with_label("Remote:");
+        row3.fixed(&_remote_label, 50);
 
         let mut remote_input = Input::default();
         remote_input.set_value("");
@@ -81,15 +81,16 @@ impl TabComponent for TftpcTab {
         let mut get_btn = Button::default().with_label("Get");
         get_btn.set_color(colors.accent);
         get_btn.set_label_color(fltk::enums::Color::White);
+        row3.fixed(&get_btn, 70);
 
-        Frame::default(); // Spacer
         row3.end();
-        grp.fixed(&row3, spacing.row_height);
+        grp.fixed(&row3, 28);
 
-        // Transfer log
+        // Transfer log fills remaining space
         let mut log_display = TextDisplay::default();
         let log_buf = TextBuffer::default();
         log_display.set_buffer(Some(log_buf));
+        log_display.wrap_mode(WrapMode::AtBounds, 0);
 
         grp.end();
 
@@ -106,26 +107,9 @@ impl TabComponent for TftpcTab {
         let opt_input_clone = opt_input.clone();
         let local_input_clone = local_input.clone();
         let remote_input_clone = remote_input.clone();
-        let mut local_input_browse = local_input.clone();
-        let mut remote_input_browse = remote_input.clone();
+        let _local_input_browse = local_input.clone();
+        let _remote_input_browse = remote_input.clone();
         let mut log_display_clone = log_display.clone();
-
-        // Browse button callback
-        browse_btn.set_callback(move |_| {
-            use fltk::dialog::NativeFileChooser;
-            let mut dialog = NativeFileChooser::new(fltk::dialog::NativeFileChooserType::BrowseFile);
-            dialog.set_title("Select File to Upload");
-            dialog.show();
-            if let Some(path) = dialog.filename().to_str() {
-                local_input_browse.set_value(path);
-                // Set remote filename to local filename
-                if let Some(filename) = std::path::Path::new(path).file_name() {
-                    if let Some(name) = filename.to_str() {
-                        remote_input_browse.set_value(name);
-                    }
-                }
-            }
-        });
 
         // Put button callback
         put_btn.set_callback(move |_| {
@@ -172,11 +156,8 @@ impl TabComponent for TftpcTab {
             send_event(UiEvent::TftpClientGet { server, local, remote, options });
         });
 
-        // Set up timer to refresh log
-        let mut log_display_timer = log_display.clone();
-        fltk::app::add_idle3(move |_| {
-            Self::refresh_log(&mut log_display_timer);
-        });
+        // Register display with centralized refresh manager
+        super::ui_refresh::register_display("tftpc_log", log_display.clone());
 
         grp
     }
@@ -184,19 +165,12 @@ impl TabComponent for TftpcTab {
 
 impl TftpcTab {
     fn refresh_log(display: &mut TextDisplay) {
-        if let Some(state) = UiState::global() {
+        if let Some(state) = crate::ui_state::UiState::global() {
             if let Ok(s) = state.lock() {
-                if let Some(buf) = display.buffer() {
-                    let current_text = buf.text();
-                    if current_text != s.tftpc_log {
-                        drop(buf);
-                        if let Some(mut new_buf) = display.buffer() {
-                            new_buf.set_text(&s.tftpc_log);
-                            let lines = new_buf.count_lines(0, new_buf.length());
-                            display.set_buffer(Some(new_buf));
-                            display.scroll(lines, 0);
-                        }
-                    }
+                if let Some(mut buf) = display.buffer() {
+                    buf.set_text(&s.tftpc_log);
+                    let lines = buf.count_lines(0, buf.length());
+                    display.scroll(lines, 0);
                 }
             }
         }

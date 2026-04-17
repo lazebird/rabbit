@@ -1,10 +1,10 @@
 //! Chat Tab UI Component
 //!
-//! Layout for LAN chat functionality:
-//! - Row 1: Username | Port | Start button
-//! - Row 2: Broadcast addr | Refresh | Notify
-//! - User list (left) | Messages (right)
-//! - Input row
+//! Layout matching old version:
+//! - Row 1: Name [input] Port [input] [Start button]
+//! - Row 2: Broadcast [input] [Refresh] [Notify]
+//! - User list (left, fixed width) | Messages (right, flexible)
+//! - Input row at bottom
 
 use fltk::{
     button::Button,
@@ -12,12 +12,12 @@ use fltk::{
     group::Flex,
     input::{Input, IntInput},
     prelude::*,
-    text::{TextBuffer, TextDisplay},
+    text::{TextBuffer, TextDisplay, WrapMode},
 };
 
 use crate::ui_events::{UiEvent, send_event};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors, Spacing, defaults};
+use super::{TabComponent, Colors, defaults};
 
 /// Chat Tab Component
 pub struct ChatTab;
@@ -25,91 +25,102 @@ pub struct ChatTab;
 impl TabComponent for ChatTab {
     fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
         let colors = Colors::new();
-        let spacing = Spacing::new();
 
         let mut grp = Flex::new(x, y, w, h, "CHAT").column();
-        grp.set_margin(spacing.margin);
-        grp.set_spacing(spacing.padding);
+        grp.set_margin(8);
+        grp.set_spacing(5);
 
-        // Row 1: Username and Port
+        // Row 1: Name [input] Port [input] [Start button]
         let mut row1 = Flex::default().row();
-        row1.set_spacing(spacing.padding);
+        row1.set_spacing(5);
 
         let _user_label = Frame::default().with_label("Name");
+        row1.fixed(&_user_label, 40);
 
         let mut username_input = Input::default();
         username_input.set_value(&defaults::chat_username());
+        row1.fixed(&username_input, 100);
 
         let _port_label = Frame::default().with_label("Port");
+        row1.fixed(&_port_label, 35);
 
         let mut port_input = IntInput::default();
         port_input.set_value(&defaults::chat_port().to_string());
+        row1.fixed(&port_input, 50);
 
-        Frame::default(); // Spacer
+        // Spacer
+        Frame::default();
 
         let mut toggle_btn = Button::default().with_label("Start");
         toggle_btn.set_color(colors.accent);
         toggle_btn.set_label_color(fltk::enums::Color::White);
+        row1.fixed(&toggle_btn, 70);
 
         row1.end();
-        grp.fixed(&row1, spacing.row_height);
+        grp.fixed(&row1, 28);
 
-        // Row 2: Broadcast and buttons
+        // Row 2: Broadcast [input] [Refresh] [Notify]
         let mut row2 = Flex::default().row();
-        row2.set_spacing(spacing.padding);
+        row2.set_spacing(5);
 
         let _bcast_label = Frame::default().with_label("Broadcast");
+        row2.fixed(&_bcast_label, 60);
 
         let mut broadcast_input = Input::default();
         broadcast_input.set_value(&defaults::chat_broadcast());
 
         let mut refresh_btn = Button::default().with_label("Refresh");
+        row2.fixed(&refresh_btn, 60);
 
         let mut notify_btn = Button::default().with_label("Notify");
+        row2.fixed(&notify_btn, 60);
 
-        Frame::default(); // Spacer
         row2.end();
-        grp.fixed(&row2, spacing.row_height);
+        grp.fixed(&row2, 28);
 
-        // Main content area: Users list | Messages
+        // Main content area: Users list (left) | Messages (right)
         let mut content_row = Flex::default().row();
+        content_row.set_spacing(5);
 
-        // Users column
+        // Users column (fixed width)
         let mut users_col = Flex::default().column();
         let users_label = Frame::default().with_label("Users:");
         users_col.fixed(&users_label, 20);
         let mut users_display = TextDisplay::default();
         let users_buf = TextBuffer::default();
         users_display.set_buffer(Some(users_buf));
+        users_display.wrap_mode(WrapMode::AtBounds, 0);
         users_col.end();
         content_row.fixed(&users_col, 120);
 
-        // Messages column
+        // Messages column (flexible)
         let mut msg_col = Flex::default().column();
         let msg_label = Frame::default().with_label("Messages:");
         msg_col.fixed(&msg_label, 20);
         let mut messages_display = TextDisplay::default();
         let msg_buf = TextBuffer::default();
         messages_display.set_buffer(Some(msg_buf));
+        messages_display.wrap_mode(WrapMode::AtBounds, 0);
         msg_col.end();
 
         content_row.end();
 
         // Row 3: Input
         let mut row3 = Flex::default().row();
-        row3.set_spacing(spacing.padding);
+        row3.set_spacing(5);
 
         let _input_label = Frame::default().with_label("Input:");
+        row3.fixed(&_input_label, 40);
 
-        let mut msg_input = Input::default();
+        let msg_input = Input::default();
 
         let mut send_btn = Button::default().with_label("Send");
         send_btn.set_color(colors.accent);
         send_btn.set_label_color(fltk::enums::Color::White);
+        row3.fixed(&send_btn, 70);
 
-        Frame::default(); // Spacer
         row3.end();
-        grp.fixed(&row3, spacing.row_height);
+        grp.fixed(&row3, 28);
 
         grp.end();
 
@@ -150,7 +161,7 @@ impl TabComponent for ChatTab {
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
                         s.chat_messages = format!(
-                            "LAN Chat:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[{}] Connected as {} on port {}\n\n",
+                            "[{}] Connected as {} on port {}\n\n",
                             chrono::Local::now().format("%H:%M:%S"),
                             username, port
                         );
@@ -173,7 +184,7 @@ impl TabComponent for ChatTab {
                             "[{}] Disconnected from chat\n",
                             chrono::Local::now().format("%H:%M:%S")
                         ));
-                        s.chat_users = "Online Users:\n───────────\n(no users)\n".to_string();
+                        s.chat_users.clear();
                         s.updated.insert("chat_messages".to_string(), true);
                         s.updated.insert("chat_users".to_string(), true);
                     }
@@ -233,13 +244,9 @@ impl TabComponent for ChatTab {
             msg_input_clone.set_value(""); // Clear input after sending
         });
 
-        // Periodic refresh for both displays
-        let mut users_display_timer = users_display.clone();
-        let mut messages_display_timer = messages_display.clone();
-        fltk::app::add_idle3(move |_| {
-            Self::refresh_users(&mut users_display_timer);
-            Self::refresh_messages(&mut messages_display_timer);
-        });
+        // Register displays with centralized refresh manager
+        super::ui_refresh::register_display("chat_users", users_display.clone());
+        super::ui_refresh::register_display("chat_messages", messages_display.clone());
 
         grp
     }
@@ -247,43 +254,22 @@ impl TabComponent for ChatTab {
 
 impl ChatTab {
     fn refresh_users(display: &mut TextDisplay) {
-        if let Some(state) = UiState::global() {
-            if let Ok(mut s) = state.lock() {
-                if s.is_updated("chat_users") {
-                    if let Some(buf) = display.buffer() {
-                        let current_text = buf.text();
-                        if current_text != s.chat_users {
-                            drop(buf);
-                            if let Some(mut new_buf) = display.buffer() {
-                                new_buf.set_text(&s.chat_users);
-                                display.set_buffer(Some(new_buf));
-                            }
-                        }
-                    }
-                    s.clear_updated("chat_users");
+        if let Some(state) = crate::ui_state::UiState::global() {
+            if let Ok(s) = state.lock() {
+                if let Some(mut buf) = display.buffer() {
+                    buf.set_text(&s.chat_users);
                 }
             }
         }
     }
 
     fn refresh_messages(display: &mut TextDisplay) {
-        if let Some(state) = UiState::global() {
-            if let Ok(mut s) = state.lock() {
-                if s.is_updated("chat_messages") {
-                    if let Some(buf) = display.buffer() {
-                        let current_text = buf.text();
-                        if current_text != s.chat_messages {
-                            drop(buf);
-                            if let Some(mut new_buf) = display.buffer() {
-                                new_buf.set_text(&s.chat_messages);
-                                let lines = new_buf.count_lines(0, new_buf.length());
-                                display.set_buffer(Some(new_buf));
-                                // Auto-scroll to bottom
-                                display.scroll(lines, 0);
-                            }
-                        }
-                    }
-                    s.clear_updated("chat_messages");
+        if let Some(state) = crate::ui_state::UiState::global() {
+            if let Ok(s) = state.lock() {
+                if let Some(mut buf) = display.buffer() {
+                    buf.set_text(&s.chat_messages);
+                    let lines = buf.count_lines(0, buf.length());
+                    display.scroll(lines, 0);
                 }
             }
         }

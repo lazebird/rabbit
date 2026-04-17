@@ -1,18 +1,16 @@
 //! Settings Tab UI Component
 //!
-//! Layout based on old version screenshot:
-//! - Language dropdown
-//! - Tray | Top | AutoStart | AutoUpdate checkboxes
-//! - Home | Profile | Help links
-//! - Version info
-//! - Status message area
+//! Layout:
+//! - All content left-aligned
+//! - Auto-save on change (no Save button)
 
 use fltk::{
-    button::{Button, CheckButton},
+    button::CheckButton,
     frame::Frame,
     group::Flex,
     menu::Choice,
     prelude::*,
+    enums::Align,
 };
 
 use crate::ui_events::{UiEvent, send_event};
@@ -30,64 +28,63 @@ impl TabComponent for SettingsTab {
         grp.set_margin(spacing.margin);
         grp.set_spacing(spacing.padding);
 
-        // Row 1: Language and checkboxes
-        let mut row1 = Flex::default().row();
-        row1.set_spacing(15);
+        // Row 1: Language
+        let mut lang_row = Flex::default().row();
+        lang_row.set_spacing(10);
 
-        // Language
-        let _lang_label = Frame::default().with_label("Language");
+        let mut lang_label = Frame::default().with_label("Language");
+        lang_label.set_align(Align::Left | Align::Inside);
+        lang_row.fixed(&lang_label, 70);
 
         let mut lang_choice = Choice::default();
         lang_choice.add_choice("English");
         lang_choice.add_choice("中文");
         lang_choice.add_choice("System");
         lang_choice.set_value(0);
+        lang_row.fixed(&lang_choice, 100);
 
-        // Checkboxes
-        let _tray_check = CheckButton::default().with_label("Tray");
+        Frame::default(); // Spacer
+        lang_row.end();
+        grp.fixed(&lang_row, spacing.row_height);
 
-        let _top_check = CheckButton::default().with_label("Top");
+        // Row 2: Checkboxes (left-aligned, individual)
+        let mut check_row = Flex::default().row();
+        check_row.set_spacing(15);
 
-        let _autostart_check = CheckButton::default().with_label("AutoStart");
+        let mut tray_check = CheckButton::default().with_label("Tray");
+        check_row.fixed(&tray_check, 55);
 
-        let autoupdate_check = CheckButton::default().with_label("AutoUpdate");
+        let mut top_check = CheckButton::default().with_label("Top");
+        check_row.fixed(&top_check, 50);
+
+        let mut autostart_check = CheckButton::default().with_label("AutoStart");
+        check_row.fixed(&autostart_check, 80);
+
+        let mut autoupdate_check = CheckButton::default().with_label("AutoUpdate");
         autoupdate_check.set_checked(true);
-
-        // Links
-        Frame::default(); // Spacer
-
-        let _home_label = Frame::default().with_label("Home");
-
-        let _profile_label = Frame::default().with_label("Profile");
-
-        let _help_label = Frame::default().with_label("Help");
-
-        row1.end();
-        grp.fixed(&row1, spacing.row_height);
-
-        // Version info
-        let version_frame = Frame::default().with_label("Version: 1.0.0");
-        grp.fixed(&version_frame, spacing.row_height);
-
-        // Status area
-        let status_frame = Frame::default().with_label("Version is up to date!");
-        grp.fixed(&status_frame, spacing.row_height);
-
-        // Save button row
-        let mut save_row = Flex::default().row();
-        save_row.set_spacing(spacing.padding);
-
-        Frame::default(); // Spacer to center button
-
-        let mut save_btn = Button::default().with_label("Save Settings");
-        save_btn.set_color(colors.accent);
-        save_btn.set_label_color(fltk::enums::Color::White);
+        check_row.fixed(&autoupdate_check, 90);
 
         Frame::default(); // Spacer
-        save_row.end();
-        grp.fixed(&save_row, spacing.row_height + 10);
+        check_row.end();
+        grp.fixed(&check_row, spacing.row_height);
 
-        // Spacer for remaining area
+        // Row 3: Version info (left-aligned)
+        let mut version_row = Flex::default().row();
+        let mut version_frame = Frame::default().with_label("Version: 1.0.0");
+        version_frame.set_align(Align::Left | Align::Inside);
+        Frame::default();
+        version_row.end();
+        grp.fixed(&version_row, spacing.row_height);
+
+        // Row 4: Status (left-aligned)
+        let mut status_row = Flex::default().row();
+        let mut status_frame = Frame::default().with_label("Version is up to date.");
+        status_frame.set_align(Align::Left | Align::Inside);
+        Frame::default();
+        status_row.end();
+        grp.fixed(&status_row, spacing.row_height);
+
+        // Spacer
         Frame::default();
 
         grp.end();
@@ -95,10 +92,25 @@ impl TabComponent for SettingsTab {
         // Apply styling
         grp.set_color(colors.background);
 
-        // Add button callback
-        save_btn.set_callback(move |_| {
+        // Auto-save callbacks - save immediately on change
+        lang_choice.set_callback(move |_| {
             send_event(UiEvent::SettingsSave);
-            fltk::dialog::message_default("Settings saved successfully!");
+        });
+
+        tray_check.set_callback(move |_| {
+            send_event(UiEvent::SettingsSave);
+        });
+
+        top_check.set_callback(move |_| {
+            send_event(UiEvent::SettingsSave);
+        });
+
+        autostart_check.set_callback(move |_| {
+            send_event(UiEvent::SettingsSave);
+        });
+
+        autoupdate_check.set_callback(move |_| {
+            send_event(UiEvent::SettingsSave);
         });
 
         grp

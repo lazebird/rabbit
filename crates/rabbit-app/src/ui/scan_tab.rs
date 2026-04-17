@@ -1,8 +1,8 @@
 //! Scan Tab UI Component
 //!
-//! Layout based on old version screenshot:
-//! - Top row: IP input | Range (- 254) | Opt. | Start button
-//! - Grid display of IP addresses (1-254) with green highlighting for online hosts
+//! Layout matching old version:
+//! - Single row: IP [input] - [end] Opt. [long input] [Start button]
+//! - Results area fills remaining space
 
 use fltk::{
     button::Button,
@@ -10,12 +10,12 @@ use fltk::{
     group::Flex,
     input::{Input, IntInput},
     prelude::*,
-    text::{TextBuffer, TextDisplay},
+    text::{TextBuffer, TextDisplay, WrapMode},
 };
 
 use crate::ui_events::{UiEvent, send_event};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors, Spacing, defaults};
+use super::{TabComponent, Colors, defaults};
 
 /// Scan Tab Component
 pub struct ScanTab;
@@ -23,53 +23,56 @@ pub struct ScanTab;
 impl TabComponent for ScanTab {
     fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
         let colors = Colors::new();
-        let spacing = Spacing::new();
 
         let mut grp = Flex::new(x, y, w, h, "Scan").column();
-        grp.set_margin(spacing.margin);
-        grp.set_spacing(spacing.padding);
+        grp.set_margin(8);
+        grp.set_spacing(5);
 
-        // Top control row
+        // Control row - matching old version layout
+        // IP [input] - [end] Opt. [long input] [Start button]
         let mut ctrl_row = Flex::default().row();
-        ctrl_row.set_spacing(spacing.padding);
+        ctrl_row.set_spacing(5);
 
-        // IP input
+        // IP label
         let _ip_label = Frame::default().with_label("IP");
+        ctrl_row.fixed(&_ip_label, 20);
 
+        // Start IP input
         let mut start_ip_input = Input::default();
         start_ip_input.set_value(&defaults::scan_start_ip());
+        ctrl_row.fixed(&start_ip_input, 110);
 
-        // Range separator and input
+        // Dash separator
         let _dash_label = Frame::default().with_label("-");
+        ctrl_row.fixed(&_dash_label, 10);
 
+        // End IP input (just the last octet)
         let mut end_input = IntInput::default();
         end_input.set_value(&defaults::scan_end_ip());
+        ctrl_row.fixed(&end_input, 40);
 
-        // Opt.
+        // Opt. label
         let _opt_label = Frame::default().with_label("Opt.");
+        ctrl_row.fixed(&_opt_label, 30);
 
+        // Options input (takes remaining space)
         let mut opt_input = Input::default();
         opt_input.set_value(&defaults::scan_options());
 
-        // Spacer
-        Frame::default();
-
-        // Start button
+        // Start/Stop button (fixed width, right aligned)
         let mut start_btn = Button::default().with_label("Start");
         start_btn.set_color(colors.accent);
         start_btn.set_label_color(fltk::enums::Color::White);
+        ctrl_row.fixed(&start_btn, 70);
 
         ctrl_row.end();
-        grp.fixed(&ctrl_row, spacing.row_height);
+        grp.fixed(&ctrl_row, 28);
 
-        // Progress/status line
-        let progress_frame = Frame::default().with_label("Progress: 0% | Found: 0 | Scanning: 0/254");
-        grp.fixed(&progress_frame, spacing.row_height);
-
-        // Results area - text display for now (grid would require custom widget)
+        // Results area fills remaining space
         let mut results_display = TextDisplay::default();
         let results_buf = TextBuffer::default();
         results_display.set_buffer(Some(results_buf));
+        results_display.wrap_mode(WrapMode::AtBounds, 0);
 
         grp.end();
 
@@ -79,7 +82,7 @@ impl TabComponent for ScanTab {
         results_display.set_text_color(colors.text);
 
         // Set initial content from global state
-        Self::refresh_display(&mut results_display, &progress_frame);
+        Self::refresh_display(&mut results_display);
 
         // Clone inputs for callback
         let start_ip_input_clone = start_ip_input.clone();
@@ -88,14 +91,13 @@ impl TabComponent for ScanTab {
         let mut start_btn_clone = start_btn.clone();
         let colors_clone = colors.clone();
         let mut results_display_clone = results_display.clone();
-        let progress_frame_clone = progress_frame.clone();
 
         // Add button callback
         start_btn.set_callback(move |_| {
             let label = start_btn_clone.label();
             if label == "Start" {
                 let start_ip = start_ip_input_clone.value();
-                let end_ip = end_input_clone.value();
+                let end_suffix = end_input_clone.value();
                 let options = opt_input_clone.value();
 
                 if start_ip.is_empty() {
@@ -103,13 +105,27 @@ impl TabComponent for ScanTab {
                     return;
                 }
 
+                // Build full end IP from start IP prefix + end suffix
+                let end_ip = if end_suffix.is_empty() {
+                    start_ip.clone()
+                } else {
+                    // Take first 3 octets of start_ip
+                    let parts: Vec<&str> = start_ip.splitn(4, '.').collect();
+                    if parts.len() == 4 {
+                        format!("{}.{}.{}.{}", parts[0], parts[1], parts[2], end_suffix)
+                    } else {
+                        fltk::dialog::alert_default("Invalid start IP address format! (expected x.x.x.x)");
+                        return;
+                    }
+                };
+
                 // Clear previous output
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
                         s.scan_output = format!("Scanning range {} to {}...\n", start_ip, end_ip);
                     }
                 }
-                Self::refresh_display(&mut results_display_clone, &progress_frame_clone);
+                Self::refresh_display(&mut results_display_clone);
 
                 send_event(UiEvent::ScanStart { start_ip, end_ip, options });
                 start_btn_clone.set_label("Stop");
@@ -121,33 +137,21 @@ impl TabComponent for ScanTab {
             }
         });
 
-        // Set up timer to refresh display
-        let mut results_display_timer = results_display.clone();
-        let progress_frame_timer = progress_frame.clone();
-        fltk::app::add_idle3(move |_| {
-            Self::refresh_display(&mut results_display_timer, &progress_frame_timer);
-        });
+        // Register display with centralized refresh manager
+        super::ui_refresh::register_display("scan_output", results_display.clone());
 
         grp
     }
 }
 
 impl ScanTab {
-    fn refresh_display(display: &mut TextDisplay, progress: &Frame) {
-        if let Some(state) = UiState::global() {
+    fn refresh_display(display: &mut TextDisplay) {
+        if let Some(state) = crate::ui_state::UiState::global() {
             if let Ok(s) = state.lock() {
-                // Update results display
-                if let Some(buf) = display.buffer() {
-                    let current_text = buf.text();
-                    if current_text != s.scan_output {
-                        drop(buf);
-                        if let Some(mut new_buf) = display.buffer() {
-                            new_buf.set_text(&s.scan_output);
-                            let lines = new_buf.count_lines(0, new_buf.length());
-                            display.set_buffer(Some(new_buf));
-                            display.scroll(lines, 0);
-                        }
-                    }
+                if let Some(mut buf) = display.buffer() {
+                    buf.set_text(&s.scan_output);
+                    let lines = buf.count_lines(0, buf.length());
+                    display.scroll(lines, 0);
                 }
             }
         }

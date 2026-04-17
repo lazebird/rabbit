@@ -6,6 +6,22 @@
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 
+/// Trim a string to at most `max_lines` lines, removing oldest lines from the front.
+fn trim_lines(s: &mut String, max_lines: usize) {
+    let count = s.lines().count();
+    if count > max_lines {
+        let to_remove = count - max_lines;
+        let mut removed = 0usize;
+        let mut pos = 0usize;
+        for ch in s.chars() {
+            if removed >= to_remove { break; }
+            if ch == '\n' { removed += 1; }
+            pos += ch.len_utf8();
+        }
+        *s = s[pos..].to_string();
+    }
+}
+
 /// Global UI state singleton
 static mut GLOBAL_UI_STATE: Option<Arc<Mutex<UiState>>> = None;
 
@@ -16,7 +32,9 @@ pub struct UiState {
     pub ping_stats: String,
     pub scan_output: String,
     pub http_log: String,
+    pub http_running: bool,
     pub tftpd_log: String,
+    pub tftpd_dirs: Vec<String>,
     pub tftpc_log: String,
     pub plan_list: String,
     pub chat_messages: String,
@@ -32,7 +50,9 @@ impl UiState {
             ping_stats: String::from("Ready"),
             scan_output: String::new(),
             http_log: String::new(),
+            http_running: false,
             tftpd_log: String::new(),
+            tftpd_dirs: Vec::new(),
             tftpc_log: String::new(),
             plan_list: String::new(),
             chat_messages: String::new(),
@@ -56,6 +76,7 @@ impl UiState {
     pub fn append_ping(&mut self, line: &str) {
         self.ping_output.push_str(line);
         self.ping_output.push('\n');
+        trim_lines(&mut self.ping_output, 1000);
         self.updated.insert("ping_output".to_string(), true);
     }
 
@@ -67,24 +88,28 @@ impl UiState {
     pub fn append_scan(&mut self, line: &str) {
         self.scan_output.push_str(line);
         self.scan_output.push('\n');
+        trim_lines(&mut self.scan_output, 1000);
         self.updated.insert("scan_output".to_string(), true);
     }
 
     pub fn append_http_log(&mut self, line: &str) {
         self.http_log.push_str(line);
         self.http_log.push('\n');
+        trim_lines(&mut self.http_log, 1000);
         self.updated.insert("http_log".to_string(), true);
     }
 
     pub fn append_tftpd_log(&mut self, line: &str) {
         self.tftpd_log.push_str(line);
         self.tftpd_log.push('\n');
+        trim_lines(&mut self.tftpd_log, 1000);
         self.updated.insert("tftpd_log".to_string(), true);
     }
 
     pub fn append_tftpc_log(&mut self, line: &str) {
         self.tftpc_log.push_str(line);
         self.tftpc_log.push('\n');
+        trim_lines(&mut self.tftpc_log, 1000);
         self.updated.insert("tftpc_log".to_string(), true);
     }
 
@@ -94,6 +119,7 @@ impl UiState {
         self.chat_messages.push_str("] ");
         self.chat_messages.push_str(message);
         self.chat_messages.push('\n');
+        trim_lines(&mut self.chat_messages, 1000);
         self.updated.insert("chat_messages".to_string(), true);
     }
 
@@ -144,6 +170,35 @@ pub fn append_http_log(line: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
             s.append_http_log(line);
+        }
+    }
+}
+
+pub fn set_http_running(running: bool) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.http_running = running;
+            s.updated.insert("http_running".to_string(), true);
+        }
+    }
+}
+
+pub fn add_tftpd_dir(path: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            if !s.tftpd_dirs.contains(&path.to_string()) {
+                s.tftpd_dirs.push(path.to_string());
+                s.updated.insert("tftpd_dirs".to_string(), true);
+            }
+        }
+    }
+}
+
+pub fn remove_tftpd_dir(path: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.tftpd_dirs.retain(|d| d != path);
+            s.updated.insert("tftpd_dirs".to_string(), true);
         }
     }
 }

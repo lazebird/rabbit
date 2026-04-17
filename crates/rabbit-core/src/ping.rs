@@ -19,6 +19,7 @@ pub struct PingService {
     state: Arc<RwLock<PingState>>,
     targets: Arc<RwLock<Vec<PingTarget>>>,
     results: Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
+    consumed: Arc<RwLock<HashMap<String, usize>>>,
     command_tx: Option<mpsc::Sender<PingCommand>>,
     sequence: Arc<AtomicU16>,
     client: Option<Arc<Client>>,
@@ -39,6 +40,7 @@ impl PingService {
             state: Arc::new(RwLock::new(PingState::Idle)),
             targets: Arc::new(RwLock::new(Vec::new())),
             results: Arc::new(RwLock::new(HashMap::new())),
+            consumed: Arc::new(RwLock::new(HashMap::new())),
             command_tx: None,
             sequence: Arc::new(AtomicU16::new(0)),
             client: None,
@@ -128,6 +130,10 @@ impl PingService {
         }
         *self.state.write().await = PingState::Idle;
         self.command_tx = None;
+        // Clear accumulated results and consumed positions
+        self.results.write().await.clear();
+        self.consumed.write().await.clear();
+        self.targets.write().await.clear();
         info!("Ping service stopped");
         Ok(())
     }
@@ -164,35 +170,57 @@ impl PingService {
         self.targets.read().await.clone()
     }
 
-    /// Get results for a target
+    /// Get new (unconsumed) results for a target since last call
     pub async fn get_results(&self, address: &str) -> Vec<PingResult> {
-        self.results.read().await
-            .get(address)
-            .cloned()
-            .unwrap_or_default()
+        let results_guard = self.results.read().await;
+        let all = match results_guard.get(address) {
+            Some(v) => v,
+            None => return vec![],
+        };
+        let mut consumed_guard = self.consumed.write().await;
+        let consumed_pos = consumed_guard.entry(address.to_string()).or_insert(0);
+
+        // After trimming, the actual start index of `all` shifted.
+        // We track count of total ever-pushed items via results length + any trimmed.
+        // Simpler: just take all items not yet seen (from consumed_pos into `all`)
+        let new_results = if *consumed_pos < all.len() {
+            all[*consumed_pos..].to_vec()
+        } else {
+            vec![]
+        };
+        *consumed_pos = all.len();
+        drop(consumed_guard);
+        new_results
     }
 
-    /// Get summary for a target
+    /// Get summary for a target (based on all retained results)
     pub async fn get_summary(&self, address: &str) -> Option<PingSummary> {
-        let results = self.get_results(address).await;
-        if results.is_empty() {
-            return None;
-        }
+        let results_guard = self.results.read().await;
+        let results = match results_guard.get(address) {
+            Some(v) if !v.is_empty() => v,
+            _ => return None,
+        };
 
         let sent = results.len() as u32;
         let received = results.iter().filter(|r| r.success).count() as u32;
         let lost = sent - received;
         let loss_rate = if sent > 0 { (lost as f64 / sent as f64) * 100.0 } else { 0.0 };
 
-        let times: Vec<f64> = results.iter()
-            .filter_map(|r| r.duration_ms)
-            .collect();
+        let mut min_ms = f64::INFINITY;
+        let mut max_ms = f64::NEG_INFINITY;
+        let mut sum_ms = 0.0f64;
+        let mut time_count = 0u32;
+        for r in results.iter() {
+            if let Some(ms) = r.duration_ms {
+                if ms < min_ms { min_ms = ms; }
+                if ms > max_ms { max_ms = ms; }
+                sum_ms += ms;
+                time_count += 1;
+            }
+        }
 
-        let (min_ms, max_ms, avg_ms) = if !times.is_empty() {
-            let min = times.iter().cloned().fold(f64::INFINITY, f64::min);
-            let max = times.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-            let avg = times.iter().sum::<f64>() / times.len() as f64;
-            (Some(min), Some(max), Some(avg))
+        let (min_opt, max_opt, avg_opt) = if time_count > 0 {
+            (Some(min_ms), Some(max_ms), Some(sum_ms / time_count as f64))
         } else {
             (None, None, None)
         };
@@ -203,9 +231,9 @@ impl PingService {
             received,
             lost,
             loss_rate,
-            min_ms,
-            max_ms,
-            avg_ms,
+            min_ms: min_opt,
+            max_ms: max_opt,
+            avg_ms: avg_opt,
         })
     }
 
@@ -216,6 +244,8 @@ impl PingService {
         results: &Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
         sequence: &Arc<AtomicU16>,
     ) {
+        const MAX_RESULTS: usize = 1000;
+
         let targets_snapshot = targets.read().await.clone();
         let mut targets_to_remove = Vec::new();
 
@@ -224,10 +254,17 @@ impl PingService {
             let result = Self::do_ping(client, target, seq).await;
             let success = result.success;
 
-            results.write().await
+            let mut results_guard = results.write().await;
+            let entry = results_guard
                 .entry(target.address.clone())
-                .or_insert_with(Vec::new)
-                .push(result);
+                .or_insert_with(Vec::new);
+            entry.push(result);
+            // Keep only the most recent MAX_RESULTS entries to prevent unbounded growth
+            if entry.len() > MAX_RESULTS {
+                let drain_count = entry.len() - MAX_RESULTS;
+                entry.drain(0..drain_count);
+            }
+            drop(results_guard);
 
             // Check stop_on_loss: if enabled and ping failed, mark target for removal
             if target.stop_on_loss && !success {

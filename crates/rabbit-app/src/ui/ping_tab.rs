@@ -1,9 +1,9 @@
 //! Ping Tab UI Component
 //!
-//! Layout based on old version screenshot:
-//! - Top row: Addr. input | Opt. input | Start/Stop button
-//! - Stats line: Timestamp Tx X Rx X Loss X Min X Max X Avg X
-//! - Main log area with ping results
+//! Layout matching old version:
+//! - Single row: Addr. [input] Opt. [long input] [Start/Stop button]
+//! - Stats line below
+//! - Results log area fills remaining space
 
 use fltk::{
     button::Button,
@@ -11,12 +11,12 @@ use fltk::{
     group::Flex,
     input::Input,
     prelude::*,
-    text::{TextBuffer, TextDisplay},
+    text::{TextBuffer, TextDisplay, WrapMode},
 };
 
 use crate::ui_events::{UiEvent, send_event};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors, Spacing, defaults};
+use super::{TabComponent, Colors, defaults};
 
 /// Ping Tab Component
 pub struct PingTab;
@@ -24,47 +24,55 @@ pub struct PingTab;
 impl TabComponent for PingTab {
     fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
         let colors = Colors::new();
-        let spacing = Spacing::new();
 
         let mut grp = Flex::new(x, y, w, h, "Ping").column();
-        grp.set_margin(spacing.margin);
-        grp.set_spacing(spacing.padding);
+        grp.set_margin(8);
+        grp.set_spacing(5);
 
-        // Top control row - matching old version layout
+        // Control row - matching old version layout
+        // Addr. [input] Opt. [long input] [Start button]
         let mut ctrl_row = Flex::default().row();
-        ctrl_row.set_spacing(spacing.padding);
+        ctrl_row.set_spacing(5);
 
-        // Addr. label and input
+        // Addr. label (fixed width)
         let _addr_label = Frame::default().with_label("Addr.");
+        ctrl_row.fixed(&_addr_label, 35);
 
+        // Address input (medium width)
         let mut addr_input = Input::default();
         addr_input.set_value(&defaults::ping_target());
+        ctrl_row.fixed(&addr_input, 120);
 
-        // Opt. label and input
+        // Opt. label (fixed width)
         let _opt_label = Frame::default().with_label("Opt.");
+        ctrl_row.fixed(&_opt_label, 30);
 
+        // Options input (takes remaining space)
         let mut opt_input = Input::default();
         opt_input.set_value(&defaults::ping_options());
 
-        // Spacer
-        Frame::default();
-
-        // Start/Stop button (green in old version)
+        // Start/Stop button (fixed width, right aligned)
         let mut start_btn = Button::default().with_label("Start");
         start_btn.set_color(colors.accent);
         start_btn.set_label_color(fltk::enums::Color::White);
+        ctrl_row.fixed(&start_btn, 70);
 
         ctrl_row.end();
-        grp.fixed(&ctrl_row, spacing.row_height);
+        grp.fixed(&ctrl_row, 28);
 
-        // Stats line - single row display
-        let mut stats_frame = Frame::default().with_label("Ready - Enter address and click Start");
-        grp.fixed(&stats_frame, spacing.row_height);
+        // Stats line - copyable TextDisplay (TextDisplay supports select+copy)
+        let mut stats_editor = TextDisplay::default();
+        let stats_buf = TextBuffer::default();
+        stats_editor.set_buffer(Some(stats_buf));
+        stats_editor.wrap_mode(WrapMode::AtBounds, 0);
+        stats_editor.set_scrollbar_size(0);
+        grp.fixed(&stats_editor, 22);
 
-        // Results log area
+        // Results log area - fills remaining space, word wrap enabled
         let mut results_display = TextDisplay::default();
         let results_buf = TextBuffer::default();
         results_display.set_buffer(Some(results_buf));
+        results_display.wrap_mode(WrapMode::AtBounds, 0);
 
         grp.end();
 
@@ -72,9 +80,11 @@ impl TabComponent for PingTab {
         grp.set_color(colors.background);
         results_display.set_color(colors.input_bg);
         results_display.set_text_color(colors.text);
+        stats_editor.set_color(colors.background);
+        stats_editor.set_text_color(colors.text);
 
         // Set initial content from global state
-        Self::refresh_display(&mut results_display, &mut stats_frame);
+        Self::refresh_display(&mut results_display, &mut stats_editor);
 
         // Clone for callbacks
         let addr_input_clone = addr_input.clone();
@@ -82,7 +92,7 @@ impl TabComponent for PingTab {
         let mut start_btn_clone = start_btn.clone();
         let colors_clone = colors.clone();
         let mut results_display_clone = results_display.clone();
-        let mut stats_frame_clone = stats_frame.clone();
+        let mut stats_editor_clone = stats_editor.clone();
 
         // Add button callback
         start_btn.set_callback(move |_| {
@@ -103,10 +113,10 @@ impl TabComponent for PingTab {
                         s.ping_stats = "Pinging...".to_string();
                     }
                 }
-                Self::refresh_display(&mut results_display_clone, &mut stats_frame_clone);
+                Self::refresh_display(&mut results_display_clone, &mut stats_editor_clone);
 
                 send_event(UiEvent::PingStart { target: target.clone(), options: _options });
-                
+
                 start_btn_clone.set_label("Stop");
                 start_btn_clone.set_color(fltk::enums::Color::from_hex(0xE57373));
             } else {
@@ -116,39 +126,25 @@ impl TabComponent for PingTab {
             }
         });
 
-        // Set up timer to refresh display
-        let mut results_display_timer = results_display.clone();
-        let mut stats_frame_timer = stats_frame.clone();
-        fltk::app::add_idle3(move |_| {
-            Self::refresh_display(&mut results_display_timer, &mut stats_frame_timer);
-        });
+        // Register displays with centralized refresh manager
+        super::ui_refresh::register_display("ping_output", results_display.clone());
+        super::ui_refresh::register_display("ping_stats", stats_editor.clone());
 
         grp
     }
 }
 
 impl PingTab {
-    fn refresh_display(display: &mut TextDisplay, stats: &mut Frame) {
-        if let Some(state) = UiState::global() {
-            if let Ok(mut s) = state.lock() {
-                // Update results display
-                if let Some(buf) = display.buffer() {
-                    let current_text = buf.text();
-                    if current_text != s.ping_output {
-                        drop(buf);
-                        if let Some(mut new_buf) = display.buffer() {
-                            new_buf.set_text(&s.ping_output);
-                            let lines = new_buf.count_lines(0, new_buf.length());
-                            display.set_buffer(Some(new_buf));
-                            display.scroll(lines, 0);
-                        }
-                    }
+    /// Called once during startup from global state (not from idle loop).
+    fn refresh_display(display: &mut TextDisplay, stats: &mut TextDisplay) {
+        if let Some(state) = crate::ui_state::UiState::global() {
+            if let Ok(s) = state.lock() {
+                if let Some(mut buf) = display.buffer() {
+                    buf.set_text(&s.ping_output);
                 }
-                // Update stats - use clone to avoid borrow issues
-                let stats_text = s.ping_stats.clone();
-                s.clear_updated("ping_output");
-                drop(s);
-                stats.set_label(&stats_text);
+                if let Some(mut buf) = stats.buffer() {
+                    buf.set_text(&s.ping_stats);
+                }
             }
         }
     }

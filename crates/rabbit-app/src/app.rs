@@ -122,31 +122,59 @@ impl App {
         app::set_visible_focus(true);
 
         // Create main window
-        let mut main_win = Window::new(100, 100, 650, 480, "Rabbit");
+        let mut main_win = Window::new(100, 100, 750, 520, "Rabbit");
         main_win.set_type(WindowType::Double);
         main_win.make_resizable(true);
 
-        // Create Tabs widget
-        let mut tabs = Tabs::new(5, 5, 640, 420, "");
+        // Create Tabs widget - positioned to leave room for tab labels
+        let mut tabs = Tabs::new(5, 5, 740, 510, "");
 
-        // Build each tab - FLTK tabs need specific position/size
-        let tab_x = 0;
-        let tab_y = 30;
-        let tab_w = 640;
-        let tab_h = 390;
-
-        let _ping_tab = PingTab::build(tab_x, tab_y, tab_w, tab_h);
-        let _scan_tab = ScanTab::build(tab_x, tab_y, tab_w, tab_h);
-        let _http_tab = HttpTab::build(tab_x, tab_y, tab_w, tab_h);
-        let _tftpd_tab = TftpdTab::build(tab_x, tab_y, tab_w, tab_h);
-        let _tftpc_tab = TftpcTab::build(tab_x, tab_y, tab_w, tab_h);
-        let _plan_tab = PlanTab::build(tab_x, tab_y, tab_w, tab_h);
-        let _chat_tab = ChatTab::build(tab_x, tab_y, tab_w, tab_h);
-        let _settings_tab = SettingsTab::build(tab_x, tab_y, tab_w, tab_h);
+        // Build each tab - y=25 leaves room for tab labels at top
+        let _ping_tab = PingTab::build(5, 30, 730, 475);
+        let _scan_tab = ScanTab::build(5, 30, 730, 475);
+        let _http_tab = HttpTab::build(5, 30, 730, 475);
+        let _tftpd_tab = TftpdTab::build(5, 30, 730, 475);
+        let _tftpc_tab = TftpcTab::build(5, 30, 730, 475);
+        let _plan_tab = PlanTab::build(5, 30, 730, 475);
+        let _chat_tab = ChatTab::build(5, 30, 730, 475);
+        let _settings_tab = SettingsTab::build(5, 30, 730, 475);
 
         tabs.end();
+
+        // Start centralized UI refresh loop (100ms interval, replaces 7 per-frame idle callbacks)
+        crate::ui::ui_refresh::start_refresh_loop();
+
+        // Let tabs fill the window on resize
+        let mut tabs_clone = tabs.clone();
+        main_win.resize_callback(move |w, _x, _y, nw, nh| {
+            tabs_clone.resize(5, 5, nw - 10, nh - 10);
+            w.redraw();
+        });
+
         main_win.end();
         main_win.show();
+
+        // Handle window close button - use set_callback which fires when the X button is clicked
+        // Hide window immediately so user sees it disappear, then quit FLTK event loop
+        let mut win_for_close = main_win.clone();
+        main_win.set_callback(move |_| {
+            tracing::info!("Window close callback triggered, stopping refresh and quitting...");
+            win_for_close.hide();
+            crate::ui::ui_refresh::stop_refresh_loop();
+            app::quit();
+        });
+
+        // Fallback: also catch close events at the app level (cannot capture, so just quit)
+        app::add_handler(|ev| {
+            if ev == fltk::enums::Event::Close {
+                tracing::info!("Close event detected via add_handler, stopping refresh and quitting...");
+                crate::ui::ui_refresh::stop_refresh_loop();
+                app::quit();
+                true
+            } else {
+                false
+            }
+        });
 
         // Spawn event handler task
         let app_clone = Arc::new(RwLock::new(AppHandle {
@@ -160,15 +188,21 @@ impl App {
             ping_task: self.ping_task.clone(),
         }));
 
-        tokio::spawn(async move {
+        let event_handle = tokio::spawn(async move {
             Self::event_loop(app_clone, event_receiver).await;
         });
 
         // Run FLTK event loop
         fltk_app.run()?;
 
+        // Abort the event loop task (it's blocked on receiver.recv() which will never return)
+        event_handle.abort();
+
         // Cleanup
         self.cleanup().await?;
+
+        // Force exit - FLTK may leave internal threads running
+        std::process::exit(0);
 
         Ok(())
     }
@@ -331,6 +365,8 @@ impl EventHandler for AppHandle {
                     info!("Stopping HTTP server");
                     self.http_service.write().await.stop().await?;
                     self.view_model.write().await.set_http_running(false);
+                    crate::ui_state::set_http_running(false);
+                    crate::ui_state::append_http_log("HTTP server stopped.");
                 } else {
                     info!("Starting HTTP server on port {} with shell={}", port, shell);
                     let mut service = self.http_service.write().await;
@@ -345,8 +381,19 @@ impl EventHandler for AppHandle {
                         video_play: options.contains("videoplay=true"),
                     };
                     service.init(config).await?;
-                    service.start().await?;
-                    self.view_model.write().await.set_http_running(true);
+                    match service.start().await {
+                        Ok(_) => {
+                            self.view_model.write().await.set_http_running(true);
+                            crate::ui_state::set_http_running(true);
+                            crate::ui_state::append_http_log(&format!("HTTP server started on port {}.", port));
+                        }
+                        Err(e) => {
+                            let msg = format!("Failed to start HTTP server: {}", e);
+                            error!("{}", msg);
+                            crate::ui_state::set_http_running(false);
+                            crate::ui_state::append_http_log(&format!("ERROR: {}", msg));
+                        }
+                    }
                 }
             }
 

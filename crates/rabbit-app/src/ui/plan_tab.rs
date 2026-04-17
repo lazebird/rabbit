@@ -1,12 +1,8 @@
 //! Plan Tab UI Component
 //!
-//! Layout based on old version screenshot:
-//! - Date picker: YYYY年MM月DD日
-//! - Time picker: HH:MM
-//! - Repeat / count | unit dropdown
-//! - Opt. field
-//! - +/- buttons
-//! - Event list
+//! Layout matching old version:
+//! - Single row: Date [input] Time [input] Repeat/ [input] [unit dropdown] Opt. [input] [+] [-]
+//! - Event list fills remaining space
 
 use fltk::{
     button::Button,
@@ -15,12 +11,12 @@ use fltk::{
     input::{Input, IntInput},
     menu::Choice,
     prelude::*,
-    text::{TextBuffer, TextDisplay},
+    text::{TextBuffer, TextDisplay, WrapMode},
 };
 
 use crate::ui_events::{UiEvent, send_event};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors, Spacing};
+use super::{TabComponent, Colors};
 
 /// Plan Tab Component
 pub struct PlanTab;
@@ -28,67 +24,83 @@ pub struct PlanTab;
 impl TabComponent for PlanTab {
     fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
         let colors = Colors::new();
-        let spacing = Spacing::new();
 
         let mut grp = Flex::new(x, y, w, h, "PLAN").column();
-        grp.set_margin(spacing.margin);
-        grp.set_spacing(spacing.padding);
+        grp.set_margin(8);
+        grp.set_spacing(5);
 
-        // Row 1: Date and Time pickers
-        let mut row1 = Flex::default().row();
-        row1.set_spacing(spacing.padding);
+        // Control row - matching old version compact layout
+        let mut ctrl_row = Flex::default().row();
+        ctrl_row.set_spacing(5);
 
+        // Date label
         let _date_label = Frame::default().with_label("Date");
+        ctrl_row.fixed(&_date_label, 30);
 
+        // Date input
         let mut date_input = Input::default();
         let now = chrono::Local::now();
         date_input.set_value(&now.format("%Y/%m/%d").to_string());
+        ctrl_row.fixed(&date_input, 85);
 
+        // Time label
         let _time_label = Frame::default().with_label("Time");
+        ctrl_row.fixed(&_time_label, 30);
 
+        // Time input
         let mut time_input = Input::default();
         time_input.set_value(&now.format("%H:%M").to_string());
+        ctrl_row.fixed(&time_input, 45);
 
-        Frame::default(); // Spacer
-        row1.end();
-        grp.fixed(&row1, spacing.row_height);
+        // Now button - fills date/time with current time
+        let mut now_btn = Button::default().with_label("Now");
+        ctrl_row.fixed(&now_btn, 35);
 
-        // Row 2: Repeat and unit
-        let mut row2 = Flex::default().row();
-        row2.set_spacing(spacing.padding);
+        // Repeat label
+        let _repeat_label = Frame::default().with_label("Repeat/");
+        ctrl_row.fixed(&_repeat_label, 45);
 
-        let _repeat_label = Frame::default().with_label("Repeat");
-
+        // Cycle input (small)
         let mut cycle_input = IntInput::default();
         cycle_input.set_value("0");
+        ctrl_row.fixed(&cycle_input, 35);
 
+        // Unit dropdown
         let mut unit_choice = Choice::default();
         unit_choice.add_choice("minute");
         unit_choice.add_choice("hour");
         unit_choice.add_choice("day");
         unit_choice.set_value(0);
+        ctrl_row.fixed(&unit_choice, 70);
 
+        // Opt. label
         let _opt_label = Frame::default().with_label("Opt.");
+        ctrl_row.fixed(&_opt_label, 30);
 
+        // Options input (takes remaining space)
         let mut opt_input = Input::default();
         opt_input.set_value("override=false");
 
-        // Add/Remove buttons
-        let mut remove_btn = Button::default().with_label("-");
-        remove_btn.set_color(fltk::enums::Color::from_hex(0xE57373));
-
+        // Add button (small square)
         let mut add_btn = Button::default().with_label("+");
         add_btn.set_color(colors.accent);
         add_btn.set_label_color(fltk::enums::Color::White);
+        ctrl_row.fixed(&add_btn, 28);
 
-        Frame::default(); // Spacer
-        row2.end();
-        grp.fixed(&row2, spacing.row_height);
+        // Remove button (small square)
+        let mut remove_btn = Button::default().with_label("-");
+        remove_btn.set_color(fltk::enums::Color::from_hex(0xE57373));
+        remove_btn.set_label_color(fltk::enums::Color::White);
+        ctrl_row.fixed(&remove_btn, 28);
 
-        // Event list
+        ctrl_row.end();
+        grp.fixed(&ctrl_row, 28);
+
+        // Event list fills remaining space
         let mut event_display = TextDisplay::default();
         let event_buf = TextBuffer::default();
         event_display.set_buffer(Some(event_buf));
+        event_display.wrap_mode(WrapMode::AtBounds, 0);
 
         grp.end();
 
@@ -106,6 +118,15 @@ impl TabComponent for PlanTab {
         let cycle_input_clone = cycle_input.clone();
         let unit_choice_clone = unit_choice.clone();
         let opt_input_clone = opt_input.clone();
+
+        // Now button - fills date and time with current time
+        let mut date_input_now = date_input.clone();
+        let mut time_input_now = time_input.clone();
+        now_btn.set_callback(move |_| {
+            let now = chrono::Local::now();
+            date_input_now.set_value(&now.format("%Y/%m/%d").to_string());
+            time_input_now.set_value(&now.format("%H:%M").to_string());
+        });
 
         // Add button callback
         add_btn.set_callback(move |_| {
@@ -134,9 +155,6 @@ impl TabComponent for PlanTab {
                     } else {
                         " (One-time)".to_string()
                     };
-                    if s.plan_list.contains("No scheduled events") {
-                        s.plan_list = format!("Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-                    }
                     s.plan_list.push_str(&format!(
                         "[{}] {} {} - {}{}\n",
                         event_id, date, time, msg, cycle_str
@@ -148,7 +166,7 @@ impl TabComponent for PlanTab {
             send_event(UiEvent::PlanAdd { date, time, cycle, unit, msg });
         });
 
-        // Remove button callback - remove last added event for now
+        // Remove button callback
         let mut event_display_remove = event_display.clone();
         remove_btn.set_callback(move |_| {
             let remove_id = fltk::dialog::input_default("Enter event ID to remove:", "");
@@ -162,11 +180,8 @@ impl TabComponent for PlanTab {
             }
         });
 
-        // Periodic refresh
-        let mut event_display_timer = event_display.clone();
-        fltk::app::add_idle3(move |_| {
-            Self::refresh_list(&mut event_display_timer);
-        });
+        // Register display with centralized refresh manager
+        super::ui_refresh::register_display("plan_list", event_display.clone());
 
         grp
     }
@@ -174,21 +189,13 @@ impl TabComponent for PlanTab {
 
 impl PlanTab {
     fn refresh_list(display: &mut TextDisplay) {
-        if let Some(state) = UiState::global() {
-            if let Ok(mut s) = state.lock() {
-                if let Some(buf) = display.buffer() {
-                    let current_text = buf.text();
-                    if current_text != s.plan_list {
-                        drop(buf);
-                        if let Some(mut new_buf) = display.buffer() {
-                            new_buf.set_text(&s.plan_list);
-                            let lines = new_buf.count_lines(0, new_buf.length());
-                            display.set_buffer(Some(new_buf));
-                            display.scroll(lines, 0);
-                        }
-                    }
+        if let Some(state) = crate::ui_state::UiState::global() {
+            if let Ok(s) = state.lock() {
+                if let Some(mut buf) = display.buffer() {
+                    buf.set_text(&s.plan_list);
+                    let lines = buf.count_lines(0, buf.length());
+                    display.scroll(lines, 0);
                 }
-                s.clear_updated("plan_list");
             }
         }
     }
