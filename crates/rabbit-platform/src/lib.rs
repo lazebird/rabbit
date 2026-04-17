@@ -8,11 +8,13 @@
 //! - Notifications
 
 pub mod config;
+pub mod dialog;
 pub mod network;
 pub mod notification;
 pub mod ping;
 
 pub use config::*;
+pub use dialog::*;
 pub use network::*;
 pub use notification::*;
 pub use ping::*;

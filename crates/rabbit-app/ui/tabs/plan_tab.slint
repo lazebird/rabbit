@@ -3,6 +3,7 @@
 import { Button, CheckBox, ComboBox, ScrollView, SpinBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Colors, Typography, Spacing, Sizes } from "../common/styles.slint";
 import { LogArea, LineEditWithClear, IconButton } from "../common/widgets.slint";
+import { DatePicker, TimePicker } from "../common/pickers.slint";
 
 export component PlanTab inherits VerticalBox {
     callback plan-add();
@@ -27,27 +28,27 @@ export component PlanTab inherits VerticalBox {
     Rectangle {
         height: 22px;
 
-        // Date input - shows default value
-        LineEditWithClear {
+        // Date picker - using custom DatePicker component
+        DatePicker {
             x: 0;
             y: (parent.height - self.height) / 2;
-            text <=> root.plan-date;
+            date <=> root.plan-date;
             height: 22px;
-            width: 100px;
+            width: 120px;
         }
 
-        // Time input - shows default value
-        LineEditWithClear {
-            x: 108px;
+        // Time picker - using custom TimePicker component
+        TimePicker {
+            x: 128px;
             y: (parent.height - self.height) / 2;
-            text <=> root.plan-time;
+            time <=> root.plan-time;
             height: 22px;
-            width: 60px;
+            width: 80px;
         }
 
         // Repeat label
         Text {
-            x: 176px;
+            x: 216px;
             y: (parent.height - self.height) / 2;
             text: "Repeat /";
             font-size: 11px;
@@ -58,7 +59,7 @@ export component PlanTab inherits VerticalBox {
 
         // Cycle number
         SpinBox {
-            x: 230px;
+            x: 270px;
             y: (parent.height - self.height) / 2;
             value: root.plan-cycle;
             minimum: 0;
@@ -68,7 +69,7 @@ export component PlanTab inherits VerticalBox {
 
         // Unit dropdown
         ComboBox {
-            x: 298px;
+            x: 338px;
             y: (parent.height - self.height) / 2;
             model: ["minute", "hour", "day", "week"];
             current-index: root.plan-unit == "hours" ? 1 : root.plan-unit == "days" ? 2 : root.plan-unit == "weeks" ? 3 : 0;
@@ -82,7 +83,7 @@ export component PlanTab inherits VerticalBox {
 
         // Message input - shows default value
         LineEditWithClear {
-            x: 386px;
+            x: 426px;
             y: (parent.height - self.height) / 2;
             text <=> root.plan-msg;
             height: 22px;
@@ -91,7 +92,7 @@ export component PlanTab inherits VerticalBox {
 
         // Override checkbox
         CheckBox {
-            x: 544px;
+            x: 584px;
             y: (parent.height - self.height) / 2;
             text: "Override";
             checked: root.plan-override;
@@ -102,7 +103,7 @@ export component PlanTab inherits VerticalBox {
 
         // Add button
         IconButton {
-            x: 630px;
+            x: 670px;
             y: (parent.height - self.height) / 2;
             icon: "+";
             primary: true;
@@ -112,7 +113,7 @@ export component PlanTab inherits VerticalBox {
 
         // Remove button
         IconButton {
-            x: 662px;
+            x: 702px;
             y: (parent.height - self.height) / 2;
             icon: "-";
             enabled: root.selected-task >= 0;

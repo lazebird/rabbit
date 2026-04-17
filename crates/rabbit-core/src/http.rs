@@ -2,10 +2,11 @@
 
 use crate::{Result, ServiceError};
 use axum::{
-    body::HttpBody,
-    extract::{ConnectInfo, Request},
+    body::{Body, HttpBody},
+    extract::{ConnectInfo, Multipart, Request, State},
     middleware::{self, Next},
-    response::Response,
+    response::{Html, Response},
+    routing::post,
     Router,
 };
 use rabbit_models::http::{HttpAccessLog, HttpServerConfig, HttpServerState};
@@ -13,6 +14,8 @@ use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
 use tokio::sync::{mpsc, RwLock};
 use tokio::task::JoinHandle;
 use tower_http::services::ServeDir;
@@ -78,10 +81,13 @@ impl HttpService {
         let logs = Arc::clone(&self.logs);
 
         let handle = tokio::spawn(async move {
-            // Build axum router with access logging
+            // Build axum router with access logging and file upload
             let logs_clone = Arc::clone(&logs);
+            let root_clone = root.clone();
             
             let app = Router::new()
+                .route("/upload", post(upload_handler))
+                .with_state(root_clone)
                 .fallback_service(
                     ServeDir::new(&root)
                         .append_index_html_on_directories(true)
@@ -241,4 +247,51 @@ async fn access_log_middleware(
     );
 
     response
+}
+
+/// File upload handler
+async fn upload_handler(
+    State(root): State<PathBuf>,
+    mut multipart: Multipart,
+) -> Html<String> {
+    while let Ok(Some(mut field)) = multipart.next_field().await {
+        let name = field.name().unwrap_or("unknown").to_string();
+        let file_name = field.file_name().unwrap_or("unnamed").to_string();
+        
+        if name == "file" {
+            let file_path = root.join(&file_name);
+            
+            // Create file
+            match File::create(&file_path).await {
+                Ok(mut file) => {
+                    // Write chunks
+                    let mut success = true;
+                    while let Ok(Some(chunk)) = field.chunk().await {
+                        if let Err(e) = file.write_all(&chunk).await {
+                            error!("Failed to write chunk: {}", e);
+                            success = false;
+                            break;
+                        }
+                    }
+                    
+                    if success {
+                        info!("File uploaded: {}", file_path.display());
+                        return Html(format!(
+                            "<html><body><h1>Upload Successful</h1><p>File '{}' saved.</p><a href=\"/\">Back</a></body></html>",
+                            file_name
+                        ));
+                    }
+                }
+                Err(e) => {
+                    error!("Failed to create file: {}", e);
+                    return Html(format!(
+                        "<html><body><h1>Upload Failed</h1><p>Failed to create file: {}</p><a href=\"/\">Back</a></body></html>",
+                        e
+                    ));
+                }
+            }
+        }
+    }
+    
+    Html("<html><body><h1>No file received</h1><a href=\"/\">Back</a></body></html>".to_string())
 }

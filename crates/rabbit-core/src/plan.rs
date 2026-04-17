@@ -1,8 +1,8 @@
 //! Task Planner Service
 
 use crate::{Result, ServiceError};
-use chrono::Datelike;
-use rabbit_models::plan::{Schedule, Task, TaskLog};
+use chrono::{Datelike, Local};
+use rabbit_models::plan::{Schedule, Task, TaskLog, TaskState};
 use rabbit_platform::notification::show_task_reminder;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -110,16 +110,38 @@ impl PlanService {
     /// Acknowledge a triggered task
     pub async fn acknowledge_task(&self, id: &str) -> Result<()> {
         let mut tasks = self.tasks.write().await;
-        if let Some(_task) = tasks.get_mut(id) {
-            // Update task state
+        if let Some(task) = tasks.get_mut(id) {
+            task.acknowledge();
             info!("Task acknowledged: {}", id);
+            
+            // Add log entry
+            let log = TaskLog {
+                task_id: id.to_string(),
+                triggered_at: task.last_triggered.unwrap_or_else(|| Local::now()),
+                acknowledged_at: Some(Local::now()),
+            };
+            self.logs.write().await.push(log);
         }
         Ok(())
     }
 
     /// Snooze a task
     pub async fn snooze_task(&self, id: &str, minutes: u32) -> Result<()> {
-        info!("Task {} snoozed for {} minutes", id, minutes);
+        let mut tasks = self.tasks.write().await;
+        if let Some(task) = tasks.get_mut(id) {
+            task.snooze(minutes as i64);
+            info!("Task {} snoozed for {} minutes", id, minutes);
+        }
+        Ok(())
+    }
+
+    /// Reset a task to pending state
+    pub async fn reset_task(&self, id: &str) -> Result<()> {
+        let mut tasks = self.tasks.write().await;
+        if let Some(task) = tasks.get_mut(id) {
+            task.reset();
+            info!("Task reset: {}", id);
+        }
         Ok(())
     }
 
@@ -133,14 +155,22 @@ impl PlanService {
         tasks: &Arc<RwLock<HashMap<String, Task>>>,
         logs: &Arc<RwLock<Vec<TaskLog>>>,
     ) {
-        let now = chrono::Local::now();
-        let tasks_to_trigger: Vec<Task> = tasks.read().await
-            .values()
-            .filter(|t| t.enabled && Self::should_trigger(&t.schedule, now))
-            .cloned()
+        let now = Local::now();
+        let tasks_to_trigger: Vec<(String, Task)> = tasks.read().await
+            .iter()
+            .filter(|(_, t)| {
+                t.enabled 
+                    && !t.is_snoozed() 
+                    && t.state != TaskState::Acknowledged
+                    && Self::should_trigger(&t.schedule, now)
+            })
+            .map(|(id, t)| (id.clone(), t.clone()))
             .collect();
 
-        for task in tasks_to_trigger {
+        for (id, mut task) in tasks_to_trigger {
+            // Mark as triggered
+            task.trigger();
+            
             if let Err(e) = show_task_reminder(&task) {
                 error!("Failed to show notification: {}", e);
             }
@@ -150,6 +180,9 @@ impl PlanService {
                 triggered_at: now,
                 acknowledged_at: None,
             });
+
+            // Update task in storage
+            tasks.write().await.insert(id, task);
         }
     }
 

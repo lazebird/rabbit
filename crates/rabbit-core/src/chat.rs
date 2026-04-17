@@ -2,11 +2,13 @@
 
 use crate::{Result, ServiceError};
 use rabbit_models::chat::{ChatConfig, ChatMessage, ChatRoom, ChatUser, MessageType};
+use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::UdpSocket;
 use tokio::sync::{mpsc, RwLock};
 use tokio::task::JoinHandle;
+use tokio::time::{interval, Duration};
 use tracing::{error, info};
 
 /// LAN Chat service
@@ -16,6 +18,8 @@ pub struct ChatService {
     socket: Arc<RwLock<Option<Arc<UdpSocket>>>>,
     message_tx: Option<mpsc::Sender<ChatMessage>>,
     recv_handle: Option<JoinHandle<()>>,
+    heartbeat_handle: Option<JoinHandle<()>>,
+    user_activity: Arc<RwLock<HashMap<String, tokio::time::Instant>>>,
 }
 
 impl ChatService {
@@ -29,6 +33,8 @@ impl ChatService {
             socket: Arc::new(RwLock::new(None)),
             message_tx: None,
             recv_handle: None,
+            heartbeat_handle: None,
+            user_activity: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -67,6 +73,7 @@ impl ChatService {
 
         let room = Arc::clone(&self.room);
         let config = Arc::clone(&self.config);
+        let user_activity = Arc::clone(&self.user_activity);
 
         // Spawn receive task
         let handle = tokio::spawn(async move {
@@ -78,7 +85,24 @@ impl ChatService {
                         match result {
                             Ok((len, addr)) => {
                                 if let Ok(msg) = Self::parse_message(&buf[..len], addr) {
-                                    room.write().await.messages.push(msg);
+                                    // Update user activity
+                                    user_activity.write().await.insert(
+                                        msg.sender.clone(),
+                                        tokio::time::Instant::now()
+                                    );
+                                    
+                                    // Add user if not exists
+                                    let mut room_guard = room.write().await;
+                                    if !room_guard.users.iter().any(|u| u.username == msg.sender) {
+                                        room_guard.users.push(ChatUser {
+                                            username: msg.sender.clone(),
+                                            hostname: String::new(),
+                                            online: true,
+                                            last_seen: chrono::Local::now(),
+                                        });
+                                    }
+                                    
+                                    room_guard.messages.push(msg);
                                 }
                             }
                             Err(e) => {
@@ -99,6 +123,47 @@ impl ChatService {
 
         self.recv_handle = Some(handle);
 
+        // Spawn heartbeat task for online status detection
+        let room = Arc::clone(&self.room);
+        let user_activity = Arc::clone(&self.user_activity);
+        let heartbeat_handle = tokio::spawn(async move {
+            let mut heartbeat_interval = interval(Duration::from_secs(30));
+            let timeout_duration = Duration::from_secs(120); // 2 minutes timeout
+
+            loop {
+                heartbeat_interval.tick().await;
+
+                let now = tokio::time::Instant::now();
+                let mut activity_guard = user_activity.write().await;
+                let mut room_guard = room.write().await;
+
+                // Check for inactive users
+                let inactive_users: Vec<String> = activity_guard
+                    .iter()
+                    .filter(|(_, last_seen)| now.saturating_duration_since(**last_seen) > timeout_duration)
+                    .map(|(name, _)| name.clone())
+                    .collect();
+
+                for user_name in inactive_users {
+                    activity_guard.remove(&user_name);
+                    if let Some(user) = room_guard.users.iter_mut().find(|u| u.username == user_name) {
+                        user.online = false;
+                        user.last_seen = chrono::Local::now();
+                    }
+                }
+
+                // Update last_seen for online users
+                for user in room_guard.users.iter_mut() {
+                    if activity_guard.contains_key(&user.username) {
+                        user.online = true;
+                        user.last_seen = chrono::Local::now();
+                    }
+                }
+            }
+        });
+
+        self.heartbeat_handle = Some(heartbeat_handle);
+
         // Send announcement
         self.send_message("Joined the chat", MessageType::Announcement).await?;
 
@@ -116,6 +181,10 @@ impl ChatService {
         }
 
         if let Some(handle) = self.recv_handle.take() {
+            handle.abort();
+        }
+
+        if let Some(handle) = self.heartbeat_handle.take() {
             handle.abort();
         }
 
@@ -154,9 +223,31 @@ impl ChatService {
         self.room.read().await.messages.clone()
     }
 
-    /// Get online users
+    /// Get online users (only those with online=true)
     pub async fn get_users(&self) -> Vec<ChatUser> {
+        self.room.read().await.users
+            .iter()
+            .filter(|u| u.online)
+            .cloned()
+            .collect()
+    }
+
+    /// Get all users (including offline)
+    pub async fn get_all_users(&self) -> Vec<ChatUser> {
         self.room.read().await.users.clone()
+    }
+
+    /// Refresh user list - clears offline users and broadcasts presence
+    pub async fn refresh_users(&self) -> Result<()> {
+        // Broadcast presence announcement
+        self.send_message("Presence check", MessageType::Announcement).await?;
+        
+        // Clear offline users
+        let mut room = self.room.write().await;
+        room.users.retain(|u| u.online);
+        
+        info!("User list refreshed, {} users online", room.users.len());
+        Ok(())
     }
 
     /// Update username

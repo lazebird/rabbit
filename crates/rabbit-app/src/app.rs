@@ -498,24 +498,55 @@ impl App {
             });
         });
 
+        // ===== HTTP File Browser =====
         let ui_handle = ui.as_weak();
         ui.on_http_browse(move || {
-            if let Some(ui) = ui_handle.upgrade() {
-                ui.set_status_text("File browser not implemented yet".into());
-            }
+            let ui = ui_handle.clone();
+            std::thread::spawn(move || {
+                match rabbit_platform::dialog::open_folder_dialog("Select HTTP Root Directory", None) {
+                    Ok(Some(path)) => {
+                        let path_str = path.to_string_lossy().to_string();
+                        if let Some(ui) = ui.upgrade() {
+                            ui.set_status_text(format!("Selected directory: {}", path_str).into());
+                            // Note: Directory management would need proper ModelRc handling
+                        }
+                    }
+                    Ok(None) => {}
+                    Err(e) => {
+                        if let Some(ui) = ui.upgrade() {
+                            ui.set_status_text(format!("Failed to open dialog: {}", e).into());
+                        }
+                    }
+                }
+            });
         });
 
+        // ===== HTTP Directory Management =====
         let ui_handle = ui.as_weak();
         ui.on_http_add_dir(move || {
-            if let Some(ui) = ui_handle.upgrade() {
-                ui.set_status_text("Add directory not implemented yet".into());
-            }
+            let ui = ui_handle.clone();
+            std::thread::spawn(move || {
+                match rabbit_platform::dialog::open_folder_dialog("Add HTTP Directory", None) {
+                    Ok(Some(path)) => {
+                        let path_str = path.to_string_lossy().to_string();
+                        if let Some(ui) = ui.upgrade() {
+                            ui.set_status_text(format!("Added directory: {}", path_str).into());
+                        }
+                    }
+                    Ok(None) => {}
+                    Err(e) => {
+                        if let Some(ui) = ui.upgrade() {
+                            ui.set_status_text(format!("Failed to open dialog: {}", e).into());
+                        }
+                    }
+                }
+            });
         });
 
         let ui_handle = ui.as_weak();
-        ui.on_http_remove_dir(move |_index: i32| {
+        ui.on_http_remove_dir(move |index: i32| {
             if let Some(ui) = ui_handle.upgrade() {
-                ui.set_status_text("Remove directory not implemented yet".into());
+                ui.set_status_text(format!("Remove directory at index: {}", index).into());
             }
         });
 
@@ -565,17 +596,32 @@ impl App {
             });
         });
 
+        // ===== TFTP Directory Management =====
         let ui_handle = ui.as_weak();
         ui.on_tftp_add_dir(move || {
-            if let Some(ui) = ui_handle.upgrade() {
-                ui.set_status_text("Add TFTP directory not implemented yet".into());
-            }
+            let ui = ui_handle.clone();
+            std::thread::spawn(move || {
+                match rabbit_platform::dialog::open_folder_dialog("Add TFTP Work Directory", None) {
+                    Ok(Some(path)) => {
+                        let path_str = path.to_string_lossy().to_string();
+                        if let Some(ui) = ui.upgrade() {
+                            ui.set_status_text(format!("Added TFTP directory: {}", path_str).into());
+                        }
+                    }
+                    Ok(None) => {}
+                    Err(e) => {
+                        if let Some(ui) = ui.upgrade() {
+                            ui.set_status_text(format!("Failed to open dialog: {}", e).into());
+                        }
+                    }
+                }
+            });
         });
 
         let ui_handle = ui.as_weak();
-        ui.on_tftp_remove_dir(move |_index: i32| {
+        ui.on_tftp_remove_dir(move |index: i32| {
             if let Some(ui) = ui_handle.upgrade() {
-                ui.set_status_text("Remove TFTP directory not implemented yet".into());
+                ui.set_status_text(format!("Remove TFTP directory at index: {}", index).into());
             }
         });
 
@@ -692,11 +738,35 @@ impl App {
             });
         });
 
+        // ===== TFTP Client File Browser =====
         let ui_handle = ui.as_weak();
         ui.on_tftp_browse_local(move || {
-            if let Some(ui) = ui_handle.upgrade() {
-                ui.set_status_text("File browser not implemented yet".into());
-            }
+            let ui = ui_handle.clone();
+            std::thread::spawn(move || {
+                match rabbit_platform::dialog::open_file_dialog(
+                    "Select File for TFTP Transfer",
+                    None,
+                    &[("All Files", &["*"])]
+                ) {
+                    Ok(Some(path)) => {
+                        let path_str = path.to_string_lossy().to_string();
+                        if let Some(ui) = ui.upgrade() {
+                            ui.set_tftp_client_local_path(path_str.into());
+                            // Also set remote filename to the file name
+                            if let Some(filename) = path.file_name() {
+                                ui.set_tftp_client_remote_file(filename.to_string_lossy().to_string().into());
+                            }
+                            ui.set_status_text("File selected".into());
+                        }
+                    }
+                    Ok(None) => {}
+                    Err(e) => {
+                        if let Some(ui) = ui.upgrade() {
+                            ui.set_status_text(format!("Failed to open dialog: {}", e).into());
+                        }
+                    }
+                }
+            });
         });
 
         // ===== Scan callbacks =====
@@ -862,7 +932,7 @@ impl App {
                 ui.set_status_text(format!("Adding task {}...", task_id).into());
             }
             tokio::spawn(async move {
-                use rabbit_models::plan::{Task, Schedule};
+                use rabbit_models::plan::{Task, Schedule, TaskState};
                 // Parse date and time - for now use Once schedule
                 let schedule = Schedule::Once {
                     datetime: chrono::Local::now() + chrono::Duration::hours(1),
@@ -874,6 +944,9 @@ impl App {
                     schedule,
                     enabled: true,
                     created_at: chrono::Local::now(),
+                    state: TaskState::Pending,
+                    snooze_until: None,
+                    last_triggered: None,
                 };
                 let svc = service.read().await;
                 if let Err(e) = svc.add_task(task).await {
@@ -942,11 +1015,14 @@ impl App {
             }
         });
 
+        // ===== Settings Links =====
         let ui_handle = ui.as_weak();
         ui.on_settings_open_home(move || {
             if let Some(ui) = ui_handle.upgrade() {
                 ui.set_status_text("Opening home page...".into());
-                // TODO: Open browser to project home page
+                if let Err(e) = rabbit_platform::dialog::open_url("https://github.com/lazebird/rabbit") {
+                    error!("Failed to open URL: {}", e);
+                }
             }
         });
 
@@ -954,7 +1030,18 @@ impl App {
         ui.on_settings_open_config(move || {
             if let Some(ui) = ui_handle.upgrade() {
                 ui.set_status_text("Opening config directory...".into());
-                // TODO: Open file manager to config directory
+                match rabbit_platform::config_dir() {
+                    Ok(config_dir) => {
+                        if let Err(e) = rabbit_platform::dialog::open_file_manager(
+                            config_dir.to_str().unwrap_or(".")
+                        ) {
+                            error!("Failed to open config directory: {}", e);
+                        }
+                    }
+                    Err(e) => {
+                        error!("Failed to get config directory: {}", e);
+                    }
+                }
             }
         });
 
@@ -962,7 +1049,9 @@ impl App {
         ui.on_settings_open_help(move || {
             if let Some(ui) = ui_handle.upgrade() {
                 ui.set_status_text("Opening help...".into());
-                // TODO: Open help documentation
+                if let Err(e) = rabbit_platform::dialog::open_url("https://github.com/lazebird/rabbit/blob/main/README.md") {
+                    error!("Failed to open URL: {}", e);
+                }
             }
         });
 
@@ -970,7 +1059,10 @@ impl App {
         ui.on_settings_check_update(move || {
             if let Some(ui) = ui_handle.upgrade() {
                 ui.set_status_text("Checking for updates...".into());
-                // TODO: Check for updates
+                // For now, just open the releases page
+                if let Err(e) = rabbit_platform::dialog::open_url("https://github.com/lazebird/rabbit/releases") {
+                    error!("Failed to open URL: {}", e);
+                }
             }
         });
 

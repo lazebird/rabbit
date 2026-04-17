@@ -203,15 +203,31 @@ impl PingService {
         results: &Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
         sequence: &Arc<AtomicU16>,
     ) {
-        let targets = targets.read().await.clone();
+        let targets_snapshot = targets.read().await.clone();
+        let mut targets_to_remove = Vec::new();
 
-        for target in targets {
+        for target in &targets_snapshot {
             let seq = sequence.fetch_add(1, Ordering::SeqCst);
-            let result = Self::do_ping(client, &target, seq).await;
+            let result = Self::do_ping(client, target, seq).await;
+            let success = result.success;
+
             results.write().await
                 .entry(target.address.clone())
                 .or_insert_with(Vec::new)
                 .push(result);
+
+            // Check stop_on_loss: if enabled and ping failed, mark target for removal
+            if target.stop_on_loss && !success {
+                targets_to_remove.push(target.address.clone());
+            }
+        }
+
+        // Remove targets that triggered stop_on_loss
+        if !targets_to_remove.is_empty() {
+            let mut targets_guard = targets.write().await;
+            for addr in targets_to_remove {
+                targets_guard.retain(|t| t.address != addr);
+            }
         }
     }
 
