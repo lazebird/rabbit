@@ -34,6 +34,7 @@ async-tftp = { workspace = true }
 
 # Ping
 surge-ping = { workspace = true }
+socket2 = "0.6"
 
 [dev-dependencies]
 tokio-test = "0.4"

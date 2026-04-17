@@ -27,7 +27,6 @@ serde_json = { workspace = true }
 chrono = { workspace = true }
 
 # UI Framework
-slint = { workspace = true }
-
-[build-dependencies]
-slint-build = "1.10"
+fltk = { workspace = true }
+async-trait = "0.1"
+uuid = { version = "1.0", features = ["v4"] }

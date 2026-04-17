@@ -3,6 +3,7 @@
 use crate::{Result, ServiceError};
 use rabbit_models::ping::{PingResult, PingState, PingSummary, PingTarget};
 use rand::random;
+use socket2::Type;
 use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicU16, Ordering};
@@ -46,12 +47,24 @@ impl PingService {
 
     /// Initialize the service
     pub async fn init(&mut self) -> Result<()> {
-        // Create ping client
-        let config = Config::default();
-        let client = Client::new(&config)
-            .map_err(|e| ServiceError::Other(format!("Failed to create ping client: {}", e)))?;
+        // Try to create ping client with RAW socket type to get TTL on Linux
+        // RAW socket requires root/CAP_NET_RAW, so fallback to DGRAM if it fails
+        let config = Config::builder()
+            .sock_type_hint(Type::RAW)
+            .build();
+        let client = match Client::new(&config) {
+            Ok(client) => {
+                info!("Ping service initialized with RAW socket (TTL available)");
+                client
+            }
+            Err(e) => {
+                info!("RAW socket failed ({}), falling back to DGRAM socket", e);
+                let config = Config::default();
+                Client::new(&config)
+                    .map_err(|e| ServiceError::Other(format!("Failed to create ping client: {}", e)))?
+            }
+        };
         self.client = Some(Arc::new(client));
-        info!("Ping service initialized");
         Ok(())
     }
 

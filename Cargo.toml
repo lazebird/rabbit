@@ -42,7 +42,7 @@ chrono = { version = "0.4", features = ["serde"] }
 rand = "0.9"
 
 # UI Framework
-slint = "1.10"
+fltk = "1.5"
 
 # HTTP Server
 axum = { version = "0.8", features = ["multipart"] }

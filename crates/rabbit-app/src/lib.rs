@@ -5,12 +5,10 @@
 pub mod app;
 pub mod ui;
 pub mod view_model;
+pub mod ui_events;
+pub mod ui_state;
 
 pub use app::App;
 pub use view_model::*;
-
-// Include Slint UI
-slint::include_modules!();
-
-// Re-export ComponentHandle for run() method
-pub use slint::ComponentHandle;
+pub use ui_events::{UiEvent, send_event, init_event_system};
+pub use ui_state::{UiState, append_ping_output, set_ping_stats, append_scan_output, append_http_log, append_tftpd_log, append_chat_message};

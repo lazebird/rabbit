@@ -1,0 +1,36 @@
+//! UI Components Module
+//!
+//! This module contains FLTK UI components organized by tab.
+//! Each tab is implemented in its own file for better maintainability.
+
+pub mod styles;
+pub mod defaults;
+pub mod ping_tab;
+pub mod scan_tab;
+pub mod http_tab;
+pub mod tftpd_tab;
+pub mod tftpc_tab;
+pub mod plan_tab;
+pub mod chat_tab;
+pub mod settings_tab;
+
+pub use styles::{Colors, Spacing, format_ping_stats, format_ping_result, format_bytes};
+pub use defaults::*;
+pub use ping_tab::PingTab;
+pub use scan_tab::ScanTab;
+pub use http_tab::HttpTab;
+pub use tftpd_tab::TftpdTab;
+pub use tftpc_tab::TftpcTab;
+pub use plan_tab::PlanTab;
+pub use chat_tab::ChatTab;
+pub use settings_tab::SettingsTab;
+
+use fltk::group::Flex;
+
+/// Trait for tab components
+pub trait TabComponent {
+    /// Build the tab UI and return the container
+    /// x, y, w, h are the position and size within the parent Tabs widget
+    /// The label will be used as the tab title
+    fn build(x: i32, y: i32, w: i32, h: i32) -> Flex;
+}

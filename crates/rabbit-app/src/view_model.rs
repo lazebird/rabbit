@@ -9,8 +9,11 @@ use std::collections::HashMap;
 pub struct AppViewModel {
     config: AppConfig,
     ping_results: HashMap<String, PingSummary>,
+    ping_running: bool,
     http_running: bool,
     tftp_server_running: bool,
+    chat_running: bool,
+    scan_running: bool,
     chat_messages: Vec<ChatMessageView>,
     scan_results: Vec<ScanResultView>,
 }
@@ -20,8 +23,11 @@ impl AppViewModel {
         Self {
             config,
             ping_results: HashMap::new(),
+            ping_running: false,
             http_running: false,
             tftp_server_running: false,
+            chat_running: false,
+            scan_running: false,
             chat_messages: Vec::new(),
             scan_results: Vec::new(),
         }
@@ -41,6 +47,14 @@ impl AppViewModel {
     }
 
     // Ping
+    pub fn is_ping_running(&self) -> bool {
+        self.ping_running
+    }
+
+    pub fn set_ping_running(&mut self, running: bool) {
+        self.ping_running = running;
+    }
+
     pub fn get_ping_result(&self, target: &str) -> Option<&PingSummary> {
         self.ping_results.get(target)
     }
@@ -81,12 +95,29 @@ impl AppViewModel {
     }
 
     // Scan
+    pub fn is_scan_running(&self) -> bool {
+        self.scan_running
+    }
+
+    pub fn set_scan_running(&mut self, running: bool) {
+        self.scan_running = running;
+    }
+
     pub fn get_scan_results(&self) -> &[ScanResultView] {
         &self.scan_results
     }
 
     pub fn update_scan_results(&mut self, results: Vec<ScanResultView>) {
         self.scan_results = results;
+    }
+
+    // Chat
+    pub fn is_chat_running(&self) -> bool {
+        self.chat_running
+    }
+
+    pub fn set_chat_running(&mut self, running: bool) {
+        self.chat_running = running;
     }
 }
 

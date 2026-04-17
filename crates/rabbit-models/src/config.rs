@@ -222,8 +222,8 @@ impl Default for TftpcConfig {
         Self {
             server_addr: String::from("127.0.0.1"),
             server_port: 69,
-            local_path: String::from("C:\\Users\\liulang\\Desktop\\logo.png"),
-            remote_file: String::from("logo.png"),
+            local_path: String::new(),  // Empty - UI should set appropriate default
+            remote_file: String::new(), // Empty - UI should set appropriate default
             timeout: 200,
             maxretry: 10,
             blksize: 1024,
@@ -255,11 +255,11 @@ pub struct PlanConfig {
 impl Default for PlanConfig {
     fn default() -> Self {
         Self {
-            date: String::from("2019/6/26"),
-            time: String::from("11:53"),
+            date: String::new(),  // Empty - UI should set current date
+            time: String::new(),  // Empty - UI should set current time
             cycle: 0,
             unit: String::from("minutes"),
-            msg: String::from("Have a rest!"),
+            msg: String::new(),   // Empty - user should enter
             override_conflicts: false,
         }
     }
@@ -362,15 +362,18 @@ mod tests {
         assert_eq!(config.server_addr, "127.0.0.1");
         assert_eq!(config.server_port, 69);
         assert_eq!(config.blksize, 1024);
+        assert!(config.local_path.is_empty()); // UI should set platform-appropriate default
+        assert!(config.remote_file.is_empty());
     }
 
     #[test]
     fn test_plan_config_default() {
         let config = PlanConfig::default();
-        assert_eq!(config.date, "2019/6/26");
-        assert_eq!(config.time, "11:53");
+        assert!(config.date.is_empty()); // UI should set current date
+        assert!(config.time.is_empty()); // UI should set current time
         assert_eq!(config.unit, "minutes");
-        assert_eq!(config.msg, "Have a rest!");
+        assert!(config.msg.is_empty()); // User should enter
+        assert!(!config.override_conflicts);
     }
 
     #[test]

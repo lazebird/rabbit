@@ -37,6 +37,8 @@ fn test_ping_result_serialization() {
         seq: 1,
         success: true,
         duration_ms: Some(15.5),
+        ttl: Some(64),
+        bytes: 64,
         error: None,
     };
 
@@ -238,6 +240,9 @@ fn test_task_creation() {
         },
         enabled: true,
         created_at: chrono::Local::now(),
+        state: rabbit_models::plan::TaskState::Pending,
+        snooze_until: None,
+        last_triggered: None,
     };
 
     assert_eq!(task.id, "task-1");
