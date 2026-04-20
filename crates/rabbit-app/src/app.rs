@@ -210,52 +210,7 @@ impl App {
                 std::thread::sleep(std::time::Duration::from_secs(2));
 
                 crate::ui_state::append_settings_output("Checking for updates...");
-
-                match check_version_update() {
-                    upgrade::UpdateStatus::UpdateAvailable(remote, platform_info) => {
-                        info!("Update available: {}", remote.version);
-                        crate::ui_state::append_settings_output(&format!(
-                            "Update available: {} (released: {})",
-                            remote.version, remote.release_date
-                        ));
-                        if !remote.release_notes.is_empty() {
-                            crate::ui_state::append_settings_output(&format!("  {}", remote.release_notes.replace('\n', "\n  ")));
-                        }
-                        let prompt = remote.format_prompt();
-                        let remote_clone = remote.clone();
-                        let platform_clone = platform_info.clone();
-                        // Show dialog on main thread
-                        fltk::app::awake_callback(move || {
-                            let choice = fltk::dialog::choice2_default(
-                                &prompt,
-                                "Update",
-                                "Later",
-                                "Skip This Version",
-                            );
-                            if choice == Some(0) {
-                                // Update - spawn thread to download and install
-                                let remote = remote_clone.clone();
-                                let platform_info = platform_clone.clone();
-                                std::thread::spawn(move || {
-                                    crate::ui_state::append_settings_output(&format!("Downloading version {}...", remote.version));
-                                    perform_startup_upgrade(&remote, &platform_info);
-                                });
-                            } else if choice == Some(1) {
-                                crate::ui_state::append_settings_output("Update deferred");
-                            } else if choice == Some(2) {
-                                crate::ui_state::append_settings_output(&format!("Version {} skipped", remote.version));
-                            }
-                        });
-                    }
-                    upgrade::UpdateStatus::UpToDate => {
-                        info!("Application is up to date");
-                        crate::ui_state::append_settings_output("Application is up to date");
-                    }
-                    upgrade::UpdateStatus::CheckError(e) => {
-                        warn!("Failed to check for updates: {}", e);
-                        crate::ui_state::append_settings_output(&format!("Update check failed: {}", e));
-                    }
-                }
+                handle_version_check_result();
             });
         }
 
@@ -350,6 +305,8 @@ impl App {
 fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformInfo) {
     use crate::upgrade::{self, DownloadProgress};
 
+    info!("Starting upgrade download for version: {}", remote.version);
+
     // Create temporary download path
     let temp_dir = if cfg!(target_os = "windows") {
         std::env::temp_dir().join("rabbit_update")
@@ -361,6 +318,8 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
 
     let temp_exe = temp_dir.join(format!("rabbit-{}", remote.version));
 
+    crate::ui_state::append_settings_output(&format!("Downloading: {:.1} MB", platform_info.size as f64 / 1024.0 / 1024.0));
+
     // Download with progress
     let result = upgrade::download_update(
         platform_info,
@@ -370,12 +329,14 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
             let downloaded_mb = progress.downloaded as f64 / 1024.0 / 1024.0;
             let total_mb = progress.total as f64 / 1024.0 / 1024.0;
             info!("Downloading: {:.1} MB / {:.1} MB ({:.0}%)", downloaded_mb, total_mb, pct);
+            crate::ui_state::append_settings_output(&format!("  {:.0}% - {:.1} MB / {:.1} MB", pct, downloaded_mb, total_mb));
         }),
     );
 
     match result {
         Ok(_) => {
             info!("Download complete. Verifying and installing...");
+            crate::ui_state::append_settings_output("Download complete. Verifying and installing...");
             // Install (includes verification)
             match upgrade::install_update(&temp_exe, &platform_info.sha256) {
                 Ok(_) => {
@@ -383,12 +344,67 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
                 }
                 Err(e) => {
                     error!("Installation failed: {}", e);
+                    crate::ui_state::append_settings_output(&format!("Installation failed: {}", e));
                 }
             }
         }
         Err(e) => {
             error!("Download failed: {}", e);
+            crate::ui_state::append_settings_output(&format!("Download failed: {}", e));
         }
+    }
+}
+
+/// Handle version check result and show dialog (reused by both auto-check and manual check)
+pub fn handle_version_check_result() {
+    match check_version_update() {
+        upgrade::UpdateStatus::UpdateAvailable(remote, platform_info) => {
+            info!("Update available: {}", remote.version);
+            // Use format_prompt for consistent display
+            let msg = remote.format_prompt();
+            crate::ui_state::append_settings_output(&msg);
+            crate::ui_state::append_settings_output("");
+            
+            // Show dialog on main thread
+            let remote_clone = remote.clone();
+            let platform_clone = platform_info.clone();
+            fltk::app::awake_callback(move || {
+                show_upgrade_dialog(&remote_clone, &platform_clone);
+            });
+        }
+        upgrade::UpdateStatus::UpToDate => {
+            info!("Application is up to date");
+            crate::ui_state::append_settings_output("Application is up to date");
+        }
+        upgrade::UpdateStatus::CheckError(e) => {
+            warn!("Failed to check for updates: {}", e);
+            crate::ui_state::append_settings_output(&format!("Update check failed: {}", e));
+        }
+    }
+}
+
+/// Show upgrade dialog and handle user choice (reused by both auto-check and manual check)
+fn show_upgrade_dialog(remote: &VersionsManifest, platform_info: &PlatformInfo) {
+    let prompt = remote.format_prompt();
+    let choice = fltk::dialog::choice2_default(
+        &prompt,
+        "Update",
+        "Later",
+        "Skip This Version",
+    );
+    
+    if choice == Some(0) {
+        crate::ui_state::append_settings_output("Downloading and installing update...");
+        // Spawn background thread for download/install to avoid blocking UI
+        let remote = remote.clone();
+        let platform_info = platform_info.clone();
+        std::thread::spawn(move || {
+            perform_startup_upgrade(&remote, &platform_info);
+        });
+    } else if choice == Some(1) {
+        crate::ui_state::append_settings_output("Update deferred");
+    } else if choice == Some(2) {
+        crate::ui_state::append_settings_output(&format!("Version {} skipped", remote.version));
     }
 }
 

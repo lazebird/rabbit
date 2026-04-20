@@ -119,9 +119,20 @@ get_output_filename() {
 # Build Functions
 # ============================================================
 
+update_cargo_version() {
+    local version=$1
+    log_info "Updating Cargo.toml version to ${version}..." >&2
+
+    # Update version in root Cargo.toml (workspace)
+    sed -i "s/^version = \".*\"/version = \"${version}\"/" "${SCRIPT_DIR}/Cargo.toml"
+}
+
 build_release() {
     local version=$1
     log_info "Building release version ${version}..." >&2
+
+    # Update Cargo.toml version first
+    update_cargo_version "${version}"
 
     # Build release binary
     log_info "Running cargo build --release..." >&2

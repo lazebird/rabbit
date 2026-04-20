@@ -15,7 +15,7 @@ use fltk::{
 };
 
 use crate::ui_events::{UiEvent, send_event};
-use crate::upgrade::{self, DownloadProgress, VersionsManifest, PlatformInfo};
+use crate::upgrade::{self, VersionsManifest, PlatformInfo};
 use crate::ui_state::{set_settings_output, append_settings_output};
 use super::{TabComponent, Colors, Spacing};
 
@@ -109,60 +109,6 @@ fn get_config_folder() -> String {
         return config_dir.join("rabbit").to_string_lossy().to_string();
     }
     String::from(".")
-}
-
-/// Perform upgrade: download, verify, and install
-fn perform_upgrade(
-    remote: &VersionsManifest,
-    platform_info: &PlatformInfo,
-    _output: &TextDisplay,
-) {
-    append_settings_output(&format!("Downloading version {}...", remote.version));
-
-    // Create temporary download path
-    let temp_dir = if cfg!(target_os = "windows") {
-        std::env::temp_dir().join("rabbit_update")
-    } else {
-        std::path::PathBuf::from("/tmp/rabbit_update")
-    };
-
-    let _ = std::fs::create_dir_all(&temp_dir);
-
-    let temp_exe = temp_dir.join(format!("rabbit-{}", remote.version));
-
-    // Download with progress
-    let result = upgrade::download_update(
-        platform_info,
-        &temp_exe,
-        Some(&|progress: DownloadProgress| {
-            let pct = progress.percentage;
-            let downloaded_mb = progress.downloaded as f64 / 1024.0 / 1024.0;
-            let total_mb = progress.total as f64 / 1024.0 / 1024.0;
-            append_settings_output(&format!(
-                "  Downloading: {:.1} MB / {:.1} MB ({:.0}%)",
-                downloaded_mb, total_mb, pct
-            ));
-        }),
-    );
-
-    match result {
-        Ok(_) => {
-            append_settings_output("Download complete. Verifying and installing...");
-
-            // Install (includes verification)
-            match upgrade::install_update(&temp_exe, &platform_info.sha256) {
-                Ok(_) => {
-                    // install_update calls std::process::exit(), so we won't reach here
-                }
-                Err(e) => {
-                    append_settings_output(&format!("Installation failed: {}", e));
-                }
-            }
-        }
-        Err(e) => {
-            append_settings_output(&format!("Download failed: {}", e));
-        }
-    }
 }
 
 // ============================================================
@@ -297,52 +243,8 @@ impl TabComponent for SettingsTab {
                 append_settings_output("");
                 append_settings_output("Checking for updates...");
 
-                let out = output_clone.clone();
-                std::thread::spawn(move || {
-                    let result = check_version_update();
-                    match result {
-                        upgrade::UpdateStatus::UpdateAvailable(remote, platform_info) => {
-                            append_settings_output(&format!(
-                                "Update available: {}  ({})",
-                                remote.version, remote.release_date
-                            ));
-                            if !remote.release_notes.is_empty() {
-                                append_settings_output(&format!("  {}", remote.release_notes.replace('\n', "\n  ")));
-                            }
-                            if let Some(info) = remote.for_current_platform() {
-                                append_settings_output(&format!("  Size: {:.1} MB", info.size as f64 / 1024.0 / 1024.0));
-                            }
-                            append_settings_output("");
-
-                            // Show upgrade confirmation dialog
-                            let prompt = remote.format_prompt();
-                            let remote_clone = remote.clone();
-                            let platform_clone = platform_info.clone();
-                            fltk::app::awake_callback(move || {
-                                let choice = fltk::dialog::choice2_default(
-                                    &prompt,
-                                    "Update",
-                                    "Later",
-                                    "Skip This Version",
-                                );
-                                if choice == Some(0) {
-                                    append_settings_output("Downloading and installing update...");
-                                    // Update - download and install
-                                    perform_upgrade(&remote_clone, &platform_clone, &out);
-                                } else if choice == Some(1) {
-                                    append_settings_output("Update deferred");
-                                } else if choice == Some(2) {
-                                    append_settings_output(&format!("Version {} skipped", remote_clone.version));
-                                }
-                            });
-                        }
-                        upgrade::UpdateStatus::UpToDate => {
-                            append_settings_output("You are on the latest version.");
-                        }
-                        upgrade::UpdateStatus::CheckError(e) => {
-                            append_settings_output(&format!("Update check failed: {}", e));
-                        }
-                    }
+                std::thread::spawn(|| {
+                    crate::app::handle_version_check_result();
                 });
                 true
             } else {

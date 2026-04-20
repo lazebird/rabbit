@@ -60,7 +60,7 @@ impl UiState {
             plan_list: String::new(),
             chat_messages: String::new(),
             chat_users: String::new(),
-            settings_output: String::from("Ready"),
+            settings_output: String::new(),
             updated: HashMap::new(),
         }
     }

@@ -57,11 +57,16 @@ impl VersionsManifest {
         s
     }
 
-    /// Format for dialog prompt
+    /// Format for dialog prompt (matches log output format)
     pub fn format_prompt(&self) -> String {
-        let mut s = format!("New version {} available!\nReleased: {}", self.version, self.release_date);
-        if !self.release_notes.is_empty() {
-            s.push_str(&format!("\n\n{}", self.release_notes));
+        let mut s = format!("Update available: {} ({})", self.version, self.release_date);
+        if let Some(info) = self.for_current_platform() {
+            s.push_str(&format!(", {:.1} MB", info.size as f64 / 1024.0 / 1024.0));
+        }
+        // Add release notes
+        let notes = self.release_notes.trim();
+        if !notes.is_empty() {
+            s.push_str(&format!("\n\n{}", notes));
         }
         s
     }
