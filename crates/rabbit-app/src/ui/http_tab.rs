@@ -92,10 +92,10 @@ impl TabComponent for HttpTab {
         let port_input_clone = port_input.clone();
         let opt_input_clone = opt_input.clone();
         let shell_check_clone = shell_check.clone();
-        let mut toggle_btn_clone = toggle_btn.clone();
+        let toggle_btn_clone = toggle_btn.clone();
         let mut log_display_clone = log_display.clone();
 
-        // Toggle button callback
+        // Toggle button callback - send event, let refresh loop update button based on actual state
         toggle_btn.set_callback(move |_| {
             let label = toggle_btn_clone.label();
             let port = port_input_clone.value().parse::<u16>().unwrap_or(8000);
@@ -105,7 +105,7 @@ impl TabComponent for HttpTab {
             if label == "Start" {
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
-                        s.http_log = format!("Starting HTTP server on port {}...\n", port);
+                        s.http_log = format!("Starting HTTP server on port {}...\r\n", port);
                         s.updated.insert("http_log".to_string(), true);
                     }
                 }

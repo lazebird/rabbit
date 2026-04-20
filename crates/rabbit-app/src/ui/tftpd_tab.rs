@@ -6,6 +6,7 @@
 //! - Transfer log at bottom
 
 use fltk::{
+    browser::Browser,
     button::Button,
     frame::Frame,
     group::Flex,
@@ -63,11 +64,12 @@ impl TabComponent for TftpdTab {
         ctrl_row.end();
         grp.fixed(&ctrl_row, 28);
 
-        // Directory list area - fills most space
-        let mut dir_display = TextDisplay::default();
-        let dir_buf = TextBuffer::default();
-        dir_display.set_buffer(Some(dir_buf));
-        dir_display.wrap_mode(WrapMode::AtBounds, 0);
+        // Directory list area - using Browser for proper selection
+        let mut dir_browser = Browser::default();
+        dir_browser.set_color(colors.input_bg);
+        dir_browser.set_text_size(14);
+        dir_browser.set_type(fltk::browser::BrowserType::Hold);
+        dir_browser.set_selection_color(fltk::enums::Color::from_hex(0x4A90D9));
 
         // Transfer log at bottom
         let mut log_display = TextDisplay::default();
@@ -79,13 +81,11 @@ impl TabComponent for TftpdTab {
 
         // Apply styling
         grp.set_color(colors.background);
-        dir_display.set_color(colors.input_bg);
-        dir_display.set_text_color(colors.text);
         log_display.set_color(colors.input_bg);
         log_display.set_text_color(colors.text);
 
         // Set initial content from global state
-        Self::refresh_dirs(&mut dir_display);
+        Self::refresh_dirs(&mut dir_browser);
         Self::refresh_log(&mut log_display);
 
         // Clone inputs for callbacks
@@ -93,7 +93,8 @@ impl TabComponent for TftpdTab {
         let mut toggle_btn_clone = toggle_btn.clone();
         let colors_clone = colors.clone();
         let mut log_display_clone = log_display.clone();
-        let mut dir_display_clone = dir_display.clone();
+        let mut dir_browser_add = dir_browser.clone();
+        let mut dir_browser_remove = dir_browser.clone();
 
         // Add button callbacks
         add_btn.set_callback(move |_| {
@@ -104,19 +105,27 @@ impl TabComponent for TftpdTab {
             if let Some(path) = dialog.filename().to_str() {
                 if !path.is_empty() {
                     crate::ui_state::add_tftpd_dir(path);
-                    crate::ui_state::append_tftpd_log(&format!("Added directory: {}", path));
-                    Self::refresh_dirs(&mut dir_display_clone);
+                    crate::ui_state::append_tftpd_log(&format!("Added directory: {}\r\n", path));
+                    Self::refresh_dirs(&mut dir_browser_add);
                 }
             }
         });
 
+        // Remove button - uses Browser selection
         remove_btn.set_callback(move |_| {
-            let remove_path = fltk::dialog::input_default("Enter directory path to remove:", "");
-            if let Some(path) = remove_path {
-                let path = path.trim();
-                if !path.is_empty() {
-                    crate::ui_state::remove_tftpd_dir(path);
-                    crate::ui_state::append_tftpd_log(&format!("Removed directory: {}", path));
+            let selected_idx = dir_browser_remove.value();
+            if selected_idx <= 0 {
+                // No selection or invalid index
+                return;
+            }
+
+            // Get the selected directory path (index is 1-based)
+            if let Some(text) = dir_browser_remove.text(selected_idx) {
+                let remove_path = text.trim().to_string();
+                if !remove_path.is_empty() {
+                    crate::ui_state::remove_tftpd_dir(&remove_path);
+                    crate::ui_state::append_tftpd_log(&format!("Removed directory: {}\r\n", remove_path));
+                    Self::refresh_dirs(&mut dir_browser_remove);
                 }
             }
         });
@@ -144,25 +153,25 @@ impl TabComponent for TftpdTab {
         });
 
         // Register displays with centralized refresh manager
-        super::ui_refresh::register_display("tftpd_dirs", dir_display.clone());
         super::ui_refresh::register_display("tftpd_log", log_display.clone());
+        super::ui_refresh::register_browser("tftpd_dirs", dir_browser.clone());
 
         grp
     }
 }
 
 impl TftpdTab {
-    /// Called once during button callback for immediate update.
-    fn refresh_dirs(display: &mut TextDisplay) {
+    /// Refresh directory list in the Browser widget.
+    fn refresh_dirs(browser: &mut Browser) {
         if let Some(state) = crate::ui_state::UiState::global() {
             if let Ok(s) = state.lock() {
-                let dirs_text = if s.tftpd_dirs.is_empty() {
-                    "(no directories added)\n".to_string()
+                browser.clear();
+                if s.tftpd_dirs.is_empty() {
+                    browser.add("(no directories added)");
                 } else {
-                    s.tftpd_dirs.join("\n") + "\n"
-                };
-                if let Some(mut buf) = display.buffer() {
-                    buf.set_text(&dirs_text);
+                    for dir in &s.tftpd_dirs {
+                        browser.add(dir);
+                    }
                 }
             }
         }

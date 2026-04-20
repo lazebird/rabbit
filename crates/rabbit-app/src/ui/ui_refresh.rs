@@ -3,15 +3,20 @@
 //! Replaces per-tab `add_idle3` busy-loops with a single 100ms timeout callback.
 //! This reduces CPU usage from ~100% (busy-waiting every frame) to near-idle.
 
-use fltk::{prelude::*, text::TextDisplay};
+use fltk::{prelude::*, text::TextDisplay, browser::Browser};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
 type DisplayStore = RefCell<HashMap<&'static str, TextDisplay>>;
+type BrowserStore = RefCell<HashMap<&'static str, Browser>>;
 
 /// Global storage for text display widgets.
 /// SAFETY: Only accessed from the main FLTK thread.
 static mut DISPLAYS: Option<DisplayStore> = None;
+
+/// Global storage for browser widgets.
+/// SAFETY: Only accessed from the main FLTK thread.
+static mut BROWSERS: Option<BrowserStore> = None;
 
 /// Register a text display widget for centralized refresh management.
 pub fn register_display(key: &'static str, display: TextDisplay) {
@@ -19,6 +24,15 @@ pub fn register_display(key: &'static str, display: TextDisplay) {
         DISPLAYS.get_or_insert_with(|| RefCell::new(HashMap::new()))
             .borrow_mut()
             .insert(key, display);
+    }
+}
+
+/// Register a browser widget for centralized refresh management.
+pub fn register_browser(key: &'static str, browser: Browser) {
+    unsafe {
+        BROWSERS.get_or_insert_with(|| RefCell::new(HashMap::new()))
+            .borrow_mut()
+            .insert(key, browser);
     }
 }
 
@@ -31,6 +45,17 @@ pub fn register_http_button(btn: fltk::button::Button, accent: fltk::enums::Colo
     unsafe {
         HTTP_BTN = Some(btn);
         HTTP_ACCENT = accent;
+    }
+}
+
+/// Register the Scan toggle button for centralized state sync.
+static mut SCAN_BTN: Option<fltk::button::Button> = None;
+static mut SCAN_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+
+pub fn register_scan_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
+    unsafe {
+        SCAN_BTN = Some(btn);
+        SCAN_ACCENT = accent;
     }
 }
 
@@ -78,6 +103,7 @@ fn do_refresh() {
         check!("ping_output");
         check!("ping_stats");
         check!("scan_output");
+        check!("scan_running");
         check!("http_log");
         check!("http_running");
         check!("tftpd_log");
@@ -117,21 +143,27 @@ fn do_refresh() {
         let http_updated = s.is_updated("http_running");
         if http_updated { s.clear_updated("http_running"); }
         let http_running = s.http_running;
+
+        let scan_updated = s.is_updated("scan_running");
+        if scan_updated { s.clear_updated("scan_running"); }
+        let scan_running = s.scan_running;
+
         drop(s);
-        (data, if http_updated { Some(http_running) } else { None })
+        (data, if http_updated { Some(http_running) } else { None }, if scan_updated { Some(scan_running) } else { None })
     };
 
     // Phase 2: Update displays without holding the lock
     let Some(store) = (unsafe { DISPLAYS.as_ref() }) else { return };
     let mut map = store.borrow_mut();
 
-    for (key, value) in snapshot.0 {
-        if key == "http_running" { continue; }
+    for (key, value) in &snapshot.0 {
+        if *key == "http_running" { continue; }
+        if *key == "tftpd_dirs" { continue; } // Handle browsers separately
         let Some(display) = map.get_mut(key) else { continue };
         if let Some(mut buf) = display.buffer() {
-            buf.set_text(&value);
+            buf.set_text(value);
             // Auto-scroll for log-type displays
-            if matches!(key, "ping_output" | "scan_output" | "http_log"
+            if matches!(*key, "ping_output" | "scan_output" | "http_log"
                               | "tftpd_log" | "tftpc_log" | "plan_list" | "chat_messages") {
                 let lines = buf.count_lines(0, buf.length());
                 display.scroll(lines, 0);
@@ -140,7 +172,28 @@ fn do_refresh() {
     }
     drop(map);
 
-    // Phase 3: Sync HTTP button state (only when explicitly updated)
+    // Update browsers (tftpd_dirs)
+    if let Some(browser_store) = unsafe { BROWSERS.as_ref() } {
+        let mut browser_map = browser_store.borrow_mut();
+        for (key, value) in &snapshot.0 {
+            if *key == "tftpd_dirs" {
+                if let Some(browser) = browser_map.get_mut("tftpd_dirs") {
+                    browser.clear();
+                    for line in value.lines() {
+                        if !line.is_empty() {
+                            browser.add(line);
+                        }
+                    }
+                    if browser.size() == 0 {
+                        browser.add("(no directories added)");
+                    }
+                }
+            }
+        }
+    }
+
+    // Phase 3: Sync button states (only when explicitly updated)
+    // HTTP button
     if let Some(running) = snapshot.1 {
         if let Some(btn) = unsafe { HTTP_BTN.as_mut() } {
             if running {
@@ -149,6 +202,19 @@ fn do_refresh() {
             } else {
                 btn.set_label("Start");
                 btn.set_color(unsafe { HTTP_ACCENT });
+            }
+            btn.redraw();
+        }
+    }
+    // Scan button
+    if let Some(running) = snapshot.2 {
+        if let Some(btn) = unsafe { SCAN_BTN.as_mut() } {
+            if running {
+                btn.set_label("Stop");
+                btn.set_color(fltk::enums::Color::from_hex(HTTP_STOP_COLOR));
+            } else {
+                btn.set_label("Start");
+                btn.set_color(unsafe { SCAN_ACCENT });
             }
             btn.redraw();
         }

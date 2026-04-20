@@ -11,6 +11,7 @@ pub struct AppConfig {
     pub top: bool,
     pub autostart: bool,
     pub autoupdate: bool,
+    pub last_active_tab: usize,
     pub modules: ModuleConfigs,
 }
 
@@ -23,6 +24,7 @@ impl Default for AppConfig {
             top: false,
             autostart: false,
             autoupdate: true,
+            last_active_tab: 0,
             modules: ModuleConfigs::default(),
         }
     }

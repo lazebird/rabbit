@@ -27,6 +27,7 @@ pub struct ScanResult {
     pub ip: Ipv4Addr,
     pub online: bool,
     pub hostname: Option<String>,
+    pub mac_address: Option<String>,
     pub response_time_ms: Option<f64>,
     pub open_ports: Vec<u16>,
 }
@@ -42,8 +43,8 @@ pub struct ScannerConfig {
 impl Default for ScannerConfig {
     fn default() -> Self {
         Self {
-            timeout_ms: 2000,
-            concurrent: 100,
+            timeout_ms: 1500,
+            concurrent: 256,
             retry_count: 1,
         }
     }

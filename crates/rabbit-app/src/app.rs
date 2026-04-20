@@ -28,6 +28,7 @@ pub struct App {
     chat_service: Arc<RwLock<ChatService>>,
     scan_service: Arc<RwLock<ScanService>>,
     ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
+    scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
 }
 
 impl App {
@@ -101,6 +102,7 @@ impl App {
             chat_service: Arc::new(RwLock::new(chat_service)),
             scan_service: Arc::new(RwLock::new(scan_service)),
             ping_task: Arc::new(RwLock::new(None)),
+            scan_task: Arc::new(RwLock::new(None)),
         })
     }
 
@@ -130,16 +132,59 @@ impl App {
         let mut tabs = Tabs::new(5, 5, 740, 510, "");
 
         // Build each tab - y=25 leaves room for tab labels at top
-        let _ping_tab = PingTab::build(5, 30, 730, 475);
-        let _scan_tab = ScanTab::build(5, 30, 730, 475);
-        let _http_tab = HttpTab::build(5, 30, 730, 475);
-        let _tftpd_tab = TftpdTab::build(5, 30, 730, 475);
-        let _tftpc_tab = TftpcTab::build(5, 30, 730, 475);
-        let _plan_tab = PlanTab::build(5, 30, 730, 475);
-        let _chat_tab = ChatTab::build(5, 30, 730, 475);
-        let _settings_tab = SettingsTab::build(5, 30, 730, 475);
+        let ping_tab = PingTab::build(5, 30, 730, 475);
+        let scan_tab = ScanTab::build(5, 30, 730, 475);
+        let http_tab = HttpTab::build(5, 30, 730, 475);
+        let tftpd_tab = TftpdTab::build(5, 30, 730, 475);
+        let tftpc_tab = TftpcTab::build(5, 30, 730, 475);
+        let plan_tab = PlanTab::build(5, 30, 730, 475);
+        let chat_tab = ChatTab::build(5, 30, 730, 475);
+        let settings_tab = SettingsTab::build(5, 30, 730, 475);
 
         tabs.end();
+
+        // Restore last active tab from config
+        let config = self.view_model.read().await.get_config();
+        let last_tab = config.last_active_tab;
+        drop(config);
+        let tab_ptrs: Vec<usize> = vec![
+            ping_tab.as_widget_ptr() as usize,
+            scan_tab.as_widget_ptr() as usize,
+            http_tab.as_widget_ptr() as usize,
+            tftpd_tab.as_widget_ptr() as usize,
+            tftpc_tab.as_widget_ptr() as usize,
+            plan_tab.as_widget_ptr() as usize,
+            chat_tab.as_widget_ptr() as usize,
+            settings_tab.as_widget_ptr() as usize,
+        ];
+        let tab_groups: [&fltk::group::Flex; 8] = [
+            &ping_tab, &scan_tab, &http_tab, &tftpd_tab,
+            &tftpc_tab, &plan_tab, &chat_tab, &settings_tab,
+        ];
+        if last_tab < tab_groups.len() {
+            tabs.set_value(tab_groups[last_tab]).ok();
+        }
+
+        // Track tab changes and save to config
+        let view_model_for_tab = self.view_model.clone();
+        let mut tabs_for_set_cb = tabs.clone();
+        let tabs_for_closure = tabs.clone();
+        let tab_ptrs_clone = tab_ptrs.clone();
+        tabs_for_set_cb.set_callback(move |_| {
+            if let Some(current) = tabs_for_closure.value() {
+                let ptr = current.as_widget_ptr() as usize;
+                let idx = tab_ptrs_clone
+                    .iter()
+                    .position(|&p| p == ptr)
+                    .unwrap_or(0);
+                if let Ok(mut vm) = view_model_for_tab.try_write() {
+                    let mut cfg = vm.get_config();
+                    cfg.last_active_tab = idx;
+                    vm.update_config(cfg.clone());
+                    save_config(&cfg).ok();
+                }
+            }
+        });
 
         // Start centralized UI refresh loop (100ms interval, replaces 7 per-frame idle callbacks)
         crate::ui::ui_refresh::start_refresh_loop();
@@ -186,6 +231,7 @@ impl App {
             chat_service: self.chat_service.clone(),
             scan_service: self.scan_service.clone(),
             ping_task: self.ping_task.clone(),
+            scan_task: self.scan_task.clone(),
         }));
 
         let event_handle = tokio::spawn(async move {
@@ -250,6 +296,7 @@ struct AppHandle {
     chat_service: Arc<RwLock<ChatService>>,
     scan_service: Arc<RwLock<ScanService>>,
     ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
+    scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
 }
 
 #[async_trait::async_trait]
@@ -342,6 +389,12 @@ impl EventHandler for AppHandle {
             // Scan
             UiEvent::ScanStart { start_ip, end_ip, options: _ } => {
                 info!("Starting scan from {} to {}", start_ip, end_ip);
+
+                // Cancel any existing scan task first
+                if let Some(handle) = self.scan_task.write().await.take() {
+                    handle.abort();
+                }
+
                 let mut service = self.scan_service.write().await;
                 // Parse IP addresses
                 let start: std::net::Ipv4Addr = start_ip.parse()
@@ -350,12 +403,56 @@ impl EventHandler for AppHandle {
                     .map_err(|e| anyhow::anyhow!("Invalid end IP: {}", e))?;
                 let range = ScanRange::new(start, end);
                 service.scan(range).await?;
-                self.view_model.write().await.set_scan_running(true);
+                drop(service);
+                crate::ui_state::set_scan_running(true);
+
+                // Spawn a task to periodically update scan results
+                let scan_service = self.scan_service.clone();
+                let handle = tokio::spawn(async move {
+                    loop {
+                        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+
+                        let service = scan_service.read().await;
+                        let progress = service.get_progress().await;
+                        let results = service.get_online_hosts().await;
+                        let state = service.get_state().await;
+                        drop(service);
+
+                        // Build output text
+                        let mut output = String::new();
+                        if let Some(p) = progress {
+                            output.push_str(&format!("Scanning... {}% complete, {} hosts found\r\n", p.percentage, p.found_hosts));
+                        }
+                        for result in &results {
+                            let mac_str = result.mac_address.as_deref().unwrap_or("N/A");
+                            let latency = result.response_time_ms.unwrap_or(0.0);
+                            output.push_str(&format!("{} (MAC: {}, latency: {:.2}ms)\r\n",
+                                result.ip, mac_str, latency));
+                        }
+
+                        if matches!(state, rabbit_models::scan::ScannerState::Completed) {
+                            output.push_str(&format!("\nScan completed. {} hosts found.\r\n", results.len()));
+                            crate::ui_state::set_scan_output(&output);
+                            crate::ui_state::set_scan_running(false);
+                            break;
+                        }
+
+                        crate::ui_state::set_scan_output(&output);
+                    }
+                });
+
+                // Store the task handle
+                *self.scan_task.write().await = Some(handle);
             }
             UiEvent::ScanStop => {
                 info!("Stopping scan");
+                // Cancel the background task first
+                if let Some(handle) = self.scan_task.write().await.take() {
+                    handle.abort();
+                }
                 self.scan_service.write().await.cancel().await?;
-                self.view_model.write().await.set_scan_running(false);
+                crate::ui_state::set_scan_running(false);
+                crate::ui_state::append_scan_output("Scan stopped.\r\n");
             }
 
             // HTTP Server
@@ -366,9 +463,13 @@ impl EventHandler for AppHandle {
                     self.http_service.write().await.stop().await?;
                     self.view_model.write().await.set_http_running(false);
                     crate::ui_state::set_http_running(false);
-                    crate::ui_state::append_http_log("HTTP server stopped.");
+                    crate::ui_state::append_http_log("\r\nHTTP server stopped.\r\n");
                 } else {
                     info!("Starting HTTP server on port {} with shell={}", port, shell);
+                    // Set running state first so button changes immediately
+                    crate::ui_state::set_http_running(true);
+                    self.view_model.write().await.set_http_running(true);
+
                     let mut service = self.http_service.write().await;
                     let config = rabbit_models::http::HttpServerConfig {
                         enabled: true,
@@ -383,15 +484,14 @@ impl EventHandler for AppHandle {
                     service.init(config).await?;
                     match service.start().await {
                         Ok(_) => {
-                            self.view_model.write().await.set_http_running(true);
-                            crate::ui_state::set_http_running(true);
-                            crate::ui_state::append_http_log(&format!("HTTP server started on port {}.", port));
+                            crate::ui_state::append_http_log(&format!("HTTP server started on port {}.\r\n", port));
                         }
                         Err(e) => {
                             let msg = format!("Failed to start HTTP server: {}", e);
                             error!("{}", msg);
                             crate::ui_state::set_http_running(false);
-                            crate::ui_state::append_http_log(&format!("ERROR: {}", msg));
+                            self.view_model.write().await.set_http_running(false);
+                            crate::ui_state::append_http_log(&format!("ERROR: {}\r\n", msg));
                         }
                     }
                 }

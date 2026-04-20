@@ -16,7 +16,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
-use tokio::sync::{mpsc, RwLock};
+use tokio::sync::{mpsc, oneshot, RwLock};
 use tokio::task::JoinHandle;
 use tower_http::services::ServeDir;
 use tracing::{error, info};
@@ -77,6 +77,9 @@ impl HttpService {
         let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
         self.shutdown_tx = Some(shutdown_tx);
 
+        // Oneshot channel to report startup result
+        let (startup_tx, startup_rx) = oneshot::channel::<Result<()>>();
+
         let state = Arc::clone(&self.state);
         let logs = Arc::clone(&self.logs);
 
@@ -84,7 +87,7 @@ impl HttpService {
             // Build axum router with access logging and file upload
             let logs_clone = Arc::clone(&logs);
             let root_clone = root.clone();
-            
+
             let app = Router::new()
                 .route("/upload", post(upload_handler))
                 .with_state(root_clone)
@@ -103,13 +106,20 @@ impl HttpService {
                 Ok(l) => l,
                 Err(e) => {
                     error!("Failed to bind HTTP server: {}", e);
-                    *state.write().await = HttpServerState::Error;
+                    *state.write().await = HttpServerState::Stopped;
+                    let _ = startup_tx.send(Err(ServiceError::Other(format!(
+                        "Failed to bind to port {}: {}",
+                        config.port, e
+                    ))));
                     return;
                 }
             };
 
             info!("HTTP server listening on {}", addr);
             *state.write().await = HttpServerState::Running;
+
+            // Report startup success
+            let _ = startup_tx.send(Ok(()));
 
             // Run server with shutdown signal
             let server = axum::serve(listener, app);
@@ -118,7 +128,7 @@ impl HttpService {
                 result = server => {
                     if let Err(e) = result {
                         error!("HTTP server error: {}", e);
-                        *state.write().await = HttpServerState::Error;
+                        *state.write().await = HttpServerState::Stopped;
                     }
                 }
                 _ = shutdown_rx.recv() => {
@@ -130,7 +140,12 @@ impl HttpService {
         });
 
         self.server_handle = Some(handle);
-        Ok(())
+
+        // Wait for startup result
+        match startup_rx.await {
+            Ok(result) => result,
+            Err(_) => Err(ServiceError::Other("HTTP server startup timed out".into())),
+        }
     }
 
     /// Stop the HTTP server

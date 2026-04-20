@@ -88,13 +88,11 @@ impl TabComponent for ScanTab {
         let start_ip_input_clone = start_ip_input.clone();
         let end_input_clone = end_input.clone();
         let opt_input_clone = opt_input.clone();
-        let mut start_btn_clone = start_btn.clone();
-        let colors_clone = colors.clone();
-        let mut results_display_clone = results_display.clone();
+        let start_btn_for_cb = start_btn.clone();
 
-        // Add button callback
+        // Add button callback - just send event, refresh loop updates button
         start_btn.set_callback(move |_| {
-            let label = start_btn_clone.label();
+            let label = start_btn_for_cb.label();
             if label == "Start" {
                 let start_ip = start_ip_input_clone.value();
                 let end_suffix = end_input_clone.value();
@@ -123,22 +121,19 @@ impl TabComponent for ScanTab {
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
                         s.scan_output = format!("Scanning range {} to {}...\n", start_ip, end_ip);
+                        s.updated.insert("scan_output".to_string(), true);
                     }
                 }
-                Self::refresh_display(&mut results_display_clone);
 
                 send_event(UiEvent::ScanStart { start_ip, end_ip, options });
-                start_btn_clone.set_label("Stop");
-                start_btn_clone.set_color(fltk::enums::Color::from_hex(0xE57373));
             } else {
                 send_event(UiEvent::ScanStop);
-                start_btn_clone.set_label("Start");
-                start_btn_clone.set_color(colors_clone.accent);
             }
         });
 
-        // Register display with centralized refresh manager
+        // Register display and button with centralized refresh manager
         super::ui_refresh::register_display("scan_output", results_display.clone());
+        super::ui_refresh::register_scan_button(start_btn, colors.accent);
 
         grp
     }

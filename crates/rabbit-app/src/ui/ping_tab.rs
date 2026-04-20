@@ -60,13 +60,15 @@ impl TabComponent for PingTab {
         ctrl_row.end();
         grp.fixed(&ctrl_row, 28);
 
-        // Stats line - copyable TextDisplay (TextDisplay supports select+copy)
+        // Stats line - single row, no scrollbar, copyable TextDisplay
         let mut stats_editor = TextDisplay::default();
         let stats_buf = TextBuffer::default();
         stats_editor.set_buffer(Some(stats_buf));
-        stats_editor.wrap_mode(WrapMode::AtBounds, 0);
+        stats_editor.wrap_mode(WrapMode::None, 0);
         stats_editor.set_scrollbar_size(0);
-        grp.fixed(&stats_editor, 22);
+        stats_editor.set_frame(fltk::enums::FrameType::FlatBox);
+        stats_editor.set_text_size(14);
+        grp.fixed(&stats_editor, 26);
 
         // Results log area - fills remaining space, word wrap enabled
         let mut results_display = TextDisplay::default();

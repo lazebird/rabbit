@@ -31,6 +31,7 @@ pub struct UiState {
     pub ping_output: String,
     pub ping_stats: String,
     pub scan_output: String,
+    pub scan_running: bool,
     pub http_log: String,
     pub http_running: bool,
     pub tftpd_log: String,
@@ -49,6 +50,7 @@ impl UiState {
             ping_output: String::new(),
             ping_stats: String::from("Ready"),
             scan_output: String::new(),
+            scan_running: false,
             http_log: String::new(),
             http_running: false,
             tftpd_log: String::new(),
@@ -162,6 +164,24 @@ pub fn append_scan_output(line: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
             s.append_scan(line);
+        }
+    }
+}
+
+pub fn set_scan_output(text: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.scan_output = text.to_string();
+            s.updated.insert("scan_output".to_string(), true);
+        }
+    }
+}
+
+pub fn set_scan_running(running: bool) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.scan_running = running;
+            s.updated.insert("scan_running".to_string(), true);
         }
     }
 }

@@ -8,12 +8,15 @@ use fltk::{
     button::Button,
     frame::Frame,
     group::Flex,
-    input::{Input, IntInput},
+    input::Input,
     menu::Choice,
     prelude::*,
     text::{TextBuffer, TextDisplay, WrapMode},
+    enums::{Event, Align, Color},
+    window::Window,
 };
 
+use chrono::{Datelike, Timelike, NaiveDate, Local};
 use crate::ui_events::{UiEvent, send_event};
 use crate::ui_state::UiState;
 use super::{TabComponent, Colors};
@@ -37,9 +40,9 @@ impl TabComponent for PlanTab {
         let _date_label = Frame::default().with_label("Date");
         ctrl_row.fixed(&_date_label, 30);
 
-        // Date input
+        // Date input - click to show date picker
         let mut date_input = Input::default();
-        let now = chrono::Local::now();
+        let now = Local::now();
         date_input.set_value(&now.format("%Y/%m/%d").to_string());
         ctrl_row.fixed(&date_input, 85);
 
@@ -47,10 +50,32 @@ impl TabComponent for PlanTab {
         let _time_label = Frame::default().with_label("Time");
         ctrl_row.fixed(&_time_label, 30);
 
-        // Time input
+        // Time input - click to show time picker
         let mut time_input = Input::default();
         time_input.set_value(&now.format("%H:%M").to_string());
         ctrl_row.fixed(&time_input, 45);
+
+        // Date picker - show calendar dialog when user clicks
+        let mut date_input_clone = date_input.clone();
+        date_input.handle(move |_inp, ev| {
+            if ev == Event::Push {
+                show_date_picker(&mut date_input_clone);
+                true
+            } else {
+                false
+            }
+        });
+
+        // Time picker - show spinner dialog when user clicks
+        let mut time_input_clone = time_input.clone();
+        time_input.handle(move |_inp, ev| {
+            if ev == Event::Push {
+                show_time_picker(&mut time_input_clone);
+                true
+            } else {
+                false
+            }
+        });
 
         // Now button - fills date/time with current time
         let mut now_btn = Button::default().with_label("Now");
@@ -61,7 +86,7 @@ impl TabComponent for PlanTab {
         ctrl_row.fixed(&_repeat_label, 45);
 
         // Cycle input (small)
-        let mut cycle_input = IntInput::default();
+        let mut cycle_input = Input::default();
         cycle_input.set_value("0");
         ctrl_row.fixed(&cycle_input, 35);
 
@@ -123,7 +148,7 @@ impl TabComponent for PlanTab {
         let mut date_input_now = date_input.clone();
         let mut time_input_now = time_input.clone();
         now_btn.set_callback(move |_| {
-            let now = chrono::Local::now();
+            let now = Local::now();
             date_input_now.set_value(&now.format("%Y/%m/%d").to_string());
             time_input_now.set_value(&now.format("%H:%M").to_string());
         });
@@ -199,4 +224,256 @@ impl PlanTab {
             }
         }
     }
+}
+
+/// Show a professional date picker dialog with dropdown choices and Today button.
+fn show_date_picker(date_input: &mut Input) {
+    let current_val = date_input.value();
+    let init_date = NaiveDate::parse_from_str(&current_val, "%Y/%m/%d")
+        .unwrap_or_else(|_| Local::now().naive_local().date());
+
+    let today = Local::now().naive_local().date();
+    let current_year = today.year();
+    let init_year = init_date.year();
+    let days_in_month = get_days_in_month(init_year, init_date.month());
+
+    // Compact window - buttons at bottom
+    let win_w = 280;
+    let win_h = 90;
+    let mut win = Window::new(0, 0, win_w, win_h, "Select Date");
+    win.make_modal(true);
+
+    // Dropdown row at top
+    let mut ymd_row = Flex::default().row().with_pos(8, 6).with_size(win_w - 16, 28);
+    ymd_row.set_spacing(6);
+
+    let mut year_choice = Choice::default();
+    for y in (current_year - 5)..=(current_year + 5) {
+        year_choice.add_choice(&y.to_string());
+        if y == init_year {
+            year_choice.set_value((y - (current_year - 5)).max(0));
+        }
+    }
+    ymd_row.fixed(&year_choice, 80);
+
+    let mut month_choice = Choice::default();
+    let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    for (i, m) in months.iter().enumerate() {
+        month_choice.add_choice(m);
+        if (i as u32) == init_date.month() - 1 {
+            month_choice.set_value(i as i32);
+        }
+    }
+    ymd_row.fixed(&month_choice, 70);
+
+    let mut day_choice = Choice::default();
+    for d in 1..=days_in_month {
+        day_choice.add_choice(&d.to_string());
+        if d == init_date.day() {
+            day_choice.set_value((d - 1) as i32);
+        }
+    }
+    ymd_row.fixed(&day_choice, 60);
+
+    ymd_row.end();
+
+    // Button row at bottom
+    let mut btn_row = Flex::default().row().with_pos(8, 56).with_size(win_w - 16, 28);
+    btn_row.set_spacing(6);
+
+    let mut today_btn = Button::default().with_label("Today");
+    today_btn.set_color(Color::from_hex(0x4A90D9));
+    today_btn.set_label_color(Color::White);
+    btn_row.fixed(&today_btn, 70);
+
+    let mut cancel_btn = Button::default().with_label("Cancel");
+    btn_row.fixed(&cancel_btn, 70);
+
+    let mut ok_btn = Button::default().with_label("OK");
+    ok_btn.set_color(Color::from_hex(0x4A90D9));
+    ok_btn.set_label_color(Color::White);
+    btn_row.fixed(&ok_btn, 70);
+
+    btn_row.end();
+    win.end();
+
+    // Helper to update day dropdown when month/year changes
+    let update_days = move |choice: &mut Choice, year: i32, month: u32, selected_day: Option<u32>| {
+        let days = get_days_in_month(year, month);
+        let current_val = choice.value();
+        let current_day = if current_val >= 0 { (current_val + 1) as u32 } else { 1 };
+        choice.clear();
+        for d in 1..=days {
+            choice.add_choice(&d.to_string());
+        }
+        let day_to_select = selected_day.unwrap_or(current_day.min(days));
+        choice.set_value((day_to_select as i32 - 1).max(0).min(days as i32 - 1));
+    };
+
+    // Today button
+    let mut year_choice_today = year_choice.clone();
+    let mut month_choice_today = month_choice.clone();
+    let mut day_choice_today = day_choice.clone();
+    let update_days_today = update_days.clone();
+    today_btn.set_callback(move |_| {
+        let today = Local::now().naive_local().date();
+        let base_year = today.year() - 5;
+        year_choice_today.set_value((today.year() - base_year).max(0).min(10));
+        month_choice_today.set_value((today.month() - 1) as i32);
+        update_days_today(&mut day_choice_today, today.year(), today.month(), Some(today.day()));
+    });
+
+    // Year/Month change - update day range
+    let mut day_choice_update = day_choice.clone();
+    let month_choice_ref = month_choice.clone();
+    let update_days_ref = update_days.clone();
+    year_choice.set_callback(move |c: &mut Choice| {
+        let base_year = today.year() - 5;
+        let yr = base_year + c.value();
+        let mo = (month_choice_ref.value() + 1) as u32;
+        update_days_ref(&mut day_choice_update, yr, mo, None);
+    });
+
+    let mut day_choice_update2 = day_choice.clone();
+    let year_choice_ref = year_choice.clone();
+    let update_days_ref2 = update_days;
+    month_choice.set_callback(move |c: &mut Choice| {
+        let base_year = today.year() - 5;
+        let yr = base_year + year_choice_ref.value();
+        let mo = (c.value() + 1) as u32;
+        update_days_ref2(&mut day_choice_update2, yr, mo, None);
+    });
+
+    // Cancel
+    let mut win_cancel = win.clone();
+    cancel_btn.set_callback(move |_| {
+        win_cancel.hide();
+    });
+
+    // OK
+    let mut win_ok = win.clone();
+    let mut date_inp = date_input.clone();
+    ok_btn.set_callback(move |_| {
+        let base_year = today.year() - 5;
+        let yr = base_year + year_choice.value();
+        let mo = (month_choice.value() + 1) as u32;
+        let day = (day_choice.value() + 1) as u32;
+        let date_str = format!("{}/{:02}/{:02}", yr, mo, day);
+        date_inp.set_value(&date_str);
+        win_ok.hide();
+    });
+
+    win.show();
+
+    while win.shown() {
+        if !fltk::app::wait() {
+            break;
+        }
+    }
+
+    win.hide();
+}
+
+/// Get the number of days in a given month and year.
+fn get_days_in_month(year: i32, month: u32) -> u32 {
+    let next_month = if month == 12 { 1 } else { month + 1 };
+    let next_yr = if month == 12 { year + 1 } else { year };
+    let first_of_next = NaiveDate::from_ymd_opt(next_yr, next_month, 1)
+        .unwrap_or_else(|| Local::now().naive_local().date());
+    (first_of_next - chrono::Days::new(1)).day()
+}
+
+/// Show a time picker dialog with dropdown choices for hour/minute.
+fn show_time_picker(time_input: &mut Input) {
+    let current_val = time_input.value();
+    let current_time = chrono::NaiveTime::parse_from_str(&current_val, "%H:%M")
+        .unwrap_or_else(|_| chrono::NaiveTime::from_hms_opt(0, 0, 0).unwrap());
+
+    let init_hour = current_time.hour() as i32;
+    let init_minute = current_time.minute() as i32;
+
+    // Compact window - buttons at bottom
+    let win_w = 240;
+    let win_h = 90;
+    let mut win = Window::new(0, 0, win_w, win_h, "Select Time");
+    win.make_modal(true);
+
+    // Dropdown row at top
+    let mut hm_row = Flex::default().row().with_pos(8, 6).with_size(win_w - 16, 28);
+    hm_row.set_spacing(6);
+
+    let mut hour_choice = Choice::default();
+    for h in 0..24 {
+        hour_choice.add_choice(&format!("{:02}", h));
+    }
+    hour_choice.set_value(init_hour);
+    hm_row.fixed(&hour_choice, 80);
+
+    let mut colon = Frame::default().with_label(":");
+    colon.set_label_size(18);
+    colon.set_align(Align::Center | Align::Inside);
+    hm_row.fixed(&colon, 15);
+
+    let mut minute_choice = Choice::default();
+    for m in 0..60 {
+        minute_choice.add_choice(&format!("{:02}", m));
+    }
+    minute_choice.set_value(init_minute);
+    hm_row.fixed(&minute_choice, 80);
+
+    hm_row.end();
+
+    // Button row at bottom
+    let mut btn_row = Flex::default().row().with_pos(8, 56).with_size(win_w - 16, 28);
+    btn_row.set_spacing(6);
+
+    let mut now_btn = Button::default().with_label("Now");
+    btn_row.fixed(&now_btn, 70);
+
+    let mut cancel_btn = Button::default().with_label("Cancel");
+    btn_row.fixed(&cancel_btn, 70);
+
+    let mut ok_btn = Button::default().with_label("OK");
+    ok_btn.set_color(Color::from_hex(0x4A90D9));
+    ok_btn.set_label_color(Color::White);
+    btn_row.fixed(&ok_btn, 70);
+
+    btn_row.end();
+    win.end();
+
+    // Now button
+    let mut hour_choice_now = hour_choice.clone();
+    let mut minute_choice_now = minute_choice.clone();
+    now_btn.set_callback(move |_| {
+        let now = Local::now();
+        hour_choice_now.set_value(now.hour() as i32);
+        minute_choice_now.set_value(now.minute() as i32);
+    });
+
+    // Cancel
+    let mut win_cancel = win.clone();
+    cancel_btn.set_callback(move |_| {
+        win_cancel.hide();
+    });
+
+    // OK
+    let mut win_ok = win.clone();
+    let mut time_inp = time_input.clone();
+    ok_btn.set_callback(move |_| {
+        let h = hour_choice.value() as u32;
+        let m = minute_choice.value() as u32;
+        let time_str = format!("{:02}:{:02}", h, m);
+        time_inp.set_value(&time_str);
+        win_ok.hide();
+    });
+
+    win.show();
+
+    while win.shown() {
+        if !fltk::app::wait() {
+            break;
+        }
+    }
+
+    win.hide();
 }
