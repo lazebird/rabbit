@@ -40,6 +40,7 @@ pub struct UiState {
     pub plan_list: String,
     pub chat_messages: String,
     pub chat_users: String,
+    pub settings_output: String,
     // Flags to track which buffers have been updated
     pub updated: HashMap<String, bool>,
 }
@@ -59,6 +60,7 @@ impl UiState {
             plan_list: String::new(),
             chat_messages: String::new(),
             chat_users: String::new(),
+            settings_output: String::from("Ready"),
             updated: HashMap::new(),
         }
     }
@@ -339,6 +341,29 @@ pub fn remove_chat_user(user: &str) {
                 s.chat_users = "Online Users:\n───────────\n(no users)\n".to_string();
             }
             s.updated.insert("chat_users".to_string(), true);
+        }
+    }
+}
+
+// ============================================================
+// Settings Output
+// ============================================================
+
+pub fn set_settings_output(text: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.settings_output = text.to_string();
+            s.updated.insert("settings_output".to_string(), true);
+        }
+    }
+}
+
+pub fn append_settings_output(text: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.settings_output.push_str(text);
+            s.settings_output.push('\n');
+            s.updated.insert("settings_output".to_string(), true);
         }
     }
 }

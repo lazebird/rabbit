@@ -167,7 +167,7 @@ update_versions_json() {
     local sha256=$4
     local size=$5
 
-    local download_url="https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/raw/rewrite/release/${filename}"
+    local download_url="https://raw.githubusercontent.com/lazebird/rabbit/rewrite/release/${filename}"
 
     log_info "Updating ${VERSIONS_FILE}..."
 
@@ -247,7 +247,7 @@ $(date +%Y-%m-%d)
 
 | Platform | URL |
 |----------|-----|
-| ${platform} | https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/raw/rewrite/release/rabbit-${version}-${platform}$( [[ "${platform}" == "windows-x64" ]] && echo ".exe" ) |
+| ${platform} | https://github.com/lazebird/rabbit/raw/rewrite/release/rabbit-${version}-${platform}$( [[ "${platform}" == "windows-x64" ]] && echo ".exe" ) |
 
 ## SHA256 Checksums
 

@@ -2,6 +2,8 @@
 
 use crate::view_model::AppViewModel;
 use crate::ui::{TabComponent, PingTab, ScanTab, HttpTab, TftpdTab, TftpcTab, PlanTab, ChatTab, SettingsTab};
+use crate::ui::check_version_update;
+use crate::upgrade::{self, VersionsManifest, PlatformInfo};
 use crate::ui_events::{UiEvent, init_event_system, EventHandler};
 use crate::ui_state::UiState;
 use fltk::{
@@ -146,6 +148,7 @@ impl App {
         // Restore last active tab from config
         let config = self.view_model.read().await.get_config();
         let last_tab = config.last_active_tab;
+        let autoupdate = config.autoupdate;
         drop(config);
         let tab_ptrs: Vec<usize> = vec![
             ping_tab.as_widget_ptr() as usize,
@@ -198,6 +201,63 @@ impl App {
 
         main_win.end();
         main_win.show();
+
+        // Startup version check if autoupdate is enabled
+        if autoupdate {
+            info!("Auto-update enabled, checking for updates...");
+            std::thread::spawn(move || {
+                // Wait a bit for UI to be ready
+                std::thread::sleep(std::time::Duration::from_secs(2));
+
+                crate::ui_state::append_settings_output("Checking for updates...");
+
+                match check_version_update() {
+                    upgrade::UpdateStatus::UpdateAvailable(remote, platform_info) => {
+                        info!("Update available: {}", remote.version);
+                        crate::ui_state::append_settings_output(&format!(
+                            "Update available: {} (released: {})",
+                            remote.version, remote.release_date
+                        ));
+                        if !remote.release_notes.is_empty() {
+                            crate::ui_state::append_settings_output(&format!("  {}", remote.release_notes.replace('\n', "\n  ")));
+                        }
+                        let prompt = remote.format_prompt();
+                        let remote_clone = remote.clone();
+                        let platform_clone = platform_info.clone();
+                        // Show dialog on main thread
+                        fltk::app::awake_callback(move || {
+                            let choice = fltk::dialog::choice2_default(
+                                &prompt,
+                                "Update",
+                                "Later",
+                                "Skip This Version",
+                            );
+                            if choice == Some(0) {
+                                // Update - spawn thread to download and install
+                                let remote = remote_clone.clone();
+                                let platform_info = platform_clone.clone();
+                                std::thread::spawn(move || {
+                                    crate::ui_state::append_settings_output(&format!("Downloading version {}...", remote.version));
+                                    perform_startup_upgrade(&remote, &platform_info);
+                                });
+                            } else if choice == Some(1) {
+                                crate::ui_state::append_settings_output("Update deferred");
+                            } else if choice == Some(2) {
+                                crate::ui_state::append_settings_output(&format!("Version {} skipped", remote.version));
+                            }
+                        });
+                    }
+                    upgrade::UpdateStatus::UpToDate => {
+                        info!("Application is up to date");
+                        crate::ui_state::append_settings_output("Application is up to date");
+                    }
+                    upgrade::UpdateStatus::CheckError(e) => {
+                        warn!("Failed to check for updates: {}", e);
+                        crate::ui_state::append_settings_output(&format!("Update check failed: {}", e));
+                    }
+                }
+            });
+        }
 
         // Handle window close button - use set_callback which fires when the X button is clicked
         // Hide window immediately so user sees it disappear, then quit FLTK event loop
@@ -283,6 +343,52 @@ impl App {
         save_config(&config).ok();
 
         Ok(())
+    }
+}
+
+/// Perform upgrade during startup (used by auto-check)
+fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformInfo) {
+    use crate::upgrade::{self, DownloadProgress};
+
+    // Create temporary download path
+    let temp_dir = if cfg!(target_os = "windows") {
+        std::env::temp_dir().join("rabbit_update")
+    } else {
+        std::path::PathBuf::from("/tmp/rabbit_update")
+    };
+
+    let _ = std::fs::create_dir_all(&temp_dir);
+
+    let temp_exe = temp_dir.join(format!("rabbit-{}", remote.version));
+
+    // Download with progress
+    let result = upgrade::download_update(
+        platform_info,
+        &temp_exe,
+        Some(&|progress: DownloadProgress| {
+            let pct = progress.percentage;
+            let downloaded_mb = progress.downloaded as f64 / 1024.0 / 1024.0;
+            let total_mb = progress.total as f64 / 1024.0 / 1024.0;
+            info!("Downloading: {:.1} MB / {:.1} MB ({:.0}%)", downloaded_mb, total_mb, pct);
+        }),
+    );
+
+    match result {
+        Ok(_) => {
+            info!("Download complete. Verifying and installing...");
+            // Install (includes verification)
+            match upgrade::install_update(&temp_exe, &platform_info.sha256) {
+                Ok(_) => {
+                    // install_update calls std::process::exit(), so we won't reach here
+                }
+                Err(e) => {
+                    error!("Installation failed: {}", e);
+                }
+            }
+        }
+        Err(e) => {
+            error!("Download failed: {}", e);
+        }
     }
 }
 
@@ -594,6 +700,13 @@ impl EventHandler for AppHandle {
                 info!("Saving settings");
                 let config = self.view_model.read().await.get_config();
                 save_config(&config)?;
+            }
+
+            // Version Check
+            UiEvent::VersionCheck => {
+                info!("Checking for version updates");
+                // Version check is handled in settings_tab.rs UI thread
+                // This event can be used for programmatic checks if needed
             }
         }
         Ok(())

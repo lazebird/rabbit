@@ -25,6 +25,7 @@ pub use tftpc_tab::TftpcTab;
 pub use plan_tab::PlanTab;
 pub use chat_tab::ChatTab;
 pub use settings_tab::SettingsTab;
+pub use settings_tab::check_version_update;
 
 use fltk::group::Flex;
 

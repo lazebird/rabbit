@@ -31,3 +31,8 @@ fltk = { workspace = true }
 dirs = { workspace = true }
 async-trait = "0.1"
 uuid = { version = "1.0", features = ["v4"] }
+
+# Upgrade management
+ureq = { version = "2", features = ["tls"] }
+sha2 = "0.10"
+semver = "1"

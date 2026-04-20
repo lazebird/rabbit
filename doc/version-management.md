@@ -16,7 +16,7 @@ Rabbit 使用统一版本管理方案进行版本检查和自动升级。方案�
 ### 2.1 文件位置
 
 ```
-https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/raw/rewrite/release/versions.json
+https://raw.githubusercontent.com/lazebird/rabbit/rewrite/release/versions.json
 ```
 
 ### 2.2 JSON 格式
@@ -460,9 +460,9 @@ pub enum UiEvent {
 
 | 用途 | URL |
 |------|-----|
-| 版本信息 | `.../raw/rewrite/release/versions.json` |
-| 下载页面 | `.../tree/rewrite/release` |
-| 使用手册 | `.../blob/rewrite/doc/manual.md` |
+| 版本信息 | `https://raw.githubusercontent.com/lazebird/rabbit/rewrite/release/versions.json` |
+| 下载页面 | `https://github.com/lazebird/rabbit/tree/rewrite/release` |
+| 使用手册 | `https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md` |
 
 ## 9. 依赖新增
 

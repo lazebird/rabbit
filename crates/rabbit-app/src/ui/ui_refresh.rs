@@ -112,6 +112,7 @@ fn do_refresh() {
         check!("plan_list");
         check!("chat_messages");
         check!("chat_users");
+        check!("settings_output");
 
         if keys.is_empty() {
             return;
@@ -128,6 +129,7 @@ fn do_refresh() {
                 "plan_list"     => s.plan_list.clone(),
                 "chat_messages" => s.chat_messages.clone(),
                 "chat_users"    => s.chat_users.clone(),
+                "settings_output" => s.settings_output.clone(),
                 "tftpd_dirs"    => {
                     if s.tftpd_dirs.is_empty() {
                         "(no directories added)\n".to_string()

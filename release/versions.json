@@ -4,9 +4,9 @@
   "release_notes": "Release 0.2.0",
   "platforms": {
     "linux-x64": {
-      "sha256": "3de93ad2c6e87f9f3bbaea18b766d2cd2db22a45833d1d092190d37025e570cb",
-      "size": 3128296,
-      "url": "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/raw/rewrite/release/rabbit-0.2.0-linux-x64"
+      "sha256": "76fb47de45a502f6dc46c066051c325610463b84004902dd7a3ba88617b21418",
+      "size": 4534600,
+      "url": "https://raw.githubusercontent.com/lazebird/rabbit/rewrite/release/rabbit-0.2.0-linux-x64"
     }
   }
 }

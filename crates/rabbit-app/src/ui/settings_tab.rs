@@ -13,10 +13,55 @@ use fltk::{
     enums::Align,
     text::{TextBuffer, TextDisplay, WrapMode},
 };
-use std::collections::HashMap;
 
 use crate::ui_events::{UiEvent, send_event};
+use crate::upgrade::{self, DownloadProgress, VersionsManifest, PlatformInfo};
+use crate::ui_state::{set_settings_output, append_settings_output};
 use super::{TabComponent, Colors, Spacing};
+
+// ============================================================
+// Version Check Helper
+// ============================================================
+
+/// Fetch remote version content using ureq
+fn fetch_version_content(url: &str) -> Result<String, String> {
+    ureq::get(url)
+        .timeout(std::time::Duration::from_secs(15))
+        .call()
+        .map_err(|e| format!("HTTP error: {}", e))?
+        .into_string()
+        .map_err(|e| format!("Read error: {}", e))
+}
+
+/// Check for version updates
+pub fn check_version_update() -> upgrade::UpdateStatus {
+    match fetch_version_content(VERSION_CHECK_URL) {
+        Ok(content) => {
+            let trimmed = content.trim();
+            if !trimmed.starts_with('{') {
+                return upgrade::UpdateStatus::CheckError(
+                    "Server returned non-JSON response".to_string()
+                );
+            }
+
+            match serde_json::from_str::<VersionsManifest>(trimmed) {
+                Ok(remote) => {
+                    if remote.is_newer_than(CURRENT_VERSION) {
+                        if let Some(platform_info) = remote.clone().for_current_platform() {
+                            upgrade::UpdateStatus::UpdateAvailable(remote, platform_info.clone())
+                        } else {
+                            upgrade::UpdateStatus::CheckError("No build for current platform".to_string())
+                        }
+                    } else {
+                        upgrade::UpdateStatus::UpToDate
+                    }
+                }
+                Err(e) => upgrade::UpdateStatus::CheckError(format!("Failed to parse: {}", e)),
+            }
+        }
+        Err(e) => upgrade::UpdateStatus::CheckError(format!("Network error: {}", e)),
+    }
+}
 
 // ============================================================
 // Constants - URLs and Version
@@ -26,184 +71,13 @@ use super::{TabComponent, Colors, Spacing};
 const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Remote versions.json URL for update checking
-const VERSION_CHECK_URL: &str = "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/raw/rewrite/release/versions.json";
+const VERSION_CHECK_URL: &str = "https://raw.githubusercontent.com/lazebird/rabbit/rewrite/release/versions.json";
 
 /// Home page URL for downloads
-const HOME_URL: &str = "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/tree/rewrite/release";
+const HOME_URL: &str = "https://github.com/lazebird/rabbit/tree/rewrite/release";
 
 /// Help/manual URL
-const HELP_URL: &str = "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/blob/rewrite/doc/manual.md";
-
-// ============================================================
-// Version Management
-// ============================================================
-
-/// Parsed version information from versions.json
-#[derive(Debug, Clone, serde::Deserialize)]
-pub struct VersionsManifest {
-    /// Unified version number (all platforms share the same version)
-    pub version: String,
-    /// Release date (YYYY/MM/DD)
-    pub release_date: String,
-    /// Release notes
-    pub release_notes: String,
-    /// Platform-specific download info
-    pub platforms: HashMap<String, PlatformInfo>,
-}
-
-#[derive(Debug, Clone, serde::Deserialize)]
-pub struct PlatformInfo {
-    /// SHA256 checksum (hex string)
-    pub sha256: String,
-    /// File size in bytes
-    pub size: u64,
-    /// Download URL
-    pub url: String,
-}
-
-impl VersionsManifest {
-    /// Get info for current platform
-    pub fn for_current_platform(&self) -> Option<&PlatformInfo> {
-        let platform = current_platform();
-        self.platforms.get(platform)
-    }
-
-    /// Check if this version is newer than current
-    pub fn is_newer_than(&self, _current: &str) -> bool {
-        !self.version.is_empty()
-    }
-
-    /// Format release info for display
-    pub fn format_summary(&self) -> String {
-        let mut s = format!("Version: {}\n", self.version);
-        s.push_str(&format!("Date: {}\n", self.release_date));
-        if !self.release_notes.is_empty() {
-            s.push_str(&format!("\n{}\n", self.release_notes));
-        }
-        if let Some(info) = self.for_current_platform() {
-            s.push_str(&format!("\nSize: {:.1} MB\n", info.size as f64 / 1024.0 / 1024.0));
-        }
-        s
-    }
-}
-
-/// Detect current platform identifier
-fn current_platform() -> &'static str {
-    #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
-    return "windows-x64";
-    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-    return "linux-x64";
-    #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
-    return "linux-arm64";
-    #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-    return "macos-x64";
-    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-    return "macos-arm64";
-    "unknown"
-}
-
-/// Fetch remote version content using platform-specific commands
-fn fetch_version_content(url: &str) -> Result<String, String> {
-    #[cfg(target_os = "windows")]
-    {
-        let output = std::process::Command::new("powershell")
-            .args(["-Command", &format!("(Invoke-WebRequest -Uri '{0}' -UseBasicParsing).Content", url)])
-            .output()
-            .map_err(|e| format!("Failed to run PowerShell: {}", e))?;
-
-        if !output.status.success() {
-            return Err(format!("HTTP {}", output.status));
-        }
-        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        let output = std::process::Command::new("curl")
-            .args(["-s", "-L", "--connect-timeout", "10", url])
-            .output()
-            .map_err(|e| format!("Failed to run curl: {}", e))?;
-
-        if !output.status.success() {
-            return Err(format!("HTTP {}", output.status));
-        }
-        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        // Try curl first, fallback to wget
-        let output = std::process::Command::new("curl")
-            .args(["-s", "-L", "--connect-timeout", "10", url])
-            .output();
-
-        let output = match output {
-            Ok(o) if o.status.success() => o,
-            _ => std::process::Command::new("wget")
-                .args(["-q", "-O-", "--no-check-certificate", "--timeout=10", url])
-                .output()
-                .map_err(|e| format!("Failed to run wget: {}", e))?,
-        };
-
-        if !output.status.success() {
-            return Err(format!("HTTP {}", output.status));
-        }
-        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
-    }
-}
-
-/// Check for version updates
-fn check_version_update() -> String {
-    match fetch_version_content(VERSION_CHECK_URL) {
-        Ok(content) => {
-            // Quick check: if content doesn't start with '{', it's not JSON
-            let trimmed = content.trim();
-            if !trimmed.starts_with('{') {
-                return format!(
-                    "Current version: {}\n\n\
-                    Version info server returned non-JSON response.\n\
-                    The server may require authentication.\n\n\
-                    Visit Home to check for updates manually.\n",
-                    CURRENT_VERSION
-                );
-            }
-
-            match serde_json::from_str::<VersionsManifest>(trimmed) {
-                Ok(remote) => {
-                    let mut msg = format!("Current version: {}\n\n", CURRENT_VERSION);
-                    msg.push_str(&remote.format_summary());
-                    msg.push_str("\n");
-
-                    if remote.is_newer_than(CURRENT_VERSION) {
-                        msg.push_str("\nA newer version is available.\n");
-                    } else {
-                        msg.push_str("\nYou are on the latest version.\n");
-                    }
-                    msg.push_str("\nVisit Home to download updates.\n");
-                    msg
-                }
-                Err(e) => {
-                    format!(
-                        "Current version: {}\n\n\
-                        Failed to parse version info.\n\
-                        Error: {}\n\n\
-                        Visit Home to check for updates manually.\n",
-                        CURRENT_VERSION, e
-                    )
-                }
-            }
-        }
-        Err(e) => {
-            format!(
-                "Current version: {}\n\n\
-                Unable to check for updates.\n\
-                Error: {}\n\n\
-                Visit Home to check for updates manually.\n",
-                CURRENT_VERSION, e
-            )
-        }
-    }
-}
+const HELP_URL: &str = "https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md";
 
 // ============================================================
 // Platform Helpers
@@ -235,6 +109,60 @@ fn get_config_folder() -> String {
         return config_dir.join("rabbit").to_string_lossy().to_string();
     }
     String::from(".")
+}
+
+/// Perform upgrade: download, verify, and install
+fn perform_upgrade(
+    remote: &VersionsManifest,
+    platform_info: &PlatformInfo,
+    _output: &TextDisplay,
+) {
+    append_settings_output(&format!("Downloading version {}...", remote.version));
+
+    // Create temporary download path
+    let temp_dir = if cfg!(target_os = "windows") {
+        std::env::temp_dir().join("rabbit_update")
+    } else {
+        std::path::PathBuf::from("/tmp/rabbit_update")
+    };
+
+    let _ = std::fs::create_dir_all(&temp_dir);
+
+    let temp_exe = temp_dir.join(format!("rabbit-{}", remote.version));
+
+    // Download with progress
+    let result = upgrade::download_update(
+        platform_info,
+        &temp_exe,
+        Some(&|progress: DownloadProgress| {
+            let pct = progress.percentage;
+            let downloaded_mb = progress.downloaded as f64 / 1024.0 / 1024.0;
+            let total_mb = progress.total as f64 / 1024.0 / 1024.0;
+            append_settings_output(&format!(
+                "  Downloading: {:.1} MB / {:.1} MB ({:.0}%)",
+                downloaded_mb, total_mb, pct
+            ));
+        }),
+    );
+
+    match result {
+        Ok(_) => {
+            append_settings_output("Download complete. Verifying and installing...");
+
+            // Install (includes verification)
+            match upgrade::install_update(&temp_exe, &platform_info.sha256) {
+                Ok(_) => {
+                    // install_update calls std::process::exit(), so we won't reach here
+                }
+                Err(e) => {
+                    append_settings_output(&format!("Installation failed: {}", e));
+                }
+            }
+        }
+        Err(e) => {
+            append_settings_output(&format!("Download failed: {}", e));
+        }
+    }
 }
 
 // ============================================================
@@ -330,6 +258,17 @@ impl TabComponent for SettingsTab {
         output_display.wrap_mode(WrapMode::AtBounds, 0);
         output_display.set_text_size(14);
 
+        // Initialize output from ui_state
+        if let Some(state) = crate::ui_state::UiState::global() {
+            if let Ok(s) = state.lock() {
+                if !s.settings_output.is_empty() {
+                    if let Some(mut buf) = output_display.buffer() {
+                        buf.set_text(&s.settings_output);
+                    }
+                }
+            }
+        }
+
         grp.end();
 
         // Styling
@@ -355,14 +294,54 @@ impl TabComponent for SettingsTab {
             if ev == fltk::enums::Event::Push {
                 fltk::app::copy(&format!("sRabbit {}", CURRENT_VERSION));
 
+                append_settings_output("");
+                append_settings_output("Checking for updates...");
+
                 let out = output_clone.clone();
                 std::thread::spawn(move || {
-                    if let Some(mut buf) = out.buffer() {
-                        buf.set_text("Checking for updates...\n");
-                    }
                     let result = check_version_update();
-                    if let Some(mut buf) = out.buffer() {
-                        buf.set_text(&result);
+                    match result {
+                        upgrade::UpdateStatus::UpdateAvailable(remote, platform_info) => {
+                            append_settings_output(&format!(
+                                "Update available: {}  ({})",
+                                remote.version, remote.release_date
+                            ));
+                            if !remote.release_notes.is_empty() {
+                                append_settings_output(&format!("  {}", remote.release_notes.replace('\n', "\n  ")));
+                            }
+                            if let Some(info) = remote.for_current_platform() {
+                                append_settings_output(&format!("  Size: {:.1} MB", info.size as f64 / 1024.0 / 1024.0));
+                            }
+                            append_settings_output("");
+
+                            // Show upgrade confirmation dialog
+                            let prompt = remote.format_prompt();
+                            let remote_clone = remote.clone();
+                            let platform_clone = platform_info.clone();
+                            fltk::app::awake_callback(move || {
+                                let choice = fltk::dialog::choice2_default(
+                                    &prompt,
+                                    "Update",
+                                    "Later",
+                                    "Skip This Version",
+                                );
+                                if choice == Some(0) {
+                                    append_settings_output("Downloading and installing update...");
+                                    // Update - download and install
+                                    perform_upgrade(&remote_clone, &platform_clone, &out);
+                                } else if choice == Some(1) {
+                                    append_settings_output("Update deferred");
+                                } else if choice == Some(2) {
+                                    append_settings_output(&format!("Version {} skipped", remote_clone.version));
+                                }
+                            });
+                        }
+                        upgrade::UpdateStatus::UpToDate => {
+                            append_settings_output("You are on the latest version.");
+                        }
+                        upgrade::UpdateStatus::CheckError(e) => {
+                            append_settings_output(&format!("Update check failed: {}", e));
+                        }
                     }
                 });
                 true
@@ -377,6 +356,9 @@ impl TabComponent for SettingsTab {
         top_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
         autostart_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
         autoupdate_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
+
+        // Register settings output for centralized refresh
+        crate::ui::ui_refresh::register_display("settings_output", output_display);
 
         grp
     }

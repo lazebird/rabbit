@@ -43,6 +43,9 @@ pub enum UiEvent {
 
     // Settings
     SettingsSave,
+
+    // Version Check
+    VersionCheck,
 }
 
 /// Initialize the global event sender
