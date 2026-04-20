@@ -23,10 +23,43 @@ pub fn show_notification(title: &str, message: &str) -> Result<()> {
 
 #[cfg(target_os = "windows")]
 fn show_notification_windows(title: &str, message: &str) -> Result<()> {
-    // Windows notification implementation
-    // Could use winrt-notification or windows crate
-    println!("[Notification] {}: {}", title, message);
-    Ok(())
+    // Use PowerShell to show a Windows 10+ toast notification
+    use std::process::Command;
+    
+    // Escape strings for PowerShell
+    let ps_title = title.replace('"', "\\\"").replace('\n', " ");
+    let ps_message = message.replace('"', "\\\"").replace('\n', " ");
+    
+    // PowerShell script to show toast notification using BALLOON tip (simpler, more reliable)
+    let script = format!(
+        r#"
+        Add-Type -AssemblyName System.Windows.Forms
+        $balloon = New-Object System.Windows.Forms.NotifyIcon
+        $balloon.Icon = [System.Drawing.SystemIcons]::Information
+        $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+        $balloon.BalloonTipTitle = "{}"
+        $balloon.BalloonTipText = "{}"
+        $balloon.Visible = $true
+        $balloon.ShowBalloonTip(5000)
+        Start-Sleep -Seconds 2
+        $balloon.Dispose()
+        "#,
+        ps_title,
+        ps_message
+    );
+    
+    let result = Command::new("powershell")
+        .args(&["-NoProfile", "-WindowStyle", "Hidden", "-Command", &script])
+        .output();
+    
+    match result {
+        Ok(_) => Ok(()),
+        Err(_) => {
+            // Fallback to console
+            println!("[Notification] {}: {}", title, message);
+            Ok(())
+        }
+    }
 }
 
 #[cfg(target_os = "linux")]

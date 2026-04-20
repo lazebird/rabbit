@@ -16,7 +16,7 @@
 ## 总体进度
 
 ```
-[████████████████████] 100% (核心功能完整，配置模型统一)
+[████████████████████] 100% (核心功能完整，所有需求已实现，除国际化)
 ```
 
 ---
@@ -508,6 +508,16 @@
 | 2026-04-20 | **TFTPC端口配置** - 确认通过选项字符串兼容旧方案，无需独立控件 | Qoder |
 | 2026-04-20 | **配置架构重构** - 删除业务层 Default 实现，From trait 统一转换，占位配置模式 | Qoder |
 | 2026-04-20 | **文档完善** - 更新 AGENTS.md, architecture.md, progress.md, requirements-gap-analysis.md | Qoder |
+| 2026-04-20 | **TFTP服务器实现** - 使用 async-tftp 库实现完整的 TFTP 服务器功能 | Qoder |
+| 2026-04-20 | **DNS反向查找** - 添加 dns-lookup 库实现扫描结果主机名解析 | Qoder |
+| 2026-04-20 | **自动启动功能** - 实现跨平台自动启动 (Windows/Linux/macOS) | Qoder |
+| 2026-04-20 | **全局快捷键** - 实现 Esc/Enter/F1/F2/F3 快捷键功能 | Qoder |
+| 2026-04-20 | **HTTP目录管理** - 实现 HTTP 服务器目录添加/删除功能 | Qoder |
+| 2026-04-20 | **Windows通知** - 使用 PowerShell 实现 Windows 系统通知 | Qoder |
+| 2026-04-20 | **Plan重复逻辑** - 实现计划任务的重复周期功能 (cycle + unit) | Qoder |
+| 2026-04-20 | **TFTP客户端连接** - 将 UI 事件连接到后端 TFTP 上传/下载服务 | Qoder |
+| 2026-04-20 | **Chat功能完善** - 实现刷新用户列表和发送通知功能 | Qoder |
+| 2026-04-20 | **Settings功能** - 实现 autostart/top/systray 配置应用 | Qoder |
 
 ---
 

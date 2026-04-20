@@ -34,6 +34,7 @@ pub struct UiState {
     pub scan_running: bool,
     pub http_log: String,
     pub http_running: bool,
+    pub http_dirs: Vec<String>,
     pub tftpd_log: String,
     pub tftpd_dirs: Vec<String>,
     pub tftpc_log: String,
@@ -54,6 +55,7 @@ impl UiState {
             scan_running: false,
             http_log: String::new(),
             http_running: false,
+            http_dirs: Vec::new(),
             tftpd_log: String::new(),
             tftpd_dirs: Vec::new(),
             tftpc_log: String::new(),
@@ -229,6 +231,27 @@ pub fn append_tftpd_log(line: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
             s.append_tftpd_log(line);
+        }
+    }
+}
+
+// HTTP directory management
+pub fn add_http_dir(path: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            if !s.http_dirs.contains(&path.to_string()) {
+                s.http_dirs.push(path.to_string());
+                s.updated.insert("http_dirs".to_string(), true);
+            }
+        }
+    }
+}
+
+pub fn remove_http_dir(path: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.http_dirs.retain(|d| d != path);
+            s.updated.insert("http_dirs".to_string(), true);
         }
     }
 }

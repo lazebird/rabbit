@@ -7,12 +7,14 @@
 //! - Taskbar/system tray integration
 //! - Notifications
 
+pub mod autostart;
 pub mod config;
 pub mod dialog;
 pub mod network;
 pub mod notification;
 pub mod ping;
 
+pub use autostart::*;
 pub use config::*;
 pub use dialog::*;
 pub use network::*;

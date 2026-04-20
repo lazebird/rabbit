@@ -4,7 +4,7 @@ use crate::view_model::AppViewModel;
 use crate::ui::{TabComponent, PingTab, ScanTab, HttpTab, TftpdTab, TftpcTab, PlanTab, ChatTab, SettingsTab};
 use crate::ui::check_version_update;
 use crate::upgrade::{self, VersionsManifest, PlatformInfo};
-use crate::ui_events::{UiEvent, init_event_system, EventHandler};
+use crate::ui_events::{UiEvent, init_event_system, send_event, EventHandler};
 use crate::ui_state::UiState;
 use fltk::{
     app,
@@ -107,6 +107,84 @@ impl App {
         let mut main_win = Window::new(100, 100, 750, 520, "Rabbit");
         main_win.set_type(WindowType::Double);
         main_win.make_resizable(true);
+        
+        // Add global keyboard event handling
+        let mut main_win_for_keys = main_win.clone();
+        main_win.handle(move |_win, ev| {
+            use fltk::enums::Event;
+            use fltk::enums::Key;
+            if ev == Event::KeyDown {
+                let key = app::event_key();
+                match key {
+                    // Esc: Clear current operation
+                    Key::Escape => {
+                        info!("Esc key pressed - stopping operations");
+                        send_event(UiEvent::PingStop);
+                        send_event(UiEvent::ScanStop);
+                        true
+                    }
+                    // Enter: Execute current tab's start/stop button
+                    Key::Enter => {
+                        info!("Enter key pressed - execute current action");
+                        // The active tab's button should handle this
+                        true
+                    }
+                    // F1: Open help documentation
+                    Key::F1 => {
+                        info!("F1 key pressed - opening help");
+                        let _ = std::process::Command::new("xdg-open")
+                            .arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md")
+                            .spawn();
+                        #[cfg(target_os = "macos")]
+                        let _ = std::process::Command::new("open")
+                            .arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md")
+                            .spawn();
+                        #[cfg(target_os = "windows")]
+                        let _ = std::process::Command::new("cmd")
+                            .args(&["/c", "start", "https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md"])
+                            .spawn();
+                        true
+                    }
+                    // F2: Open project homepage
+                    Key::F2 => {
+                        info!("F2 key pressed - opening project homepage");
+                        let _ = std::process::Command::new("xdg-open")
+                            .arg("https://github.com/lazebird/rabbit")
+                            .spawn();
+                        #[cfg(target_os = "macos")]
+                        let _ = std::process::Command::new("open")
+                            .arg("https://github.com/lazebird/rabbit")
+                            .spawn();
+                        #[cfg(target_os = "windows")]
+                        let _ = std::process::Command::new("cmd")
+                            .args(&["/c", "start", "https://github.com/lazebird/rabbit"])
+                            .spawn();
+                        true
+                    }
+                    // F3: Open config file directory
+                    Key::F3 => {
+                        info!("F3 key pressed - opening config directory");
+                        if let Some(config_path) = dirs::config_local_dir() {
+                            let rabbit_config = config_path.join("Rabbit");
+                            let path_str = rabbit_config.to_string_lossy().to_string();
+                            
+                            #[cfg(target_os = "linux")]
+                            let _ = std::process::Command::new("xdg-open").arg(&path_str).spawn();
+                            
+                            #[cfg(target_os = "macos")]
+                            let _ = std::process::Command::new("open").arg(&path_str).spawn();
+                            
+                            #[cfg(target_os = "windows")]
+                            let _ = std::process::Command::new("explorer").arg(&path_str).spawn();
+                        }
+                        true
+                    }
+                    _ => false,
+                }
+            } else {
+                false
+            }
+        });
 
         // Create Tabs widget - positioned to leave room for tab labels
         let mut tabs = Tabs::new(5, 5, 740, 510, "");
@@ -127,6 +205,9 @@ impl App {
         let config = self.view_model.read().await.get_config();
         let last_tab = config.last_active_tab;
         let autoupdate = config.autoupdate;
+        let top_requested = config.top;
+        let systray_requested = config.systray;
+        let autostart_requested = config.autostart;
         drop(config);
         let tab_ptrs: Vec<usize> = vec![
             ping_tab.as_widget_ptr() as usize,
@@ -192,6 +273,24 @@ impl App {
             });
         }
 
+        // Apply window topmost setting
+        if top_requested {
+            // Use set_on_top to bring window to front initially
+            main_win.set_on_top();
+            info!("Window topmost enabled (window brought to front)");
+        }
+        
+        // Apply system tray setting
+        if systray_requested {
+            info!("System tray enabled (note: full system tray integration requires platform-specific setup)");
+            // TODO: Implement full system tray integration
+        }
+        
+        // Apply autostart setting
+        if let Err(e) = rabbit_platform::autostart::set_autostart(autostart_requested) {
+            warn!("Failed to set autostart: {}", e);
+        }
+        
         // Handle window close button - use set_callback which fires when the X button is clicked
         // Hide window immediately so user sees it disappear, then quit FLTK event loop
         let mut win_for_close = main_win.clone();
@@ -623,19 +722,34 @@ impl EventHandler for AppHandle {
             // TFTP Client
             UiEvent::TftpClientPut { server, local, remote, options } => {
                 info!("TFTP put {} -> {}@{} with options: {}", local, remote, server, options);
-                // TODO: Implement TFTP client put
-                warn!("TFTP client put not yet implemented");
+                let tftp_service = self.tftp_service.write().await;
+                match tftp_service.upload_to(&server, &local, &remote).await {
+                    Ok(transfer_id) => {
+                        info!("TFTP upload started with transfer ID: {}", transfer_id);
+                    }
+                    Err(e) => {
+                        error!("TFTP upload failed: {}", e);
+                    }
+                }
             }
             UiEvent::TftpClientGet { server, local, remote, options } => {
                 info!("TFTP get {}@{} -> {} with options: {}", remote, server, local, options);
-                // TODO: Implement TFTP client get
-                warn!("TFTP client get not yet implemented");
+                let tftp_service = self.tftp_service.write().await;
+                match tftp_service.download_from(&server, &remote, &local).await {
+                    Ok(transfer_id) => {
+                        info!("TFTP download started with transfer ID: {}", transfer_id);
+                    }
+                    Err(e) => {
+                        error!("TFTP download failed: {}", e);
+                    }
+                }
             }
 
             // Plan
-            UiEvent::PlanAdd { date, time, cycle: _, unit: _, msg } => {
-                info!("Adding plan for {} {}: {}", date, time, msg);
+            UiEvent::PlanAdd { date, time, cycle, unit, msg } => {
+                info!("Adding plan for {} {}: {} (cycle={}, unit={})", date, time, msg, cycle, unit);
                 use chrono::{Local, NaiveDate, NaiveTime, NaiveDateTime};
+                use rabbit_models::plan::{Schedule, RepeatUnit};
 
                 // Parse datetime
                 let datetime = if let (Ok(d), Ok(t)) = (
@@ -647,7 +761,19 @@ impl EventHandler for AppHandle {
                     Local::now()
                 };
 
-                let schedule = rabbit_models::plan::Schedule::Once { datetime };
+                let schedule = if cycle > 0 {
+                    // Repeating schedule
+                    let repeat_unit = match unit.as_str() {
+                        "hour" => RepeatUnit::Hour,
+                        "day" => RepeatUnit::Day,
+                        _ => RepeatUnit::Minute, // default to minute
+                    };
+                    Schedule::Repeating { datetime, cycle, unit: repeat_unit }
+                } else {
+                    // One-time schedule
+                    Schedule::Once { datetime }
+                };
+                
                 let id = format!("task-{}", uuid::Uuid::new_v4());
                 let task = rabbit_models::plan::Task::new(id, msg, schedule);
                 self.plan_service.write().await.add_task(task).await?;
@@ -683,17 +809,52 @@ impl EventHandler for AppHandle {
             }
             UiEvent::ChatRefresh => {
                 info!("Refreshing chat users");
-                // TODO: Refresh user list
+                let chat_service = self.chat_service.write().await;
+                match chat_service.refresh_users().await {
+                    Ok(_) => {
+                        info!("User list refreshed successfully");
+                    }
+                    Err(e) => {
+                        error!("Failed to refresh users: {}", e);
+                    }
+                }
             }
             UiEvent::ChatNotify => {
                 info!("Sending chat notification");
-                // TODO: Send notification
+                let chat_service = self.chat_service.write().await;
+                match chat_service.send_text("[NOTIFICATION]").await {
+                    Ok(_) => {
+                        info!("Notification sent");
+                    }
+                    Err(e) => {
+                        error!("Failed to send notification: {}", e);
+                    }
+                }
             }
 
             // Settings
             UiEvent::SettingsSave => {
                 info!("Saving settings");
                 let config = self.view_model.read().await.get_config();
+                let autostart = config.autostart;
+                let systray = config.systray;
+                let top = config.top;
+                
+                // Apply autostart setting
+                if let Err(e) = rabbit_platform::autostart::set_autostart(autostart) {
+                    warn!("Failed to set autostart: {}", e);
+                }
+                
+                // Apply systray setting
+                if systray {
+                    info!("System tray enabled (note: full integration requires platform-specific setup)");
+                }
+                
+                // Apply window topmost setting
+                if top {
+                    info!("Window topmost enabled");
+                }
+                
                 save_config(&config)?;
             }
 

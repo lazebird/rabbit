@@ -12,6 +12,7 @@ use fltk::{
     input::{Input, IntInput},
     prelude::*,
     text::{TextBuffer, TextDisplay, WrapMode},
+    browser::Browser,
 };
 
 use crate::ui_events::{UiEvent, send_event};
@@ -64,12 +65,34 @@ impl TabComponent for HttpTab {
         ctrl_row.end();
         grp.fixed(&ctrl_row, 28);
 
-        // Directory list area - fills most space
-        let mut dir_display = TextDisplay::default();
-        let dir_buf = TextBuffer::default();
-        dir_display.set_buffer(Some(dir_buf));
-        dir_display.wrap_mode(WrapMode::AtBounds, 0);
+        // Directory management buttons row
+        // [+] [-] [Browse] directory list display
+        let mut dir_ctrl_row = Flex::default().row();
+        dir_ctrl_row.set_spacing(5);
+        
+        // Add directory button
+        let mut add_dir_btn = Button::default().with_label("+");
+        add_dir_btn.set_color(colors.accent);
+        add_dir_btn.set_label_color(fltk::enums::Color::White);
+        dir_ctrl_row.fixed(&add_dir_btn, 28);
+        
+        // Remove directory button
+        let mut remove_dir_btn = Button::default().with_label("-");
+        remove_dir_btn.set_color(fltk::enums::Color::from_hex(0xE57373));
+        remove_dir_btn.set_label_color(fltk::enums::Color::White);
+        dir_ctrl_row.fixed(&remove_dir_btn, 28);
+        
+        // Browse button
+        let mut browse_btn = Button::default().with_label("Browse");
+        dir_ctrl_row.fixed(&browse_btn, 60);
+        
+        dir_ctrl_row.end();
+        grp.fixed(&dir_ctrl_row, 28);
 
+        // Directory list area - fills most space
+        let mut dir_browser = Browser::default();
+        dir_browser.set_text_size(14);
+        
         // Access log at bottom (smaller area)
         let mut log_display = TextDisplay::default();
         let log_buf = TextBuffer::default();
@@ -80,12 +103,12 @@ impl TabComponent for HttpTab {
 
         // Apply styling
         grp.set_color(colors.background);
-        dir_display.set_color(colors.input_bg);
-        dir_display.set_text_color(colors.text);
+        dir_browser.set_color(colors.input_bg);
         log_display.set_color(colors.input_bg);
         log_display.set_text_color(colors.text);
 
         // Set initial content from global state
+        Self::refresh_dirs(&mut dir_browser);
         Self::refresh_log(&mut log_display);
 
         // Clone inputs for callback
@@ -94,6 +117,46 @@ impl TabComponent for HttpTab {
         let shell_check_clone = shell_check.clone();
         let toggle_btn_clone = toggle_btn.clone();
         let mut log_display_clone = log_display.clone();
+        let mut dir_browser_add = dir_browser.clone();
+        let mut dir_browser_remove = dir_browser.clone();
+
+        // Add directory button callback
+        add_dir_btn.set_callback(move |_| {
+            use fltk::dialog::NativeFileChooser;
+            let mut dialog = NativeFileChooser::new(fltk::dialog::NativeFileChooserType::BrowseDir);
+            dialog.set_title("Select HTTP Directory");
+            dialog.show();
+            if let Some(path) = dialog.filename().to_str() {
+                if !path.is_empty() {
+                    crate::ui_state::add_http_dir(path);
+                    crate::ui_state::append_http_log(&format!("Added directory: {}\r\n", path));
+                    Self::refresh_dirs(&mut dir_browser_add);
+                }
+            }
+        });
+        
+        // Remove directory button callback
+        remove_dir_btn.set_callback(move |_| {
+            let selected_idx = dir_browser_remove.value();
+            if selected_idx <= 0 {
+                return;
+            }
+            
+            if let Some(text) = dir_browser_remove.text(selected_idx) {
+                let remove_path = text.trim().to_string();
+                if !remove_path.is_empty() {
+                    crate::ui_state::remove_http_dir(&remove_path);
+                    crate::ui_state::append_http_log(&format!("Removed directory: {}\r\n", remove_path));
+                    Self::refresh_dirs(&mut dir_browser_remove);
+                }
+            }
+        });
+        
+        // Browse button callback - open root directory in file manager
+        browse_btn.set_callback(|_| {
+            // TODO: Open directory in file manager
+            crate::ui_state::append_http_log("Browse: Open root directory in file manager\r\n");
+        });
 
         // Toggle button callback - send event, let refresh loop update button based on actual state
         toggle_btn.set_callback(move |_| {
@@ -125,6 +188,20 @@ impl TabComponent for HttpTab {
 }
 
 impl HttpTab {
+    fn refresh_dirs(browser: &mut Browser) {
+        if let Some(state) = UiState::global() {
+            if let Ok(s) = state.lock() {
+                browser.clear();
+                for dir in &s.http_dirs {
+                    browser.add(dir);
+                }
+                if s.http_dirs.is_empty() {
+                    browser.add("(No directories configured)");
+                }
+            }
+        }
+    }
+    
     fn refresh_log(display: &mut TextDisplay) {
         if let Some(state) = UiState::global() {
             if let Ok(s) = state.lock() {

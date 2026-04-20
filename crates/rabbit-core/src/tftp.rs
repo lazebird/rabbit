@@ -9,8 +9,7 @@ use std::sync::Arc;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::UdpSocket;
-use tokio::sync::{mpsc, RwLock};
-use tokio::task::JoinHandle;
+use tokio::sync::RwLock;
 use tokio::time::{timeout, Duration};
 use tracing::{error, info};
 
@@ -28,8 +27,8 @@ pub struct TftpService {
     client_config: Arc<RwLock<TftpClientConfig>>,
     transfers: Arc<RwLock<HashMap<String, TftpTransfer>>>,
     logs: Arc<RwLock<Vec<TftpLogEntry>>>,
-    server_shutdown: Option<mpsc::Sender<()>>,
-    server_handle: Option<JoinHandle<()>>,
+    server_shutdown: Option<tokio::sync::oneshot::Sender<()>>,
+    server_handle: Option<tokio::task::JoinHandle<()>>,
 }
 
 impl TftpService {
@@ -93,25 +92,70 @@ impl TftpService {
             std::fs::create_dir_all(&root)?;
         }
 
-        let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
+        let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel();
         self.server_shutdown = Some(shutdown_tx);
 
-        let _transfers = Arc::clone(&self.transfers);
-        let _logs = Arc::clone(&self.logs);
+        let transfers = Arc::clone(&self.transfers);
+        let logs = Arc::clone(&self.logs);
+        let bind_addr = config.bind_addr.clone();
+        let root_path = config.root_path.clone();
+        let timeout_secs = config.timeout_secs;
+        let block_size = config.block_size;
+        let window_size = config.window_size;
+        let allow_overwrite = config.allow_overwrite;
 
-        let handle = tokio::spawn(async move {
-            // Use async-tftp with custom Handler for caching
-            // This is a placeholder - actual implementation would use async_tftp::Server
-            info!("TFTP server would start on {}", config.bind_addr);
-
-            tokio::select! {
-                _ = tokio::time::sleep(tokio::time::Duration::from_secs(3600)) => {
-                    // Keep running
+        let handle = tokio::task::spawn_blocking(move || {
+            info!("Starting TFTP server on {} with root: {}", bind_addr, root_path);
+            
+            // Use async-tftp library to create server with directory handler
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .expect("Failed to create runtime");
+            
+            rt.block_on(async {
+                // Create the TFTP server with the root directory
+                match async_tftp::server::TftpServerBuilder::with_dir_rw(&root_path) {
+                    Ok(builder) => {
+                        let addr: std::net::SocketAddr = match bind_addr.parse() {
+                            Ok(a) => a,
+                            Err(e) => {
+                                error!("Invalid bind address {}: {}", bind_addr, e);
+                                return;
+                            }
+                        };
+                        
+                        let builder = builder
+                            .bind(addr)
+                            .timeout(std::time::Duration::from_secs(timeout_secs))
+                            .block_size_limit(block_size as u16)
+                            .window_size_limit(window_size as u16)
+                            .max_send_retries(100);
+                        
+                        match builder.build().await {
+                            Ok(server) => {
+                                info!("TFTP server started successfully");
+                                // Run server until shutdown
+                                let server_fut = server.serve();
+                                tokio::select! {
+                                    _ = server_fut => {
+                                        info!("TFTP server finished");
+                                    }
+                                    _ = shutdown_rx => {
+                                        info!("TFTP server shutting down");
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                error!("Failed to start TFTP server: {}", e);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        error!("Failed to create TFTP server builder: {}", e);
+                    }
                 }
-                _ = shutdown_rx.recv() => {
-                    info!("TFTP server shutting down");
-                }
-            }
+            });
         });
 
         self.server_handle = Some(handle);
@@ -122,7 +166,7 @@ impl TftpService {
     /// Stop TFTP server
     pub async fn stop_server(&mut self) -> Result<()> {
         if let Some(tx) = self.server_shutdown.take() {
-            let _ = tx.send(()).await;
+            let _ = tx.send(());
         }
 
         if let Some(handle) = self.server_handle.take() {

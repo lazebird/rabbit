@@ -65,6 +65,13 @@ impl Task {
         self.state = TaskState::Pending;
         self.snooze_until = None;
     }
+    
+    /// Reset task for next trigger (for repeating schedules)
+    pub fn reset_for_next_trigger(&mut self) {
+        self.state = TaskState::Pending;
+        self.snooze_until = None;
+        self.last_triggered = Some(Local::now());
+    }
 }
 
 /// Schedule configuration
@@ -73,6 +80,19 @@ pub enum Schedule {
     Once { datetime: DateTime<Local> },
     Daily { time: NaiveTime },
     Weekly { day: WeekDay, time: NaiveTime },
+    Repeating { 
+        datetime: DateTime<Local>,
+        cycle: i32,
+        unit: RepeatUnit,
+    },
+}
+
+/// Repeat unit for recurring schedules
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum RepeatUnit {
+    Minute,
+    Hour,
+    Day,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

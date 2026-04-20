@@ -36,5 +36,8 @@ async-tftp = { workspace = true }
 surge-ping = { workspace = true }
 socket2 = "0.6"
 
+# DNS
+dns-lookup = { workspace = true }
+
 [dev-dependencies]
 tokio-test = "0.4"

@@ -58,6 +58,7 @@ surge-ping = "0.8"
 # Network
 tokio-util = "0.7"
 bytes = "1.10"
+dns-lookup = "2.0"
 
 # Platform
 dirs = "6.0"

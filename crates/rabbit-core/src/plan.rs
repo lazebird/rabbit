@@ -2,7 +2,7 @@
 
 use crate::{Result, ServiceError};
 use chrono::{Datelike, Local};
-use rabbit_models::plan::{Schedule, Task, TaskLog, TaskState};
+use rabbit_models::plan::{Schedule, Task, TaskLog, TaskState, RepeatUnit};
 use rabbit_platform::notification::show_task_reminder;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -181,6 +181,12 @@ impl PlanService {
                 acknowledged_at: None,
             });
 
+            // For repeating schedules, reset to pending after triggering
+            // so it can trigger again at the next interval
+            if matches!(task.schedule, Schedule::Repeating { .. }) {
+                task.reset_for_next_trigger();
+            }
+
             // Update task in storage
             tasks.write().await.insert(id, task);
         }
@@ -188,8 +194,6 @@ impl PlanService {
 
     /// Check if a schedule should trigger at given time
     fn should_trigger(schedule: &Schedule, now: chrono::DateTime<chrono::Local>) -> bool {
-        
-
         match schedule {
             Schedule::Once { datetime } => {
                 let diff = (*datetime - now).num_seconds();
@@ -219,6 +223,26 @@ impl PlanService {
                 let now_time = now.time();
                 let diff = (now_time - *time).num_seconds();
                 diff >= 0 && diff < 30
+            }
+            Schedule::Repeating { datetime, cycle, unit } => {
+                // Calculate the interval in seconds
+                let interval_secs = match unit {
+                    RepeatUnit::Minute => *cycle as i64 * 60,
+                    RepeatUnit::Hour => *cycle as i64 * 3600,
+                    RepeatUnit::Day => *cycle as i64 * 86400,
+                };
+                
+                // Time elapsed since the start datetime
+                let elapsed = (now - *datetime).num_seconds();
+                
+                // Trigger if we've passed the start time and are at an interval boundary
+                if elapsed < 0 {
+                    false // Haven't reached start time yet
+                } else {
+                    // Check if we're within 30 seconds of an interval boundary
+                    let remainder = elapsed % interval_secs;
+                    remainder < 30
+                }
             }
         }
     }

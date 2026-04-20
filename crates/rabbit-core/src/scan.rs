@@ -274,10 +274,19 @@ async fn ping_host_parallel(ip: Ipv4Addr, timeout_ms: u64) -> (bool, Option<f64>
 }
 
 /// Resolve hostname from IP
-async fn resolve_hostname(_ip: Ipv4Addr) -> Option<String> {
-    // Use DNS reverse lookup
-    // This is a placeholder
-    None
+async fn resolve_hostname(ip: Ipv4Addr) -> Option<String> {
+    // Use DNS reverse lookup via dns-lookup crate
+    use std::net::IpAddr;
+    
+    let ip_addr = IpAddr::V4(ip);
+    
+    // Perform reverse DNS lookup (blocking operation)
+    tokio::task::spawn_blocking(move || {
+        match dns_lookup::lookup_addr(&ip_addr) {
+            Ok(name) if !name.is_empty() => Some(name),
+            _ => None,
+        }
+    }).await.ok().flatten()
 }
 
 /// Get MAC address from ARP table (Linux: /proc/net/arp)
