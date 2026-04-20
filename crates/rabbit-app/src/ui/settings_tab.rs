@@ -13,9 +13,221 @@ use fltk::{
     enums::Align,
     text::{TextBuffer, TextDisplay, WrapMode},
 };
+use std::collections::HashMap;
 
 use crate::ui_events::{UiEvent, send_event};
 use super::{TabComponent, Colors, Spacing};
+
+// ============================================================
+// Constants - URLs and Version
+// ============================================================
+
+/// Current application version from Cargo.toml
+const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// Remote versions.json URL for update checking
+const VERSION_CHECK_URL: &str = "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/raw/rewrite/release/versions.json";
+
+/// Home page URL for downloads
+const HOME_URL: &str = "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/tree/rewrite/release";
+
+/// Help/manual URL
+const HELP_URL: &str = "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/blob/rewrite/doc/manual.md";
+
+// ============================================================
+// Version Management
+// ============================================================
+
+/// Parsed version information from versions.json
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct VersionsManifest {
+    /// Unified version number (all platforms share the same version)
+    pub version: String,
+    /// Release date (YYYY/MM/DD)
+    pub release_date: String,
+    /// Release notes
+    pub release_notes: String,
+    /// Platform-specific download info
+    pub platforms: HashMap<String, PlatformInfo>,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct PlatformInfo {
+    /// SHA256 checksum (hex string)
+    pub sha256: String,
+    /// File size in bytes
+    pub size: u64,
+    /// Download URL
+    pub url: String,
+}
+
+impl VersionsManifest {
+    /// Get info for current platform
+    pub fn for_current_platform(&self) -> Option<&PlatformInfo> {
+        let platform = current_platform();
+        self.platforms.get(platform)
+    }
+
+    /// Check if this version is newer than current
+    pub fn is_newer_than(&self, _current: &str) -> bool {
+        !self.version.is_empty()
+    }
+
+    /// Format release info for display
+    pub fn format_summary(&self) -> String {
+        let mut s = format!("Version: {}\n", self.version);
+        s.push_str(&format!("Date: {}\n", self.release_date));
+        if !self.release_notes.is_empty() {
+            s.push_str(&format!("\n{}\n", self.release_notes));
+        }
+        if let Some(info) = self.for_current_platform() {
+            s.push_str(&format!("\nSize: {:.1} MB\n", info.size as f64 / 1024.0 / 1024.0));
+        }
+        s
+    }
+}
+
+/// Detect current platform identifier
+fn current_platform() -> &'static str {
+    #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
+    return "windows-x64";
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    return "linux-x64";
+    #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
+    return "linux-arm64";
+    #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+    return "macos-x64";
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    return "macos-arm64";
+    "unknown"
+}
+
+/// Fetch remote version content using platform-specific commands
+fn fetch_version_content(url: &str) -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = std::process::Command::new("powershell")
+            .args(["-Command", &format!("(Invoke-WebRequest -Uri '{0}' -UseBasicParsing).Content", url)])
+            .output()
+            .map_err(|e| format!("Failed to run PowerShell: {}", e))?;
+
+        if !output.status.success() {
+            return Err(format!("HTTP {}", output.status));
+        }
+        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let output = std::process::Command::new("curl")
+            .args(["-s", "-L", "--connect-timeout", "10", url])
+            .output()
+            .map_err(|e| format!("Failed to run curl: {}", e))?;
+
+        if !output.status.success() {
+            return Err(format!("HTTP {}", output.status));
+        }
+        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // Try curl first, fallback to wget
+        let output = std::process::Command::new("curl")
+            .args(["-s", "-L", "--connect-timeout", "10", url])
+            .output();
+
+        let output = match output {
+            Ok(o) if o.status.success() => o,
+            _ => std::process::Command::new("wget")
+                .args(["-q", "-O-", "--no-check-certificate", "--timeout=10", url])
+                .output()
+                .map_err(|e| format!("Failed to run wget: {}", e))?,
+        };
+
+        if !output.status.success() {
+            return Err(format!("HTTP {}", output.status));
+        }
+        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+    }
+}
+
+/// Check for version updates
+fn check_version_update() -> String {
+    match fetch_version_content(VERSION_CHECK_URL) {
+        Ok(content) => {
+            match serde_json::from_str::<VersionsManifest>(&content) {
+                Ok(remote) => {
+                    let mut msg = format!("Current version: {}\n\n", CURRENT_VERSION);
+                    msg.push_str(&remote.format_summary());
+                    msg.push_str("\n");
+
+                    if remote.is_newer_than(CURRENT_VERSION) {
+                        msg.push_str("\nA newer version is available.\n");
+                    } else {
+                        msg.push_str("\nYou are on the latest version.\n");
+                    }
+                    msg.push_str("\nVisit Home to download updates.\n");
+                    msg
+                }
+                Err(e) => {
+                    format!(
+                        "Current version: {}\n\n\
+                        Failed to parse version info.\n\
+                        Error: {}\n\n\
+                        Visit Home to check for updates manually.\n",
+                        CURRENT_VERSION, e
+                    )
+                }
+            }
+        }
+        Err(e) => {
+            format!(
+                "Current version: {}\n\n\
+                Unable to check for updates.\n\
+                Error: {}\n\n\
+                Visit Home to check for updates manually.\n",
+                CURRENT_VERSION, e
+            )
+        }
+    }
+}
+
+// ============================================================
+// Platform Helpers
+// ============================================================
+
+/// Open a URL in the system default browser
+fn open_url(url: &str) {
+    #[cfg(target_os = "windows")]
+    { let _ = std::process::Command::new("cmd").args(["/c", "start", url]).spawn(); }
+    #[cfg(target_os = "macos")]
+    { let _ = std::process::Command::new("open").arg(url).spawn(); }
+    #[cfg(target_os = "linux")]
+    { let _ = std::process::Command::new("xdg-open").arg(url).spawn(); }
+}
+
+/// Open a folder in the system file explorer
+fn open_folder(path: &str) {
+    #[cfg(target_os = "windows")]
+    { let _ = std::process::Command::new("explorer").arg(path).spawn(); }
+    #[cfg(target_os = "macos")]
+    { let _ = std::process::Command::new("open").arg(path).spawn(); }
+    #[cfg(target_os = "linux")]
+    { let _ = std::process::Command::new("xdg-open").arg(path).spawn(); }
+}
+
+/// Get config folder path (matches rabbit-platform::config::get_config_dir)
+fn get_config_folder() -> String {
+    if let Some(config_dir) = dirs::config_dir() {
+        return config_dir.join("rabbit").to_string_lossy().to_string();
+    }
+    String::from(".")
+}
+
+// ============================================================
+// Settings Tab Component
+// ============================================================
 
 /// Settings Tab Component
 pub struct SettingsTab;
@@ -48,7 +260,7 @@ impl TabComponent for SettingsTab {
         lang_row.end();
         grp.fixed(&lang_row, spacing.row_height);
 
-        // Row 2: Checkboxes (left-aligned, individual)
+        // Row 2: Checkboxes
         let mut check_row = Flex::default().row();
         check_row.set_spacing(15);
 
@@ -69,18 +281,17 @@ impl TabComponent for SettingsTab {
         check_row.end();
         grp.fixed(&check_row, spacing.row_height);
 
-        // Row 3: Version info (left) + Links (right-aligned: Home | Profile | Help)
+        // Row 3: Version info (left) + Links (right-aligned)
         let mut info_row = Flex::default().row();
         info_row.set_spacing(10);
 
-        // Version info (left side)
         let version_label = format!("sRabbit {}", CURRENT_VERSION);
         let mut version_frame = Frame::default().with_label(&version_label);
         version_frame.set_align(Align::Left | Align::Inside);
         version_frame.set_label_color(fltk::enums::Color::Blue);
         info_row.fixed(&version_frame, 120);
 
-        Frame::default(); // Spacer to push buttons to the right
+        Frame::default(); // Spacer
 
         let mut home_btn = Button::default().with_label("Home");
         home_btn.set_frame(fltk::enums::FrameType::FlatBox);
@@ -100,7 +311,7 @@ impl TabComponent for SettingsTab {
         info_row.end();
         grp.fixed(&info_row, spacing.row_height);
 
-        // Output area - fills remaining space
+        // Output area
         let mut output_display = TextDisplay::default();
         let output_buf = TextBuffer::default();
         output_display.set_buffer(Some(output_buf));
@@ -109,47 +320,34 @@ impl TabComponent for SettingsTab {
 
         grp.end();
 
-        // Apply styling
+        // Styling
         grp.set_color(colors.background);
         output_display.set_color(colors.input_bg);
         output_display.set_text_color(colors.text);
 
-        // Link callbacks - open URLs in browser
-        home_btn.set_callback(|_| {
-            open_url(HOME_URL);
-        });
+        // Link callbacks
+        home_btn.set_callback(|_| open_url(HOME_URL));
 
         profile_btn.set_callback(|_| {
-            // Open config folder in file explorer
             let config_path = get_config_folder();
-            // Ensure the directory exists
-            if !std::path::Path::new(&config_path).exists() {
-                let _ = std::fs::create_dir_all(&config_path);
-            }
+            let _ = std::fs::create_dir_all(&config_path);
             open_folder(&config_path);
         });
 
-        help_btn.set_callback(|_| {
-            open_url(HELP_URL);
-        });
+        help_btn.set_callback(|_| open_url(HELP_URL));
 
-        // Version check callback - click version info to check for updates
-        let output_clone_version = output_display.clone();
+        // Version check callback
+        let output_clone = output_display.clone();
         let mut version_frame_handle = version_frame.clone();
         version_frame_handle.handle(move |_, ev| {
             if ev == fltk::enums::Event::Push {
-                // Copy version to clipboard
-                let ver_text = format!("sRabbit {}", CURRENT_VERSION);
-                fltk::app::copy(&ver_text);
+                fltk::app::copy(&format!("sRabbit {}", CURRENT_VERSION));
 
-                // Start version check in background
-                let out = output_clone_version.clone();
+                let out = output_clone.clone();
                 std::thread::spawn(move || {
-                    // Write "Checking..." message
                     if let Some(mut buf) = out.buffer() {
-                        buf.set_text("Checking for updates...\r\n");
+                        buf.set_text("Checking for updates...\n");
                     }
-
                     let result = check_version_update();
                     if let Some(mut buf) = out.buffer() {
                         buf.set_text(&result);
@@ -161,194 +359,13 @@ impl TabComponent for SettingsTab {
             }
         });
 
-        // Auto-save callbacks - save immediately on change
-        let _lang_choice_clone = lang_choice.clone();
-        lang_choice.set_callback(move |_| {
-            send_event(UiEvent::SettingsSave);
-        });
-
-        tray_check.set_callback(move |_| {
-            send_event(UiEvent::SettingsSave);
-        });
-
-        top_check.set_callback(move |_| {
-            send_event(UiEvent::SettingsSave);
-        });
-
-        autostart_check.set_callback(move |_| {
-            send_event(UiEvent::SettingsSave);
-        });
-
-        autoupdate_check.set_callback(move |_| {
-            send_event(UiEvent::SettingsSave);
-        });
+        // Auto-save callbacks
+        lang_choice.set_callback(move |_| send_event(UiEvent::SettingsSave));
+        tray_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
+        top_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
+        autostart_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
+        autoupdate_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
 
         grp
     }
-}
-
-/// Open a URL in the system default browser.
-fn open_url(url: &str) {
-    #[cfg(target_os = "windows")]
-    {
-        let _ = std::process::Command::new("cmd")
-            .arg("/c")
-            .arg("start")
-            .arg(url)
-            .spawn();
-    }
-    #[cfg(target_os = "macos")]
-    {
-        let _ = std::process::Command::new("open")
-            .arg(url)
-            .spawn();
-    }
-    #[cfg(target_os = "linux")]
-    {
-        let _ = std::process::Command::new("xdg-open")
-            .arg(url)
-            .spawn();
-    }
-}
-
-/// Open a folder in the system file explorer.
-fn open_folder(path: &str) {
-    #[cfg(target_os = "windows")]
-    {
-        let _ = std::process::Command::new("explorer")
-            .arg(path)
-            .spawn();
-    }
-    #[cfg(target_os = "macos")]
-    {
-        let _ = std::process::Command::new("open")
-            .arg(path)
-            .spawn();
-    }
-    #[cfg(target_os = "linux")]
-    {
-        let _ = std::process::Command::new("xdg-open")
-            .arg(path)
-            .spawn();
-    }
-}
-
-/// Current build information
-const CURRENT_VERSION: &str = "1.0.0";
-
-// URLs
-const HOME_URL: &str = "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/tree/master/release";
-const HELP_URL: &str = "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/blob/master/doc/manual.md";
-const VERSION_CHECK_URL: &str = "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/raw/master/release/version.txt";
-
-// Config folder path - matches rabbit-platform::config::get_config_dir()
-fn get_config_folder() -> String {
-    if let Some(config_dir) = dirs::config_dir() {
-        return config_dir.join("rabbit").to_string_lossy().to_string();
-    }
-    String::from(".")
-}
-
-/// Check for version updates by fetching remote version info.
-/// Returns a message describing the update status.
-fn check_version_update() -> String {
-    // Try to fetch remote version info
-    match fetch_remote_version() {
-        Ok(remote_info) => {
-            // Show the remote version info
-            let mut msg = format!("Current version: {}\r\n", CURRENT_VERSION);
-            msg.push_str(&format!("Remote build: {}\r\n", remote_info.get("date").unwrap_or(&"unknown".to_string())));
-            msg.push_str(&format!("  Time: {}\r\n", remote_info.get("time").unwrap_or(&"".to_string())));
-            msg.push_str(&format!("  Branch: {}\r\n", remote_info.get("branch").unwrap_or(&"".to_string())));
-            if let Some(sha) = remote_info.get("sha") {
-                msg.push_str(&format!("  Commit: {}\r\n", sha));
-            }
-            if let Some(extra) = remote_info.get("extra") {
-                msg.push_str(&format!("  Extra: {}\r\n", extra));
-            }
-            msg.push_str("\r\nClick Home link to download the latest version.\r\n");
-            msg
-        }
-        Err(e) => {
-            // When offline or server unreachable, show current version info
-            format!(
-                "Current version: {}\r\n\
-                \r\n\
-                Unable to check for updates.\r\n\
-                Reason: {}\r\n\
-                \r\n\
-                Visit the Home link to check for updates manually.\r\n",
-                CURRENT_VERSION,
-                e
-            )
-        }
-    }
-}
-
-/// Fetch remote version info from the version.txt file.
-fn fetch_remote_version() -> Result<std::collections::HashMap<String, String>, String> {
-    // Use a simple HTTP GET request via subprocess
-    let output = if cfg!(target_os = "windows") {
-        std::process::Command::new("powershell")
-            .arg("-Command")
-            .arg(format!("(Invoke-WebRequest -Uri '{}').Content", VERSION_CHECK_URL))
-            .output()
-            .map_err(|e| format!("Failed to run PowerShell: {}", e))?
-    } else if cfg!(target_os = "macos") {
-        std::process::Command::new("curl")
-            .arg("-s")
-            .arg("-L")  // Follow redirects
-            .arg(VERSION_CHECK_URL)
-            .output()
-            .map_err(|e| format!("Failed to run curl: {}", e))?
-    } else {
-        std::process::Command::new("wget")
-            .arg("-q")
-            .arg("-O-")
-            .arg("--no-check-certificate")
-            .arg(VERSION_CHECK_URL)
-            .output()
-            .map_err(|e| format!("Failed to run wget: {}", e))?
-    };
-
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("HTTP request failed: {}", stderr.trim()));
-    }
-
-    let content = String::from_utf8_lossy(&output.stdout);
-    if content.trim().is_empty() {
-        return Err("Empty response from server".to_string());
-    }
-    parse_version_txt(&content)
-}
-
-/// Parse the version.txt file format into a HashMap.
-/// Format:
-///   date=2018/08/02
-///   time=21:22:24
-///   branch=master
-///   sha=8085829
-///   extra=Release
-fn parse_version_txt(content: &str) -> Result<std::collections::HashMap<String, String>, String> {
-    let mut map = std::collections::HashMap::new();
-    for line in content.lines() {
-        // Skip empty lines and lines without '='
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
-        }
-        if let Some(pos) = line.find('=') {
-            let key = line[..pos].trim().to_string();
-            let value = line[pos + 1..].trim().to_string();
-            // Only add if key is non-empty
-            if !key.is_empty() {
-                map.insert(key, value);
-            }
-        }
-    }
-    if map.is_empty() {
-        return Err("Empty version info".to_string());
-    }
-    Ok(map)
 }

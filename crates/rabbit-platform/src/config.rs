@@ -52,13 +52,23 @@ pub fn load_config() -> Result<AppConfig> {
     Ok(config)
 }
 
-/// Save configuration to disk
+/// Save configuration to disk (only if changed)
 pub fn save_config(config: &AppConfig) -> Result<()> {
     let config_path = get_config_dir()?.join(CONFIG_FILE);
     let content = toml::to_string_pretty(config)
         .map_err(|e| PlatformError::Config(format!("Failed to serialize config: {}", e)))?;
-    
-    std::fs::write(&config_path, content)?;
+
+    // Check if config file exists and has same content
+    if config_path.exists() {
+        if let Ok(existing) = std::fs::read_to_string(&config_path) {
+            if existing == content {
+                info!("Config unchanged, skipping write");
+                return Ok(());
+            }
+        }
+    }
+
+    std::fs::write(&config_path, &content)?;
     info!("Saved configuration to {:?}", config_path);
     Ok(())
 }

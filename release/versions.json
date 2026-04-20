@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "release_date": "2026/04/20",
+  "release_notes": "Release 0.2.0",
+  "platforms": {
+    "linux-x64": {
+      "sha256": "3de93ad2c6e87f9f3bbaea18b766d2cd2db22a45833d1d092190d37025e570cb",
+      "size": 3128296,
+      "url": "https://codeup.aliyun.com/60e7f4fa52743a5162b61dd9/lazebird/rabbit/raw/rewrite/release/rabbit-0.2.0-linux-x64"
+    }
+  }
+}
