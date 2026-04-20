@@ -164,9 +164,10 @@ fn do_refresh() {
         let Some(display) = map.get_mut(key) else { continue };
         if let Some(mut buf) = display.buffer() {
             buf.set_text(value);
-            // Auto-scroll for log-type displays
+            // Auto-scroll for all log-type displays when new content arrives
             if matches!(*key, "ping_output" | "scan_output" | "http_log"
-                              | "tftpd_log" | "tftpc_log" | "plan_list" | "chat_messages") {
+                              | "tftpd_log" | "tftpc_log" | "plan_list"
+                              | "chat_messages" | "settings_output") {
                 let lines = buf.count_lines(0, buf.length());
                 display.scroll(lines, 0);
             }

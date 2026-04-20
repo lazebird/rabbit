@@ -358,6 +358,32 @@ pub fn set_settings_output(text: &str) {
     }
 }
 
+/// Update a single line in settings output (replaces instead of appending)
+/// Useful for progress bars that need to refresh in place
+pub fn update_settings_line(line_index: i32, text: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            let mut lines: Vec<&str> = s.settings_output.lines().collect();
+            let len = lines.len();
+
+            if line_index >= 0 && (line_index as usize) < len {
+                lines[line_index as usize] = text;
+            } else if line_index == -1 {
+                // -1 means update the last line
+                if len > 0 {
+                    lines[len - 1] = text;
+                }
+            } else {
+                // Line index out of bounds, append
+                lines.push(text);
+            }
+
+            s.settings_output = lines.join("\n");
+            s.updated.insert("settings_output".to_string(), true);
+        }
+    }
+}
+
 pub fn append_settings_output(text: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {

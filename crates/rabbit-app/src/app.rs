@@ -329,7 +329,8 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
             let downloaded_mb = progress.downloaded as f64 / 1024.0 / 1024.0;
             let total_mb = progress.total as f64 / 1024.0 / 1024.0;
             info!("Downloading: {:.1} MB / {:.1} MB ({:.0}%)", downloaded_mb, total_mb, pct);
-            crate::ui_state::append_settings_output(&format!("  {:.0}% - {:.1} MB / {:.1} MB", pct, downloaded_mb, total_mb));
+            // Update progress in place (last line) instead of appending
+            crate::ui_state::update_settings_line(-1, &format!("  {:.0}% - {:.1} MB / {:.1} MB", pct, downloaded_mb, total_mb));
         }),
     );
 
