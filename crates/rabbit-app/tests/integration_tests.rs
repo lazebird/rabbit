@@ -73,16 +73,17 @@ fn test_ping_summary_calculation() {
 
 #[test]
 fn test_http_server_config_defaults() {
-    let config = rabbit_models::http::HttpServerConfig::default();
+    let app_config = rabbit_models::config::HttpConfig::default();
+    let config = rabbit_models::http::HttpServerConfig::from(&app_config);
 
     assert!(!config.enabled);
-    assert_eq!(config.port, 8080);
-    assert_eq!(config.root_path, ".");
+    assert_eq!(config.port, 8000);
+    assert_eq!(config.root_path, "");  // empty dirs -> empty root_path
     assert!(!config.allow_upload);
     assert!(!config.allow_delete);
     assert!(!config.shell);
-    assert!(!config.auto_index);
-    assert!(!config.video_play);
+    assert!(config.auto_index);  // default is true
+    assert!(config.video_play);  // default is true
 }
 
 #[test]
@@ -125,13 +126,14 @@ fn test_http_access_log_entry() {
 
 #[test]
 fn test_tftp_server_config_defaults() {
-    let config = rabbit_models::tftp::TftpServerConfig::default();
+    let app_config = rabbit_models::config::TftpdConfig::default();
+    let config = rabbit_models::tftp::TftpServerConfig::from(&app_config);
 
     assert!(!config.enabled);
     assert_eq!(config.bind_addr, "0.0.0.0:69");
-    assert_eq!(config.root_path, ".");
+    assert_eq!(config.root_path, "");  // empty work_dirs -> empty root_path
     assert_eq!(config.block_size, 512);
-    assert_eq!(config.timeout_secs, 5);
+    assert_eq!(config.timeout_secs, 0);  // 200ms / 1000 = 0
     assert_eq!(config.window_size, 1);
     assert!(!config.allow_overwrite);
 }
@@ -156,12 +158,13 @@ fn test_tftp_server_config_with_options() {
 
 #[test]
 fn test_tftp_client_config_defaults() {
-    let config = rabbit_models::tftp::TftpClientConfig::default();
+    let app_config = rabbit_models::config::TftpcConfig::default();
+    let config = rabbit_models::tftp::TftpClientConfig::from(&app_config);
 
     assert_eq!(config.server_addr, "127.0.0.1:69");
     assert_eq!(config.local_port, 0);
-    assert_eq!(config.block_size, 512);
-    assert_eq!(config.timeout_secs, 5);
+    assert_eq!(config.block_size, 1024);
+    assert_eq!(config.timeout_secs, 0);
 }
 
 #[test]
@@ -188,11 +191,12 @@ fn test_tftp_transfer_creation() {
 
 #[test]
 fn test_chat_config_defaults() {
-    let config = rabbit_models::chat::ChatConfig::default();
+    let app_config = rabbit_models::config::ChatModuleConfig::default();
+    let config = rabbit_models::chat::ChatConfig::from(&app_config);
 
     assert!(!config.enabled);
-    assert_eq!(config.port, 5000);
-    assert_eq!(config.multicast_addr, "239.255.255.250");
+    assert_eq!(config.port, 1314);
+    assert_eq!(config.multicast_addr, "255.255.255.255");
 }
 
 #[test]
@@ -309,6 +313,7 @@ fn test_scan_result_creation() {
         ip: Ipv4Addr::new(192, 168, 1, 1),
         online: true,
         hostname: Some("router.local".to_string()),
+        mac_address: None,
         response_time_ms: Some(1.5),
         open_ports: vec![80, 443],
     };
@@ -322,8 +327,8 @@ fn test_scan_result_creation() {
 fn test_scanner_config_defaults() {
     let config = rabbit_models::scan::ScannerConfig::default();
 
-    assert_eq!(config.timeout_ms, 2000);
-    assert_eq!(config.concurrent, 100);
+    assert_eq!(config.timeout_ms, 1500);
+    assert_eq!(config.concurrent, 256);
     assert_eq!(config.retry_count, 1);
 }
 

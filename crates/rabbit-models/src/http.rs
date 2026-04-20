@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::config::HttpConfig;
+
 /// HTTP server configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HttpServerConfig {
@@ -15,17 +17,17 @@ pub struct HttpServerConfig {
     pub video_play: bool,
 }
 
-impl Default for HttpServerConfig {
-    fn default() -> Self {
+impl From<&HttpConfig> for HttpServerConfig {
+    fn from(config: &HttpConfig) -> Self {
         Self {
             enabled: false,
-            port: 8080,
-            root_path: String::from("."),
+            port: config.port,
+            root_path: config.dirs.first().cloned().unwrap_or_default(),
             allow_upload: false,
             allow_delete: false,
-            shell: false,
-            auto_index: false,
-            video_play: false,
+            shell: config.shell,
+            auto_index: config.autoindex,
+            video_play: config.videoplay,
         }
     }
 }

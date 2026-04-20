@@ -376,6 +376,100 @@ rabbit/
 - **成熟优先**：选择社区活跃、文档完善的库
 - **避免过度封装**：需求简单则自实现
 
+### 5.4 配置模型设计
+
+项目采用**双层配置模型**设计，通过 `From` trait 实现自动转换，确保默认值唯一来源。
+
+#### 模型分层
+
+| 层级 | 位置 | 职责 | 示例 |
+|------|------|------|------|
+| 持久化层 | `config.rs` | 配置文件序列化/反序列化，默认值定义 | `HttpConfig`, `TftpdConfig`, `ChatModuleConfig` |
+| 业务层 | 各模块模型文件 | 运行时配置，业务逻辑使用 | `HttpServerConfig`, `TftpServerConfig`, `ChatConfig` |
+
+#### 转换机制
+
+```rust
+// 业务层不提供 Default 实现，通过 From trait 从 config.rs 获取
+impl From<&HttpConfig> for HttpServerConfig {
+    fn from(config: &HttpConfig) -> Self { ... }
+}
+
+// 使用方式
+let config: HttpServerConfig = (&app_config.modules.http).into();
+```
+
+#### 已实现转换的模块
+
+| 模块 | From 实现 | Default 状态 |
+|------|-----------|-------------|
+| HTTP | `From<&HttpConfig> for HttpServerConfig` | 已删除 |
+| TFTP Server | `From<&TftpdConfig> for TftpServerConfig` | 已删除 |
+| TFTP Client | `From<&TftpcConfig> for TftpClientConfig` | 已删除 |
+| Chat | `From<&ChatModuleConfig> for ChatConfig` | 已删除 |
+| Scan | `From<&ScanConfig> for ScanRange` | 保留（无对应模型） |
+
+#### 核心服务初始化模式
+
+```rust
+// new() 使用内部占位配置（不可用状态）
+pub fn new() -> Self {
+    Self {
+        config: Arc::new(RwLock::new(Self::placeholder_config())),
+        ...
+    }
+}
+
+// init() 必须传入从 config.rs 转换的配置
+pub async fn init(&mut self, config: BusinessConfig) -> Result<()> {
+    *self.config.write().await = config;
+    Ok(())
+}
+```
+
+**设计原则**：
+1. 默认值唯一来源为 `config.rs`，业务层不保留降级方案
+2. 占位配置仅用于 `new()` 到 `init()` 之间的短暂过渡
+3. 业务代码正常路径下只能通过 `From` trait 获取配置
+
+---
+
+## 6. 核心模块实现细节
+
+### 6.1 HTTP 服务器模块
+
+#### 架构
+
+| 组件 | 技术 | 说明 |
+|------|------|------|
+| HTTP 框架 | axum | 基于 tower 的异步 HTTP 框架 |
+| 静态文件 | tower-http ServeDir | 高效静态文件服务 |
+| 访问日志 | 自定义 middleware | 记录请求/响应 |
+
+#### 视频播放器实现
+
+- **技术方案**: Video.js 7.1.0（与旧版 C# 实现兼容）
+- **触发方式**: URL 查询参数 `videoplay=true`
+- **支持格式**: MP4, WebM, OGG, AVI, MOV, WMV, FLV, MKV, M4V
+- **MIME 映射**: 内置 HashMap 映射文件扩展名到 MIME 类型
+- **实现方式**: 中间件拦截视频文件请求，返回包含 Video.js 播放器的 HTML 页面
+
+```
+请求: /videos/sample.mp4?videoplay=true
+  ↓
+中间件检测: 视频 MIME + video_play=true + 无 videoplay=false
+  ↓
+返回: Video.js 播放器 HTML 页面
+  ↓
+播放器加载: /videos/sample.mp4?videoplay=false (直接返回视频流)
+```
+
+#### 目录浏览实现
+
+- **配置**: `auto_index` 控制开关
+- **默认行为**: ServeDir `append_index_html_on_directories` 设置
+- **优先级**: index.html > index.htm > 目录列表（启用时）
+
 ---
 
 ## 6. 发布与优化

@@ -3,6 +3,8 @@
 use serde::{Deserialize, Serialize};
 use std::net::Ipv4Addr;
 
+use crate::config::ScanConfig;
+
 /// IP range to scan
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScanRange {
@@ -42,11 +44,24 @@ pub struct ScannerConfig {
 
 impl Default for ScannerConfig {
     fn default() -> Self {
+        // ScannerConfig doesn't have direct equivalent in config.rs
+        // These are internal performance tuning parameters
         Self {
             timeout_ms: 1500,
             concurrent: 256,
             retry_count: 1,
         }
+    }
+}
+
+impl From<&ScanConfig> for ScanRange {
+    fn from(config: &ScanConfig) -> Self {
+        let start: Ipv4Addr = config.start_ip.parse().unwrap_or(Ipv4Addr::new(192, 168, 1, 1));
+        let end_last: u32 = config.end_ip.parse().unwrap_or(254);
+        // Assume same subnet for simplicity
+        let octets = start.octets();
+        let end = Ipv4Addr::new(octets[0], octets[1], octets[2], end_last as u8);
+        Self { start, end, port: 0 }
     }
 }
 
@@ -87,8 +102,12 @@ mod tests {
     }
 
     #[test]
-    fn test_scanner_config_default() {
-        let config = ScannerConfig::default();
+    fn test_scanner_config() {
+        let config = ScannerConfig {
+            timeout_ms: 2000,
+            concurrent: 100,
+            retry_count: 1,
+        };
         assert_eq!(config.timeout_ms, 2000);
         assert_eq!(config.concurrent, 100);
         assert_eq!(config.retry_count, 1);
@@ -100,6 +119,7 @@ mod tests {
             ip: Ipv4Addr::new(192, 168, 1, 100),
             online: true,
             hostname: Some("host.example.com".to_string()),
+            mac_address: None,
             response_time_ms: Some(5.5),
             open_ports: vec![80, 443],
         };

@@ -6,7 +6,7 @@ This file provides guidance to Qoder (qoder.com) when working with code in this 
 
 Rabbit is a cross-platform collection of networking utilities and productivity tools. It integrates multiple utilities (ping, HTTP server, TFTP server/client, IP scanner, LAN chat) and task planning into a single application.
 
-**Tech Stack:** Rust + Slint GUI framework
+**Tech Stack:** Rust + FLTK GUI framework
 
 ## Build Commands
 
@@ -39,12 +39,12 @@ Requirements:
 
 ## Project Architecture
 
-### Three-Layer Architecture
+### Four-Layer Architecture
 
 ```
 ┌─────────────────────────────────────────┐
 │           Presentation Layer             │
-│   View (Slint UI) ← ViewModel (State)    │
+│   View (FLTK UI) ← ViewModel (State)     │
 ├─────────────────────────────────────────┤
 │           Business Layer                 │
 │   PingService / HttpService / ...       │
@@ -89,7 +89,7 @@ rabbit/
 
 | Module | Library | Notes |
 |--------|---------|-------|
-| UI Framework | slint | Cross-platform native UI |
+| UI Framework | fltk | Cross-platform native UI |
 | Async Runtime | tokio | Async I/O |
 | HTTP Server | axum | Lightweight async HTTP |
 | TFTP | async-tftp | Async TFTP with Handler |
@@ -118,3 +118,8 @@ strip = true         # Strip symbols
 - `doc/architecture.md` - Technical selection and architecture
 - `doc/requirements.md` - Detailed requirements and UI specs
 - `doc/tftp-evaluation.md` - Rust TFTP library evaluation
+- `doc/progress.md` - Development progress tracking
+- `doc/requirements-gap-analysis.md` - Requirements vs implementation gap analysis
+- `doc/version-management.md` - Version and release management
+- `doc/ui-framework-evaluation.md` - UI framework comparison
+- `doc/changelog-solution.md` - Changelog tool comparison

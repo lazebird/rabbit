@@ -35,12 +35,33 @@ pub struct TftpService {
 impl TftpService {
     pub fn new() -> Self {
         Self {
-            server_config: Arc::new(RwLock::new(TftpServerConfig::default())),
-            client_config: Arc::new(RwLock::new(TftpClientConfig::default())),
+            server_config: Arc::new(RwLock::new(Self::placeholder_server_config())),
+            client_config: Arc::new(RwLock::new(Self::placeholder_client_config())),
             transfers: Arc::new(RwLock::new(HashMap::new())),
             logs: Arc::new(RwLock::new(Vec::new())),
             server_shutdown: None,
             server_handle: None,
+        }
+    }
+
+    fn placeholder_server_config() -> TftpServerConfig {
+        TftpServerConfig {
+            enabled: false,
+            bind_addr: String::new(),
+            root_path: String::new(),
+            block_size: 512,
+            timeout_secs: 5,
+            window_size: 1,
+            allow_overwrite: false,
+        }
+    }
+
+    fn placeholder_client_config() -> TftpClientConfig {
+        TftpClientConfig {
+            server_addr: String::new(),
+            local_port: 0,
+            block_size: 1024,
+            timeout_secs: 5,
         }
     }
 

@@ -144,8 +144,8 @@ impl Default for HttpConfig {
         Self {
             port: 8000,
             shell: false,
-            autoindex: false,
-            videoplay: false,
+            autoindex: true,
+            videoplay: true,
             dirs: Vec::new(),
         }
     }
@@ -155,8 +155,8 @@ impl HttpConfig {
     /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!(
-            "autoindex={};videoplay={};shell={};",
-            self.autoindex, self.videoplay, self.shell
+            "autoindex={};videoplay={};",
+            self.autoindex, self.videoplay
         )
     }
 }
@@ -341,8 +341,8 @@ mod tests {
         let config = HttpConfig::default();
         assert_eq!(config.port, 8000);
         assert!(!config.shell);
-        assert!(!config.autoindex);
-        assert!(!config.videoplay);
+        assert!(config.autoindex);  // default is true
+        assert!(config.videoplay);  // default is true
     }
 
     #[test]

@@ -3,6 +3,8 @@
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 
+use crate::config::{TftpdConfig, TftpcConfig};
+
 /// TFTP server configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TftpServerConfig {
@@ -15,16 +17,16 @@ pub struct TftpServerConfig {
     pub allow_overwrite: bool,
 }
 
-impl Default for TftpServerConfig {
-    fn default() -> Self {
+impl From<&TftpdConfig> for TftpServerConfig {
+    fn from(config: &TftpdConfig) -> Self {
         Self {
             enabled: false,
-            bind_addr: String::from("0.0.0.0:69"),
-            root_path: String::from("."),
-            block_size: 512,
-            timeout_secs: 5,
+            bind_addr: format!("0.0.0.0:{}", config.port),
+            root_path: config.work_dirs.first().cloned().unwrap_or_default(),
+            block_size: config.blksize as usize,
+            timeout_secs: config.timeout as u64 / 1000,
             window_size: 1,
-            allow_overwrite: false,
+            allow_overwrite: config.override_conflicts,
         }
     }
 }
@@ -38,13 +40,13 @@ pub struct TftpClientConfig {
     pub timeout_secs: u64,
 }
 
-impl Default for TftpClientConfig {
-    fn default() -> Self {
+impl From<&TftpcConfig> for TftpClientConfig {
+    fn from(config: &TftpcConfig) -> Self {
         Self {
-            server_addr: String::from("127.0.0.1:69"),
+            server_addr: format!("{}:{}", config.server_addr, config.server_port),
             local_port: 0,
-            block_size: 512,
-            timeout_secs: 5,
+            block_size: config.blksize as usize,
+            timeout_secs: config.timeout as u64 / 1000,
         }
     }
 }

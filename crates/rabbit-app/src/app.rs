@@ -52,29 +52,12 @@ impl App {
         ping_service.init().await?;
 
         let mut http_service = HttpService::new();
-        http_service.init(rabbit_models::http::HttpServerConfig {
-            enabled: false,
-            port: config.modules.http.port,
-            root_path: String::from("."),
-            allow_upload: false,
-            allow_delete: false,
-            shell: config.modules.http.shell,
-            auto_index: config.modules.http.autoindex,
-            video_play: config.modules.http.videoplay,
-        }).await?;
+        http_service.init((&config.modules.http).into()).await?;
 
         let mut tftp_service = TftpService::new();
         tftp_service.init(
-            rabbit_models::tftp::TftpServerConfig {
-                enabled: false,
-                bind_addr: format!("0.0.0.0:{}", config.modules.tftpd.port),
-                root_path: String::from("."),
-                block_size: config.modules.tftpd.blksize as usize,
-                timeout_secs: config.modules.tftpd.timeout as u64 / 1000,
-                window_size: 1,
-                allow_overwrite: config.modules.tftpd.override_conflicts,
-            },
-            rabbit_models::tftp::TftpClientConfig::default(),
+            (&config.modules.tftpd).into(),
+            (&config.modules.tftpc).into(),
         ).await?;
 
         let mut plan_service = PlanService::new();
@@ -82,12 +65,7 @@ impl App {
         plan_service.start().await?;
 
         let mut chat_service = ChatService::new();
-        chat_service.init(rabbit_models::chat::ChatConfig {
-            enabled: false,
-            username: config.modules.chat.username.clone(),
-            port: config.modules.chat.port,
-            multicast_addr: config.modules.chat.broadcast_addr.clone(),
-        }).await?;
+        chat_service.init((&config.modules.chat).into()).await?;
 
         let mut scan_service = ScanService::new();
         scan_service.init(rabbit_models::scan::ScannerConfig::default()).await?;

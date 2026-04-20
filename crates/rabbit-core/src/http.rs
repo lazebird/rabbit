@@ -4,12 +4,14 @@ use crate::{Result, ServiceError};
 use axum::{
     body::{Body, HttpBody},
     extract::{ConnectInfo, Multipart, Request, State},
+    http::{HeaderValue, StatusCode},
     middleware::{self, Next},
-    response::{Html, Response},
+    response::{Html, IntoResponse, Response},
     routing::post,
     Router,
 };
 use rabbit_models::http::{HttpAccessLog, HttpServerConfig, HttpServerState};
+use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -33,11 +35,25 @@ pub struct HttpService {
 impl HttpService {
     pub fn new() -> Self {
         Self {
-            config: Arc::new(RwLock::new(HttpServerConfig::default())),
+            config: Arc::new(RwLock::new(Self::placeholder_config())),
             state: Arc::new(RwLock::new(HttpServerState::Stopped)),
             logs: Arc::new(RwLock::new(Vec::new())),
             shutdown_tx: None,
             server_handle: None,
+        }
+    }
+
+    /// Create a placeholder config for internal use before initialization
+    fn placeholder_config() -> HttpServerConfig {
+        HttpServerConfig {
+            enabled: false,
+            port: 0,
+            root_path: String::new(),
+            allow_upload: false,
+            allow_delete: false,
+            shell: false,
+            auto_index: false,
+            video_play: false,
         }
     }
 
@@ -87,20 +103,38 @@ impl HttpService {
             // Build axum router with access logging and file upload
             let logs_clone = Arc::clone(&logs);
             let root_clone = root.clone();
+            let auto_index = config.auto_index;
+            let video_play = config.video_play;
 
             let app = Router::new()
                 .route("/upload", post(upload_handler))
-                .with_state(root_clone)
                 .fallback_service(
                     ServeDir::new(&root)
-                        .append_index_html_on_directories(true)
+                        .append_index_html_on_directories(auto_index)
                 )
-                .layer(middleware::from_fn(move |request: Request, next: Next| {
-                    let logs = Arc::clone(&logs_clone);
-                    async move {
-                        access_log_middleware(request, next, logs).await
-                    }
-                }));
+                .layer(axum::extract::Extension(root.clone()))
+                .layer(axum::middleware::from_fn(
+                    move |req: Request, next: Next| {
+                        let logs = Arc::clone(&logs_clone);
+                        let video_play = video_play;
+                        async move {
+                            // Check if this is a video file request and video_play is enabled
+                            let uri = req.uri().path().to_string();
+                            let mime = path2mime(&uri);
+                            
+                            if video_play && is_video_mime(mime) {
+                                let query = req.uri().query().unwrap_or("");
+                                // Show player page if videoplay=true or if no videoplay parameter
+                                if query.contains("videoplay=true") || !query.contains("videoplay=false") {
+                                    let player_html = generate_video_player(&uri, mime);
+                                    return Html(player_html).into_response();
+                                }
+                            }
+                            
+                            access_log_middleware(req, next, logs).await
+                        }
+                    },
+                ));
 
             let listener = match tokio::net::TcpListener::bind(addr).await {
                 Ok(l) => l,
@@ -214,6 +248,69 @@ impl Default for HttpService {
     }
 }
 
+/// MIME types mapping for video files
+fn get_mime_types() -> HashMap<&'static str, &'static str> {
+    let mut mimes = HashMap::new();
+    mimes.insert(".mp4", "video/mp4");
+    mimes.insert(".webm", "video/webm");
+    mimes.insert(".ogg", "video/ogg");
+    mimes.insert(".ogv", "video/ogg");
+    mimes.insert(".avi", "video/x-msvideo");
+    mimes.insert(".mov", "video/quicktime");
+    mimes.insert(".wmv", "video/x-ms-wmv");
+    mimes.insert(".flv", "video/x-flv");
+    mimes.insert(".mkv", "video/x-matroska");
+    mimes.insert(".m4v", "video/x-m4v");
+    mimes.insert(".*", "application/octet-stream");
+    mimes
+}
+
+/// Get MIME type from file path
+fn path2mime(path: &str) -> &'static str {
+    let mimes = get_mime_types();
+    if let Some(filename) = path.rsplit('/').next() {
+        if let Some(dot_pos) = filename.rfind('.') {
+            let ext = &filename[dot_pos..].to_lowercase();
+            if let Some(&mime) = mimes.get(ext.as_str()) {
+                return mime;
+            }
+        }
+    }
+    "application/octet-stream"
+}
+
+/// Check if MIME type is video
+fn is_video_mime(mime: &str) -> bool {
+    mime.starts_with("video/")
+}
+
+/// Generate video player HTML page using Video.js (compatible with old implementation)
+fn generate_video_player(uri: &str, mime: &str) -> String {
+    format!(
+        r#"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Video Player</title>
+    <link href="https://vjs.zencdn.net/7.1.0/video-js.css" rel="stylesheet">
+    <script src="https://vjs.zencdn.net/7.1.0/video.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/videojs-flash@2/dist/videojs-flash.min.js"></script>
+</head>
+<body>
+    <video id="my-video" class="video-js" controls preload="auto" width="640" height="264" 
+           poster="MY_VIDEO_POSTER.jpg" data-setup='{{"techOrder": ["flash","html5"]}}'>
+        <source src="{}?videoplay=false" type='{}'>
+        <p class="vjs-no-js">
+            To view this video please enable JavaScript, and consider upgrading to a web browser that
+            <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+        </p>
+    </video>
+</body>
+</html>"#,
+        uri, mime
+    )
+}
+
 /// Access logging middleware
 async fn access_log_middleware(
     request: Request,
@@ -266,7 +363,7 @@ async fn access_log_middleware(
 
 /// File upload handler
 async fn upload_handler(
-    State(root): State<PathBuf>,
+    axum::extract::Extension(root): axum::extract::Extension<PathBuf>,
     mut multipart: Multipart,
 ) -> Html<String> {
     while let Ok(Some(mut field)) = multipart.next_field().await {

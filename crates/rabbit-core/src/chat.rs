@@ -25,7 +25,7 @@ pub struct ChatService {
 impl ChatService {
     pub fn new() -> Self {
         Self {
-            config: Arc::new(RwLock::new(ChatConfig::default())),
+            config: Arc::new(RwLock::new(Self::placeholder_config())),
             room: Arc::new(RwLock::new(ChatRoom {
                 messages: Vec::new(),
                 users: Vec::new(),
@@ -35,6 +35,15 @@ impl ChatService {
             recv_handle: None,
             heartbeat_handle: None,
             user_activity: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+
+    fn placeholder_config() -> ChatConfig {
+        ChatConfig {
+            enabled: false,
+            username: String::new(),
+            port: 0,
+            multicast_addr: String::new(),
         }
     }
 
