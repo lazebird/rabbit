@@ -156,7 +156,19 @@ fn fetch_version_content(url: &str) -> Result<String, String> {
 fn check_version_update() -> String {
     match fetch_version_content(VERSION_CHECK_URL) {
         Ok(content) => {
-            match serde_json::from_str::<VersionsManifest>(&content) {
+            // Quick check: if content doesn't start with '{', it's not JSON
+            let trimmed = content.trim();
+            if !trimmed.starts_with('{') {
+                return format!(
+                    "Current version: {}\n\n\
+                    Version info server returned non-JSON response.\n\
+                    The server may require authentication.\n\n\
+                    Visit Home to check for updates manually.\n",
+                    CURRENT_VERSION
+                );
+            }
+
+            match serde_json::from_str::<VersionsManifest>(trimmed) {
                 Ok(remote) => {
                     let mut msg = format!("Current version: {}\n\n", CURRENT_VERSION);
                     msg.push_str(&remote.format_summary());
