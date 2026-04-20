@@ -1,7 +1,7 @@
 {
   "version": "0.2.0",
   "release_date": "2026/04/20",
-  "release_notes": "Added automatic update checking and download/install functionality. Improved version management with GitHub integration.",
+  "release_notes": "- add auto-update system with download and install\n- handle non-JSON version check response\n- implement unified version management and update checking\n- add date/time pickers, scan task, tab persistence, and version check\n- optimize UI refresh and resize handling\n- replace Slint with FLTK framework\n- implement file upload, task state management and chat heartbeat\n- implement dark theme and compact layout\n- refactor UI config initialization and default values\n- add rabbit-app module with UI and service integration\n- migrate from .NET to Rust with updated docs and configs",
   "platforms": {
     "linux-x64": {
       "sha256": "bb1525edf9461068d96815214a1c8e4f67f957e0b349e1fdbabd724ded9a078a",

@@ -180,6 +180,13 @@ update_versions_json() {
 
     local download_url="https://raw.githubusercontent.com/lazebird/rabbit/rewrite/release/${filename}"
 
+    # Generate concise release notes from git history
+    local release_notes
+    release_notes=$("${SCRIPT_DIR}/git-changelog.sh" --release-notes "$version" 2>/dev/null) || {
+        log_warn "Failed to generate release notes from git history"
+        release_notes="Release ${version}"
+    }
+
     log_info "Updating ${VERSIONS_FILE}..."
 
     if [ -f "${VERSIONS_FILE}" ]; then
@@ -197,6 +204,7 @@ with open('${VERSIONS_FILE}', 'r') as f:
 # Update version info
 data['version'] = '${version}'
 data['release_date'] = '$(date +%Y/%m/%d)'
+data['release_notes'] = '''${release_notes}'''
 
 # Update or add platform entry
 if 'platforms' not in data:
@@ -219,7 +227,7 @@ with open('${VERSIONS_FILE}', 'w') as f:
 {
   "version": "${version}",
   "release_date": "$(date +%Y/%m/%d)",
-  "release_notes": "Release ${version}",
+  "release_notes": "${release_notes}",
   "platforms": {
     "${platform}": {
       "sha256": "${sha256}",
@@ -239,6 +247,16 @@ generate_release_notes() {
     local platform=$2
     local notes_file="${RELEASE_DIR}/RELEASE_NOTES_${version}.md"
 
+    log_info "Generating release notes from git history..."
+
+    # Generate changelog using git-changelog.sh (only capture markdown, logs go to stderr)
+    local changelog
+    changelog=$("${SCRIPT_DIR}/git-changelog.sh" "$version" 2>/dev/null) || {
+        log_warn "Failed to generate changelog from git history"
+        changelog="No changelog available"
+    }
+
+    # Create release notes with header and changelog
     cat > "${notes_file}" << EOF
 # Rabbit ${version} Release Notes
 
@@ -252,22 +270,75 @@ $(date +%Y-%m-%d)
 
 ## Changes
 
-- TODO: Add release notes here
+${changelog}
 
 ## Download
 
 | Platform | URL |
 |----------|-----|
-| ${platform} | https://github.com/lazebird/rabbit/raw/rewrite/release/rabbit-${version}-${platform}$( [[ "${platform}" == "windows-x64" ]] && echo ".exe" ) |
+| ${platform} | ${download_url} |
 
 ## SHA256 Checksums
 
 \`\`\`
-TODO: Run release.sh to generate checksums
+${sha256}  rabbit-${version}-${platform}
 \`\`\`
 EOF
 
     log_info "Release notes generated: ${notes_file}"
+}
+
+# Update only release_notes in versions.json without changing platform info
+update_release_notes_only() {
+    local version=$1
+
+    # Generate concise release notes from git history
+    local release_notes
+    release_notes=$("${SCRIPT_DIR}/git-changelog.sh" --release-notes "$version" 2>/dev/null) || {
+        log_warn "Failed to generate release notes from git history"
+        release_notes="Release ${version}"
+    }
+
+    log_info "Updating release_notes in ${VERSIONS_FILE}..."
+
+    if [ -f "${VERSIONS_FILE}" ]; then
+        python3 -c "
+import json
+
+with open('${VERSIONS_FILE}', 'r') as f:
+    data = json.load(f)
+
+data['release_notes'] = '''${release_notes}'''
+
+with open('${VERSIONS_FILE}', 'w') as f:
+    json.dump(data, f, indent=2)
+" || die "Failed to update versions.json"
+        log_info "release_notes updated in versions.json"
+    else
+        log_warn "versions.json not found, skipping release_notes update"
+    fi
+}
+
+# Create git tag for the release
+create_git_tag() {
+    local version=$1
+    local tag_name="v${version}"
+
+    # Check if tag already exists
+    if git tag -l | grep -q "^${tag_name}$"; then
+        log_warn "Tag ${tag_name} already exists, skipping"
+        return 0
+    fi
+
+    # Create annotated tag with release notes
+    local message="Release version ${version}"
+    git tag -a "$tag_name" -m "$message"
+
+    if [ $? -eq 0 ]; then
+        log_info "Created git tag: ${tag_name}"
+    else
+        log_warn "Failed to create git tag"
+    fi
 }
 
 # ============================================================
@@ -319,14 +390,22 @@ main() {
 
         # Update versions.json
         update_versions_json "${VERSION}" "${PLATFORM}" "${OUTPUT_FILENAME}" "${SHA256}" "${SIZE}"
+    else
+        # Notes-only mode: update release_notes in existing versions.json
+        update_release_notes_only "${VERSION}"
     fi
 
-    # Generate release notes
+    # Generate release notes with changelog from git
     generate_release_notes "${VERSION}" "${PLATFORM}"
+
+    # Create git tag for this release
+    create_git_tag "${VERSION}"
 
     log_info "Release process complete!"
     log_info "Files in ${RELEASE_DIR}:"
     ls -la "${RELEASE_DIR}"
+    log_info ""
+    log_info "Don't forget to push tags: git push origin rewrite --tags"
 }
 
 main "$@"
