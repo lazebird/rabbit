@@ -97,7 +97,19 @@ impl PingService {
         let log_file = self.log_file.clone();
 
         tokio::spawn(async move {
-            let mut ping_interval = interval(Duration::from_secs(1));
+            // Get interval from first target (default 1000ms)
+            let interval_ms = {
+                let targets_guard = targets.read().await;
+                targets_guard.first().map(|t| t.interval_ms).unwrap_or(1000)
+            };
+            let mut ping_interval = interval(Duration::from_millis(interval_ms));
+
+            // Immediately trigger first ping, then wait for interval
+            if *state.read().await == PingState::Running {
+                if let Some(ref client) = client {
+                    Self::ping_all(client, &targets, &results, &sequence, &log_file).await;
+                }
+            }
 
             loop {
                 tokio::select! {
@@ -127,7 +139,6 @@ impl PingService {
             }
         });
 
-        info!("Ping service started");
         Ok(())
     }
 
@@ -142,7 +153,6 @@ impl PingService {
         self.results.write().await.clear();
         self.consumed.write().await.clear();
         self.targets.write().await.clear();
-        info!("Ping service stopped");
         Ok(())
     }
 
@@ -295,7 +305,7 @@ impl PingService {
         }
     }
 
-    /// Perform a single ping using surge-ping
+/// Perform a single ping using surge-ping
     async fn do_ping(client: &Arc<Client>, target: &PingTarget, seq: u16) -> PingResult {
         // Parse the target address
         let addr = match Self::resolve_target(target).await {
@@ -312,10 +322,8 @@ impl PingService {
             }
         };
 
-        // Create pinger (pinger() returns Pinger directly, not Result)
-        let mut pinger = client.pinger(addr, PingIdentifier(random())).await;
-
-        // Perform ping
+let mut pinger = client.pinger(addr, PingIdentifier(random())).await;
+        pinger.timeout(Duration::from_millis(target.interval_ms));
         let payload = [0; 56];
 
         match pinger.ping(PingSequence(seq), &payload).await {

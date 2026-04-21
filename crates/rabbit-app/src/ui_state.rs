@@ -22,6 +22,9 @@ fn trim_lines(s: &mut String, max_lines: usize) {
     }
 }
 
+/// Global main window for updating title
+static mut MAIN_WINDOW: Option<fltk::window::Window> = None;
+
 /// Global UI state singleton
 static mut GLOBAL_UI_STATE: Option<Arc<Mutex<UiState>>> = None;
 
@@ -30,6 +33,7 @@ static mut GLOBAL_UI_STATE: Option<Arc<Mutex<UiState>>> = None;
 pub struct UiState {
     pub ping_output: String,
     pub ping_stats: String,
+    pub ping_running: bool,
     pub scan_output: String,
     pub scan_running: bool,
     pub http_log: String,
@@ -51,6 +55,7 @@ impl UiState {
         Self {
             ping_output: String::new(),
             ping_stats: String::from("Ready"),
+            ping_running: false,
             scan_output: String::new(),
             scan_running: false,
             http_log: String::new(),
@@ -65,6 +70,16 @@ impl UiState {
             settings_output: String::new(),
             updated: HashMap::new(),
         }
+    }
+
+    pub fn set_main_window(window: fltk::window::Window) {
+        unsafe {
+            MAIN_WINDOW = Some(window);
+        }
+    }
+
+    pub fn get_main_window() -> Option<fltk::window::Window> {
+        unsafe { MAIN_WINDOW.clone() }
     }
 
     pub fn init() -> Arc<Mutex<UiState>> {
@@ -186,6 +201,15 @@ pub fn set_scan_running(running: bool) {
         if let Ok(mut s) = state.lock() {
             s.scan_running = running;
             s.updated.insert("scan_running".to_string(), true);
+        }
+    }
+}
+
+pub fn set_ping_running(running: bool) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.ping_running = running;
+            s.updated.insert("ping_running".to_string(), true);
         }
     }
 }

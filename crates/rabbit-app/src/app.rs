@@ -263,6 +263,9 @@ impl App {
         main_win.end();
         main_win.show();
 
+        // Store main window for title updates
+        crate::ui_state::UiState::set_main_window(main_win.clone());
+
         // Startup version check if autoupdate is enabled
         if autoupdate {
             info!("Auto-update enabled, checking for updates...");
@@ -617,7 +620,14 @@ impl EventHandler for AppHandle {
                 }
 
                 // Update UI state
-                crate::ui_state::set_ping_output(&format!("Pinging {}...\n", target));
+
+                // Set window title to target address
+                let target_label = target.clone();
+                if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                    fltk::app::awake_callback(move || {
+                        win.set_label(&target_label);
+                    });
+                }
 
                 let mut service = self.ping_service.write().await;
                 // Start service first, then add target
@@ -625,6 +635,7 @@ impl EventHandler for AppHandle {
                 let target_obj = PingTarget::new(&target);
                 service.add_target(target_obj).await?;
                 self.view_model.write().await.set_ping_running(true);
+                crate::ui_state::set_ping_running(true);
                 
                 // Clear ping history for this target
                 self.ping_history.insert(target.clone(), Vec::new());
@@ -717,15 +728,22 @@ impl EventHandler for AppHandle {
                 }
                 self.ping_service.write().await.stop().await?;
                 self.view_model.write().await.set_ping_running(false);
-                crate::ui_state::append_ping_output("Ping stopped.");
-                
+                crate::ui_state::set_ping_running(false);
+
+                // Reset window title to "Rabbit"
+                if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                    fltk::app::awake_callback(move || {
+                        win.set_label("Rabbit");
+                    });
+                }
+
                 // Clear taskbar progress
                 #[cfg(target_os = "windows")]
                 if self.taskbar_enabled {
                     if let Some(hwnd) = self.window_handle {
                         rabbit_platform::taskbar::windows::set_taskbar_state(
-                            hwnd, 
-                            rabbit_platform::taskbar::windows::TaskbarState::None, 
+                            hwnd,
+                            rabbit_platform::taskbar::windows::TaskbarState::None,
                             0
                         ).ok();
                     }

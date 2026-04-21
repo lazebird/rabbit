@@ -48,6 +48,17 @@ pub fn register_http_button(btn: fltk::button::Button, accent: fltk::enums::Colo
     }
 }
 
+/// Register the Ping toggle button for centralized state sync.
+static mut PING_BTN: Option<fltk::button::Button> = None;
+static mut PING_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+
+pub fn register_ping_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
+    unsafe {
+        PING_BTN = Some(btn);
+        PING_ACCENT = accent;
+    }
+}
+
 /// Register the Scan toggle button for centralized state sync.
 static mut SCAN_BTN: Option<fltk::button::Button> = None;
 static mut SCAN_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
@@ -150,8 +161,12 @@ fn do_refresh() {
         if scan_updated { s.clear_updated("scan_running"); }
         let scan_running = s.scan_running;
 
+        let ping_updated = s.is_updated("ping_running");
+        if ping_updated { s.clear_updated("ping_running"); }
+        let ping_running = s.ping_running;
+
         drop(s);
-        (data, if http_updated { Some(http_running) } else { None }, if scan_updated { Some(scan_running) } else { None })
+        (data, if ping_updated { Some(ping_running) } else { None }, if http_updated { Some(http_running) } else { None }, if scan_updated { Some(scan_running) } else { None })
     };
 
     // Phase 2: Update displays without holding the lock
@@ -196,8 +211,21 @@ fn do_refresh() {
     }
 
     // Phase 3: Sync button states (only when explicitly updated)
-    // HTTP button
+    // Ping button
     if let Some(running) = snapshot.1 {
+        if let Some(btn) = unsafe { PING_BTN.as_mut() } {
+            if running {
+                btn.set_label("Stop");
+                btn.set_color(fltk::enums::Color::from_hex(HTTP_STOP_COLOR));
+            } else {
+                btn.set_label("Start");
+                btn.set_color(unsafe { PING_ACCENT });
+            }
+            btn.redraw();
+        }
+    }
+    // HTTP button
+    if let Some(running) = snapshot.2 {
         if let Some(btn) = unsafe { HTTP_BTN.as_mut() } {
             if running {
                 btn.set_label("Stop");
@@ -210,7 +238,7 @@ fn do_refresh() {
         }
     }
     // Scan button
-    if let Some(running) = snapshot.2 {
+    if let Some(running) = snapshot.3 {
         if let Some(btn) = unsafe { SCAN_BTN.as_mut() } {
             if running {
                 btn.set_label("Stop");

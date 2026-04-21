@@ -57,6 +57,9 @@ impl TabComponent for PingTab {
         start_btn.set_label_color(fltk::enums::Color::White);
         ctrl_row.fixed(&start_btn, 70);
 
+        // Register button for state sync
+        super::ui_refresh::register_ping_button(start_btn.clone(), colors.accent);
+
         ctrl_row.end();
         grp.fixed(&ctrl_row, 28);
 
