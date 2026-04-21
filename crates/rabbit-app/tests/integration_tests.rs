@@ -116,13 +116,92 @@ fn test_ping_output_truncation_logic() {
 fn test_ping_stats_accuracy() {
     let sent: u32 = 1500;
     let results_count: usize = 1000;
-    let received = results_count as u32 - 200;
+    let received = 800;  // 800 successful pings out of 1000 retained results
     let lost = sent - received;
 
-    assert_eq!(lost, 200, "Lost should be 200");
+    assert_eq!(lost, 700, "Lost should be 700 (1500 sent - 800 received)");
     assert_eq!(received, 800, "Received should be 800");
     assert_eq!(sent, 1500, "Sent should be 1500 (using sent_count, not results count)");
     assert!(sent > results_count as u32, "Sent count should be greater than trimmed results count");
+}
+
+#[test]
+fn test_ping_result_truncation_and_stats_accuracy() {
+    // Test that when results exceed MAX_RESULTS (1000), old results are trimmed
+    // and statistics remain accurate based on sent_count
+    
+    const MAX_RESULTS: usize = 1000;
+    let total_pings = 1500;
+    let failed_pings = 300;  // Simulate 300 failed pings
+    let successful_pings = total_pings - failed_pings;  // 1200 successful
+    
+    // After trimming, we should have MAX_RESULTS entries
+    let retained_results = if total_pings > MAX_RESULTS {
+        MAX_RESULTS
+    } else {
+        total_pings
+    };
+    
+    assert_eq!(retained_results, 1000, "Should retain exactly MAX_RESULTS after trimming");
+    
+    // Statistics should be based on sent_count, not retained results
+    let sent = total_pings as u32;
+    let received = successful_pings as u32;
+    let lost = sent - received;
+    
+    assert_eq!(sent, 1500, "Sent count should be total pings sent");
+    assert_eq!(received, 1200, "Received should be successful pings");
+    assert_eq!(lost, 300, "Lost should be failed pings");
+    
+    // Verify loss percentage calculation would be correct
+    let loss_pct = (lost as f64 / sent as f64) * 100.0;
+    assert!((loss_pct - 20.0).abs() < 0.1, "Loss percentage should be 20%");
+}
+
+#[test]
+fn test_ping_output_truncation_behavior() {
+    // Test the behavior when ping results are truncated
+    // Simulates the scenario where UI should continue showing new results
+    // even after old results are trimmed
+    
+    const MAX_RESULTS: usize = 1000;
+    
+    // Scenario 1: Normal operation - results within limit
+    let results_500: Vec<bool> = (0..500).map(|i| i % 5 != 0).collect();  // 80% success
+    assert_eq!(results_500.len(), 500);
+    assert!(results_500.len() <= MAX_RESULTS, "Results within limit, no truncation");
+    
+    // Scenario 2: Results exceed limit - should trim oldest
+    let mut results_1500: Vec<bool> = (0..1500).map(|i| i % 5 != 0).collect();
+    let drain_count = results_1500.len() - MAX_RESULTS;
+    results_1500.drain(0..drain_count);
+    
+    assert_eq!(results_1500.len(), MAX_RESULTS, "Should trim to MAX_RESULTS");
+    
+    // The retained results are the most recent 1000 (indices 500-1499)
+    // If we track consumed_pos, it should be reset when it exceeds new length
+    let mut consumed_pos = 1200;  // Previously consumed position
+    if consumed_pos > results_1500.len() {
+        consumed_pos = 0;  // Reset to show all current results
+    }
+    
+    // After reset, we should get all 1000 results
+    let new_results_count = if consumed_pos < results_1500.len() {
+        results_1500[consumed_pos..].len()
+    } else {
+        0
+    };
+    assert_eq!(new_results_count, 1000, "Should return all results after reset");
+    
+    // Scenario 3: Continue adding more results after trim
+    for _ in 0..100 {
+        results_1500.push(true);
+        if results_1500.len() > MAX_RESULTS {
+            results_1500.drain(0..results_1500.len() - MAX_RESULTS);
+        }
+    }
+    
+    assert_eq!(results_1500.len(), MAX_RESULTS, "Should maintain MAX_RESULTS limit");
 }
 
 // ============================================================================
@@ -286,6 +365,7 @@ fn test_tftpd_config_serialization() {
         override_conflicts: true,
         fslog: true,
         work_dirs: vec!["/tftp".to_string()],
+        working_dir_index: Some(0),
         running: false,
     };
 
@@ -1264,6 +1344,7 @@ fn test_tftp_server_config_conversion() {
         override_conflicts: true,
         fslog: false,
         work_dirs: vec!["/tftpboot".to_string()],
+        working_dir_index: Some(0),
         running: false,
     };
 
@@ -1468,3 +1549,234 @@ fn test_config_with_all_running_states() {
     assert!(restored.modules.tftpd.running);
     assert!(restored.modules.chat.running);
 }
+
+// ============================================================================
+// Configuration Save/Restore Tests (Options Persistence)
+// ============================================================================
+
+#[test]
+fn test_ping_config_interval_persistence() {
+    // Test that ping interval configuration is properly saved and restored
+    use rabbit_models::config::PingConfig;
+    
+    // Create config with custom interval
+    let mut config = PingConfig::default();
+    assert_eq!(config.interval, 1000, "Default interval should be 1000");
+    
+    // Simulate user changing interval to 100ms
+    config.interval = 100;
+    config.count = -1;
+    config.stoponloss = false;
+    config.target = "8.8.8.8".to_string();
+    
+    // Serialize to simulate saving
+    let json = serde_json::to_string(&config).unwrap();
+    
+    // Deserialize to simulate loading from file
+    let restored: PingConfig = serde_json::from_str(&json).unwrap();
+    
+    // Verify interval is preserved
+    assert_eq!(restored.interval, 100, "Interval should be restored as 100");
+    assert_eq!(restored.count, -1, "Count should be restored as -1");
+    assert_eq!(restored.target, "8.8.8.8", "Target should be preserved");
+    
+    // Verify opts_string generates correct format
+    let opts = restored.opts_string();
+    assert!(opts.contains("interval=100"), "opts_string should contain interval=100");
+    assert!(opts.contains("count=-1"), "opts_string should contain count=-1");
+}
+
+#[test]
+fn test_ping_opts_string_roundtrip() {
+    // Test that opts_string can be parsed back to original values
+    use rabbit_models::config::PingConfig;
+    
+    let mut config = PingConfig::default();
+    config.interval = 500;
+    config.count = 20;
+    config.stoponloss = true;
+    
+    let opts = config.opts_string();
+    assert_eq!(opts, "interval=500;count=20;stoponloss=true");
+    
+    // Parse the opts string back
+    let mut parsed_interval = 1000u64;
+    let mut parsed_count = 4i32;
+    let mut parsed_stoponloss = false;
+    
+    for opt in opts.split(';') {
+        let parts: Vec<&str> = opt.splitn(2, '=').collect();
+        if parts.len() == 2 {
+            match parts[0].trim() {
+                "interval" => parsed_interval = parts[1].parse().unwrap_or(1000),
+                "count" => parsed_count = parts[1].parse().unwrap_or(4),
+                "stoponloss" => parsed_stoponloss = parts[1].trim().eq_ignore_ascii_case("true"),
+                _ => {}
+            }
+        }
+    }
+    
+    assert_eq!(parsed_interval, 500, "Parsed interval should match original");
+    assert_eq!(parsed_count, 20, "Parsed count should match original");
+    assert!(parsed_stoponloss, "Parsed stoponloss should match original");
+}
+
+#[test]
+fn test_tftpd_config_opts_persistence() {
+    // Test TFTP server configuration persistence
+    use rabbit_models::config::TftpdConfig;
+    
+    let mut config = TftpdConfig::default();
+    config.timeout = 300;
+    config.maxretry = 20;
+    config.blksize = 1024;
+    config.qsize = 3000;
+    config.qtout = 2000;
+    config.override_conflicts = true;
+    config.fslog = true;
+    
+    let json = serde_json::to_string(&config).unwrap();
+    let restored: TftpdConfig = serde_json::from_str(&json).unwrap();
+    
+    assert_eq!(restored.timeout, 300, "Timeout should be preserved");
+    assert_eq!(restored.maxretry, 20, "Maxretry should be preserved");
+    assert_eq!(restored.blksize, 1024, "Blksize should be preserved");
+    assert!(restored.override_conflicts, "Override should be preserved");
+    
+    let opts = restored.opts_string();
+    assert!(opts.contains("timeout=300"), "opts_string should contain timeout=300");
+    assert!(opts.contains("retry=20"), "opts_string should contain retry=20");
+}
+
+#[test]
+fn test_http_config_opts_persistence() {
+    // Test HTTP server configuration persistence
+    use rabbit_models::config::HttpConfig;
+    
+    let mut config = HttpConfig::default();
+    config.port = 9090;
+    config.shell = true;
+    config.autoindex = true;
+    config.videoplay = true;
+    
+    let json = serde_json::to_string(&config).unwrap();
+    let restored: HttpConfig = serde_json::from_str(&json).unwrap();
+    
+    assert_eq!(restored.port, 9090, "Port should be preserved");
+    assert!(restored.shell, "Shell should be preserved");
+    assert!(restored.autoindex, "Autoindex should be preserved");
+    assert!(restored.videoplay, "Videoplay should be preserved");
+    
+    let opts = restored.opts_string();
+    assert!(opts.contains("autoindex=true"), "opts_string should contain autoindex=true");
+    assert!(opts.contains("videoplay=true"), "opts_string should contain videoplay=true");
+}
+
+#[test]
+fn test_scan_config_persistence() {
+    // Test scan configuration persistence
+    use rabbit_models::config::ScanConfig;
+    
+    let mut config = ScanConfig::default();
+    config.start_ip = "10.0.0.1".to_string();
+    config.end_ip = "100".to_string();
+    config.filter = true;
+    
+    let json = serde_json::to_string(&config).unwrap();
+    let restored: ScanConfig = serde_json::from_str(&json).unwrap();
+    
+    assert_eq!(restored.start_ip, "10.0.0.1", "Start IP should be preserved");
+    assert_eq!(restored.end_ip, "100", "End IP should be preserved");
+    assert!(restored.filter, "Filter should be preserved");
+    
+    let opts = restored.opts_string();
+    assert!(opts.contains("filter=true"), "opts_string should contain filter=true");
+}
+
+#[test]
+fn test_app_config_full_roundtrip() {
+    // Test complete AppConfig roundtrip with all modules
+    use rabbit_models::AppConfig;
+    
+    let mut config = AppConfig::default();
+    
+    // Set custom values for all modules
+    config.modules.ping.interval = 200;
+    config.modules.ping.count = 50;
+    config.modules.ping.target = "1.1.1.1".to_string();
+    
+    config.modules.http.port = 7777;
+    config.modules.http.shell = false;
+    
+    config.modules.scan.start_ip = "172.16.0.1".to_string();
+    config.modules.scan.filter = false;
+    
+    config.modules.tftpd.timeout = 500;
+    config.modules.tftpd.maxretry = 15;
+    
+    // Serialize and deserialize
+    let json = serde_json::to_string(&config).unwrap();
+    let restored: AppConfig = serde_json::from_str(&json).unwrap();
+    
+    // Verify all ping settings
+    assert_eq!(restored.modules.ping.interval, 200);
+    assert_eq!(restored.modules.ping.count, 50);
+    assert_eq!(restored.modules.ping.target, "1.1.1.1");
+    
+    // Verify all HTTP settings
+    assert_eq!(restored.modules.http.port, 7777);
+    assert!(!restored.modules.http.shell);
+    
+    // Verify all scan settings
+    assert_eq!(restored.modules.scan.start_ip, "172.16.0.1");
+    assert!(!restored.modules.scan.filter);
+    
+    // Verify all TFTP settings
+    assert_eq!(restored.modules.tftpd.timeout, 500);
+    assert_eq!(restored.modules.tftpd.maxretry, 15);
+    
+    // Verify opts_string generation for ping
+    let ping_opts = restored.modules.ping.opts_string();
+    assert!(ping_opts.contains("interval=200"));
+    assert!(ping_opts.contains("count=50"));
+}
+
+#[test]
+fn test_negative_count_persistence() {
+    // Test that negative count (-1 for infinite) is properly preserved
+    use rabbit_models::config::PingConfig;
+    
+    let mut config = PingConfig::default();
+    config.count = -1;
+    config.interval = 100;
+    
+    let json = serde_json::to_string(&config).unwrap();
+    let restored: PingConfig = serde_json::from_str(&json).unwrap();
+    
+    assert_eq!(restored.count, -1, "Negative count (-1) should be preserved");
+    assert_eq!(restored.interval, 100, "Interval should be preserved");
+    
+    let opts = restored.opts_string();
+    assert!(opts.contains("count=-1"), "opts_string should preserve count=-1");
+}
+
+#[test]
+fn test_extreme_interval_values() {
+    // Test edge cases for interval values
+    use rabbit_models::config::PingConfig;
+    
+    // Test minimum reasonable interval (10ms)
+    let mut config1 = PingConfig::default();
+    config1.interval = 10;
+    let json1 = serde_json::to_string(&config1).unwrap();
+    let restored1: PingConfig = serde_json::from_str(&json1).unwrap();
+    assert_eq!(restored1.interval, 10);
+    
+    // Test maximum reasonable interval (60000ms = 1 minute)
+    let mut config2 = PingConfig::default();
+    config2.interval = 60000;
+    let json2 = serde_json::to_string(&config2).unwrap();
+    let restored2: PingConfig = serde_json::from_str(&json2).unwrap();
+    assert_eq!(restored2.interval, 60000);
+}
+

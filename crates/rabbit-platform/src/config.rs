@@ -1,7 +1,12 @@
 //! Platform-specific configuration storage
+//!
+//! Configuration loading follows a layered approach:
+//! 1. Load from disk (TOML file)
+//! 2. Merge with defaults for any missing/partial fields
+//! 3. Return complete config ready for use
 
 use super::{PlatformError, Result};
-use rabbit_models::AppConfig;
+use rabbit_models::config::*;
 use std::path::PathBuf;
 use tracing::info;
 
@@ -27,28 +32,27 @@ pub fn get_data_dir() -> Result<PathBuf> {
     Ok(dir)
 }
 
-/// Get the home directory
-#[allow(dead_code)]
-fn home_dir() -> Option<PathBuf> {
-    std::env::var("HOME")
-        .ok()
-        .map(PathBuf::from)
-}
-
-/// Load configuration from disk
+/// Load configuration from disk with defaults merge
+///
+/// This is the primary entry point for loading configuration.
+/// It loads from TOML file and merges with defaults for any missing fields.
 pub fn load_config() -> Result<AppConfig> {
     let config_path = get_config_dir()?.join(CONFIG_FILE);
     
-    if !config_path.exists() {
+    let mut config = if !config_path.exists() {
         info!("Config file not found, using defaults");
-        return Ok(AppConfig::default());
-    }
+        AppConfig::default()
+    } else {
+        let content = std::fs::read_to_string(&config_path)?;
+        let loaded: AppConfig = toml::from_str(&content)
+            .map_err(|e| PlatformError::Config(format!("Failed to parse config: {}", e)))?;
+        info!("Loaded configuration from {:?}", config_path);
+        loaded
+    };
     
-    let content = std::fs::read_to_string(&config_path)?;
-    let config: AppConfig = toml::from_str(&content)
-        .map_err(|e| PlatformError::Config(format!("Failed to parse config: {}", e)))?;
+    // Merge with defaults for any missing fields
+    config.merge_defaults();
     
-    info!("Loaded configuration from {:?}", config_path);
     Ok(config)
 }
 
@@ -72,5 +76,6 @@ pub fn save_config(config: &AppConfig) -> Result<()> {
     info!("Saved configuration to {:?}", config_path);
     Ok(())
 }
+
 
 

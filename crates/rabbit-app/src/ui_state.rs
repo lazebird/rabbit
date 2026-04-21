@@ -45,9 +45,11 @@ pub struct UiState {
     pub scan_running: bool,
     pub http_log: String,
     pub http_running: bool,
-    pub http_dirs: Vec<String>,
+    pub http_items: Vec<String>,
+    pub http_selected_idx: Option<i32>,  // Track selected item index (1-based)
     pub tftpd_log: String,
     pub tftpd_dirs: Vec<String>,
+    pub tftpd_selected_idx: Option<i32>,  // Track selected directory index (1-based)
     pub tftpc_log: String,
     pub plan_list: String,
     pub chat_messages: String,
@@ -67,9 +69,11 @@ impl UiState {
             scan_running: false,
             http_log: String::new(),
             http_running: false,
-            http_dirs: Vec::new(),
+            http_items: Vec::new(),
+            http_selected_idx: None,
             tftpd_log: String::new(),
             tftpd_dirs: Vec::new(),
+            tftpd_selected_idx: None,
             tftpc_log: String::new(),
             plan_list: String::new(),
             chat_messages: String::new(),
@@ -258,6 +262,27 @@ pub fn remove_tftpd_dir(path: &str) {
     }
 }
 
+pub fn get_tftpd_selected_dir() -> Option<String> {
+    if let Some(state) = UiState::global() {
+        if let Ok(s) = state.lock() {
+            if let Some(idx) = s.tftpd_selected_idx {
+                if idx > 0 && (idx as usize) <= s.tftpd_dirs.len() {
+                    return Some(s.tftpd_dirs[(idx - 1) as usize].clone());
+                }
+            }
+        }
+    }
+    None
+}
+
+pub fn set_tftpd_selected_idx(idx: i32) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.tftpd_selected_idx = if idx > 0 { Some(idx) } else { None };
+        }
+    }
+}
+
 pub fn append_tftpd_log(line: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
@@ -266,23 +291,90 @@ pub fn append_tftpd_log(line: &str) {
     }
 }
 
-// HTTP directory management
-pub fn add_http_dir(path: &str) {
+// HTTP file/directory management
+pub fn add_http_item(path: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
-            if !s.http_dirs.contains(&path.to_string()) {
-                s.http_dirs.push(path.to_string());
-                s.updated.insert("http_dirs".to_string(), true);
+            if !s.http_items.contains(&path.to_string()) {
+                s.http_items.push(path.to_string());
+                s.http_selected_idx = Some((s.http_items.len()) as i32);
+                s.updated.insert("http_items".to_string(), true);
             }
         }
     }
 }
 
-pub fn remove_http_dir(path: &str) {
+pub fn remove_http_item(path: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
-            s.http_dirs.retain(|d| d != path);
-            s.updated.insert("http_dirs".to_string(), true);
+            let old_len = s.http_items.len();
+            s.http_items.retain(|d| d != path);
+            if s.http_items.len() < old_len {
+                // Update selection after removal
+                if let Some(sel) = s.http_selected_idx {
+                    let sel_usize = sel as usize;
+                    if sel_usize > s.http_items.len() {
+                        s.http_selected_idx = if s.http_items.is_empty() {
+                            None
+                        } else {
+                            Some(s.http_items.len() as i32)
+                        };
+                    }
+                }
+                s.updated.insert("http_items".to_string(), true);
+            }
+        }
+    }
+}
+
+pub fn set_http_selected(idx: i32) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.http_selected_idx = if idx <= 0 { None } else { Some(idx) };
+        }
+    }
+}
+
+/// Sync HTTP items from UI state to config and save
+pub fn sync_http_config() {
+    use rabbit_platform::config::{load_config, save_config};
+    
+    if let Some(state) = UiState::global() {
+        if let Ok(s) = state.lock() {
+            if let Ok(mut config) = load_config() {
+                config.modules.http.dirs = s.http_items.clone();
+                if let Err(e) = save_config(&config) {
+                    tracing::warn!("Failed to save HTTP config: {}", e);
+                }
+            }
+        }
+    }
+}
+
+/// Sync TFTP directory from UI state to config and save
+pub fn sync_tftpd_config() {
+    use rabbit_platform::config::{load_config, save_config};
+    
+    if let Some(state) = UiState::global() {
+        if let Ok(s) = state.lock() {
+            if let Ok(mut config) = load_config() {
+                config.modules.tftpd.work_dirs = s.tftpd_dirs.clone();
+                // Convert 1-based UI index to 0-based config index
+                config.modules.tftpd.working_dir_index = s.tftpd_selected_idx
+                    .map(|idx| if idx <= 0 { 0 } else { (idx - 1) as usize });
+                if let Err(e) = save_config(&config) {
+                    tracing::warn!("Failed to save TFTP config: {}", e);
+                }
+            }
+        }
+    }
+}
+
+/// Set TFTP working directory by index (1-based browser index)
+pub fn set_tftpd_selected(idx: i32) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.tftpd_selected_idx = if idx <= 0 { None } else { Some(idx) };
         }
     }
 }
@@ -444,6 +536,104 @@ pub fn append_settings_output(text: &str) {
             s.settings_output.push_str(text);
             s.settings_output.push('\n');
             s.updated.insert("settings_output".to_string(), true);
+        }
+    }
+}
+
+// Settings configuration updates
+// These update the UI state and trigger config save via the SettingsSave event
+
+pub fn set_systray(value: bool) {
+    use rabbit_platform::config::{load_config, save_config};
+    
+    if let Ok(mut config) = load_config() {
+        config.systray = value;
+        save_config(&config).ok();
+    }
+}
+
+pub fn set_top(value: bool) {
+    use rabbit_platform::config::{load_config, save_config};
+    
+    if let Ok(mut config) = load_config() {
+        config.top = value;
+        save_config(&config).ok();
+    }
+}
+
+pub fn set_autostart(value: bool) {
+    use rabbit_platform::config::{load_config, save_config};
+    
+    if let Ok(mut config) = load_config() {
+        config.autostart = value;
+        save_config(&config).ok();
+    }
+}
+
+pub fn set_autoupdate(value: bool) {
+    use rabbit_platform::config::{load_config, save_config};
+    
+    if let Ok(mut config) = load_config() {
+        config.autoupdate = value;
+        save_config(&config).ok();
+    }
+}
+
+pub fn set_language(value: &str) {
+    use rabbit_platform::config::{load_config, save_config};
+    use rabbit_models::config::Language;
+    
+    if let Ok(mut config) = load_config() {
+        config.language = match value {
+            "English" => Language::English,
+            "中文" => Language::Chinese,
+            _ => Language::System,
+        };
+        save_config(&config).ok();
+    }
+}
+
+/// Sync plan configuration when adding a new event
+pub fn sync_plan_config(date: String, time: String, cycle: i32, unit: &str, msg: String) {
+    use rabbit_platform::config::{load_config, save_config};
+    
+    if let Ok(mut config) = load_config() {
+        config.modules.plan.date = date;
+        config.modules.plan.time = time;
+        config.modules.plan.cycle = cycle;
+        config.modules.plan.unit = unit.to_string();
+        config.modules.plan.msg = msg;
+        if let Err(e) = save_config(&config) {
+            tracing::warn!("Failed to save plan config: {}", e);
+        }
+    }
+}
+
+/// Sync scan configuration when starting a scan
+pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
+    use rabbit_platform::config::{load_config, save_config};
+    
+    if let Ok(mut config) = load_config() {
+        config.modules.scan.start_ip = start_ip;
+        config.modules.scan.end_ip = end_ip;
+        config.modules.scan.filter = filter;
+        if let Err(e) = save_config(&config) {
+            tracing::warn!("Failed to save scan config: {}", e);
+        }
+    }
+}
+
+/// Sync HTTP configuration when starting the server
+pub fn sync_http_start_config(port: u16, shell: bool, autoindex: bool, videoplay: bool) {
+    use rabbit_platform::config::{load_config, save_config};
+    
+    if let Ok(mut config) = load_config() {
+        config.modules.http.port = port;
+        config.modules.http.shell = shell;
+        config.modules.http.autoindex = autoindex;
+        config.modules.http.videoplay = videoplay;
+        if let Err(e) = save_config(&config) {
+            tracing::warn!("Failed to save HTTP config: {}", e);
         }
     }
 }

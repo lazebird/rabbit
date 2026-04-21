@@ -25,7 +25,7 @@ impl TabComponent for ScanTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "Scan").column();
-        grp.set_margin(5);
+        grp.set_margin(0);  // Remove margin to match old version
         grp.set_spacing(4);
 
         // Control row - matching old version layout
@@ -73,6 +73,7 @@ impl TabComponent for ScanTab {
         let results_buf = TextBuffer::default();
         results_display.set_buffer(Some(results_buf));
         results_display.wrap_mode(WrapMode::AtBounds, 0);
+        results_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
 
         grp.end();
 

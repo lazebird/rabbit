@@ -94,23 +94,27 @@ impl PingService {
         let state = Arc::clone(&self.state);
         let targets = Arc::clone(&self.targets);
         let results = Arc::clone(&self.results);
+        let consumed = Arc::clone(&self.consumed);
         let sequence = Arc::clone(&self.sequence);
         let sent_count = Arc::clone(&self.sent_count);
         let client = self.client.clone();
         let log_file = self.log_file.clone();
 
         tokio::spawn(async move {
-            // Get interval from first target (default 1000ms)
-            let interval_ms = {
+            // Get initial interval from first target (default 1000ms)
+            let mut current_interval_ms = {
                 let targets_guard = targets.read().await;
                 targets_guard.first().map(|t| t.interval_ms).unwrap_or(1000)
             };
-            let mut ping_interval = interval(Duration::from_millis(interval_ms));
+            let mut ping_interval = interval(Duration::from_millis(current_interval_ms));
+
+            // Track pings sent per target address for count enforcement
+            let mut sent_per_target: HashMap<String, u32> = HashMap::new();
 
             // Immediately trigger first ping, then wait for interval
             if *state.read().await == PingState::Running {
                 if let Some(ref client) = client {
-                    Self::ping_all(client, &targets, &results, &sequence, &sent_count, &log_file).await;
+                    PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target).await;
                 }
             }
 
@@ -119,7 +123,7 @@ impl PingService {
                     _ = ping_interval.tick() => {
                         if *state.read().await == PingState::Running {
                             if let Some(ref client) = client {
-                                Self::ping_all(client, &targets, &results, &sequence, &sent_count, &log_file).await;
+                                PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target).await;
                             }
                         }
                     }
@@ -130,10 +134,23 @@ impl PingService {
                                 break;
                             }
                             PingCommand::AddTarget(target) => {
+                                // Update interval if this is the first target or has different interval
+                                current_interval_ms = target.interval_ms;
+                                // Recreate interval timer with new interval
+                                ping_interval = interval(Duration::from_millis(current_interval_ms));
+                                // Initialize sent count for new target
+                                sent_per_target.entry(target.address.clone()).or_insert(0);
                                 targets.write().await.push(target);
                             }
                             PingCommand::RemoveTarget(addr) => {
                                 targets.write().await.retain(|t| t.address != addr);
+                                // Update interval from remaining targets if needed
+                                if let Some(first) = targets.read().await.first() {
+                                    current_interval_ms = first.interval_ms;
+                                    ping_interval = interval(Duration::from_millis(current_interval_ms));
+                                }
+                                // Remove tracking for this target
+                                sent_per_target.remove(&addr);
                             }
                             _ => {}
                         }
@@ -201,14 +218,12 @@ impl PingService {
         let mut consumed_guard = self.consumed.write().await;
         let consumed_pos = consumed_guard.entry(address.to_string()).or_insert(0);
 
-        // After trimming, the actual start index of `all` shifted.
-        // We track count of total ever-pushed items via results length + any trimmed.
-        // Simpler: just take all items not yet seen (from consumed_pos into `all`)
-        let new_results = if *consumed_pos < all.len() {
-            all[*consumed_pos..].to_vec()
-        } else {
-            vec![]
-        };
+        // Simple case: no new results
+        if *consumed_pos >= all.len() {
+            return vec![];
+        }
+
+        let new_results = all[*consumed_pos..].to_vec();
         *consumed_pos = all.len();
         drop(consumed_guard);
         new_results
@@ -259,13 +274,15 @@ impl PingService {
     }
 
     /// Ping all targets
-    async fn ping_all(
+    pub async fn ping_all(
         client: &Arc<Client>,
         targets: &Arc<RwLock<Vec<PingTarget>>>,
         results: &Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
+        consumed: &Arc<RwLock<HashMap<String, usize>>>,
         sequence: &Arc<AtomicU16>,
         sent_count: &Arc<AtomicU32>,
         log_file: &str,
+        sent_per_target: &mut HashMap<String, u32>,
     ) {
         const MAX_RESULTS: usize = 1000;
 
@@ -273,7 +290,17 @@ impl PingService {
         let mut targets_to_remove = Vec::new();
 
         for target in &targets_snapshot {
+            // Check if we've reached the count limit for this target
+            let current_sent = sent_per_target.entry(target.address.clone()).or_insert(0);
+            if *current_sent >= target.count {
+                info!("Ping count limit reached for {} ({}/{}), stopping", 
+                      target.address, *current_sent, target.count);
+                targets_to_remove.push(target.address.clone());
+                continue;
+            }
+
             sent_count.fetch_add(1, Ordering::SeqCst);
+            *current_sent += 1;
             let seq = sequence.fetch_add(1, Ordering::SeqCst);
             let result = Self::do_ping(client, target, seq).await;
             let success = result.success;
@@ -292,6 +319,17 @@ impl PingService {
             if entry.len() > MAX_RESULTS {
                 let drain_count = entry.len() - MAX_RESULTS;
                 entry.drain(0..drain_count);
+                
+                // Adjust consumed_pos to account for removed results
+                // This ensures get_results() will return the new results
+                let mut consumed_guard = consumed.write().await;
+                if let Some(consumed_pos) = consumed_guard.get_mut(&target.address) {
+                    if *consumed_pos >= drain_count {
+                        *consumed_pos -= drain_count;
+                    } else {
+                        *consumed_pos = 0;
+                    }
+                }
             }
             drop(results_guard);
 
@@ -301,7 +339,7 @@ impl PingService {
             }
         }
 
-        // Remove targets that triggered stop_on_loss
+        // Remove targets that triggered stop_on_loss or reached count limit
         if !targets_to_remove.is_empty() {
             let mut targets_guard = targets.write().await;
             for addr in targets_to_remove {
@@ -451,6 +489,159 @@ mod tests {
         service.sent_count.store(0, std::sync::atomic::Ordering::SeqCst);
         let sent = service.sent_count.load(std::sync::atomic::Ordering::SeqCst);
         assert_eq!(sent, 0, "Sent count should be 0 after stop");
+    }
+
+    #[tokio::test]
+    async fn test_count_enforcement_removes_target_at_limit() {
+        // Test that ping_all removes targets when count limit is reached
+        let client = Arc::new(Client::new(&Config::builder().build()).unwrap());
+        let targets = Arc::new(RwLock::new(Vec::new()));
+        let results = Arc::new(RwLock::new(HashMap::new()));
+        let consumed = Arc::new(RwLock::new(HashMap::new()));
+        let sequence = Arc::new(AtomicU16::new(0));
+        let sent_count = Arc::new(AtomicU32::new(0));
+        let mut sent_per_target: HashMap<String, u32> = HashMap::new();
+
+        // Create target with count=3
+        let mut target = PingTarget::new("127.0.0.1");
+        target.count = 3;
+        target.interval_ms = 100;
+        targets.write().await.push(target);
+        sent_per_target.insert("127.0.0.1".to_string(), 0);
+
+        // Simulate 3 ping cycles
+        for i in 1..=4 {
+            PingService::ping_all(
+                &client,
+                &targets,
+                &results,
+                &consumed,
+                &sequence,
+                &sent_count,
+                "",
+                &mut sent_per_target,
+            ).await;
+
+            if i <= 3 {
+                // Target should still be present for first 3 pings
+                assert_eq!(targets.read().await.len(), 1, 
+                    "Target should exist after ping #{}", i);
+                assert_eq!(*sent_per_target.get("127.0.0.1").unwrap(), i,
+                    "Sent count for target should be {}", i);
+            } else {
+                // After 3rd ping, target should be removed (count reached)
+                assert_eq!(targets.read().await.len(), 0,
+                    "Target should be removed after reaching count limit of 3");
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_infinite_count_never_removes_target() {
+        // Test that u32::MAX (infinite) never triggers removal
+        let client = Arc::new(Client::new(&Config::builder().build()).unwrap());
+        let targets = Arc::new(RwLock::new(Vec::new()));
+        let results = Arc::new(RwLock::new(HashMap::new()));
+        let consumed = Arc::new(RwLock::new(HashMap::new()));
+        let sequence = Arc::new(AtomicU16::new(0));
+        let sent_count = Arc::new(AtomicU32::new(0));
+        let mut sent_per_target: HashMap<String, u32> = HashMap::new();
+
+        // Create target with infinite count (u32::MAX)
+        let mut target = PingTarget::new("127.0.0.1");
+        target.count = u32::MAX;
+        target.interval_ms = 100;
+        targets.write().await.push(target);
+        sent_per_target.insert("127.0.0.1".to_string(), 0);
+
+        // Simulate many ping cycles
+        for _ in 0..10 {
+            PingService::ping_all(
+                &client,
+                &targets,
+                &results,
+                &consumed,
+                &sequence,
+                &sent_count,
+                "",
+                &mut sent_per_target,
+            ).await;
+        }
+
+        // Target should still be present after 10 pings
+        assert_eq!(targets.read().await.len(), 1,
+            "Target with infinite count should never be removed");
+        assert_eq!(*sent_per_target.get("127.0.0.1").unwrap(), 10,
+            "Sent count should be 10");
+    }
+
+    #[tokio::test]
+    async fn test_truncation_continues_returning_new_results() {
+        // Simple test: verify that after truncation, get_results returns new items
+        let service = PingService::new();
+        
+        // Manually add 1001 results and trigger truncation
+        let mut results_guard = service.results.write().await;
+        let entry = results_guard.entry("test".to_string()).or_insert_with(Vec::new);
+        
+        for i in 0..1001 {
+            entry.push(PingResult {
+                seq: i as u16,
+                success: true,
+                duration_ms: Some(i as f64),
+                ttl: Some(64),
+                bytes: 64,
+                error: None,
+            });
+        }
+        
+        // Manually trigger truncation
+        if entry.len() > 1000 {
+            let drain_count = entry.len() - 1000;
+            entry.drain(0..drain_count);
+        }
+        
+        // Should be trimmed to 1000
+        assert_eq!(entry.len(), 1000, "Should be trimmed to 1000");
+        assert_eq!(entry[0].seq, 1, "First result should be seq 1 (seq 0 was drained)");
+        drop(results_guard);
+        
+        // Now consume all results
+        let new_results = service.get_results("test").await;
+        assert_eq!(new_results.len(), 1000, "Should return all 1000 results");
+        
+        // Add one more result (will trigger another trim)
+        let mut results_guard = service.results.write().await;
+        let entry = results_guard.get_mut("test").unwrap();
+        entry.push(PingResult {
+            seq: 1001,
+            success: true,
+            duration_ms: Some(1001.0),
+            ttl: Some(64),
+            bytes: 64,
+            error: None,
+        });
+        
+        // Manually trigger truncation and consumed_pos adjustment
+        if entry.len() > 1000 {
+            let drain_count = entry.len() - 1000;
+            entry.drain(0..drain_count);
+            
+            let mut consumed_guard = service.consumed.write().await;
+            if let Some(consumed_pos) = consumed_guard.get_mut("test") {
+                if *consumed_pos >= drain_count {
+                    *consumed_pos -= drain_count;
+                } else {
+                    *consumed_pos = 0;
+                }
+            }
+        }
+        drop(results_guard);
+        
+        // Should return 1 new result
+        let new_results = service.get_results("test").await;
+        assert_eq!(new_results.len(), 1, "Should return 1 new result");
+        assert_eq!(new_results[0].seq, 1001, "New result should have seq 1001");
     }
 }
 

@@ -30,6 +30,23 @@ impl Default for AppConfig {
     }
 }
 
+impl AppConfig {
+    /// Merge with defaults for any missing/partial fields.
+    ///
+    /// This is called after loading from disk to ensure all fields have valid values.
+    /// TOML deserialization may leave some fields at their Default values if they're
+    /// missing from the file - this method ensures completeness.
+    pub fn merge_defaults(&mut self) {
+        self.modules.ping.merge_defaults();
+        self.modules.scan.merge_defaults();
+        self.modules.http.merge_defaults();
+        self.modules.tftpd.merge_defaults();
+        self.modules.tftpc.merge_defaults();
+        self.modules.plan.merge_defaults();
+        self.modules.chat.merge_defaults();
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Language {
     System,
@@ -98,6 +115,15 @@ impl Default for PingConfig {
 }
 
 impl PingConfig {
+    /// Merge with defaults for any missing fields
+    pub fn merge_defaults(&mut self) {
+        let defaults = Self::default();
+        if self.target.is_empty() { self.target = defaults.target; }
+        if self.interval == 0 { self.interval = defaults.interval; }
+        // count=0 means unset, use default (-1 for infinite)
+        if self.count == 0 { self.count = defaults.count; }
+    }
+
     /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!(
@@ -126,6 +152,13 @@ impl Default for ScanConfig {
 }
 
 impl ScanConfig {
+    /// Merge with defaults for any missing fields
+    pub fn merge_defaults(&mut self) {
+        let defaults = Self::default();
+        if self.start_ip.is_empty() { self.start_ip = defaults.start_ip; }
+        if self.end_ip.is_empty() { self.end_ip = defaults.end_ip; }
+    }
+
     /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!("filter={}", self.filter)
@@ -158,6 +191,12 @@ impl Default for HttpConfig {
 }
 
 impl HttpConfig {
+    /// Merge with defaults for any missing fields
+    pub fn merge_defaults(&mut self) {
+        // Port 0 means unset, use default
+        if self.port == 0 { self.port = Self::default().port; }
+    }
+
     /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!(
@@ -179,6 +218,8 @@ pub struct TftpdConfig {
     pub override_conflicts: bool,
     pub fslog: bool,
     pub work_dirs: Vec<String>,
+    /// Index of the currently selected working directory (0-based, None = first item)
+    pub working_dir_index: Option<usize>,
     /// Whether TFTP server was running when app was closed
     pub running: bool,
 }
@@ -195,12 +236,24 @@ impl Default for TftpdConfig {
             override_conflicts: false,
             fslog: false,
             work_dirs: Vec::new(),
+            working_dir_index: None,
             running: false,
         }
     }
 }
 
 impl TftpdConfig {
+    /// Merge with defaults for any missing fields
+    pub fn merge_defaults(&mut self) {
+        let defaults = Self::default();
+        if self.port == 0 { self.port = defaults.port; }
+        if self.timeout == 0 { self.timeout = defaults.timeout; }
+        if self.maxretry == 0 { self.maxretry = defaults.maxretry; }
+        if self.blksize == 0 { self.blksize = defaults.blksize; }
+        if self.qsize == 0 { self.qsize = defaults.qsize; }
+        if self.qtout == 0 { self.qtout = defaults.qtout; }
+    }
+
     /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!(
@@ -243,6 +296,16 @@ impl Default for TftpcConfig {
 }
 
 impl TftpcConfig {
+    /// Merge with defaults for any missing fields
+    pub fn merge_defaults(&mut self) {
+        let defaults = Self::default();
+        if self.server_addr.is_empty() { self.server_addr = defaults.server_addr; }
+        if self.server_port == 0 { self.server_port = defaults.server_port; }
+        if self.timeout == 0 { self.timeout = defaults.timeout; }
+        if self.maxretry == 0 { self.maxretry = defaults.maxretry; }
+        if self.blksize == 0 { self.blksize = defaults.blksize; }
+    }
+
     /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!(
@@ -276,6 +339,15 @@ impl Default for PlanConfig {
     }
 }
 
+impl PlanConfig {
+    /// Merge with defaults for any missing fields
+    pub fn merge_defaults(&mut self) {
+        let defaults = Self::default();
+        if self.unit.is_empty() { self.unit = defaults.unit; }
+        // cycle=0 is valid value (once), don't override
+    }
+}
+
 /// Chat module configuration (UI defaults)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatModuleConfig {
@@ -294,6 +366,16 @@ impl Default for ChatModuleConfig {
             broadcast_addr: String::from("255.255.255.255"),
             running: false,
         }
+    }
+}
+
+impl ChatModuleConfig {
+    /// Merge with defaults for any missing fields
+    pub fn merge_defaults(&mut self) {
+        let defaults = Self::default();
+        if self.username.is_empty() { self.username = defaults.username; }
+        if self.port == 0 { self.port = defaults.port; }
+        if self.broadcast_addr.is_empty() { self.broadcast_addr = defaults.broadcast_addr; }
     }
 }
 

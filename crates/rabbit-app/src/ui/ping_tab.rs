@@ -26,7 +26,7 @@ impl TabComponent for PingTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "Ping").column();
-        grp.set_margin(5);
+        grp.set_margin(0);  // Remove margin to match old version - no extra padding
         grp.set_spacing(4);
 
         // Control row - matching old version layout
@@ -50,6 +50,7 @@ impl TabComponent for PingTab {
         // Options input (takes remaining space)
         let mut opt_input = Input::default();
         opt_input.set_value(&defaults::ping_options());
+        ctrl_row.add(&opt_input);
 
         // Start/Stop button (fixed width, right aligned)
         let mut start_btn = Button::default().with_label("Start");
@@ -78,6 +79,8 @@ impl TabComponent for PingTab {
         let results_buf = TextBuffer::default();
         results_display.set_buffer(Some(results_buf));
         results_display.wrap_mode(WrapMode::AtBounds, 0);
+        results_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border to match old version
+        results_display.set_scrollbar_size(10);  // Smaller scrollbar to save space
 
         grp.end();
 

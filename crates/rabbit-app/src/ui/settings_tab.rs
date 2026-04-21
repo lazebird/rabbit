@@ -135,11 +135,24 @@ impl TabComponent for SettingsTab {
         lang_label.set_align(Align::Left | Align::Inside);
         lang_row.fixed(&lang_label, 70);
 
+        // Load current config state for all settings
+        let initial_config = if let Ok(config) = rabbit_platform::config::load_config() {
+            config
+        } else {
+            rabbit_models::config::AppConfig::default()
+        };
+
         let mut lang_choice = Choice::default();
         lang_choice.add_choice("English");
         lang_choice.add_choice("中文");
         lang_choice.add_choice("System");
-        lang_choice.set_value(0);
+        // Set initial value from config
+        let lang_idx = match initial_config.language {
+            rabbit_models::config::Language::English => 0,
+            rabbit_models::config::Language::Chinese => 1,
+            rabbit_models::config::Language::System => 2,
+        };
+        lang_choice.set_value(lang_idx);
         lang_row.fixed(&lang_choice, 100);
 
         Frame::default(); // Spacer
@@ -151,16 +164,19 @@ impl TabComponent for SettingsTab {
         check_row.set_spacing(15);
 
         let mut tray_check = CheckButton::default().with_label("Tray");
+        tray_check.set_checked(initial_config.systray);
         check_row.fixed(&tray_check, 55);
 
         let mut top_check = CheckButton::default().with_label("Top");
+        top_check.set_checked(initial_config.top);
         check_row.fixed(&top_check, 50);
 
         let mut autostart_check = CheckButton::default().with_label("AutoStart");
+        autostart_check.set_checked(initial_config.autostart);
         check_row.fixed(&autostart_check, 80);
 
         let mut autoupdate_check = CheckButton::default().with_label("AutoUpdate");
-        autoupdate_check.set_checked(true);
+        autoupdate_check.set_checked(initial_config.autoupdate);
         check_row.fixed(&autoupdate_check, 90);
 
         Frame::default(); // Spacer
@@ -203,6 +219,7 @@ impl TabComponent for SettingsTab {
         output_display.set_buffer(Some(output_buf));
         output_display.wrap_mode(WrapMode::AtBounds, 0);
         output_display.set_text_size(14);
+        output_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
 
         // Initialize output from ui_state
         if let Some(state) = crate::ui_state::UiState::global() {
@@ -252,12 +269,39 @@ impl TabComponent for SettingsTab {
             }
         });
 
-        // Auto-save callbacks
-        lang_choice.set_callback(move |_| send_event(UiEvent::SettingsSave));
-        tray_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
-        top_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
-        autostart_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
-        autoupdate_check.set_callback(move |_| send_event(UiEvent::SettingsSave));
+        // Auto-save callbacks - update config then save
+        let mut lang_choice_clone = lang_choice.clone();
+        let mut tray_check_clone = tray_check.clone();
+        let mut top_check_clone = top_check.clone();
+        let mut autostart_check_clone = autostart_check.clone();
+        let mut autoupdate_check_clone = autoupdate_check.clone();
+        
+        lang_choice.set_callback(move |_| {
+            let idx = lang_choice_clone.value();
+            let lang = match idx {
+                0 => "English",
+                1 => "中文",
+                _ => "System",
+            };
+            crate::ui_state::set_language(lang);
+            send_event(UiEvent::SettingsSave);
+        });
+        tray_check.set_callback(move |_| {
+            crate::ui_state::set_systray(tray_check_clone.is_checked());
+            send_event(UiEvent::SettingsSave);
+        });
+        top_check.set_callback(move |_| {
+            crate::ui_state::set_top(top_check_clone.is_checked());
+            send_event(UiEvent::SettingsSave);
+        });
+        autostart_check.set_callback(move |_| {
+            crate::ui_state::set_autostart(autostart_check_clone.is_checked());
+            send_event(UiEvent::SettingsSave);
+        });
+        autoupdate_check.set_callback(move |_| {
+            crate::ui_state::set_autoupdate(autoupdate_check_clone.is_checked());
+            send_event(UiEvent::SettingsSave);
+        });
 
         // Register settings output for centralized refresh
         crate::ui::ui_refresh::register_display("settings_output", output_display);

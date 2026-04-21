@@ -19,7 +19,7 @@ use fltk::{
 use chrono::{Datelike, Timelike, NaiveDate, Local};
 use crate::ui_events::{UiEvent, send_event};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors};
+use super::{TabComponent, Colors, defaults};
 
 /// Plan Tab Component
 pub struct PlanTab;
@@ -29,7 +29,7 @@ impl TabComponent for PlanTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "PLAN").column();
-        grp.set_margin(5);
+        grp.set_margin(0);  // Remove margin to match old version
         grp.set_spacing(4);
 
         // Control row - matching old version compact layout
@@ -42,8 +42,13 @@ impl TabComponent for PlanTab {
 
         // Date input - click to show date picker
         let mut date_input = Input::default();
-        let now = Local::now();
-        date_input.set_value(&now.format("%Y/%m/%d").to_string());
+        let plan_date_val = defaults::plan_date();
+        if plan_date_val.is_empty() {
+            let now = Local::now();
+            date_input.set_value(&now.format("%Y/%m/%d").to_string());
+        } else {
+            date_input.set_value(&plan_date_val);
+        }
         ctrl_row.fixed(&date_input, 85);
 
         // Time label
@@ -52,7 +57,13 @@ impl TabComponent for PlanTab {
 
         // Time input - click to show time picker
         let mut time_input = Input::default();
-        time_input.set_value(&now.format("%H:%M").to_string());
+        let plan_time_val = defaults::plan_time();
+        if plan_time_val.is_empty() {
+            let now = Local::now();
+            time_input.set_value(&now.format("%H:%M").to_string());
+        } else {
+            time_input.set_value(&plan_time_val);
+        }
         ctrl_row.fixed(&time_input, 45);
 
         // Date picker - show calendar dialog when user clicks
@@ -87,7 +98,7 @@ impl TabComponent for PlanTab {
 
         // Cycle input (small)
         let mut cycle_input = Input::default();
-        cycle_input.set_value("0");
+        cycle_input.set_value(&defaults::plan_cycle());
         ctrl_row.fixed(&cycle_input, 35);
 
         // Unit dropdown
@@ -95,7 +106,7 @@ impl TabComponent for PlanTab {
         unit_choice.add_choice("minute");
         unit_choice.add_choice("hour");
         unit_choice.add_choice("day");
-        unit_choice.set_value(0);
+        unit_choice.set_value(defaults::plan_unit());
         ctrl_row.fixed(&unit_choice, 70);
 
         // Opt. label
@@ -104,7 +115,7 @@ impl TabComponent for PlanTab {
 
         // Options input (takes remaining space)
         let mut opt_input = Input::default();
-        opt_input.set_value("override=false");
+        opt_input.set_value(&defaults::plan_options());
 
         // Add button (small square)
         let mut add_btn = Button::default().with_label("+");
@@ -126,6 +137,7 @@ impl TabComponent for PlanTab {
         let event_buf = TextBuffer::default();
         event_display.set_buffer(Some(event_buf));
         event_display.wrap_mode(WrapMode::AtBounds, 0);
+        event_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
 
         grp.end();
 
@@ -165,6 +177,9 @@ impl TabComponent for PlanTab {
                 _ => "minute",
             }.to_string();
             let msg = opt_input_clone.value();
+
+            // Save plan configuration before sending event (which moves values)
+            crate::ui_state::sync_plan_config(date.clone(), time.clone(), cycle, &unit, msg.clone());
 
             if date.is_empty() || time.is_empty() {
                 fltk::dialog::alert_default("Please enter date and time!");
@@ -207,6 +222,9 @@ impl TabComponent for PlanTab {
 
         // Register display with centralized refresh manager
         super::ui_refresh::register_display("plan_list", event_display.clone());
+        
+        // Register add button for Enter key support (primary action)
+        super::ui_refresh::register_plan_button(add_btn.clone(), colors.accent);
 
         grp
     }

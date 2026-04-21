@@ -27,7 +27,7 @@ impl TabComponent for TftpcTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "TFTPC").column();
-        grp.set_margin(5);
+        grp.set_margin(0);  // Remove margin to match old version
         grp.set_spacing(4);
 
         // Row 1: IP and Opt
@@ -91,6 +91,7 @@ impl TabComponent for TftpcTab {
         let log_buf = TextBuffer::default();
         log_display.set_buffer(Some(log_buf));
         log_display.wrap_mode(WrapMode::AtBounds, 0);
+        log_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
 
         grp.end();
 
@@ -158,6 +159,9 @@ impl TabComponent for TftpcTab {
 
         // Register display with centralized refresh manager
         super::ui_refresh::register_display("tftpc_log", log_display.clone());
+        
+        // Register Put button for Enter key support (primary action)
+        super::ui_refresh::register_tftpc_button(put_btn.clone(), colors.accent);
 
         grp
     }

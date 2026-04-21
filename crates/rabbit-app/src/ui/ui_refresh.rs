@@ -48,6 +48,15 @@ pub fn register_http_button(btn: fltk::button::Button, accent: fltk::enums::Colo
     }
 }
 
+/// Register the HTTP browser widget for centralized item refresh.
+static mut HTTP_BROWSER: Option<Browser> = None;
+
+pub fn register_http_browser(browser: Browser) {
+    unsafe {
+        HTTP_BROWSER = Some(browser);
+    }
+}
+
 /// Register the Ping toggle button for centralized state sync.
 static mut PING_BTN: Option<fltk::button::Button> = None;
 static mut PING_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
@@ -70,7 +79,80 @@ pub fn register_scan_button(btn: fltk::button::Button, accent: fltk::enums::Colo
     }
 }
 
-/// Global flag to signal the refresh loop to stop.
+/// Register the TFTP Server toggle button for centralized state sync.
+static mut TFTPD_BTN: Option<fltk::button::Button> = None;
+static mut TFTPD_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+
+pub fn register_tftpd_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
+    unsafe {
+        TFTPD_BTN = Some(btn);
+        TFTPD_ACCENT = accent;
+    }
+}
+
+/// Register the TFTP Client action button for centralized state sync.
+static mut TFTPC_BTN: Option<fltk::button::Button> = None;
+static mut TFTPC_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+
+pub fn register_tftpc_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
+    unsafe {
+        TFTPC_BTN = Some(btn);
+        TFTPC_ACCENT = accent;
+    }
+}
+
+/// Register the Plan action button for centralized state sync.
+static mut PLAN_BTN: Option<fltk::button::Button> = None;
+static mut PLAN_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+
+pub fn register_plan_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
+    unsafe {
+        PLAN_BTN = Some(btn);
+        PLAN_ACCENT = accent;
+    }
+}
+
+/// Register the Chat action button for centralized state sync.
+static mut CHAT_BTN: Option<fltk::button::Button> = None;
+static mut CHAT_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+
+pub fn register_chat_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
+    unsafe {
+        CHAT_BTN = Some(btn);
+        CHAT_ACCENT = accent;
+    }
+}
+
+/// Register the Settings action button for centralized state sync.
+static mut SETTINGS_BTN: Option<fltk::button::Button> = None;
+static mut SETTINGS_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+
+pub fn register_settings_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
+    unsafe {
+        SETTINGS_BTN = Some(btn);
+        SETTINGS_ACCENT = accent;
+    }
+}
+
+/// Trigger the main button of a specific tab by index (0=Ping, 1=Scan, 2=HTTP, 3=TFTPD, 4=TFTPC, 5=PLAN, 6=CHAT, 7=Settings)
+pub fn trigger_tab_button(tab_index: usize) {
+    unsafe {
+        let btn = match tab_index {
+            0 => PING_BTN.as_mut(),
+            1 => SCAN_BTN.as_mut(),
+            2 => HTTP_BTN.as_mut(),
+            3 => TFTPD_BTN.as_mut(),
+            4 => TFTPC_BTN.as_mut(),
+            5 => PLAN_BTN.as_mut(),
+            6 => CHAT_BTN.as_mut(),
+            7 => SETTINGS_BTN.as_mut(),
+            _ => None,
+        };
+        if let Some(btn) = btn {
+            btn.do_callback();
+        }
+    }
+}
 static mut REFRESH_RUNNING: bool = true;
 
 /// Start the centralized refresh loop. Fires every 100ms (10Hz).
@@ -117,6 +199,7 @@ fn do_refresh() {
         check!("scan_running");
         check!("http_log");
         check!("http_running");
+        check!("http_items");
         check!("tftpd_log");
         check!("tftpd_dirs");
         check!("tftpc_log");
@@ -190,7 +273,7 @@ fn do_refresh() {
     }
     drop(map);
 
-    // Update browsers (tftpd_dirs)
+    // Update browsers (tftpd_dirs and http_items)
     if let Some(browser_store) = unsafe { BROWSERS.as_ref() } {
         let mut browser_map = browser_store.borrow_mut();
         for (key, value) in &snapshot.0 {
@@ -204,6 +287,33 @@ fn do_refresh() {
                     }
                     if browser.size() == 0 {
                         browser.add("(no directories added)");
+                    }
+                }
+            }
+        }
+    }
+
+    // Update HTTP browser with items and selection
+    if let Some(state) = crate::ui_state::UiState::global() {
+        if let Ok(s) = state.lock() {
+            if let Some(mut browser) = unsafe { HTTP_BROWSER.as_mut() } {
+                browser.clear();
+                let selected_idx = s.http_selected_idx.unwrap_or(0);
+                for (i, item) in s.http_items.iter().enumerate() {
+                    let line_num = (i + 1) as i32;
+                    // Add visual indicator for selected item
+                    if line_num == selected_idx {
+                        browser.add(&format!("▶ {}", item));
+                    } else {
+                        browser.add(item);
+                    }
+                }
+                if s.http_items.is_empty() {
+                    browser.add("(No files or directories configured)");
+                } else {
+                    // Restore selection
+                    if selected_idx > 0 {
+                        browser.select(selected_idx);
                     }
                 }
             }

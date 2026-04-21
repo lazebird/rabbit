@@ -98,6 +98,27 @@ chat_service: Arc::new(RwLock::new(chat_service)),
 
         // Initialize UI state and event system
         let _ui_state = UiState::init();
+        
+        // Restore HTTP and TFTP directories from config
+        {
+            let config = self.view_model.read().await.get_config();
+            // Restore HTTP items
+            for dir in &config.modules.http.dirs {
+                crate::ui_state::add_http_item(dir);
+            }
+            // Restore TFTP directories
+            for dir in &config.modules.tftpd.work_dirs {
+                crate::ui_state::add_tftpd_dir(dir);
+            }
+            // Restore TFTP working directory selection
+            if let Some(idx) = config.modules.tftpd.working_dir_index {
+                // Convert 0-based config index to 1-based UI index
+                if idx < config.modules.tftpd.work_dirs.len() {
+                    crate::ui_state::set_tftpd_selected((idx + 1) as i32);
+                }
+            }
+        }
+        
         let event_receiver = init_event_system();
 
         // Create FLTK application
@@ -117,84 +138,6 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         if let Ok(icon) = IcoImage::load("crates/rabbit-app/resources/icon.ico") {
             main_win.set_icon(Some(icon));
         }
-
-        // Add global keyboard event handling
-        let mut main_win_for_keys = main_win.clone();
-        main_win.handle(move |_win, ev| {
-            use fltk::enums::Event;
-            use fltk::enums::Key;
-            if ev == Event::KeyDown {
-                let key = app::event_key();
-                match key {
-                    // Esc: Clear current operation
-                    Key::Escape => {
-                        info!("Esc key pressed - stopping operations");
-                        send_event(UiEvent::PingStop);
-                        send_event(UiEvent::ScanStop);
-                        true
-                    }
-                    // Enter: Execute current tab's start/stop button
-                    Key::Enter => {
-                        info!("Enter key pressed - execute current action");
-                        // The active tab's button should handle this
-                        true
-                    }
-                    // F1: Open help documentation
-                    Key::F1 => {
-                        info!("F1 key pressed - opening help");
-                        let _ = std::process::Command::new("xdg-open")
-                            .arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md")
-                            .spawn();
-                        #[cfg(target_os = "macos")]
-                        let _ = std::process::Command::new("open")
-                            .arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md")
-                            .spawn();
-                        #[cfg(target_os = "windows")]
-                        let _ = std::process::Command::new("cmd")
-                            .args(&["/c", "start", "https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md"])
-                            .spawn();
-                        true
-                    }
-                    // F2: Open project homepage
-                    Key::F2 => {
-                        info!("F2 key pressed - opening project homepage");
-                        let _ = std::process::Command::new("xdg-open")
-                            .arg("https://github.com/lazebird/rabbit")
-                            .spawn();
-                        #[cfg(target_os = "macos")]
-                        let _ = std::process::Command::new("open")
-                            .arg("https://github.com/lazebird/rabbit")
-                            .spawn();
-                        #[cfg(target_os = "windows")]
-                        let _ = std::process::Command::new("cmd")
-                            .args(&["/c", "start", "https://github.com/lazebird/rabbit"])
-                            .spawn();
-                        true
-                    }
-                    // F3: Open config file directory
-                    Key::F3 => {
-                        info!("F3 key pressed - opening config directory");
-                        if let Some(config_path) = dirs::config_local_dir() {
-                            let rabbit_config = config_path.join("Rabbit");
-                            let path_str = rabbit_config.to_string_lossy().to_string();
-                            
-                            #[cfg(target_os = "linux")]
-                            let _ = std::process::Command::new("xdg-open").arg(&path_str).spawn();
-                            
-                            #[cfg(target_os = "macos")]
-                            let _ = std::process::Command::new("open").arg(&path_str).spawn();
-                            
-                            #[cfg(target_os = "windows")]
-                            let _ = std::process::Command::new("explorer").arg(&path_str).spawn();
-                        }
-                        true
-                    }
-                    _ => false,
-                }
-            } else {
-                false
-            }
-        });
 
         // Create Tabs widget - positioned to leave room for tab labels
         let mut tabs = Tabs::new(5, 5, 738, 508, "");
@@ -261,6 +204,104 @@ chat_service: Arc::new(RwLock::new(chat_service)),
 
         // Start centralized UI refresh loop (100ms interval, replaces 7 per-frame idle callbacks)
         crate::ui::ui_refresh::start_refresh_loop();
+
+        // Add global keyboard event handling (after tabs are created)
+        let mut main_win_for_keys = main_win.clone();
+        let tabs_for_keys = tabs.clone();
+        let tab_ptrs_for_keys: Vec<usize> = vec![
+            ping_tab.as_widget_ptr() as usize,
+            scan_tab.as_widget_ptr() as usize,
+            http_tab.as_widget_ptr() as usize,
+            tftpd_tab.as_widget_ptr() as usize,
+            tftpc_tab.as_widget_ptr() as usize,
+            plan_tab.as_widget_ptr() as usize,
+            chat_tab.as_widget_ptr() as usize,
+            settings_tab.as_widget_ptr() as usize,
+        ];
+        main_win_for_keys.handle(move |win, ev| {
+            use fltk::enums::Event;
+            use fltk::enums::Key;
+            if ev == Event::KeyDown {
+                let key = app::event_key();
+                match key {
+                    // Esc: Exit the program
+                    Key::Escape => {
+                        info!("Esc key pressed - exiting program");
+                        win.hide();
+                        app::quit();
+                        true
+                    }
+                    // Enter: Execute current tab's main button
+                    Key::Enter => {
+                        info!("Enter key pressed - triggering current tab action");
+                        // Get current tab index
+                        if let Some(current) = tabs_for_keys.value() {
+                            let ptr = current.as_widget_ptr() as usize;
+                            let idx = tab_ptrs_for_keys
+                                .iter()
+                                .position(|&p| p == ptr)
+                                .unwrap_or(0);
+                            // Trigger the button for this tab
+                            crate::ui::ui_refresh::trigger_tab_button(idx);
+                        }
+                        true
+                    }
+                    // F1: Open help documentation
+                    Key::F1 => {
+                        info!("F1 key pressed - opening help");
+                        let _ = std::process::Command::new("xdg-open")
+                            .arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md")
+                            .spawn();
+                        #[cfg(target_os = "macos")]
+                        let _ = std::process::Command::new("open")
+                            .arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md")
+                            .spawn();
+                        #[cfg(target_os = "windows")]
+                        let _ = std::process::Command::new("cmd")
+                            .args(&["/c", "start", "https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md"])
+                            .spawn();
+                        true
+                    }
+                    // F2: Open project homepage
+                    Key::F2 => {
+                        info!("F2 key pressed - opening project homepage");
+                        let _ = std::process::Command::new("xdg-open")
+                            .arg("https://github.com/lazebird/rabbit")
+                            .spawn();
+                        #[cfg(target_os = "macos")]
+                        let _ = std::process::Command::new("open")
+                            .arg("https://github.com/lazebird/rabbit")
+                            .spawn();
+                        #[cfg(target_os = "windows")]
+                        let _ = std::process::Command::new("cmd")
+                            .args(&["/c", "start", "https://github.com/lazebird/rabbit"])
+                            .spawn();
+                        true
+                    }
+                    // F3: Open config file directory
+                    Key::F3 => {
+                        info!("F3 key pressed - opening config directory");
+                        if let Some(config_path) = dirs::config_local_dir() {
+                            let rabbit_config = config_path.join("Rabbit");
+                            let path_str = rabbit_config.to_string_lossy().to_string();
+                            
+                            #[cfg(target_os = "linux")]
+                            let _ = std::process::Command::new("xdg-open").arg(&path_str).spawn();
+                            
+                            #[cfg(target_os = "macos")]
+                            let _ = std::process::Command::new("open").arg(&path_str).spawn();
+                            
+                            #[cfg(target_os = "windows")]
+                            let _ = std::process::Command::new("explorer").arg(&path_str).spawn();
+                        }
+                        true
+                    }
+                    _ => false,
+                }
+            } else {
+                false
+            }
+        });
 
         // Let tabs fill the window on resize
         let mut tabs_clone = tabs.clone();
@@ -410,11 +451,13 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         // Restore business states after event loop is ready
         if ping_restore_flag {
             info!("Restoring ping service state");
-            // Get target from config and start ping
+            // Get target and options from config and start ping
             let config = self.view_model.read().await.get_config();
             let target = config.modules.ping.target.clone();
+            let options = config.modules.ping.opts_string();  // Use saved options including interval
             drop(config);
-            send_event(UiEvent::PingStart { target, options: String::new() });
+            info!("Restoring ping with options: {}", options);
+            send_event(UiEvent::PingStart { target, options });
         }
         
         if http_restore_flag {
@@ -431,7 +474,11 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         
         if tftp_restore_flag {
             info!("Restoring TFTP server state");
-            send_event(UiEvent::TftpServerToggle { options: String::new() });
+            let config = self.view_model.read().await.get_config();
+            let options = config.modules.tftpd.opts_string();
+            drop(config);
+            info!("Restoring TFTP server with options: {}", options);
+            send_event(UiEvent::TftpServerToggle { options });
         }
         
         if chat_restore_flag {
@@ -665,7 +712,7 @@ impl EventHandler for AppHandle {
     async fn handle_event(&mut self, event: UiEvent) -> anyhow::Result<()> {
         match event {
             // Ping
-            UiEvent::PingStart { target, options: _ } => {
+            UiEvent::PingStart { target, options } => {
                 info!("Starting ping to {}", target);
 
                 // Cancel any existing ping task first
@@ -683,15 +730,68 @@ impl EventHandler for AppHandle {
                     });
                 }
 
+                // Parse options string to extract interval
+                let mut interval = self.view_model.read().await.get_config().modules.ping.interval as u64;
+                let mut count: i32 = -1;  // Default to infinite
+                let mut stop_on_loss = false;
+
+                for opt in options.split(';') {
+                    let parts: Vec<&str> = opt.splitn(2, '=').collect();
+                    if parts.len() == 2 {
+                        match parts[0].trim() {
+                            "interval" => {
+                                if let Ok(val) = parts[1].parse::<u64>() {
+                                    interval = val;
+                                }
+                            }
+                            "count" => {
+                                // Parse as i32 to support -1 (infinite)
+                                if let Ok(val) = parts[1].parse::<i32>() {
+                                    count = val;
+                                }
+                            }
+                            "stoponloss" => {
+                                stop_on_loss = parts[1].trim().eq_ignore_ascii_case("true");
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+
+                info!("Ping options parsed: interval={}ms, count={} (negative=infinite), stoponloss={}", interval, count, stop_on_loss);
+
+                // Save ping configuration to persist settings
+                {
+                    let mut vm = self.view_model.write().await;
+                    let mut config = vm.get_config();
+                    config.modules.ping.interval = interval as i32;
+                    config.modules.ping.count = count;
+                    config.modules.ping.stoponloss = stop_on_loss;
+                    config.modules.ping.target = target.clone();
+                    vm.update_config(config.clone());
+                    if let Err(e) = save_config(&config) {
+                        warn!("Failed to save ping config: {}", e);
+                    }
+                    info!("Ping configuration saved: interval={}, count={}, stoponloss={}", 
+                          config.modules.ping.interval, config.modules.ping.count, config.modules.ping.stoponloss);
+                }
+
                 let mut service = self.ping_service.write().await;
                 service.start().await?;
 
-                let interval = self.view_model.read().await.get_config().modules.ping.interval as u64;
                 let mut target_obj = PingTarget::new(&target);
                 target_obj.interval_ms = interval;
+                // Convert i32 count to u32 (negative values mean infinite)
+                target_obj.count = if count < 0 { u32::MAX } else { count as u32 };
+                target_obj.stop_on_loss = stop_on_loss;
                 service.add_target(target_obj).await?;
                 self.view_model.write().await.set_ping_running(true);
                 crate::ui_state::set_ping_running(true);
+                
+                info!("Ping target configured: interval={}ms, count={} ({})", 
+                      interval, 
+                      if count < 0 { -1 } else { count },
+                      if count < 0 { "infinite" } else { "finite" });
                 
                 // Clear ping history for this target
                 self.ping_history.insert(target.clone(), Vec::new());
@@ -820,13 +920,31 @@ impl EventHandler for AppHandle {
             }
 
             // Scan
-            UiEvent::ScanStart { start_ip, end_ip, options: _ } => {
-                info!("Starting scan from {} to {}", start_ip, end_ip);
+            UiEvent::ScanStart { start_ip, end_ip, options } => {
+                info!("Starting scan from {} to {} with options: {}", start_ip, end_ip, options);
 
                 // Cancel any existing scan task first
                 if let Some(handle) = self.scan_task.write().await.take() {
                     handle.abort();
                 }
+
+                // Parse options string
+                let mut filter = true;
+                for opt in options.split(';') {
+                    let parts: Vec<&str> = opt.splitn(2, '=').collect();
+                    if parts.len() == 2 {
+                        match parts[0].trim() {
+                            "filter" => {
+                                filter = parts[1].trim().eq_ignore_ascii_case("true");
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                info!("Scan options parsed: filter={}", filter);
+
+                // Save scan configuration
+                crate::ui_state::sync_scan_config(start_ip.clone(), end_ip.clone(), filter);
 
                 let mut service = self.scan_service.write().await;
                 // Parse IP addresses
@@ -835,6 +953,11 @@ impl EventHandler for AppHandle {
                 let end: std::net::Ipv4Addr = end_ip.parse()
                     .map_err(|e| anyhow::anyhow!("Invalid end IP: {}", e))?;
                 let range = ScanRange::new(start, end);
+                
+                // Note: ScannerConfig controls internal performance parameters
+                // The 'filter' option from ScanConfig is logged for future use
+                info!("Scan will use filter={} (currently not applied to ScannerConfig)", filter);
+                
                 service.scan(range).await?;
                 drop(service);
                 crate::ui_state::set_scan_running(true);
@@ -899,6 +1022,12 @@ impl EventHandler for AppHandle {
                     crate::ui_state::append_http_log("\r\nHTTP server stopped.\r\n");
                 } else {
                     info!("Starting HTTP server on port {} with shell={}", port, shell);
+                    
+                    // Save HTTP configuration
+                    crate::ui_state::sync_http_start_config(port, shell, 
+                        options.contains("autoindex=true"),
+                        options.contains("videoplay=true"));
+                    
                     // Set running state first so button changes immediately
                     crate::ui_state::set_http_running(true);
                     self.view_model.write().await.set_http_running(true);
@@ -937,10 +1066,64 @@ impl EventHandler for AppHandle {
                     info!("Stopping TFTP server");
                     self.tftp_service.write().await.stop_server().await?;
                     self.view_model.write().await.set_tftp_server_running(false);
+                    crate::ui_state::append_tftpd_log("\r\nTFTP server stopped.\r\n");
                 } else {
                     info!("Starting TFTP server with options: {}", options);
+                    
+                    // Parse options string
+                    let mut timeout = 200;
+                    let mut maxretry = 10;
+                    let mut blksize = 512;
+                    let mut qsize = 2000;
+                    let mut qtout = 1000;
+                    let mut override_conflicts = false;
+                    let mut fslog = false;
+                    
+                    for opt in options.split(';') {
+                        let parts: Vec<&str> = opt.splitn(2, '=').collect();
+                        if parts.len() == 2 {
+                            match parts[0].trim() {
+                                "timeout" => {
+                                    if let Ok(val) = parts[1].parse::<i32>() {
+                                        timeout = val;
+                                    }
+                                }
+                                "retry" => {
+                                    if let Ok(val) = parts[1].parse::<i32>() {
+                                        maxretry = val;
+                                    }
+                                }
+                                "blksize" => {
+                                    if let Ok(val) = parts[1].parse::<i32>() {
+                                        blksize = val;
+                                    }
+                                }
+                                "qsize" => {
+                                    if let Ok(val) = parts[1].parse::<i32>() {
+                                        qsize = val;
+                                    }
+                                }
+                                "qtout" => {
+                                    if let Ok(val) = parts[1].parse::<i32>() {
+                                        qtout = val;
+                                    }
+                                }
+                                "override" => {
+                                    override_conflicts = parts[1].trim().eq_ignore_ascii_case("true");
+                                }
+                                "fslog" => {
+                                    fslog = parts[1].trim().eq_ignore_ascii_case("true");
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                    info!("TFTP server options parsed: timeout={}, retry={}, blksize={}, qsize={}, qtout={}, override={}, fslog={}",
+                          timeout, maxretry, blksize, qsize, qtout, override_conflicts, fslog);
+                    
                     self.tftp_service.write().await.start_server().await?;
                     self.view_model.write().await.set_tftp_server_running(true);
+                    crate::ui_state::append_tftpd_log(&format!("TFTP server started (timeout={}ms, retry={}, blksize={}).\r\n", timeout, maxretry, blksize));
                 }
             }
             UiEvent::TftpServerAddDir => {
@@ -955,6 +1138,31 @@ impl EventHandler for AppHandle {
             // TFTP Client
             UiEvent::TftpClientPut { server, local, remote, options } => {
                 info!("TFTP put {} -> {}@{} with options: {}", local, remote, server, options);
+                
+                // Parse options (for future use)
+                let mut timeout = 200;
+                let mut maxretry = 10;
+                let mut blksize = 1024;
+                
+                for opt in options.split(';') {
+                    let parts: Vec<&str> = opt.splitn(2, '=').collect();
+                    if parts.len() == 2 {
+                        match parts[0].trim() {
+                            "timeout" => {
+                                if let Ok(val) = parts[1].parse::<i32>() { timeout = val; }
+                            }
+                            "retry" => {
+                                if let Ok(val) = parts[1].parse::<i32>() { maxretry = val; }
+                            }
+                            "blksize" => {
+                                if let Ok(val) = parts[1].parse::<i32>() { blksize = val; }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, maxretry, blksize);
+                
                 let tftp_service = self.tftp_service.write().await;
                 match tftp_service.upload_to(&server, &local, &remote).await {
                     Ok(transfer_id) => {
@@ -967,6 +1175,31 @@ impl EventHandler for AppHandle {
             }
             UiEvent::TftpClientGet { server, local, remote, options } => {
                 info!("TFTP get {}@{} -> {} with options: {}", remote, server, local, options);
+                
+                // Parse options (for future use)
+                let mut timeout = 200;
+                let mut maxretry = 10;
+                let mut blksize = 1024;
+                
+                for opt in options.split(';') {
+                    let parts: Vec<&str> = opt.splitn(2, '=').collect();
+                    if parts.len() == 2 {
+                        match parts[0].trim() {
+                            "timeout" => {
+                                if let Ok(val) = parts[1].parse::<i32>() { timeout = val; }
+                            }
+                            "retry" => {
+                                if let Ok(val) = parts[1].parse::<i32>() { maxretry = val; }
+                            }
+                            "blksize" => {
+                                if let Ok(val) = parts[1].parse::<i32>() { blksize = val; }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, maxretry, blksize);
+                
                 let tftp_service = self.tftp_service.write().await;
                 match tftp_service.download_from(&server, &remote, &local).await {
                     Ok(transfer_id) => {
@@ -1068,11 +1301,26 @@ impl EventHandler for AppHandle {
             // Settings
             UiEvent::SettingsSave => {
                 info!("Saving settings");
-                let config = self.view_model.read().await.get_config();
+                // Reload config from disk first to get any changes from sync_* functions
+                let disk_config = match rabbit_platform::config::load_config() {
+                    Ok(cfg) => cfg,
+                    Err(e) => {
+                        warn!("Failed to load config from disk: {}, using view_model config", e);
+                        self.view_model.read().await.get_config()
+                    }
+                };
+                // Update view_model with disk config
+                self.view_model.write().await.update_config(disk_config.clone());
+                
+                let config = disk_config;
                 let autostart = config.autostart;
                 let systray = config.systray;
                 let top = config.top;
                 let http_shell = config.modules.http.shell;
+                let new_ping_interval = config.modules.ping.interval;
+                
+                // Check if ping is currently running
+                let ping_was_running = self.view_model.read().await.is_ping_running();
                 
                 // Apply autostart setting
                 if let Err(e) = rabbit_platform::autostart::set_autostart(autostart) {
@@ -1108,6 +1356,25 @@ impl EventHandler for AppHandle {
                 }
                 
                 save_config(&config)?;
+                
+                // If ping was running, restart it with new interval
+                if ping_was_running {
+                    info!("Ping was running, restarting with new interval: {}ms", new_ping_interval);
+                    // Stop current ping
+                    self.ping_service.write().await.stop().await.ok();
+                    self.view_model.write().await.set_ping_running(false);
+                    crate::ui_state::set_ping_running(false);
+                    
+                    // Restart ping with new config
+                    let target = config.modules.ping.target.clone();
+                    if !target.is_empty() {
+                        // Use opts_string() to get all ping settings
+                        let options = config.modules.ping.opts_string();
+                        info!("Restarting ping with options: {}", options);
+                        // Re-send PingStart event to restart with new interval
+                        send_event(UiEvent::PingStart { target, options });
+                    }
+                }
             }
 
             // Version Check
