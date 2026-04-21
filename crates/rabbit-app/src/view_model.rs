@@ -1,5 +1,3 @@
-//! View Models for UI Binding
-
 use rabbit_models::config::AppConfig;
 use rabbit_models::ping::PingSummary;
 use rabbit_platform::config::save_config;

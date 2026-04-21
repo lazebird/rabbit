@@ -1,8 +1,5 @@
-//! Configuration Models
-
 use serde::{Deserialize, Serialize};
 
-/// Application configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
     pub language: Language,
@@ -12,6 +9,10 @@ pub struct AppConfig {
     pub autostart: bool,
     pub autoupdate: bool,
     pub last_active_tab: usize,
+    pub window_x: Option<i32>,
+    pub window_y: Option<i32>,
+    pub window_width: Option<i32>,
+    pub window_height: Option<i32>,
     pub modules: ModuleConfigs,
 }
 
@@ -25,17 +26,16 @@ impl Default for AppConfig {
             autostart: false,
             autoupdate: true,
             last_active_tab: 0,
+            window_x: None,
+            window_y: None,
+            window_width: None,
+            window_height: None,
             modules: ModuleConfigs::default(),
         }
     }
 }
 
 impl AppConfig {
-    /// Merge with defaults for any missing/partial fields.
-    ///
-    /// This is called after loading from disk to ensure all fields have valid values.
-    /// TOML deserialization may leave some fields at their Default values if they're
-    /// missing from the file - this method ensures completeness.
     pub fn merge_defaults(&mut self) {
         self.modules.ping.merge_defaults();
         self.modules.scan.merge_defaults();
@@ -87,6 +87,18 @@ impl Default for ModuleConfigs {
     }
 }
 
+impl ModuleConfigs {
+    pub fn merge_defaults(&mut self) {
+        self.ping.merge_defaults();
+        self.scan.merge_defaults();
+        self.http.merge_defaults();
+        self.tftpd.merge_defaults();
+        self.tftpc.merge_defaults();
+        self.plan.merge_defaults();
+        self.chat.merge_defaults();
+    }
+}
+
 /// Ping module configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PingConfig {
@@ -115,16 +127,13 @@ impl Default for PingConfig {
 }
 
 impl PingConfig {
-    /// Merge with defaults for any missing fields
     pub fn merge_defaults(&mut self) {
         let defaults = Self::default();
         if self.target.is_empty() { self.target = defaults.target; }
         if self.interval == 0 { self.interval = defaults.interval; }
-        // count=0 means unset, use default (-1 for infinite)
         if self.count == 0 { self.count = defaults.count; }
     }
 
-    /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!(
             "interval={};count={};stoponloss={}",
@@ -152,14 +161,12 @@ impl Default for ScanConfig {
 }
 
 impl ScanConfig {
-    /// Merge with defaults for any missing fields
     pub fn merge_defaults(&mut self) {
         let defaults = Self::default();
         if self.start_ip.is_empty() { self.start_ip = defaults.start_ip; }
         if self.end_ip.is_empty() { self.end_ip = defaults.end_ip; }
     }
 
-    /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!("filter={}", self.filter)
     }
@@ -191,13 +198,10 @@ impl Default for HttpConfig {
 }
 
 impl HttpConfig {
-    /// Merge with defaults for any missing fields
     pub fn merge_defaults(&mut self) {
-        // Port 0 means unset, use default
         if self.port == 0 { self.port = Self::default().port; }
     }
 
-    /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!(
             "autoindex={};videoplay={};",
@@ -243,7 +247,6 @@ impl Default for TftpdConfig {
 }
 
 impl TftpdConfig {
-    /// Merge with defaults for any missing fields
     pub fn merge_defaults(&mut self) {
         let defaults = Self::default();
         if self.port == 0 { self.port = defaults.port; }
@@ -254,7 +257,6 @@ impl TftpdConfig {
         if self.qtout == 0 { self.qtout = defaults.qtout; }
     }
 
-    /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!(
             "timeout={};retry={};blksize={};override={};qsize={};qtout={};fslog={};",
@@ -296,7 +298,6 @@ impl Default for TftpcConfig {
 }
 
 impl TftpcConfig {
-    /// Merge with defaults for any missing fields
     pub fn merge_defaults(&mut self) {
         let defaults = Self::default();
         if self.server_addr.is_empty() { self.server_addr = defaults.server_addr; }
@@ -306,7 +307,6 @@ impl TftpcConfig {
         if self.blksize == 0 { self.blksize = defaults.blksize; }
     }
 
-    /// Get options string in key=value format
     pub fn opts_string(&self) -> String {
         format!(
             "timeout={};retry={};blksize={};",
@@ -340,11 +340,9 @@ impl Default for PlanConfig {
 }
 
 impl PlanConfig {
-    /// Merge with defaults for any missing fields
     pub fn merge_defaults(&mut self) {
         let defaults = Self::default();
         if self.unit.is_empty() { self.unit = defaults.unit; }
-        // cycle=0 is valid value (once), don't override
     }
 }
 
@@ -370,7 +368,6 @@ impl Default for ChatModuleConfig {
 }
 
 impl ChatModuleConfig {
-    /// Merge with defaults for any missing fields
     pub fn merge_defaults(&mut self) {
         let defaults = Self::default();
         if self.username.is_empty() { self.username = defaults.username; }

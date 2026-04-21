@@ -16,7 +16,7 @@ use fltk::{
 use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpService};
 use rabbit_models::{AppConfig, ping::PingTarget, scan::ScanRange};
 use rabbit_platform::config::{load_config, save_config};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
@@ -130,10 +130,26 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         app::foreground(0x00, 0x00, 0x00);       // Black text
         app::set_visible_focus(true);
 
-        // Create main window
-        let mut main_win = Window::new(100, 100, 748, 518, "Rabbit");
+        // Create main window - load config directly from disk to get window position
+        let disk_config = load_config().unwrap_or_else(|_| AppConfig::default());
+        let default_x = 100;
+        let default_y = 100;
+        let default_w = 748;
+        let default_h = 518;
+        let win_x = disk_config.window_x.unwrap_or(default_x);
+        let win_y = disk_config.window_y.unwrap_or(default_y);
+        let win_w = disk_config.window_width.unwrap_or(default_w);
+        let win_h = disk_config.window_height.unwrap_or(default_h);
+        drop(disk_config);
+        
+        let last_resize_time = Arc::new(AtomicU64::new(0));
+        let save_pending = Arc::new(AtomicBool::new(false));
+        
+        let mut main_win = Window::new(win_x, win_y, win_w, win_h, "Rabbit");
         main_win.set_type(WindowType::Double);
         main_win.make_resizable(true);
+        
+        info!("Creating window at ({}, {}) size {}x{}", win_x, win_y, win_w, win_h);
 
         if let Ok(icon) = IcoImage::load("crates/rabbit-app/resources/icon.ico") {
             main_win.set_icon(Some(icon));
@@ -193,11 +209,10 @@ chat_service: Arc::new(RwLock::new(chat_service)),
                     .iter()
                     .position(|&p| p == ptr)
                     .unwrap_or(0);
-                if let Ok(mut vm) = view_model_for_tab.try_write() {
-                    let mut cfg = vm.get_config();
-                    cfg.last_active_tab = idx;
-                    vm.update_config(cfg.clone());
-                    save_config(&cfg).ok();
+                if let Ok(_) = view_model_for_tab.try_write() {
+                    rabbit_platform::config::update_config(|cfg| {
+                        cfg.last_active_tab = idx;
+                    }).ok();
                 }
             }
         });
@@ -303,15 +318,78 @@ chat_service: Arc::new(RwLock::new(chat_service)),
             }
         });
 
-        // Let tabs fill the window on resize
+        // Let tabs fill the window on resize and save window position with debouncing
         let mut tabs_clone = tabs.clone();
+        
+        let last_resize_for_thread = last_resize_time.clone();
+        let save_pending_for_thread = save_pending.clone();
+        std::thread::spawn(move || {
+            loop {
+                std::thread::sleep(std::time::Duration::from_millis(100));
+                let now = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis() as u64;
+                let last = last_resize_for_thread.load(Ordering::Relaxed);
+                let pending = save_pending_for_thread.load(Ordering::Relaxed);
+                
+                if pending && now.saturating_sub(last) >= 500 {
+                    // 500ms has passed since last resize, save now
+                    save_pending_for_thread.store(false, Ordering::Relaxed);
+                    
+                    if let Some(win) = crate::ui_state::UiState::get_main_window() {
+                        let win_x = win.x();
+                        let win_y = win.y();
+                        let win_w = win.w();
+                        let win_h = win.h();
+                        
+                        if let Ok(config_dir) = rabbit_platform::config::get_config_dir() {
+                            let config_path = config_dir.join("config.toml");
+                            if let Ok(content) = std::fs::read_to_string(&config_path) {
+                                let mut new_content = content;
+
+                                if new_content.contains("window_x =") {
+                                    new_content = new_content
+                                        .lines()
+                                        .map(|line| {
+                                            if line.starts_with("window_x =") { format!("window_x = {}", win_x) }
+                                            else if line.starts_with("window_y =") { format!("window_y = {}", win_y) }
+                                            else if line.starts_with("window_width =") { format!("window_width = {}", win_w) }
+                                            else if line.starts_with("window_height =") { format!("window_height = {}", win_h) }
+                                            else { line.to_string() }
+                                        })
+                                        .collect::<Vec<_>>()
+                                        .join("\n");
+                                } else {
+                                    new_content = format!("{}\nwindow_x = {}\nwindow_y = {}\nwindow_width = {}\nwindow_height = {}\n",
+                                        new_content, win_x, win_y, win_w, win_h);
+                                }
+
+                                std::fs::write(&config_path, new_content).ok();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
         main_win.resize_callback(move |w, _x, _y, nw, nh| {
             tabs_clone.resize(5, 5, nw - 10, nh - 10);
             w.redraw();
+            
+            // Update the last resize timestamp and mark save as pending
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64;
+            last_resize_time.store(now, Ordering::Relaxed);
+            save_pending.store(true, Ordering::Relaxed);
         });
 
         main_win.end();
         main_win.show();
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        main_win.set_pos(win_x, win_y);
 
         // Store main window for title updates
         crate::ui_state::UiState::set_main_window(main_win.clone());
@@ -544,11 +622,14 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         config.modules.tftpd.running = tftp_running;
         config.modules.chat.running = chat_running;
         
-        // Update view model with new config
         self.view_model.write().await.update_config(config.clone());
         
-        // Save configuration
-        save_config(&config).ok();
+        rabbit_platform::config::update_config(|cfg| {
+            cfg.modules.ping.running = ping_running;
+            cfg.modules.http.running = http_running;
+            cfg.modules.tftpd.running = tftp_running;
+            cfg.modules.chat.running = chat_running;
+        }).ok();
         
         info!("Saved business running states: ping={}, http={}, tftpd={}, chat={}", 
               ping_running, http_running, tftp_running, chat_running);
