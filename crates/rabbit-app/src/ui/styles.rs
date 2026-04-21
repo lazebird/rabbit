@@ -51,8 +51,8 @@ pub struct Spacing {
 impl Spacing {
     pub fn new() -> Self {
         Self {
-            margin: 8,
-            padding: 5,
+            margin: 5,
+            padding: 4,
             row_height: 28,
             button_width: 60,
         }

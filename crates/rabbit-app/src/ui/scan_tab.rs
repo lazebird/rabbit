@@ -25,8 +25,8 @@ impl TabComponent for ScanTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "Scan").column();
-        grp.set_margin(8);
-        grp.set_spacing(5);
+        grp.set_margin(5);
+        grp.set_spacing(4);
 
         // Control row - matching old version layout
         // IP [input] - [end] Opt. [long input] [Start button]

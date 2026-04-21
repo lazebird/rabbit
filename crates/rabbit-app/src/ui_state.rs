@@ -8,14 +8,21 @@ use std::collections::HashMap;
 
 /// Trim a string to at most `max_lines` lines, removing oldest lines from the front.
 fn trim_lines(s: &mut String, max_lines: usize) {
+    if s.is_empty() {
+        return;
+    }
     let count = s.lines().count();
     if count > max_lines {
         let to_remove = count - max_lines;
         let mut removed = 0usize;
         let mut pos = 0usize;
         for ch in s.chars() {
-            if removed >= to_remove { break; }
-            if ch == '\n' { removed += 1; }
+            if removed >= to_remove {
+                break;
+            }
+            if ch == '\n' {
+                removed += 1;
+            }
             pos += ch.len_utf8();
         }
         *s = s[pos..].to_string();

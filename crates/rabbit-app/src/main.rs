@@ -5,7 +5,18 @@
 use rabbit_app::App;
 use tracing::info;
 
+#[cfg(windows)]
+fn hide_console() {
+    unsafe {
+        windows_sys::Win32::System::Console::FreeConsole();
+    }
+}
+
+#[cfg(not(windows))]
+fn hide_console() {}
+
 fn main() -> anyhow::Result<()> {
+    hide_console();
     // Initialize logging
     tracing_subscriber::fmt()
         .with_env_filter("info")

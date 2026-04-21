@@ -9,16 +9,19 @@ use crate::ui_state::UiState;
 use fltk::{
     app,
     group::Tabs,
+    image::IcoImage,
     prelude::*,
     window::{Window, WindowType},
 };
 use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpService};
 use rabbit_models::{AppConfig, ping::PingTarget, scan::ScanRange};
 use rabbit_platform::config::{load_config, save_config};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 use tracing::{info, warn, error};
+use ctrlc;
 
 /// Main application struct
 pub struct App {
@@ -31,6 +34,7 @@ pub struct App {
     scan_service: Arc<RwLock<ScanService>>,
     ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
     scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
+    shutdown_flag: Arc<AtomicBool>,
 }
 
 impl App {
@@ -80,10 +84,11 @@ impl App {
             http_service: Arc::new(RwLock::new(http_service)),
             tftp_service: Arc::new(RwLock::new(tftp_service)),
             plan_service: Arc::new(RwLock::new(plan_service)),
-            chat_service: Arc::new(RwLock::new(chat_service)),
+chat_service: Arc::new(RwLock::new(chat_service)),
             scan_service: Arc::new(RwLock::new(scan_service)),
             ping_task: Arc::new(RwLock::new(None)),
             scan_task: Arc::new(RwLock::new(None)),
+            shutdown_flag: Arc::new(AtomicBool::new(false)),
         })
     }
 
@@ -105,10 +110,14 @@ impl App {
         app::set_visible_focus(true);
 
         // Create main window
-        let mut main_win = Window::new(100, 100, 750, 520, "Rabbit");
+        let mut main_win = Window::new(100, 100, 748, 518, "Rabbit");
         main_win.set_type(WindowType::Double);
         main_win.make_resizable(true);
-        
+
+        if let Ok(icon) = IcoImage::load("crates/rabbit-app/resources/icon.ico") {
+            main_win.set_icon(Some(icon));
+        }
+
         // Add global keyboard event handling
         let mut main_win_for_keys = main_win.clone();
         main_win.handle(move |_win, ev| {
@@ -188,7 +197,7 @@ impl App {
         });
 
         // Create Tabs widget - positioned to leave room for tab labels
-        let mut tabs = Tabs::new(5, 5, 740, 510, "");
+        let mut tabs = Tabs::new(5, 5, 738, 508, "");
 
         // Build each tab - y=25 leaves room for tab labels at top
         let ping_tab = PingTab::build(5, 30, 730, 475);
@@ -324,16 +333,23 @@ impl App {
         let chat_restore_flag = chat_restore;
         
         // Handle window close button - use set_callback which fires when the X button is clicked
-        // Hide window immediately so user sees it disappear, then quit FLTK event loop
         let mut win_for_close = main_win.clone();
         main_win.set_callback(move |_| {
-            tracing::info!("Window close callback triggered, stopping refresh and quitting...");
             win_for_close.hide();
             crate::ui::ui_refresh::stop_refresh_loop();
             app::quit();
         });
 
-        // Fallback: also catch close events at the app level (cannot capture, so just quit)
+        // Handle Ctrl+C: set flag and trigger shutdown
+        let shutdown_flag = self.shutdown_flag.clone();
+        ctrlc::set_handler(move || {
+            info!("Ctrl+C received, initiating shutdown...");
+            shutdown_flag.store(true, Ordering::SeqCst);
+            crate::ui::ui_refresh::stop_refresh_loop();
+            app::quit();
+        }).ok();
+
+        // Fallback: also catch close events at the app level
         app::add_handler(|ev| {
             if ev == fltk::enums::Event::Close {
                 tracing::info!("Close event detected via add_handler, stopping refresh and quitting...");
@@ -630,9 +646,11 @@ impl EventHandler for AppHandle {
                 }
 
                 let mut service = self.ping_service.write().await;
-                // Start service first, then add target
                 service.start().await?;
-                let target_obj = PingTarget::new(&target);
+
+                let interval = self.view_model.read().await.get_config().modules.ping.interval as u64;
+                let mut target_obj = PingTarget::new(&target);
+                target_obj.interval_ms = interval;
                 service.add_target(target_obj).await?;
                 self.view_model.write().await.set_ping_running(true);
                 crate::ui_state::set_ping_running(true);
@@ -658,7 +676,20 @@ impl EventHandler for AppHandle {
                         let summary = service.get_summary(&target_clone).await;
                         drop(service);
 
-                        // Update UI with results
+                        if results.is_empty() {
+                            if let Some(s) = summary {
+                                let stats = format!(
+                                    "Tx {} Rx {} Loss {} Min {:.1}ms Max {:.1}ms Avg {:.1}ms",
+                                    s.sent, s.received, s.lost,
+                                    s.min_ms.unwrap_or(0.0),
+                                    s.max_ms.unwrap_or(0.0),
+                                    s.avg_ms.unwrap_or(0.0)
+                                );
+                                crate::ui_state::set_ping_stats(&stats);
+                            }
+                            continue;
+                        }
+
                         for result in &results {
                             if result.success {
                                 let line = if let Some(ttl) = result.ttl {
@@ -1016,8 +1047,13 @@ impl EventHandler for AppHandle {
                 }
                 
                 // Apply window topmost setting
-                if top {
-                    info!("Window topmost enabled");
+                if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                    let top_value = top;
+                    fltk::app::awake_callback(move || {
+                        if top_value {
+                            win.set_on_top();
+                        }
+                    });
                 }
                 
                 // Apply HTTP shell integration

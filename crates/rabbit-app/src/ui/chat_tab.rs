@@ -27,8 +27,8 @@ impl TabComponent for ChatTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "CHAT").column();
-        grp.set_margin(8);
-        grp.set_spacing(5);
+        grp.set_margin(5);
+        grp.set_spacing(4);
 
         // Row 1: Name [input] Port [input] [Start button]
         let mut row1 = Flex::default().row();

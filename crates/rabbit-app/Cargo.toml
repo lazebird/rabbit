@@ -13,6 +13,12 @@ description = "Main application for Rabbit - UI and entry point"
 name = "rabbit"
 path = "src/main.rs"
 
+[lib]
+crate-type = ["lib", "staticlib"]
+
+[build-dependencies]
+embed-resource = "3.0"
+
 [dependencies]
 rabbit-models = { path = "../rabbit-models" }
 rabbit-platform = { path = "../rabbit-platform" }
@@ -36,3 +42,6 @@ uuid = { version = "1.0", features = ["v4"] }
 ureq = { version = "2", features = ["tls"] }
 sha2 = "0.10"
 semver = "1"
+
+windows-sys = { version = "0.59", features = ["Win32_System_Console"] }
+ctrlc = "3.2"

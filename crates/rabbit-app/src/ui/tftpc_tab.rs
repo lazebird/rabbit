@@ -27,8 +27,8 @@ impl TabComponent for TftpcTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "TFTPC").column();
-        grp.set_margin(8);
-        grp.set_spacing(5);
+        grp.set_margin(5);
+        grp.set_spacing(4);
 
         // Row 1: IP and Opt
         let mut row1 = Flex::default().row();

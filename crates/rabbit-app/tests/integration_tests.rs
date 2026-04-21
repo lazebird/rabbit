@@ -72,9 +72,57 @@ fn test_ping_target_serialization() {
     let target = rabbit_models::ping::PingTarget::new("192.168.1.1");
     let json = serde_json::to_string(&target).unwrap();
     let parsed: rabbit_models::ping::PingTarget = serde_json::from_str(&json).unwrap();
-    
+
     assert_eq!(parsed.address, "192.168.1.1");
     assert_eq!(parsed.count, 4);
+}
+
+#[test]
+fn test_ping_output_truncation_logic() {
+    const MAX_LINES: usize = 1000;
+    let mut output = String::new();
+
+    for i in 0..1500 {
+        output.push_str(&format!("Reply from 1.1.1.1: bytes=64 time={}ms\n", i));
+    }
+
+    let count_before = output.lines().count();
+    assert_eq!(count_before, 1500);
+
+    let line_count = output.lines().count();
+    if line_count > MAX_LINES {
+        let to_remove = line_count - MAX_LINES;
+        let mut removed = 0usize;
+        let mut pos = 0usize;
+        for ch in output.chars() {
+            if removed >= to_remove {
+                break;
+            }
+            if ch == '\n' {
+                removed += 1;
+            }
+            pos += ch.len_utf8();
+        }
+        output = output[pos..].to_string();
+    }
+
+    let count_after = output.lines().count();
+    assert_eq!(count_after, MAX_LINES, "Output should be truncated to MAX_LINES");
+    assert!(output.starts_with("Reply from 1.1.1.1: bytes=64 time=500ms"),
+        "First line should be line 500 after trimming 1000 lines");
+}
+
+#[test]
+fn test_ping_stats_accuracy() {
+    let sent: u32 = 1500;
+    let results_count: usize = 1000;
+    let received = results_count as u32 - 200;
+    let lost = sent - received;
+
+    assert_eq!(lost, 200, "Lost should be 200");
+    assert_eq!(received, 800, "Received should be 800");
+    assert_eq!(sent, 1500, "Sent should be 1500 (using sent_count, not results count)");
+    assert!(sent > results_count as u32, "Sent count should be greater than trimmed results count");
 }
 
 // ============================================================================

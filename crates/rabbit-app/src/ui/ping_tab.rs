@@ -26,8 +26,8 @@ impl TabComponent for PingTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "Ping").column();
-        grp.set_margin(8);
-        grp.set_spacing(5);
+        grp.set_margin(5);
+        grp.set_spacing(4);
 
         // Control row - matching old version layout
         // Addr. [input] Opt. [long input] [Start button]
@@ -114,8 +114,8 @@ impl TabComponent for PingTab {
                 // Clear previous output
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
-                        s.ping_output = format!("Pinging {}...\n", target);
-                        s.ping_stats = "Pinging...".to_string();
+                        s.ping_output.clear();
+                        s.ping_stats.clear();
                     }
                 }
                 Self::refresh_display(&mut results_display_clone, &mut stats_editor_clone);

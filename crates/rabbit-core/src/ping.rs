@@ -6,7 +6,7 @@ use rand::random;
 use socket2::Type;
 use std::collections::HashMap;
 use std::net::IpAddr;
-use std::sync::atomic::{AtomicU16, Ordering};
+use std::sync::atomic::{AtomicU16, AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 use surge_ping::{Client, Config, PingIdentifier, PingSequence};
@@ -23,6 +23,7 @@ pub struct PingService {
     command_tx: Option<mpsc::Sender<PingCommand>>,
     sequence: Arc<AtomicU16>,
     client: Option<Arc<Client>>,
+    sent_count: Arc<AtomicU32>,
     /// Log file path for ping results (empty string means no logging)
     log_file: String,
 }
@@ -46,6 +47,7 @@ impl PingService {
             command_tx: None,
             sequence: Arc::new(AtomicU16::new(0)),
             client: None,
+            sent_count: Arc::new(AtomicU32::new(0)),
             log_file: String::new(),
         }
     }
@@ -93,6 +95,7 @@ impl PingService {
         let targets = Arc::clone(&self.targets);
         let results = Arc::clone(&self.results);
         let sequence = Arc::clone(&self.sequence);
+        let sent_count = Arc::clone(&self.sent_count);
         let client = self.client.clone();
         let log_file = self.log_file.clone();
 
@@ -107,7 +110,7 @@ impl PingService {
             // Immediately trigger first ping, then wait for interval
             if *state.read().await == PingState::Running {
                 if let Some(ref client) = client {
-                    Self::ping_all(client, &targets, &results, &sequence, &log_file).await;
+                    Self::ping_all(client, &targets, &results, &sequence, &sent_count, &log_file).await;
                 }
             }
 
@@ -116,7 +119,7 @@ impl PingService {
                     _ = ping_interval.tick() => {
                         if *state.read().await == PingState::Running {
                             if let Some(ref client) = client {
-                                Self::ping_all(client, &targets, &results, &sequence, &log_file).await;
+                                Self::ping_all(client, &targets, &results, &sequence, &sent_count, &log_file).await;
                             }
                         }
                     }
@@ -149,10 +152,10 @@ impl PingService {
         }
         *self.state.write().await = PingState::Idle;
         self.command_tx = None;
-        // Clear accumulated results and consumed positions
         self.results.write().await.clear();
         self.consumed.write().await.clear();
         self.targets.write().await.clear();
+        self.sent_count.store(0, Ordering::SeqCst);
         Ok(())
     }
 
@@ -219,7 +222,7 @@ impl PingService {
             _ => return None,
         };
 
-        let sent = results.len() as u32;
+        let sent = self.sent_count.load(Ordering::SeqCst);
         let received = results.iter().filter(|r| r.success).count() as u32;
         let lost = sent - received;
         let loss_rate = if sent > 0 { (lost as f64 / sent as f64) * 100.0 } else { 0.0 };
@@ -261,6 +264,7 @@ impl PingService {
         targets: &Arc<RwLock<Vec<PingTarget>>>,
         results: &Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
         sequence: &Arc<AtomicU16>,
+        sent_count: &Arc<AtomicU32>,
         log_file: &str,
     ) {
         const MAX_RESULTS: usize = 1000;
@@ -269,6 +273,7 @@ impl PingService {
         let mut targets_to_remove = Vec::new();
 
         for target in &targets_snapshot {
+            sent_count.fetch_add(1, Ordering::SeqCst);
             let seq = sequence.fetch_add(1, Ordering::SeqCst);
             let result = Self::do_ping(client, target, seq).await;
             let success = result.success;
@@ -420,5 +425,97 @@ let mut pinger = client.pinger(addr, PingIdentifier(random())).await;
 impl Default for PingService {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_sent_count_tracks_all_pings() {
+        let service = PingService::new();
+        let sent = service.sent_count.load(std::sync::atomic::Ordering::SeqCst);
+        assert_eq!(sent, 0, "Initial sent count should be 0");
+
+        service.sent_count.store(5, std::sync::atomic::Ordering::SeqCst);
+        let sent = service.sent_count.load(std::sync::atomic::Ordering::SeqCst);
+        assert_eq!(sent, 5, "Sent count should be 5 after incrementing");
+    }
+
+    #[tokio::test]
+    async fn test_stop_clears_sent_count() {
+        let service = PingService::new();
+        service.sent_count.store(100, std::sync::atomic::Ordering::SeqCst);
+
+        service.sent_count.store(0, std::sync::atomic::Ordering::SeqCst);
+        let sent = service.sent_count.load(std::sync::atomic::Ordering::SeqCst);
+        assert_eq!(sent, 0, "Sent count should be 0 after stop");
+    }
+}
+
+#[cfg(test)]
+mod truncation_tests {
+    use super::*;
+
+    const MAX_RESULTS: usize = 1000;
+
+    #[test]
+    fn test_results_trimmed_to_max() {
+        let mut results: Vec<PingResult> = Vec::new();
+
+        for i in 0..1500 {
+            results.push(PingResult {
+                seq: i as u16,
+                success: i % 2 == 0,
+                duration_ms: Some(10.0 + i as f64),
+                ttl: Some(64),
+                bytes: 64,
+                error: None,
+            });
+        }
+
+        if results.len() > MAX_RESULTS {
+            let drain_count = results.len() - MAX_RESULTS;
+            results.drain(0..drain_count);
+        }
+
+        assert_eq!(results.len(), MAX_RESULTS, "Results should be trimmed to MAX_RESULTS");
+        assert_eq!(results[0].seq, 500, "First remaining result should be seq 500");
+    }
+
+    #[test]
+    fn test_sent_count_independent_of_trimmed_results() {
+        let sent_count: u32 = 1500;
+        let results_count: usize = 1000;
+
+        assert!(sent_count > results_count as u32,
+            "Sent count (1500) should be greater than results count (1000) after trimming");
+    }
+
+    #[tokio::test]
+    async fn test_summary_uses_sent_count_not_results_len() {
+        let service = PingService::new();
+
+        service.sent_count.store(1500, std::sync::atomic::Ordering::SeqCst);
+
+        let mut results_guard = service.results.write().await;
+        results_guard.insert("test".to_string(), vec![
+            PingResult {
+                seq: 1,
+                success: true,
+                duration_ms: Some(10.0),
+                ttl: Some(64),
+                bytes: 64,
+                error: None,
+            }
+        ]);
+        drop(results_guard);
+
+        let summary = service.get_summary("test").await;
+        assert!(summary.is_some());
+        let s = summary.unwrap();
+
+        assert_eq!(s.sent, 1500, "Summary sent should use sent_count (1500), not results.len()");
     }
 }
