@@ -278,12 +278,24 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         // Startup version check if autoupdate is enabled
         if autoupdate {
             info!("Auto-update enabled, checking for updates...");
+            let shutdown_flag = self.shutdown_flag.clone();
             std::thread::spawn(move || {
-                // Wait a bit for UI to be ready
-                std::thread::sleep(std::time::Duration::from_secs(2));
+                // Wait a bit for UI to be ready, but check shutdown flag
+                for _ in 0..20 {
+                    if shutdown_flag.load(Ordering::SeqCst) {
+                        info!("Shutdown requested, aborting version check");
+                        return;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                }
+
+                if shutdown_flag.load(Ordering::SeqCst) {
+                    info!("Shutdown requested, aborting version check");
+                    return;
+                }
 
                 crate::ui_state::append_settings_output("Checking for updates...");
-                handle_version_check_result();
+                handle_version_check_result(Some(&shutdown_flag));
             });
         }
 
@@ -340,13 +352,17 @@ chat_service: Arc::new(RwLock::new(chat_service)),
             app::quit();
         });
 
-        // Handle Ctrl+C: set flag and trigger shutdown
+        // Handle Ctrl+C: use awake_callback to safely quit from UI thread
         let shutdown_flag = self.shutdown_flag.clone();
         ctrlc::set_handler(move || {
             info!("Ctrl+C received, initiating shutdown...");
             shutdown_flag.store(true, Ordering::SeqCst);
             crate::ui::ui_refresh::stop_refresh_loop();
-            app::quit();
+            // Use awake_callback to execute quit() on the UI thread (thread-safe)
+            fltk::app::awake_callback(|| {
+                info!("Executing quit() on UI thread...");
+                fltk::app::quit();
+            });
         }).ok();
 
         // Fallback: also catch close events at the app level
@@ -550,9 +566,17 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
 }
 
 /// Handle version check result and show dialog (reused by both auto-check and manual check)
-pub fn handle_version_check_result() {
+pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::AtomicBool>) {
     match check_version_update() {
         upgrade::UpdateStatus::UpdateAvailable(remote, platform_info) => {
+            // Check shutdown flag before outputting
+            if let Some(flag) = shutdown_flag {
+                if flag.load(Ordering::SeqCst) {
+                    info!("Shutdown requested, skipping version update output");
+                    return;
+                }
+            }
+            
             info!("Update available: {}", remote.version);
             // Use format_prompt for consistent display
             let msg = remote.format_prompt();
@@ -567,10 +591,24 @@ pub fn handle_version_check_result() {
             });
         }
         upgrade::UpdateStatus::UpToDate => {
+            // Check shutdown flag before outputting
+            if let Some(flag) = shutdown_flag {
+                if flag.load(Ordering::SeqCst) {
+                    return;
+                }
+            }
+            
             info!("Application is up to date");
             crate::ui_state::append_settings_output("Application is up to date");
         }
         upgrade::UpdateStatus::CheckError(e) => {
+            // Check shutdown flag before outputting
+            if let Some(flag) = shutdown_flag {
+                if flag.load(Ordering::SeqCst) {
+                    return;
+                }
+            }
+            
             warn!("Failed to check for updates: {}", e);
             crate::ui_state::append_settings_output(&format!("Update check failed: {}", e));
         }

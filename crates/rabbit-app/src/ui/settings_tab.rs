@@ -244,7 +244,7 @@ impl TabComponent for SettingsTab {
                 append_settings_output("Checking for updates...");
 
                 std::thread::spawn(|| {
-                    crate::app::handle_version_check_result();
+                    crate::app::handle_version_check_result(None);
                 });
                 true
             } else {
