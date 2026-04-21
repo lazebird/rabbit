@@ -518,6 +518,9 @@
 | 2026-04-20 | **TFTP客户端连接** - 将 UI 事件连接到后端 TFTP 上传/下载服务 | Qoder |
 | 2026-04-20 | **Chat功能完善** - 实现刷新用户列表和发送通知功能 | Qoder |
 | 2026-04-20 | **Settings功能** - 实现 autostart/top/systray 配置应用 | Qoder |
+| 2026-04-20 | **Windows任务栏进度条** - 实现 Ping 状态任务栏集成 (绿色/红色指示) | Qoder |
+| 2026-04-20 | **Ping日志文件输出** - 实现 Ping 结果写入日志文件功能 | Qoder |
+| 2026-04-20 | **HTTP Windows右键菜单** - 实现 Windows Explorer 右键菜单集成 | Qoder |
 
 ---
 

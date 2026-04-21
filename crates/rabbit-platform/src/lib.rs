@@ -13,6 +13,8 @@ pub mod dialog;
 pub mod network;
 pub mod notification;
 pub mod ping;
+pub mod shell;
+pub mod taskbar;
 
 pub use autostart::*;
 pub use config::*;
@@ -20,6 +22,8 @@ pub use dialog::*;
 pub use network::*;
 pub use notification::*;
 pub use ping::*;
+pub use shell::*;
+pub use taskbar::*;
 
 use std::path::PathBuf;
 use thiserror::Error;

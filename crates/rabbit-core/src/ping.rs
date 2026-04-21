@@ -23,6 +23,8 @@ pub struct PingService {
     command_tx: Option<mpsc::Sender<PingCommand>>,
     sequence: Arc<AtomicU16>,
     client: Option<Arc<Client>>,
+    /// Log file path for ping results (empty string means no logging)
+    log_file: String,
 }
 
 #[derive(Debug)]
@@ -44,11 +46,14 @@ impl PingService {
             command_tx: None,
             sequence: Arc::new(AtomicU16::new(0)),
             client: None,
+            log_file: String::new(),
         }
     }
 
     /// Initialize the service
-    pub async fn init(&mut self) -> Result<()> {
+    pub async fn init(&mut self, log_file: String) -> Result<()> {
+        self.log_file = log_file;
+        
         // Try to create ping client with RAW socket type to get TTL on Linux
         // RAW socket requires root/CAP_NET_RAW, so fallback to DGRAM if it fails
         let config = Config::builder()
@@ -57,11 +62,13 @@ impl PingService {
         let client = match Client::new(&config) {
             Ok(client) => {
                 info!("Ping service initialized with RAW socket (TTL available)");
+                if !self.log_file.is_empty() {
+                    info!("Ping log file enabled: {}", self.log_file);
+                }
                 client
             }
             Err(e) => {
                 info!("RAW socket failed ({}), falling back to DGRAM socket", e);
-                let config = Config::default();
                 Client::new(&config)
                     .map_err(|e| ServiceError::Other(format!("Failed to create ping client: {}", e)))?
             }
@@ -87,6 +94,7 @@ impl PingService {
         let results = Arc::clone(&self.results);
         let sequence = Arc::clone(&self.sequence);
         let client = self.client.clone();
+        let log_file = self.log_file.clone();
 
         tokio::spawn(async move {
             let mut ping_interval = interval(Duration::from_secs(1));
@@ -96,7 +104,7 @@ impl PingService {
                     _ = ping_interval.tick() => {
                         if *state.read().await == PingState::Running {
                             if let Some(ref client) = client {
-                                Self::ping_all(client, &targets, &results, &sequence).await;
+                                Self::ping_all(client, &targets, &results, &sequence, &log_file).await;
                             }
                         }
                     }
@@ -243,6 +251,7 @@ impl PingService {
         targets: &Arc<RwLock<Vec<PingTarget>>>,
         results: &Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
         sequence: &Arc<AtomicU16>,
+        log_file: &str,
     ) {
         const MAX_RESULTS: usize = 1000;
 
@@ -253,6 +262,11 @@ impl PingService {
             let seq = sequence.fetch_add(1, Ordering::SeqCst);
             let result = Self::do_ping(client, target, seq).await;
             let success = result.success;
+
+            // Write to log file if enabled
+            if !log_file.is_empty() {
+                Self::write_to_log_file(log_file, &target.address, &result).await;
+            }
 
             let mut results_guard = results.write().await;
             let entry = results_guard
@@ -329,6 +343,53 @@ impl PingService {
                     bytes: 0,
                     error: Some(format!("Ping failed: {}", e)),
                 }
+            }
+        }
+    }
+
+    /// Write ping result to log file
+    async fn write_to_log_file(log_file: &str, target: &str, result: &PingResult) {
+        if log_file.is_empty() {
+            return;
+        }
+
+        let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S");
+        let log_line = if result.success {
+            format!(
+                "[{}] {} - Reply from {}: bytes={} time={:.1}ms TTL={}\n",
+                timestamp,
+                target,
+                target,
+                result.bytes,
+                result.duration_ms.unwrap_or(0.0),
+                result.ttl.unwrap_or(0)
+            )
+        } else {
+            format!(
+                "[{}] {} - {}\n",
+                timestamp,
+                target,
+                result.error.as_deref().unwrap_or("Request timed out")
+            )
+        };
+
+        // Append to log file
+        use tokio::fs::OpenOptions;
+        use tokio::io::AsyncWriteExt;
+        
+        match OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(log_file)
+            .await
+        {
+            Ok(mut file) => {
+                if let Err(e) = file.write_all(log_line.as_bytes()).await {
+                    tracing::warn!("Failed to write ping log: {}", e);
+                }
+            }
+            Err(e) => {
+                tracing::warn!("Failed to open ping log file: {}", e);
             }
         }
     }

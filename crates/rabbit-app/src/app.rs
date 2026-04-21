@@ -49,7 +49,8 @@ impl App {
 
         // Create services
         let mut ping_service = PingService::new();
-        ping_service.init().await?;
+        let ping_log_file = config.modules.ping.log.clone();
+        ping_service.init(ping_log_file).await?;
 
         let mut http_service = HttpService::new();
         http_service.init((&config.modules.http).into()).await?;
@@ -208,6 +209,7 @@ impl App {
         let top_requested = config.top;
         let systray_requested = config.systray;
         let autostart_requested = config.autostart;
+        let http_shell_requested = config.modules.http.shell;
         drop(config);
         let tab_ptrs: Vec<usize> = vec![
             ping_tab.as_widget_ptr() as usize,
@@ -291,6 +293,16 @@ impl App {
             warn!("Failed to set autostart: {}", e);
         }
         
+        // Apply HTTP shell integration at startup
+        if let Ok(exe_path) = std::env::current_exe() {
+            let exe_path_str = exe_path.to_string_lossy().to_string();
+            if let Err(e) = rabbit_platform::shell::set_shell_integration(http_shell_requested, &exe_path_str) {
+                warn!("Failed to set HTTP shell integration at startup: {}", e);
+            } else {
+                info!("HTTP shell integration applied at startup: {}", http_shell_requested);
+            }
+        }
+        
         // Handle window close button - use set_callback which fires when the X button is clicked
         // Hide window immediately so user sees it disappear, then quit FLTK event loop
         let mut win_for_close = main_win.clone();
@@ -314,6 +326,15 @@ impl App {
         });
 
         // Spawn event handler task
+        #[cfg(target_os = "windows")]
+        let window_handle: Option<usize> = Some(main_win.raw_handle() as usize);
+        #[cfg(not(target_os = "windows"))]
+        let window_handle: Option<usize> = None;
+        
+        let config = self.view_model.read().await.get_config();
+        let taskbar_enabled = config.modules.ping.taskbar;
+        drop(config);
+        
         let app_clone = Arc::new(RwLock::new(AppHandle {
             view_model: self.view_model.clone(),
             ping_service: self.ping_service.clone(),
@@ -324,6 +345,10 @@ impl App {
             scan_service: self.scan_service.clone(),
             ping_task: self.ping_task.clone(),
             scan_task: self.scan_task.clone(),
+            #[cfg(target_os = "windows")]
+            window_handle,
+            ping_history: std::collections::HashMap::new(),
+            taskbar_enabled,
         }));
 
         let event_handle = tokio::spawn(async move {
@@ -497,6 +522,13 @@ struct AppHandle {
     scan_service: Arc<RwLock<ScanService>>,
     ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
     scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
+    /// Window handle for taskbar updates (Windows only)
+    #[cfg(target_os = "windows")]
+    window_handle: Option<usize>,
+    /// Track last 5 ping results per target for taskbar
+    ping_history: std::collections::HashMap<String, Vec<bool>>,
+    /// Whether taskbar integration is enabled
+    taskbar_enabled: bool,
 }
 
 #[async_trait::async_trait]
@@ -521,11 +553,21 @@ impl EventHandler for AppHandle {
                 let target_obj = PingTarget::new(&target);
                 service.add_target(target_obj).await?;
                 self.view_model.write().await.set_ping_running(true);
+                
+                // Clear ping history for this target
+                self.ping_history.insert(target.clone(), Vec::new());
 
                 // Spawn a task to periodically update ping results
                 let ping_service = self.ping_service.clone();
                 let target_clone = target.clone();
+                #[cfg(target_os = "windows")]
+                let window_handle = self.window_handle;
+                let taskbar_enabled = self.taskbar_enabled;
+                
                 let handle = tokio::spawn(async move {
+                    // Track last 5 ping results for taskbar
+                    let mut recent_results: Vec<bool> = Vec::with_capacity(5);
+                    
                     loop {
                         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
                         let service = ping_service.read().await;
@@ -534,7 +576,7 @@ impl EventHandler for AppHandle {
                         drop(service);
 
                         // Update UI with results
-                        for result in results {
+                        for result in &results {
                             if result.success {
                                 let line = if let Some(ttl) = result.ttl {
                                     format!(
@@ -555,6 +597,26 @@ impl EventHandler for AppHandle {
                                 crate::ui_state::append_ping_output(&line);
                             } else {
                                 crate::ui_state::append_ping_output("Request timed out.");
+                            }
+                            
+                            // Track for taskbar (last 5 results)
+                            if taskbar_enabled {
+                                recent_results.push(result.success);
+                                if recent_results.len() > 5 {
+                                    recent_results.remove(0);
+                                }
+                            }
+                        }
+                        
+                        // Update taskbar if enabled
+                        #[cfg(target_os = "windows")]
+                        if taskbar_enabled && !recent_results.is_empty() {
+                            if let Some(hwnd) = window_handle {
+                                let success_count = recent_results.iter().filter(|&&x| x).count() as u32;
+                                let total_count = recent_results.len() as u32;
+                                rabbit_platform::taskbar::windows::update_taskbar_for_ping(
+                                    hwnd, success_count, total_count
+                                );
                             }
                         }
 
@@ -584,6 +646,18 @@ impl EventHandler for AppHandle {
                 self.ping_service.write().await.stop().await?;
                 self.view_model.write().await.set_ping_running(false);
                 crate::ui_state::append_ping_output("Ping stopped.");
+                
+                // Clear taskbar progress
+                #[cfg(target_os = "windows")]
+                if self.taskbar_enabled {
+                    if let Some(hwnd) = self.window_handle {
+                        rabbit_platform::taskbar::windows::set_taskbar_state(
+                            hwnd, 
+                            rabbit_platform::taskbar::windows::TaskbarState::None, 
+                            0
+                        ).ok();
+                    }
+                }
             }
 
             // Scan
@@ -839,6 +913,7 @@ impl EventHandler for AppHandle {
                 let autostart = config.autostart;
                 let systray = config.systray;
                 let top = config.top;
+                let http_shell = config.modules.http.shell;
                 
                 // Apply autostart setting
                 if let Err(e) = rabbit_platform::autostart::set_autostart(autostart) {
@@ -853,6 +928,19 @@ impl EventHandler for AppHandle {
                 // Apply window topmost setting
                 if top {
                     info!("Window topmost enabled");
+                }
+                
+                // Apply HTTP shell integration
+                if let Ok(exe_path) = std::env::current_exe() {
+                    let exe_path_str = exe_path.to_string_lossy().to_string();
+                    match rabbit_platform::shell::set_shell_integration(http_shell, &exe_path_str) {
+                        Ok(_) => {
+                            info!("HTTP shell integration updated: {}", http_shell);
+                        }
+                        Err(e) => {
+                            warn!("Failed to set HTTP shell integration: {}", e);
+                        }
+                    }
                 }
                 
                 save_config(&config)?;
