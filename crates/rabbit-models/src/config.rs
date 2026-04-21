@@ -79,6 +79,8 @@ pub struct PingConfig {
     pub stoponloss: bool,
     pub taskbar: bool,
     pub log: String,
+    /// Whether ping was running when app was closed
+    pub running: bool,
 }
 
 impl Default for PingConfig {
@@ -90,6 +92,7 @@ impl Default for PingConfig {
             stoponloss: false,
             taskbar: true,
             log: String::new(),
+            running: false,
         }
     }
 }
@@ -137,6 +140,8 @@ pub struct HttpConfig {
     pub autoindex: bool,
     pub videoplay: bool,
     pub dirs: Vec<String>,
+    /// Whether HTTP server was running when app was closed
+    pub running: bool,
 }
 
 impl Default for HttpConfig {
@@ -147,6 +152,7 @@ impl Default for HttpConfig {
             autoindex: true,
             videoplay: true,
             dirs: Vec::new(),
+            running: false,
         }
     }
 }
@@ -173,6 +179,8 @@ pub struct TftpdConfig {
     pub override_conflicts: bool,
     pub fslog: bool,
     pub work_dirs: Vec<String>,
+    /// Whether TFTP server was running when app was closed
+    pub running: bool,
 }
 
 impl Default for TftpdConfig {
@@ -187,6 +195,7 @@ impl Default for TftpdConfig {
             override_conflicts: false,
             fslog: false,
             work_dirs: Vec::new(),
+            running: false,
         }
     }
 }
@@ -273,6 +282,8 @@ pub struct ChatModuleConfig {
     pub username: String,
     pub port: u16,
     pub broadcast_addr: String,
+    /// Whether chat was running when app was closed
+    pub running: bool,
 }
 
 impl Default for ChatModuleConfig {
@@ -281,6 +292,7 @@ impl Default for ChatModuleConfig {
             username: String::from("User@PC"),
             port: 1314,
             broadcast_addr: String::from("255.255.255.255"),
+            running: false,
         }
     }
 }

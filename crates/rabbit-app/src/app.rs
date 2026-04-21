@@ -303,6 +303,23 @@ impl App {
             }
         }
         
+        // Restore business running states from config
+        let config_for_restore = self.view_model.read().await.get_config();
+        let ping_restore = config_for_restore.modules.ping.running;
+        let http_restore = config_for_restore.modules.http.running;
+        let tftp_restore = config_for_restore.modules.tftpd.running;
+        let chat_restore = config_for_restore.modules.chat.running;
+        drop(config_for_restore);
+        
+        info!("Business states to restore: ping={}, http={}, tftpd={}, chat={}", 
+              ping_restore, http_restore, tftp_restore, chat_restore);
+        
+        // Store restore flags for use after event loop starts
+        let ping_restore_flag = ping_restore;
+        let http_restore_flag = http_restore;
+        let tftp_restore_flag = tftp_restore;
+        let chat_restore_flag = chat_restore;
+        
         // Handle window close button - use set_callback which fires when the X button is clicked
         // Hide window immediately so user sees it disappear, then quit FLTK event loop
         let mut win_for_close = main_win.clone();
@@ -355,6 +372,43 @@ impl App {
             Self::event_loop(app_clone, event_receiver).await;
         });
 
+        // Restore business states after event loop is ready
+        if ping_restore_flag {
+            info!("Restoring ping service state");
+            // Get target from config and start ping
+            let config = self.view_model.read().await.get_config();
+            let target = config.modules.ping.target.clone();
+            drop(config);
+            send_event(UiEvent::PingStart { target, options: String::new() });
+        }
+        
+        if http_restore_flag {
+            info!("Restoring HTTP server state");
+            let config = self.view_model.read().await.get_config();
+            let port = config.modules.http.port;
+            let autoindex = config.modules.http.autoindex;
+            let videoplay = config.modules.http.videoplay;
+            let shell = config.modules.http.shell;
+            drop(config);
+            let options = format!("autoindex={};videoplay={}", autoindex, videoplay);
+            send_event(UiEvent::HttpToggle { port, options, shell });
+        }
+        
+        if tftp_restore_flag {
+            info!("Restoring TFTP server state");
+            send_event(UiEvent::TftpServerToggle { options: String::new() });
+        }
+        
+        if chat_restore_flag {
+            info!("Restoring chat state");
+            let config = self.view_model.read().await.get_config();
+            let username = config.modules.chat.username.clone();
+            let port = config.modules.chat.port;
+            let broadcast = config.modules.chat.broadcast_addr.clone();
+            drop(config);
+            send_event(UiEvent::ChatToggle { username, port, broadcast });
+        }
+
         // Run FLTK event loop
         fltk_app.run()?;
 
@@ -388,6 +442,12 @@ impl App {
     async fn cleanup(&self) -> anyhow::Result<()> {
         info!("Cleaning up resources");
 
+        // Get current running states before stopping services
+        let ping_running = self.view_model.read().await.is_ping_running();
+        let http_running = self.view_model.read().await.is_http_running();
+        let tftp_running = self.view_model.read().await.is_tftp_server_running();
+        let chat_running = self.view_model.read().await.is_chat_running();
+
         // Stop all services
         self.ping_service.write().await.stop().await.ok();
         self.http_service.write().await.stop().await.ok();
@@ -395,9 +455,21 @@ impl App {
         self.plan_service.write().await.stop().await.ok();
         self.chat_service.write().await.stop().await.ok();
 
+        // Save running states to configuration
+        let mut config = self.view_model.read().await.get_config();
+        config.modules.ping.running = ping_running;
+        config.modules.http.running = http_running;
+        config.modules.tftpd.running = tftp_running;
+        config.modules.chat.running = chat_running;
+        
+        // Update view model with new config
+        self.view_model.write().await.update_config(config.clone());
+        
         // Save configuration
-        let config = self.view_model.read().await.get_config();
         save_config(&config).ok();
+        
+        info!("Saved business running states: ping={}, http={}, tftpd={}, chat={}", 
+              ping_running, http_running, tftp_running, chat_running);
 
         Ok(())
     }
