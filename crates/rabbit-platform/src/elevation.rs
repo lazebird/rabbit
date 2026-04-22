@@ -44,21 +44,13 @@ fn get_exe_path() -> String {
 
 fn restart_with_elevation() -> Result<(), String> {
     let exe_path = get_exe_path();
-    let display = std::env::var("DISPLAY").unwrap_or(":1".into());
-    let xauth = std::env::var("XAUTHORITY").unwrap_or("/run/user/1000/gdm/Xauthority".into());
-
-    // 关键：允许 root 访问 X11
-    let _ = std::process::Command::new("xhost").arg("+SI:localuser:root").status();
-
-    std::process::Command::new("pkexec")
-        .arg("env")
-        .arg(format!("DISPLAY={display}"))
-        .arg(format!("XAUTHORITY={xauth}"))
-        .arg(&exe_path)
-        .status()
-        .map_err(|e| e.to_string())?;
-
-    Ok(())
+    let mut cmd = StdCommand::new(&exe_path);
+    cmd.env("RABBIT_ELEVATED", "1");
+    let output = ElevatedCommand::new(cmd).output().map_err(|e| format!("ElevatedCommand error: {}", e))?;
+    if output.status.success() {
+        return Ok(());
+    }
+    return Err(format!("ElevatedCommand output error: {}, stderr: {}", output.status, String::from_utf8_lossy(&output.stderr)));
 }
 
 pub fn ensure_elevated() {
@@ -79,7 +71,7 @@ pub fn ensure_elevated() {
     match restart_with_elevation() {
         Ok(()) => exit(0),
         Err(e) => {
-            show_error_dialog("提权失败", &e);
+            show_error_dialog("elevation failed", &e);
             exit(1);
         }
     }
