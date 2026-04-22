@@ -132,6 +132,8 @@ chat_service: Arc::new(RwLock::new(chat_service)),
 
         // Create main window - load config directly from disk to get window position
         let disk_config = load_config().unwrap_or_else(|_| AppConfig::default());
+        info!("Loaded config: window_x={:?}, window_y={:?}, window_width={:?}, window_height={:?}",
+              disk_config.window_x, disk_config.window_y, disk_config.window_width, disk_config.window_height);
         let default_x = 100;
         let default_y = 100;
         let default_w = 748;
@@ -142,7 +144,12 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         let win_h = disk_config.window_height.unwrap_or(default_h);
         drop(disk_config);
         
-        let last_resize_time = Arc::new(AtomicU64::new(0));
+        let last_resize_time = Arc::new(AtomicU64::new(
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64,
+        ));
         let save_pending = Arc::new(AtomicBool::new(false));
         
         let mut main_win = Window::new(win_x, win_y, win_w, win_h, "Rabbit");
@@ -336,15 +343,18 @@ chat_service: Arc::new(RwLock::new(chat_service)),
                 if pending && now.saturating_sub(last) >= 500 {
                     // 500ms has passed since last resize, save now
                     save_pending_for_thread.store(false, Ordering::Relaxed);
-                    
+
+                    info!("Attempting to save window position...");
                     if let Some(win) = crate::ui_state::UiState::get_main_window() {
                         let win_x = win.x();
                         let win_y = win.y();
                         let win_w = win.w();
                         let win_h = win.h();
-                        
+                        info!("Window position: x={}, y={}, w={}, h={}", win_x, win_y, win_w, win_h);
+
                         if let Ok(config_dir) = rabbit_platform::config::get_config_dir() {
                             let config_path = config_dir.join("config.toml");
+                            info!("Config path: {:?}", config_path);
                             if let Ok(content) = std::fs::read_to_string(&config_path) {
                                 let mut new_content = content;
 
@@ -366,6 +376,7 @@ chat_service: Arc::new(RwLock::new(chat_service)),
                                 }
 
                                 std::fs::write(&config_path, new_content).ok();
+                                info!("Window position saved to config");
                             }
                         }
                     }
@@ -373,17 +384,22 @@ chat_service: Arc::new(RwLock::new(chat_service)),
             }
         });
         
-        main_win.resize_callback(move |w, _x, _y, nw, nh| {
-            tabs_clone.resize(5, 5, nw - 10, nh - 10);
-            w.redraw();
-            
-            // Update the last resize timestamp and mark save as pending
-            let now = std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_millis() as u64;
-            last_resize_time.store(now, Ordering::Relaxed);
-            save_pending.store(true, Ordering::Relaxed);
+        main_win.resize_callback({
+            let last_resize_time = last_resize_time.clone();
+            let save_pending = save_pending.clone();
+            move |w, x, y, nw, nh| {
+                tabs_clone.resize(5, 5, nw - 10, nh - 10);
+                w.redraw();
+
+                info!("resize callback: pos=({},{}) size={}x{}", x, y, nw, nh);
+                info!("Setting save_pending flag");
+                let now = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis() as u64;
+                last_resize_time.store(now, Ordering::Relaxed);
+                save_pending.store(true, Ordering::Relaxed);
+            }
         });
 
         main_win.end();

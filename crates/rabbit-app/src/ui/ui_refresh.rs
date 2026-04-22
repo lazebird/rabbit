@@ -37,9 +37,9 @@ pub fn register_browser(key: &'static str, browser: Browser) {
 }
 
 /// Register the HTTP toggle button for centralized state sync.
-static mut HTTP_BTN: Option<fltk::button::Button> = None;
-static mut HTTP_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
-const HTTP_STOP_COLOR: u32 = 0xE57373;
+pub static mut HTTP_BTN: Option<fltk::button::Button> = None;
+pub static mut HTTP_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+pub const HTTP_STOP_COLOR: u32 = 0xE57373;
 
 pub fn register_http_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
     unsafe {
@@ -198,7 +198,7 @@ fn do_refresh() {
         check!("scan_output");
         check!("scan_running");
         check!("http_log");
-        check!("http_running");
+        // http_running handled separately in Phase 1 end
         check!("http_items");
         check!("tftpd_log");
         check!("tftpd_dirs");
@@ -249,7 +249,8 @@ fn do_refresh() {
         let ping_running = s.ping_running;
 
         drop(s);
-        (data, if ping_updated { Some(ping_running) } else { None }, if http_updated { Some(http_running) } else { None }, if scan_updated { Some(scan_running) } else { None })
+        let http_state = if http_updated { Some(http_running) } else { None };
+        (data, if ping_updated { Some(ping_running) } else { None }, http_state, if scan_updated { Some(scan_running) } else { None })
     };
 
     // Phase 2: Update displays without holding the lock

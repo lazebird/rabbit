@@ -234,10 +234,12 @@ pub fn append_http_log(line: &str) {
 }
 
 pub fn set_http_running(running: bool) {
+    tracing::info!("set_http_running: {}", running);
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
             s.http_running = running;
             s.updated.insert("http_running".to_string(), true);
+            tracing::info!("inserted: updated contains http_running={}", s.updated.get("http_running").copied().unwrap_or(false));
         }
     }
 }
