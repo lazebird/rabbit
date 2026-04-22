@@ -2,6 +2,8 @@ use elevated_command::Command as ElevatedCommand;
 use std::path::absolute;
 use std::process::exit;
 use std::process::Command as StdCommand;
+use std::thread;
+use std::time::Duration;
 
 #[cfg(all(target_os = "linux"))]
 fn show_error_dialog(title: &str, message: &str) {
@@ -14,6 +16,67 @@ fn show_error_dialog(title: &str, message: &str) {
         cmd.env("XAUTHORITY", x);
     }
     let _ = cmd.spawn();
+}
+
+/// 检查 polkit 认证代理是否正在运行（Linux）
+#[cfg(all(target_os = "linux"))]
+fn is_polkit_agent_running() -> bool {
+    let agents = ["polkit-gnome-authentication-agent", "polkit-kde-authentication-agent", "polkitd"];
+
+    for agent in agents {
+        let output = StdCommand::new("pgrep").arg("-x").arg(agent).output();
+
+        if let Ok(output) = output {
+            if output.status.success() {
+                return true;
+            }
+        }
+    }
+
+    let output = StdCommand::new("dbus-send")
+        .arg("--print-reply")
+        .arg("--dest=org.freedesktop.PolicyKit1")
+        .arg("/org/freedesktop/PolicyKit1/AuthenticationAgent")
+        .arg("org.freedesktop.PolicyKit1.AuthenticationAgent.GetDefaultAgent")
+        .output();
+
+    output.map(|o| o.status.success()).unwrap_or(false)
+}
+
+/// 检查 UAC 提示是否可用（Windows）
+#[cfg(all(target_os = "windows"))]
+fn is_auth_agent_running() -> bool {
+    // Windows UAC 总是可用，只要用户已登录
+    true
+}
+
+/// 通用接口：检查认证代理是否可用
+#[cfg(target_os = "linux")]
+fn check_auth_agent() -> bool {
+    is_polkit_agent_running()
+}
+
+#[cfg(target_os = "windows")]
+fn check_auth_agent() -> bool {
+    is_auth_agent_running()
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+fn check_auth_agent() -> bool {
+    false
+}
+
+/// 等待 polkit 认证代理启动（Linux）
+#[cfg(all(target_os = "linux"))]
+fn wait_for_polkit_agent(max_wait_secs: u64) -> bool {
+    let start = std::time::Instant::now();
+    while start.elapsed() < Duration::from_secs(max_wait_secs) {
+        if is_polkit_agent_running() {
+            return true;
+        }
+        thread::sleep(Duration::from_millis(500));
+    }
+    false
 }
 
 #[cfg(all(target_os = "windows"))]
@@ -43,14 +106,76 @@ fn get_exe_path() -> String {
 }
 
 fn restart_with_elevation() -> Result<(), String> {
-    let exe_path = get_exe_path();
-    let mut cmd = StdCommand::new(&exe_path);
-    cmd.env("RABBIT_ELEVATED", "1");
-    let output = ElevatedCommand::new(cmd).output().map_err(|e| format!("ElevatedCommand error: {}", e))?;
-    if output.status.success() {
-        return Ok(());
+    #[cfg(target_os = "linux")]
+    {
+        let _ = wait_for_polkit_agent(3);
     }
-    return Err(format!("ElevatedCommand output error: {}, stderr: {}", output.status, String::from_utf8_lossy(&output.stderr)));
+
+    let max_retries = 3;
+    for attempt in 1..=max_retries {
+        let exe_path = get_exe_path();
+        let mut cmd = StdCommand::new(&exe_path);
+        cmd.env("RABBIT_ELEVATED", "1");
+        if let Ok(d) = std::env::var("DISPLAY") {
+            cmd.env("DISPLAY", d);
+        }
+        if let Ok(x) = std::env::var("XAUTHORITY") {
+            cmd.env("XAUTHORITY", x);
+        }
+
+        let agent_available = check_auth_agent();
+
+        match ElevatedCommand::new(cmd).output() {
+            Ok(output) => {
+                if output.status.success() {
+                    return Ok(());
+                }
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                let code = output.status.code().unwrap_or(-1);
+
+                // Linux: 仅在认证代理已运行时才认为 126 是用户取消
+                #[cfg(target_os = "linux")]
+                {
+                    if code == 126 && agent_available && stderr.contains("Request dismissed") {
+                        return Err("用户取消授权".to_string());
+                    }
+                }
+
+                // Windows: 拒绝/错误可重试
+                #[cfg(target_os = "windows")]
+                {
+                    if attempt < max_retries && code == 5 {
+                        thread::sleep(Duration::from_millis(1500));
+                        continue;
+                    }
+                }
+
+                // Linux: 127 或未授权可重试
+                #[cfg(target_os = "linux")]
+                {
+                    if attempt < max_retries && (code == 127 || stderr.contains("Not authorized")) {
+                        thread::sleep(Duration::from_millis(1500));
+                        continue;
+                    }
+                }
+
+                #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+                {
+                    let _ = code;
+                }
+
+                return Err(format!("ElevatedCommand error: {}, stderr: {}", output.status, stderr));
+            }
+            Err(e) => {
+                if attempt < max_retries {
+                    thread::sleep(Duration::from_millis(1500));
+                    continue;
+                }
+                return Err(format!("ElevatedCommand error: {}", e));
+            }
+        }
+    }
+    Err("Max retries exceeded".to_string())
 }
 
 pub fn ensure_elevated() {

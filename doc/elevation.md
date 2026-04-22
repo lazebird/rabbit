@@ -209,18 +209,94 @@ pub fn ensure_elevated() {
 | `Failed to restart with elevated privileges` | 用户取消或认证失败        | 提示用户重试               |
 | `Failed to get executable path`              | 程序路径获取失败          | 检查程序完整性             |
 | AppImage 无响应                              | `APPIMAGE` 环境变量未设置 | 确保通过 AppImage 正常启动 |
+| **"Request dismissed" exit code 126**        | polkit 认证代理未运行/用户取消 | 详见问题排查章节       |
+| **exit code 127**                            | 未授权或认证错误          | 可重试                     |
 
-## 开发注意事项
+## 问题排查与优化
 
-1. **Debug 模式跳过提权**: 开发时 `ensure_elevated()` 直接返回，无需提权
-2. **测试提权**: 使用 `cargo build --release` 后运行测试
-3. **Linux AppImage**:
-   - 必须正确获取 `APPIMAGE` 环境变量
-   - AppImage 启动时会自动设置此变量
-4. **错误提示**: 确保在无 GUI 环境下也能看到错误信息 (stderr 回退)
+### 问题：双击文件启动时 "Request dismissed" (exit code 126)
+
+**现象**：双击文件时大多数时候报错 "Request dismissed"，少数情况能弹出授权窗口。
+
+**根因分析**：
+1. polkit 认证代理（polkit-gnome/polkit-kde）可能未完全启动
+2. 双击启动时环境变量（DISPLAY/XAUTHORITY）可能丢失
+3. 无重试机制，一次失败直接报错
+
+**解决方案**（已实现）：
+
+#### 1. polkit 认证代理检测与等待
+
+```rust
+#[cfg(target_os = "linux")]
+fn is_polkit_agent_running() -> bool {
+    // 检测 polkit 认证代理进程
+    let agents = ["polkit-gnome-authentication-agent", "polkit-kde-authentication-agent", "polkitd"];
+    for agent in agents {
+        if StdCommand::new("pgrep").arg("-x").arg(agent).output()?.status.success() {
+            return true;
+        }
+    }
+    // 检查 dbus 注册
+    StdCommand::new("dbus-send")...
+        .arg("org.freedesktop.PolicyKit1.AuthenticationAgent.GetDefaultAgent")
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false)
+}
+
+#[cfg(target_os = "linux")]
+fn wait_for_polkit_agent(max_wait_secs: u64) -> bool {
+    // 等待代理启动（轮询检测）
+    std::thread::sleep(Duration::from_millis(500))
+}
+```
+
+#### 2. 重试机制
+
+- 最多重试 3 次，每次间隔 1.5 秒
+- 给用户时间在 polkit 弹窗中输入密码
+
+#### 3. 区分用户取消与代理未运行
+
+| 条件 | 判断 | 处理 |
+|------|------|------|
+| exit 126 + 代理运行中 + "Request dismissed" | 用户点击取消 | 报错退出，不重试 |
+| exit 126 + 代理未运行 | 代理崩溃/未启动 | 等待后重试 |
+| exit 127 或 "Not authorized" | 可恢复错误 | 等待后重试 |
+
+#### 4. 环境变量传递
+
+```rust
+cmd.env("RABBIT_ELEVATED", "1");
+if let Ok(d) = std::env::var("DISPLAY") {
+    cmd.env("DISPLAY", d);
+}
+if let Ok(x) = std::env::var("XAUTHORITY") {
+    cmd.env("XAUTHORITY", x);
+}
+```
+
+### 跨平台兼容性
+
+| 平台 | 认证代理检测 | 取消/拒绝识别 | 可重试错误 |
+|------|-------------|--------------|-----------|
+| Linux | polkit 代理进程检测 | exit 126 + 代理运行 + "Request dismissed" | exit 127, "Not authorized" |
+| Windows | UAC 始终可用 | - | exit code 5 (拒绝) |
+| Other | false | - | - |
+
+### Windows UAC 退出码说明
+
+| 退出码 | 含义 |
+|--------|------|
+| 0 | 成功 |
+| 5 | 拒绝/访问被阻止 |
+| 1223 | 用户取消 |
+
+如果遇到 Windows 实际退出码与预期不符，请调整代码中的 `code == 5` 条件。
 
 ## 相关文件
 
-- `src-tauri/src/elevation.rs` - 提权模块实现
-- `src-tauri/src/main.rs` - 主程序入口，调用 `ensure_elevated()`
-- `src-tauri/Cargo.toml` - 依赖配置
+- `crates/rabbit-platform/src/elevation.rs` - 提权模块实现
+- `crates/rabbit-app/src/main.rs` - 主程序入口，调用 `ensure_elevated()`
+- `crates/rabbit-platform/Cargo.toml` - 依赖配置
