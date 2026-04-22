@@ -11,6 +11,7 @@ description = "Platform-specific adapters for Rabbit"
 
 [dependencies]
 rabbit-models = { path = "../rabbit-models" }
+elevated-command = "1.1"
 
 tokio = { workspace = true }
 tracing = { workspace = true }

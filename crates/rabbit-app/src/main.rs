@@ -24,6 +24,9 @@ fn main() -> anyhow::Result<()> {
 
     info!("Starting Rabbit application");
 
+    // Ensure elevated privileges for privileged operations
+    rabbit_platform::elevation::ensure_elevated();
+
     // Build a custom Tokio runtime with reduced thread stack size and worker count.
     // Default stack per thread is 8MB; with FLTK/Pango font threads also consuming
     // virtual memory, the default settings exhaust the address space under tight

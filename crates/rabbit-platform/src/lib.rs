@@ -13,6 +13,7 @@ pub mod dialog;
 pub mod network;
 pub mod notification;
 pub mod ping;
+pub mod elevation;
 pub mod shell;
 pub mod taskbar;
 
@@ -22,6 +23,7 @@ pub use dialog::*;
 pub use network::*;
 pub use notification::*;
 pub use ping::*;
+pub use elevation::*;
 pub use shell::*;
 pub use taskbar::*;
 
