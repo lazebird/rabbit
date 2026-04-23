@@ -123,12 +123,12 @@ impl TabComponent for PingTab {
                 }
                 Self::refresh_display(&mut results_display_clone, &mut stats_editor_clone);
 
-                send_event(UiEvent::PingStart { target: target.clone(), options: _options });
+                send_event(UiEvent::ModuleToggle { module: "ping".into() });
 
                 start_btn_clone.set_label("Stop");
                 start_btn_clone.set_color(fltk::enums::Color::from_hex(0xE57373));
             } else {
-                send_event(UiEvent::PingStop);
+                send_event(UiEvent::ModuleToggle { module: "ping".into() });
                 start_btn_clone.set_label("Start");
                 start_btn_clone.set_color(colors_clone.accent);
             }

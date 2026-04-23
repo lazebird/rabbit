@@ -14,7 +14,7 @@ use fltk::{
     window::{Window, WindowType},
 };
 use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpService};
-use rabbit_models::{AppConfig, ping::PingTarget, scan::ScanRange};
+use rabbit_models::{AppConfig, chat::ChatConfig, http::HttpServerConfig, ping::PingTarget, scan::{ScanRange, ScannerState}, tftp::{TftpClientConfig, TftpServerConfig}};
 use rabbit_platform::config::{load_config, save_config};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
@@ -545,44 +545,22 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         // Restore business states after event loop is ready
         if ping_restore_flag {
             info!("Restoring ping service state");
-            // Get target and options from config and start ping
-            let config = self.view_model.read().await.get_config();
-            let target = config.modules.ping.target.clone();
-            let options = config.modules.ping.opts_string();  // Use saved options including interval
-            drop(config);
-            info!("Restoring ping with options: {}", options);
-            send_event(UiEvent::PingStart { target, options });
+            send_event(UiEvent::ModuleToggle { module: "ping".into() });
         }
         
         if http_restore_flag {
             info!("Restoring HTTP server state");
-            let config = self.view_model.read().await.get_config();
-            let port = config.modules.http.port;
-            let autoindex = config.modules.http.autoindex;
-            let videoplay = config.modules.http.videoplay;
-            let shell = config.modules.http.shell;
-            drop(config);
-            let options = format!("autoindex={};videoplay={}", autoindex, videoplay);
-            send_event(UiEvent::HttpToggle { port, options, shell });
+            send_event(UiEvent::ModuleToggle { module: "http".into() });
         }
         
         if tftp_restore_flag {
             info!("Restoring TFTP server state");
-            let config = self.view_model.read().await.get_config();
-            let options = config.modules.tftpd.opts_string();
-            drop(config);
-            info!("Restoring TFTP server with options: {}", options);
-            send_event(UiEvent::TftpServerToggle { options });
+            send_event(UiEvent::ModuleToggle { module: "tftpd".into() });
         }
         
         if chat_restore_flag {
             info!("Restoring chat state");
-            let config = self.view_model.read().await.get_config();
-            let username = config.modules.chat.username.clone();
-            let port = config.modules.chat.port;
-            let broadcast = config.modules.chat.broadcast_addr.clone();
-            drop(config);
-            send_event(UiEvent::ChatToggle { username, port, broadcast });
+            send_event(UiEvent::ModuleToggle { module: "chat".into() });
         }
 
         // Run FLTK event loop
@@ -810,472 +788,342 @@ impl EventHandler for AppHandle {
         match event {
             // Module Toggle - 根据配置决定启动/停止
             UiEvent::ModuleToggle { module } => {
-                let is_running = match module.as_str() {
-                    "ping" => self.view_model.read().await.is_ping_running(),
-                    "scan" => self.view_model.read().await.is_scan_running(),
-                    "http" => self.view_model.read().await.is_http_running(),
-                    "tftpd" => self.view_model.read().await.is_tftp_server_running(),
-                    "chat" => self.view_model.read().await.is_chat_running(),
-                    _ => false,
-                };
-                
                 match module.as_str() {
                     "ping" => {
+                        let is_running = self.view_model.read().await.is_ping_running();
                         if is_running {
-                            send_event(UiEvent::PingStop);
+                            // Stop ping
+                            info!("Stopping ping service");
+                            if let Some(handle) = self.ping_task.write().await.take() {
+                                handle.abort();
+                            }
+                            self.ping_service.write().await.stop().await?;
+                            self.view_model.write().await.set_ping_running(false);
+                            crate::ui_state::set_ping_running(false);
+                            // Reset window title
+                            if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                                fltk::app::awake_callback(move || {
+                                    win.set_label("Rabbit");
+                                });
+                            }
                         } else {
+                            // Start ping from config
                             let config = self.view_model.read().await.get_config();
-                            send_event(UiEvent::PingStart { target: config.modules.ping.target.clone(), options: config.modules.ping.opts_string() });
+                            let target = config.modules.ping.target.clone();
+                            let interval = config.modules.ping.interval as u64;
+                            let count: i32 = config.modules.ping.count;
+                            let stop_on_loss = config.modules.ping.stoponloss;
+                            drop(config);
+
+                            if target.is_empty() {
+                                warn!("Ping target is empty, cannot start ping");
+                                return Ok(());
+                            }
+
+                            info!("Starting ping to {} (interval={}ms, count={})", target, interval, count);
+
+                            // Cancel any existing ping task first
+                            if let Some(handle) = self.ping_task.write().await.take() {
+                                handle.abort();
+                            }
+
+                            // Set window title to target address
+                            let target_label = target.clone();
+                            if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                                fltk::app::awake_callback(move || {
+                                    win.set_label(&target_label);
+                                });
+                            }
+
+                            let mut service = self.ping_service.write().await;
+                            service.start().await?;
+
+                            let mut target_obj = PingTarget::new(&target);
+                            target_obj.interval_ms = interval;
+                            target_obj.count = if count < 0 { u32::MAX } else { count as u32 };
+                            target_obj.stop_on_loss = stop_on_loss;
+                            service.add_target(target_obj).await?;
+                            self.view_model.write().await.set_ping_running(true);
+                            crate::ui_state::set_ping_running(true);
+
+                            // Clear ping history for this target
+                            self.ping_history.insert(target.clone(), Vec::new());
+
+                            // Spawn a task to periodically update ping results
+                            let ping_service = self.ping_service.clone();
+                            let target_clone = target.clone();
+                            #[cfg(target_os = "windows")]
+                            let window_handle = self.window_handle;
+                            let taskbar_enabled = self.taskbar_enabled;
+
+                            let handle = tokio::spawn(async move {
+                                let mut recent_results: Vec<bool> = Vec::with_capacity(5);
+
+                                loop {
+                                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+                                    let service = ping_service.read().await;
+                                    let results = service.get_results(&target_clone).await;
+                                    let summary = service.get_summary(&target_clone).await;
+                                    drop(service);
+
+                                    if results.is_empty() {
+                                        if let Some(s) = summary {
+                                            let stats = format!(
+                                                "Tx {} Rx {} Loss {} Min {:.1}ms Max {:.1}ms Avg {:.1}ms",
+                                                s.sent, s.received, s.lost,
+                                                s.min_ms.unwrap_or(0.0),
+                                                s.max_ms.unwrap_or(0.0),
+                                                s.avg_ms.unwrap_or(0.0)
+                                            );
+                                            crate::ui_state::set_ping_stats(&stats);
+                                        }
+                                        continue;
+                                    }
+
+                                    for result in &results {
+                                        if result.success {
+                                            let line = if let Some(ttl) = result.ttl {
+                                                format!(
+                                                    "Reply from {}: bytes={} time={:.1}ms TTL={}",
+                                                    target_clone,
+                                                    result.bytes,
+                                                    result.duration_ms.unwrap_or(0.0),
+                                                    ttl
+                                                )
+                                            } else {
+                                                format!(
+                                                    "Reply from {}: bytes={} time={:.1}ms",
+                                                    target_clone,
+                                                    result.bytes,
+                                                    result.duration_ms.unwrap_or(0.0)
+                                                )
+                                            };
+                                            crate::ui_state::append_ping_output(&line);
+                                        } else {
+                                            crate::ui_state::append_ping_output("Request timed out.");
+                                        }
+
+                                        if taskbar_enabled {
+                                            recent_results.push(result.success);
+                                            if recent_results.len() > 5 {
+                                                recent_results.remove(0);
+                                            }
+                                        }
+                                    }
+
+                                    #[cfg(target_os = "windows")]
+                                    if taskbar_enabled && !recent_results.is_empty() {
+                                        if let Some(hwnd) = window_handle {
+                                            let success_count = recent_results.iter().filter(|&&x| x).count() as u32;
+                                            let total_count = recent_results.len() as u32;
+                                            rabbit_platform::taskbar::windows::update_taskbar_for_ping(
+                                                hwnd, success_count, total_count
+                                            );
+                                        }
+                                    }
+
+                                    if let Some(s) = summary {
+                                        let stats = format!(
+                                            "Tx {} Rx {} Loss {} Min {:.1}ms Max {:.1}ms Avg {:.1}ms",
+                                            s.sent, s.received, s.lost,
+                                            s.min_ms.unwrap_or(0.0),
+                                            s.max_ms.unwrap_or(0.0),
+                                            s.avg_ms.unwrap_or(0.0)
+                                        );
+                                        crate::ui_state::set_ping_stats(&stats);
+                                    }
+                                }
+                            });
+
+                            *self.ping_task.write().await = Some(handle);
                         }
                     }
                     "scan" => {
+                        let is_running = self.view_model.read().await.is_scan_running();
                         if is_running {
-                            send_event(UiEvent::ScanStop);
+                            info!("Stopping scan service");
+                            self.scan_service.write().await.cancel().await?;
+                            self.view_model.write().await.set_scan_running(false);
+                            crate::ui_state::set_scan_running(false);
                         } else {
                             let config = self.view_model.read().await.get_config();
-                            send_event(UiEvent::ScanStart { start_ip: config.modules.scan.start_ip.clone(), end_ip: config.modules.scan.end_ip.clone(), options: String::new() });
+                            let start_ip = config.modules.scan.start_ip.clone();
+                            let end_ip = config.modules.scan.end_ip.clone();
+
+                            if start_ip.is_empty() || end_ip.is_empty() {
+                                warn!("Scan parameters not configured");
+                                crate::ui_state::append_scan_output("Error: Please enter IP range first.\n");
+                                return Ok(());
+                            }
+
+                            let start: std::net::Ipv4Addr = match start_ip.parse() {
+                                Ok(ip) => ip,
+                                Err(_) => {
+                                    warn!("Invalid start IP: {}", start_ip);
+                                    crate::ui_state::append_scan_output(&format!("Error: Invalid start IP {}\n", start_ip));
+                                    return Ok(());
+                                }
+                            };
+                            let end: std::net::Ipv4Addr = match end_ip.parse() {
+                                Ok(ip) => ip,
+                                Err(_) => {
+                                    warn!("Invalid end IP: {}", end_ip);
+                                    crate::ui_state::append_scan_output(&format!("Error: Invalid end IP {}\n", end_ip));
+                                    return Ok(());
+                                }
+                            };
+
+                            info!("Starting scan from {} to {}", start_ip, end_ip);
+                            let range = ScanRange::new(start, end);
+                            self.scan_service.write().await.scan(range).await?;
+                            self.view_model.write().await.set_scan_running(true);
+                            crate::ui_state::set_scan_running(true);
+
+                            // Spawn result polling task
+                            let scan_service = self.scan_service.clone();
+                            let handle = tokio::spawn(async move {
+                                loop {
+                                    tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+                                    let service = scan_service.read().await;
+                                    let state = service.get_state().await;
+
+                                    match state {
+                                        ScannerState::Scanning { progress } => {
+                                            let results = service.get_results().await;
+                                            let online_count = results.iter().filter(|r| r.online).count();
+                                            crate::ui_state::append_scan_output(&format!("Progress: {}% - Found {} online hosts", progress, online_count));
+                                        }
+                                        ScannerState::Completed => {
+                                            let results = service.get_results().await;
+                                            let online_count = results.iter().filter(|r| r.online).count();
+                                            crate::ui_state::append_scan_output(&format!("\nScan complete! Found {} online hosts.", online_count));
+                                            crate::ui_state::set_scan_running(false);
+                                            break;
+                                        }
+                                        ScannerState::Cancelled => {
+                                            crate::ui_state::append_scan_output("\nScan cancelled.");
+                                            crate::ui_state::set_scan_running(false);
+                                            break;
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                            });
+                            *self.scan_task.write().await = Some(handle);
                         }
                     }
                     "http" => {
-                        let config = self.view_model.read().await.get_config();
-                        send_event(UiEvent::HttpToggle { port: config.modules.http.port, options: String::new(), shell: config.modules.http.shell });
+                        let is_running = self.view_model.read().await.is_http_running();
+                        if is_running {
+                            info!("Stopping HTTP server");
+                            self.http_service.write().await.stop().await?;
+                            self.view_model.write().await.set_http_running(false);
+                            crate::ui_state::set_http_running(false);
+                            crate::ui_state::append_http_log("HTTP server stopped.\r\n");
+                        } else {
+                            let config = self.view_model.read().await.get_config();
+                            let http_config = config.modules.http.clone();
+                            let server_config: HttpServerConfig = (&http_config).into();
+                            if server_config.root_path.is_empty() {
+                                warn!("No HTTP directories configured, cannot start server");
+                                crate::ui_state::append_http_log("Error: No directories configured. Add files or directories first.\r\n");
+                                return Ok(());
+                            }
+                            drop(config);
+
+                            info!("Starting HTTP server on port {}", http_config.port);
+                            let mut service = self.http_service.write().await;
+                            service.init(server_config).await?;
+                            service.start().await?;
+                            self.view_model.write().await.set_http_running(true);
+                            crate::ui_state::set_http_running(true);
+                            crate::ui_state::append_http_log(&format!("HTTP server started on port {}.\r\n", http_config.port));
+
+                            let http_service = self.http_service.clone();
+                            let handle = tokio::spawn(async move {
+                                loop {
+                                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+                                    let service = http_service.read().await;
+                                    let logs = service.get_recent_logs(10).await;
+                                    for log in logs {
+                                        let line = format!("{} {} {} - {}\r\n",
+                                            log.timestamp.format("%H:%M:%S"),
+                                            log.method,
+                                            log.path,
+                                            log.status_code
+                                        );
+                                        crate::ui_state::append_http_log(&line);
+                                    }
+                                }
+                            });
+                        }
                     }
                     "tftpd" => {
-                        let config = self.view_model.read().await.get_config();
-                        send_event(UiEvent::TftpServerToggle { options: config.modules.tftpd.opts_string() });
+                        let is_running = self.view_model.read().await.is_tftp_server_running();
+                        if is_running {
+                            info!("Stopping TFTP server");
+                            self.tftp_service.write().await.stop_server().await?;
+                            self.view_model.write().await.set_tftp_server_running(false);
+                            crate::ui_state::append_tftpd_log("TFTP server stopped.\r\n");
+                        } else {
+                            let config = self.view_model.read().await.get_config();
+                            let tftpd_config = config.modules.tftpd.clone();
+                            let tftpc_config = config.modules.tftpc.clone();
+                            let server_config: TftpServerConfig = (&tftpd_config).into();
+                            let client_config: TftpClientConfig = (&tftpc_config).into();
+                            if server_config.root_path.is_empty() {
+                                warn!("No TFTP directories configured, cannot start server");
+                                crate::ui_state::append_tftpd_log("Error: No directories configured. Add directories first.\r\n");
+                                return Ok(());
+                            }
+                            drop(config);
+
+                            info!("Starting TFTP server on port {}", tftpd_config.port);
+                            let mut service = self.tftp_service.write().await;
+                            service.init(server_config, client_config).await?;
+                            service.start_server().await?;
+                            self.view_model.write().await.set_tftp_server_running(true);
+                            crate::ui_state::append_tftpd_log(&format!("TFTP server started on port {}.\r\n", tftpd_config.port));
+                        }
                     }
                     "chat" => {
-                        let config = self.view_model.read().await.get_config();
-                        send_event(UiEvent::ChatToggle { username: config.modules.chat.username.clone(), port: config.modules.chat.port, broadcast: config.modules.chat.broadcast_addr.clone() });
+                        let is_running = self.view_model.read().await.is_chat_running();
+                        if is_running {
+                            info!("Stopping chat service");
+                            self.chat_service.write().await.stop().await?;
+                            self.view_model.write().await.set_chat_running(false);
+                            crate::ui_state::set_chat_users(&[]);
+                        } else {
+                            let config = self.view_model.read().await.get_config();
+                            let chat_config = config.modules.chat.clone();
+                            drop(config);
+
+                            info!("Starting chat as {} on port {}", chat_config.username, chat_config.port);
+                            let mut service = self.chat_service.write().await;
+                            service.init(ChatConfig {
+                                enabled: true,
+                                username: chat_config.username.clone(),
+                                port: chat_config.port,
+                                multicast_addr: chat_config.broadcast_addr.clone(),
+                            }).await?;
+                            service.start().await?;
+                            self.view_model.write().await.set_chat_running(true);
+
+                            let chat_service = self.chat_service.clone();
+                            let handle = tokio::spawn(async move {
+                                loop {
+                                    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+                                    let service = chat_service.read().await;
+                                    let users = service.get_all_users().await;
+                                    let usernames: Vec<String> = users.iter().map(|u| u.username.clone()).collect();
+                                    crate::ui_state::set_chat_users(&usernames);
+                                }
+                            });
+                        }
                     }
                     _ => {}
                 }
-            }
-            // Ping
-            UiEvent::PingStart { target, options } => {
-                info!("Starting ping to {}", target);
-
-                // Cancel any existing ping task first
-                if let Some(handle) = self.ping_task.write().await.take() {
-                    handle.abort();
-                }
-
-                // Update UI state
-
-                // Set window title to target address
-                let target_label = target.clone();
-                if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
-                    fltk::app::awake_callback(move || {
-                        win.set_label(&target_label);
-                    });
-                }
-
-                // Parse options string to extract interval
-                let mut interval = self.view_model.read().await.get_config().modules.ping.interval as u64;
-                let mut count: i32 = -1;  // Default to infinite
-                let mut stop_on_loss = false;
-
-                for opt in options.split(';') {
-                    let parts: Vec<&str> = opt.splitn(2, '=').collect();
-                    if parts.len() == 2 {
-                        match parts[0].trim() {
-                            "interval" => {
-                                if let Ok(val) = parts[1].parse::<u64>() {
-                                    interval = val;
-                                }
-                            }
-                            "count" => {
-                                // Parse as i32 to support -1 (infinite)
-                                if let Ok(val) = parts[1].parse::<i32>() {
-                                    count = val;
-                                }
-                            }
-                            "stoponloss" => {
-                                stop_on_loss = parts[1].trim().eq_ignore_ascii_case("true");
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-
-                info!("Ping options parsed: interval={}ms, count={} (negative=infinite), stoponloss={}", interval, count, stop_on_loss);
-
-                // Save ping configuration to persist settings
-                {
-                    let mut vm = self.view_model.write().await;
-                    let mut config = vm.get_config();
-                    config.modules.ping.interval = interval as i32;
-                    config.modules.ping.count = count;
-                    config.modules.ping.stoponloss = stop_on_loss;
-                    config.modules.ping.target = target.clone();
-                    vm.update_config(config.clone());
-                    if let Err(e) = save_config(&config) {
-                        warn!("Failed to save ping config: {}", e);
-                    }
-                    info!("Ping configuration saved: interval={}, count={}, stoponloss={}", 
-                          config.modules.ping.interval, config.modules.ping.count, config.modules.ping.stoponloss);
-                }
-
-                let mut service = self.ping_service.write().await;
-                service.start().await?;
-
-                let mut target_obj = PingTarget::new(&target);
-                target_obj.interval_ms = interval;
-                // Convert i32 count to u32 (negative values mean infinite)
-                target_obj.count = if count < 0 { u32::MAX } else { count as u32 };
-                target_obj.stop_on_loss = stop_on_loss;
-                service.add_target(target_obj).await?;
-                self.view_model.write().await.set_ping_running(true);
-                crate::ui_state::set_ping_running(true);
-                
-                info!("Ping target configured: interval={}ms, count={} ({})", 
-                      interval, 
-                      if count < 0 { -1 } else { count },
-                      if count < 0 { "infinite" } else { "finite" });
-                
-                // Clear ping history for this target
-                self.ping_history.insert(target.clone(), Vec::new());
-
-                // Spawn a task to periodically update ping results
-                let ping_service = self.ping_service.clone();
-                let target_clone = target.clone();
-                #[cfg(target_os = "windows")]
-                let window_handle = self.window_handle;
-                let taskbar_enabled = self.taskbar_enabled;
-                
-                let handle = tokio::spawn(async move {
-                    // Track last 5 ping results for taskbar
-                    let mut recent_results: Vec<bool> = Vec::with_capacity(5);
-                    
-                    loop {
-                        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-                        let service = ping_service.read().await;
-                        let results = service.get_results(&target_clone).await;
-                        let summary = service.get_summary(&target_clone).await;
-                        drop(service);
-
-                        if results.is_empty() {
-                            if let Some(s) = summary {
-                                let stats = format!(
-                                    "Tx {} Rx {} Loss {} Min {:.1}ms Max {:.1}ms Avg {:.1}ms",
-                                    s.sent, s.received, s.lost,
-                                    s.min_ms.unwrap_or(0.0),
-                                    s.max_ms.unwrap_or(0.0),
-                                    s.avg_ms.unwrap_or(0.0)
-                                );
-                                crate::ui_state::set_ping_stats(&stats);
-                            }
-                            continue;
-                        }
-
-                        for result in &results {
-                            if result.success {
-                                let line = if let Some(ttl) = result.ttl {
-                                    format!(
-                                        "Reply from {}: bytes={} time={:.1}ms TTL={}",
-                                        target_clone,
-                                        result.bytes,
-                                        result.duration_ms.unwrap_or(0.0),
-                                        ttl
-                                    )
-                                } else {
-                                    format!(
-                                        "Reply from {}: bytes={} time={:.1}ms",
-                                        target_clone,
-                                        result.bytes,
-                                        result.duration_ms.unwrap_or(0.0)
-                                    )
-                                };
-                                crate::ui_state::append_ping_output(&line);
-                            } else {
-                                crate::ui_state::append_ping_output("Request timed out.");
-                            }
-                            
-                            // Track for taskbar (last 5 results)
-                            if taskbar_enabled {
-                                recent_results.push(result.success);
-                                if recent_results.len() > 5 {
-                                    recent_results.remove(0);
-                                }
-                            }
-                        }
-                        
-                        // Update taskbar if enabled
-                        #[cfg(target_os = "windows")]
-                        if taskbar_enabled && !recent_results.is_empty() {
-                            if let Some(hwnd) = window_handle {
-                                let success_count = recent_results.iter().filter(|&&x| x).count() as u32;
-                                let total_count = recent_results.len() as u32;
-                                rabbit_platform::taskbar::windows::update_taskbar_for_ping(
-                                    hwnd, success_count, total_count
-                                );
-                            }
-                        }
-
-                        // Update stats
-                        if let Some(s) = summary {
-                            let stats = format!(
-                                "Tx {} Rx {} Loss {} Min {:.1}ms Max {:.1}ms Avg {:.1}ms",
-                                s.sent, s.received, s.lost,
-                                s.min_ms.unwrap_or(0.0),
-                                s.max_ms.unwrap_or(0.0),
-                                s.avg_ms.unwrap_or(0.0)
-                            );
-                            crate::ui_state::set_ping_stats(&stats);
-                        }
-                    }
-                });
-
-                // Store the task handle
-                *self.ping_task.write().await = Some(handle);
-            }
-            UiEvent::PingStop => {
-                info!("Stopping ping");
-                // Cancel the background task first
-                if let Some(handle) = self.ping_task.write().await.take() {
-                    handle.abort();
-                }
-                self.ping_service.write().await.stop().await?;
-                self.view_model.write().await.set_ping_running(false);
-                crate::ui_state::set_ping_running(false);
-
-                // Reset window title to "Rabbit"
-                if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
-                    fltk::app::awake_callback(move || {
-                        win.set_label("Rabbit");
-                    });
-                }
-
-                // Clear taskbar progress
-                #[cfg(target_os = "windows")]
-                if self.taskbar_enabled {
-                    if let Some(hwnd) = self.window_handle {
-                        rabbit_platform::taskbar::windows::set_taskbar_state(
-                            hwnd,
-                            rabbit_platform::taskbar::windows::TaskbarState::None,
-                            0
-                        ).ok();
-                    }
-                }
-            }
-
-            // Scan
-            UiEvent::ScanStart { start_ip, end_ip, options } => {
-                info!("Starting scan from {} to {} with options: {}", start_ip, end_ip, options);
-
-                // Cancel any existing scan task first
-                if let Some(handle) = self.scan_task.write().await.take() {
-                    handle.abort();
-                }
-
-                // Parse options string
-                let mut filter = true;
-                for opt in options.split(';') {
-                    let parts: Vec<&str> = opt.splitn(2, '=').collect();
-                    if parts.len() == 2 {
-                        match parts[0].trim() {
-                            "filter" => {
-                                filter = parts[1].trim().eq_ignore_ascii_case("true");
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-                info!("Scan options parsed: filter={}", filter);
-
-                // Save scan configuration
-                crate::ui_state::sync_scan_config(start_ip.clone(), end_ip.clone(), filter);
-
-                let mut service = self.scan_service.write().await;
-                // Parse IP addresses
-                let start: std::net::Ipv4Addr = start_ip.parse()
-                    .map_err(|e| anyhow::anyhow!("Invalid start IP: {}", e))?;
-                let end: std::net::Ipv4Addr = end_ip.parse()
-                    .map_err(|e| anyhow::anyhow!("Invalid end IP: {}", e))?;
-                let range = ScanRange::new(start, end);
-                
-                // Note: ScannerConfig controls internal performance parameters
-                // The 'filter' option from ScanConfig is logged for future use
-                info!("Scan will use filter={} (currently not applied to ScannerConfig)", filter);
-                
-                service.scan(range).await?;
-                drop(service);
-                crate::ui_state::set_scan_running(true);
-
-                // Spawn a task to periodically update scan results
-                let scan_service = self.scan_service.clone();
-                let handle = tokio::spawn(async move {
-                    loop {
-                        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
-
-                        let service = scan_service.read().await;
-                        let progress = service.get_progress().await;
-                        let results = service.get_online_hosts().await;
-                        let state = service.get_state().await;
-                        drop(service);
-
-                        // Build output text
-                        let mut output = String::new();
-                        if let Some(p) = progress {
-                            output.push_str(&format!("Scanning... {}% complete, {} hosts found\r\n", p.percentage, p.found_hosts));
-                        }
-                        for result in &results {
-                            let mac_str = result.mac_address.as_deref().unwrap_or("N/A");
-                            let latency = result.response_time_ms.unwrap_or(0.0);
-                            output.push_str(&format!("{} (MAC: {}, latency: {:.2}ms)\r\n",
-                                result.ip, mac_str, latency));
-                        }
-
-                        if matches!(state, rabbit_models::scan::ScannerState::Completed) {
-                            output.push_str(&format!("\nScan completed. {} hosts found.\r\n", results.len()));
-                            crate::ui_state::set_scan_output(&output);
-                            crate::ui_state::set_scan_running(false);
-                            break;
-                        }
-
-                        crate::ui_state::set_scan_output(&output);
-                    }
-                });
-
-                // Store the task handle
-                *self.scan_task.write().await = Some(handle);
-            }
-            UiEvent::ScanStop => {
-                info!("Stopping scan");
-                // Cancel the background task first
-                if let Some(handle) = self.scan_task.write().await.take() {
-                    handle.abort();
-                }
-                self.scan_service.write().await.cancel().await?;
-                crate::ui_state::set_scan_running(false);
-                crate::ui_state::append_scan_output("Scan stopped.\r\n");
-            }
-
-            // HTTP Server
-            UiEvent::HttpToggle { port, options, shell } => {
-                let running = self.view_model.read().await.is_http_running();
-                if running {
-                    info!("Stopping HTTP server");
-                    self.http_service.write().await.stop().await?;
-                    self.view_model.write().await.set_http_running(false);
-                    crate::ui_state::set_http_running(false);
-                    crate::ui_state::append_http_log("\r\nHTTP server stopped.\r\n");
-                } else {
-                    info!("Starting HTTP server on port {} with shell={}", port, shell);
-                    
-                    // Save HTTP configuration
-                    crate::ui_state::sync_http_start_config(port, shell, 
-                        options.contains("autoindex=true"),
-                        options.contains("videoplay=true"));
-                    
-                    // Set running state first so button changes immediately
-                    crate::ui_state::set_http_running(true);
-                    self.view_model.write().await.set_http_running(true);
-
-                    let mut service = self.http_service.write().await;
-                    let config = rabbit_models::http::HttpServerConfig {
-                        enabled: true,
-                        port,
-                        root_path: String::from("."),
-                        allow_upload: false,
-                        allow_delete: false,
-                        shell,
-                        auto_index: options.contains("autoindex=true"),
-                        video_play: options.contains("videoplay=true"),
-                    };
-                    service.init(config).await?;
-                    match service.start().await {
-                        Ok(_) => {
-                            crate::ui_state::append_http_log(&format!("HTTP server started on port {}.\r\n", port));
-                        }
-                        Err(e) => {
-                            let msg = format!("Failed to start HTTP server: {}", e);
-                            error!("{}", msg);
-                            crate::ui_state::set_http_running(false);
-                            self.view_model.write().await.set_http_running(false);
-                            crate::ui_state::append_http_log(&format!("ERROR: {}\r\n", msg));
-                        }
-                    }
-                }
-            }
-
-            // TFTP Server
-            UiEvent::TftpServerToggle { options } => {
-                let running = self.view_model.read().await.is_tftp_server_running();
-                if running {
-                    info!("Stopping TFTP server");
-                    self.tftp_service.write().await.stop_server().await?;
-                    self.view_model.write().await.set_tftp_server_running(false);
-                    crate::ui_state::append_tftpd_log("\r\nTFTP server stopped.\r\n");
-                } else {
-                    info!("Starting TFTP server with options: {}", options);
-                    
-                    // Parse options string
-                    let mut timeout = 200;
-                    let mut maxretry = 10;
-                    let mut blksize = 512;
-                    let mut qsize = 2000;
-                    let mut qtout = 1000;
-                    let mut override_conflicts = false;
-                    let mut fslog = false;
-                    
-                    for opt in options.split(';') {
-                        let parts: Vec<&str> = opt.splitn(2, '=').collect();
-                        if parts.len() == 2 {
-                            match parts[0].trim() {
-                                "timeout" => {
-                                    if let Ok(val) = parts[1].parse::<i32>() {
-                                        timeout = val;
-                                    }
-                                }
-                                "retry" => {
-                                    if let Ok(val) = parts[1].parse::<i32>() {
-                                        maxretry = val;
-                                    }
-                                }
-                                "blksize" => {
-                                    if let Ok(val) = parts[1].parse::<i32>() {
-                                        blksize = val;
-                                    }
-                                }
-                                "qsize" => {
-                                    if let Ok(val) = parts[1].parse::<i32>() {
-                                        qsize = val;
-                                    }
-                                }
-                                "qtout" => {
-                                    if let Ok(val) = parts[1].parse::<i32>() {
-                                        qtout = val;
-                                    }
-                                }
-                                "override" => {
-                                    override_conflicts = parts[1].trim().eq_ignore_ascii_case("true");
-                                }
-                                "fslog" => {
-                                    fslog = parts[1].trim().eq_ignore_ascii_case("true");
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                    info!("TFTP server options parsed: timeout={}, retry={}, blksize={}, qsize={}, qtout={}, override={}, fslog={}",
-                          timeout, maxretry, blksize, qsize, qtout, override_conflicts, fslog);
-                    
-                    self.tftp_service.write().await.start_server().await?;
-                    self.view_model.write().await.set_tftp_server_running(true);
-                    crate::ui_state::append_tftpd_log(&format!("TFTP server started (timeout={}ms, retry={}, blksize={}).\r\n", timeout, maxretry, blksize));
-                }
-            }
-            UiEvent::TftpServerAddDir => {
-                info!("Add TFTP directory (not yet implemented)");
-                // TODO: Implement directory picker dialog
-            }
-            UiEvent::TftpServerRemoveDir => {
-                info!("Remove TFTP directory (not yet implemented)");
-                // TODO: Implement directory removal
-            }
-
-            // TFTP Client
+}
             UiEvent::TftpClientPut { server, local, remote, options } => {
                 info!("TFTP put {} -> {}@{} with options: {}", local, remote, server, options);
                 
@@ -1389,26 +1237,6 @@ impl EventHandler for AppHandle {
                 self.plan_service.write().await.remove_task(&id).await?;
             }
 
-            // Chat
-            UiEvent::ChatToggle { username, port, broadcast } => {
-                let running = self.view_model.read().await.is_chat_running();
-                if running {
-                    info!("Stopping chat");
-                    self.chat_service.write().await.stop().await?;
-                    self.view_model.write().await.set_chat_running(false);
-                } else {
-                    info!("Starting chat as {} on port {}", username, port);
-                    let mut service = self.chat_service.write().await;
-                    service.init(rabbit_models::chat::ChatConfig {
-                        enabled: true,
-                        username,
-                        port,
-                        multicast_addr: broadcast,
-                    }).await?;
-                    service.start().await?;
-                    self.view_model.write().await.set_chat_running(true);
-                }
-            }
             UiEvent::ChatSend { message } => {
                 info!("Sending chat message: {}", message);
                 self.chat_service.write().await.send_text(&message).await?;
@@ -1500,20 +1328,7 @@ impl EventHandler for AppHandle {
                 // If ping was running, restart it with new interval
                 if ping_was_running {
                     info!("Ping was running, restarting with new interval: {}ms", new_ping_interval);
-                    // Stop current ping
-                    self.ping_service.write().await.stop().await.ok();
-                    self.view_model.write().await.set_ping_running(false);
-                    crate::ui_state::set_ping_running(false);
-                    
-                    // Restart ping with new config
-                    let target = config.modules.ping.target.clone();
-                    if !target.is_empty() {
-                        // Use opts_string() to get all ping settings
-                        let options = config.modules.ping.opts_string();
-                        info!("Restarting ping with options: {}", options);
-                        // Re-send PingStart event to restart with new interval
-                        send_event(UiEvent::PingStart { target, options });
-                    }
+                    send_event(UiEvent::ModuleToggle { module: "ping".into() });
                 }
             }
 

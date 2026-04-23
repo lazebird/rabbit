@@ -149,17 +149,15 @@ impl TabComponent for ChatTab {
         // Add button callbacks
         toggle_btn.set_callback(move |_| {
             let label = toggle_btn_clone.label();
-            let username = username_input_clone.value();
-            let port = port_input_clone.value().parse::<u16>().unwrap_or(1314);
-            let broadcast = broadcast_input_clone.value();
 
             if label == "Start" {
+                let username = username_input_clone.value();
                 if username.is_empty() {
                     fltk::dialog::alert_default("Please enter a username!");
                     return;
                 }
+                let port = port_input_clone.value().parse::<u16>().unwrap_or(1314);
 
-                // Update UI state to show connected
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
                         s.chat_messages = format!(
@@ -170,16 +168,7 @@ impl TabComponent for ChatTab {
                         s.updated.insert("chat_messages".to_string(), true);
                     }
                 }
-
-                send_event(UiEvent::ChatToggle { username: username.clone(), port, broadcast });
-                toggle_btn_clone.set_label("Stop");
-                toggle_btn_clone.set_color(fltk::enums::Color::from_hex(0xE57373));
             } else {
-                send_event(UiEvent::ChatToggle { username: username.clone(), port, broadcast });
-                toggle_btn_clone.set_label("Start");
-                toggle_btn_clone.set_color(colors.accent);
-
-                // Update UI state to show disconnected
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
                         s.chat_messages.push_str(&format!(
@@ -192,6 +181,10 @@ impl TabComponent for ChatTab {
                     }
                 }
             }
+
+            send_event(UiEvent::ModuleToggle { module: "chat".into() });
+            toggle_btn_clone.set_label(if label == "Start" { "Stop" } else { "Start" });
+            toggle_btn_clone.set_color(if label == "Start" { fltk::enums::Color::from_hex(0xE57373) } else { colors.accent });
         });
 
         refresh_btn.set_callback(move |_| {

@@ -959,48 +959,27 @@ fn test_chat_message_type_variants() {
 
 #[test]
 fn test_ui_event_variants() {
-    // Test that all UI event variants can be constructed
     use rabbit_app::ui_events::UiEvent;
 
-    let ping_start = UiEvent::PingStart { 
-        target: "8.8.8.8".to_string(), 
-        options: String::new() 
-    };
-    
-    let ping_stop = UiEvent::PingStop;
-    
-    let scan_start = UiEvent::ScanStart {
-        start_ip: "192.168.1.1".to_string(),
-        end_ip: "254".to_string(),
-        options: String::new(),
-    };
-    
-    let scan_stop = UiEvent::ScanStop;
-    
-    let http_toggle = UiEvent::HttpToggle {
-        port: 8000,
-        options: String::new(),
-        shell: false,
-    };
-    
-    let tftp_server_toggle = UiEvent::TftpServerToggle {
-        options: String::new(),
-    };
-    
+    let module_toggle_ping = UiEvent::ModuleToggle { module: "ping".into() };
+    let module_toggle_http = UiEvent::ModuleToggle { module: "http".into() };
+    let module_toggle_tftpd = UiEvent::ModuleToggle { module: "tftpd".into() };
+    let module_toggle_chat = UiEvent::ModuleToggle { module: "chat".into() };
+
     let tftp_client_put = UiEvent::TftpClientPut {
         server: "192.168.1.1:69".to_string(),
         local: "/tmp/file.txt".to_string(),
         remote: "file.txt".to_string(),
         options: String::new(),
     };
-    
+
     let tftp_client_get = UiEvent::TftpClientGet {
         server: "192.168.1.1:69".to_string(),
         local: "/tmp".to_string(),
         remote: "remote.txt".to_string(),
         options: String::new(),
     };
-    
+
     let plan_add = UiEvent::PlanAdd {
         date: "2026/04/20".to_string(),
         time: "14:30".to_string(),
@@ -1008,54 +987,28 @@ fn test_ui_event_variants() {
         unit: "minute".to_string(),
         msg: "Test task".to_string(),
     };
-    
+
     let plan_remove = UiEvent::PlanRemove {
         id: "task-1".to_string(),
     };
-    
-    let chat_toggle = UiEvent::ChatToggle {
-        username: "TestUser".to_string(),
-        port: 1314,
-        broadcast: "255.255.255.255".to_string(),
-    };
-    
+
     let chat_send = UiEvent::ChatSend {
         message: "Hello!".to_string(),
     };
-    
+
     let chat_refresh = UiEvent::ChatRefresh;
-    
     let chat_notify = UiEvent::ChatNotify;
-    
     let settings_save = UiEvent::SettingsSave;
-    
     let version_check = UiEvent::VersionCheck;
 
-    // Verify events can be pattern matched
-    match ping_start {
-        UiEvent::PingStart { target, .. } => assert_eq!(target, "8.8.8.8"),
-        _ => panic!("Expected PingStart"),
+    match module_toggle_ping {
+        UiEvent::ModuleToggle { module } => assert_eq!(module, "ping"),
+        _ => panic!("Expected ModuleToggle"),
     }
 
-    match ping_stop {
-        UiEvent::PingStop => {},
-        _ => panic!("Expected PingStop"),
-    }
-
-    match scan_start {
-        UiEvent::ScanStart { start_ip, end_ip, .. } => {
-            assert_eq!(start_ip, "192.168.1.1");
-            assert_eq!(end_ip, "254");
-        },
-        _ => panic!("Expected ScanStart"),
-    }
-
-    match http_toggle {
-        UiEvent::HttpToggle { port, shell, .. } => {
-            assert_eq!(port, 8000);
-            assert!(!shell);
-        },
-        _ => panic!("Expected HttpToggle"),
+    match module_toggle_http {
+        UiEvent::ModuleToggle { module } => assert_eq!(module, "http"),
+        _ => panic!("Expected ModuleToggle"),
     }
 
     match tftp_client_put {
@@ -1094,15 +1047,6 @@ fn test_ui_event_variants() {
         _ => panic!("Expected PlanRemove"),
     }
 
-    match chat_toggle {
-        UiEvent::ChatToggle { username, port, broadcast } => {
-            assert_eq!(username, "TestUser");
-            assert_eq!(port, 1314);
-            assert_eq!(broadcast, "255.255.255.255");
-        },
-        _ => panic!("Expected ChatToggle"),
-    }
-
     match chat_send {
         UiEvent::ChatSend { message } => {
             assert_eq!(message, "Hello!");
@@ -1129,36 +1073,6 @@ fn test_ui_event_variants() {
         UiEvent::VersionCheck => {},
         _ => panic!("Expected VersionCheck"),
     }
-}
-
-#[test]
-fn test_ui_event_clone() {
-    use rabbit_app::ui_events::UiEvent;
-
-    let event1 = UiEvent::PingStart { 
-        target: "8.8.8.8".to_string(), 
-        options: "interval=1000".to_string() 
-    };
-    
-    let event2 = event1.clone();
-    
-    match event2 {
-        UiEvent::PingStart { target, options } => {
-            assert_eq!(target, "8.8.8.8");
-            assert_eq!(options, "interval=1000");
-        },
-        _ => panic!("Expected PingStart"),
-    }
-}
-
-#[test]
-fn test_ui_event_debug() {
-    use rabbit_app::ui_events::UiEvent;
-
-    let event = UiEvent::PingStop;
-    let debug_str = format!("{:?}", event);
-    
-    assert!(debug_str.contains("PingStop"));
 }
 
 // ============================================================================

@@ -14,22 +14,6 @@ pub enum UiEvent {
     // Module Toggle - 通用模块状态切换
     ModuleToggle { module: String },
 
-    // Ping
-    PingStart { target: String, options: String },
-    PingStop,
-
-    // Scan
-    ScanStart { start_ip: String, end_ip: String, options: String },
-    ScanStop,
-
-    // HTTP Server
-    HttpToggle { port: u16, options: String, shell: bool },
-
-    // TFTP Server
-    TftpServerToggle { options: String },
-    TftpServerAddDir,
-    TftpServerRemoveDir,
-
     // TFTP Client
     TftpClientPut { server: String, local: String, remote: String, options: String },
     TftpClientGet { server: String, local: String, remote: String, options: String },
@@ -39,7 +23,6 @@ pub enum UiEvent {
     PlanRemove { id: String },
 
     // Chat
-    ChatToggle { username: String, port: u16, broadcast: String },
     ChatSend { message: String },
     ChatRefresh,
     ChatNotify,

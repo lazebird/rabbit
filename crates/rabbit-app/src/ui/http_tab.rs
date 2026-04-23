@@ -236,10 +236,9 @@ impl TabComponent for HttpTab {
                     }
                 }
                 Self::refresh_log(&mut log_display_clone);
-                send_event(UiEvent::HttpToggle { port, options, shell });
-            } else {
-                send_event(UiEvent::HttpToggle { port, options, shell });
             }
+
+            send_event(UiEvent::ModuleToggle { module: "http".into() });
         });
 
         // Register display with centralized refresh manager

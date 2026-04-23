@@ -97,18 +97,15 @@ impl TabComponent for ScanTab {
             if label == "Start" {
                 let start_ip = start_ip_input_clone.value();
                 let end_suffix = end_input_clone.value();
-                let options = opt_input_clone.value();
 
                 if start_ip.is_empty() {
                     fltk::dialog::alert_default("Please enter a start IP address!");
                     return;
                 }
 
-                // Build full end IP from start IP prefix + end suffix
                 let end_ip = if end_suffix.is_empty() {
                     start_ip.clone()
                 } else {
-                    // Take first 3 octets of start_ip
                     let parts: Vec<&str> = start_ip.splitn(4, '.').collect();
                     if parts.len() == 4 {
                         format!("{}.{}.{}.{}", parts[0], parts[1], parts[2], end_suffix)
@@ -118,18 +115,17 @@ impl TabComponent for ScanTab {
                     }
                 };
 
-                // Clear previous output
+                crate::ui_state::sync_scan_config(start_ip.clone(), end_ip.clone(), false);
+
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
                         s.scan_output = format!("Scanning range {} to {}...\n", start_ip, end_ip);
                         s.updated.insert("scan_output".to_string(), true);
                     }
                 }
-
-                send_event(UiEvent::ScanStart { start_ip, end_ip, options });
-            } else {
-                send_event(UiEvent::ScanStop);
             }
+
+            send_event(UiEvent::ModuleToggle { module: "scan".into() });
         });
 
         // Register display and button with centralized refresh manager

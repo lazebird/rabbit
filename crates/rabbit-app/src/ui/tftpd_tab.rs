@@ -192,15 +192,11 @@ impl TabComponent for TftpdTab {
                     }
                 }
                 Self::refresh_log(&mut log_display_clone);
-
-                send_event(UiEvent::TftpServerToggle { options });
-                toggle_btn_clone.set_label("Stop");
-                toggle_btn_clone.set_color(fltk::enums::Color::from_hex(0xE57373));
-            } else {
-                send_event(UiEvent::TftpServerToggle { options });
-                toggle_btn_clone.set_label("Start");
-                toggle_btn_clone.set_color(colors_clone.accent);
             }
+
+            send_event(UiEvent::ModuleToggle { module: "tftpd".into() });
+            toggle_btn_clone.set_label(if label == "Start" { "Stop" } else { "Start" });
+            toggle_btn_clone.set_color(if label == "Start" { fltk::enums::Color::from_hex(0xE57373) } else { colors_clone.accent });
         });
 
         // Register displays with centralized refresh manager
