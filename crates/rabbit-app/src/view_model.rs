@@ -1,9 +1,9 @@
 use rabbit_models::config::AppConfig;
 use rabbit_models::ping::PingSummary;
 use rabbit_platform::config::save_config;
+use rabbit_platform::{Result, PlatformError};
 use std::collections::HashMap;
 
-/// Main application view model
 pub struct AppViewModel {
     config: AppConfig,
     ping_results: HashMap<String, PingSummary>,
@@ -39,12 +39,30 @@ impl AppViewModel {
         self.config = config;
     }
 
-    pub async fn save_settings(&mut self) -> anyhow::Result<()> {
-        save_config(&self.config)?;
-        Ok(())
+    pub fn save_settings(&mut self) -> Result<()> {
+        save_config(&self.config)
     }
 
-    // Ping
+    pub fn update_and_save(&mut self, config: AppConfig) -> Result<()> {
+        self.config = config;
+        save_config(&self.config)
+    }
+
+    pub fn update_global(&mut self, language: rabbit_models::config::Language, theme: rabbit_models::config::Theme, systray: bool, top: bool, autostart: bool, autoupdate: bool) -> Result<()> {
+        self.config.language = language;
+        self.config.theme = theme;
+        self.config.systray = systray;
+        self.config.top = top;
+        self.config.autostart = autostart;
+        self.config.autoupdate = autoupdate;
+        save_config(&self.config)
+    }
+
+    pub fn update_last_tab(&mut self, tab: usize) -> Result<()> {
+        self.config.last_active_tab = tab;
+        save_config(&self.config)
+    }
+
     pub fn is_ping_running(&self) -> bool {
         self.ping_running
     }
@@ -61,7 +79,6 @@ impl AppViewModel {
         self.ping_results.insert(result.target.clone(), result);
     }
 
-    // HTTP
     pub fn is_http_running(&self) -> bool {
         self.http_running
     }
@@ -70,7 +87,6 @@ impl AppViewModel {
         self.http_running = running;
     }
 
-    // TFTP
     pub fn is_tftp_server_running(&self) -> bool {
         self.tftp_server_running
     }
@@ -79,20 +95,17 @@ impl AppViewModel {
         self.tftp_server_running = running;
     }
 
-    // Chat
     pub fn get_chat_messages(&self) -> &[ChatMessageView] {
         &self.chat_messages
     }
 
     pub fn add_chat_message(&mut self, message: ChatMessageView) {
         self.chat_messages.push(message);
-        // Keep only last 100 messages
         if self.chat_messages.len() > 100 {
             self.chat_messages.remove(0);
         }
     }
 
-    // Scan
     pub fn is_scan_running(&self) -> bool {
         self.scan_running
     }
@@ -109,7 +122,6 @@ impl AppViewModel {
         self.scan_results = results;
     }
 
-    // Chat
     pub fn is_chat_running(&self) -> bool {
         self.chat_running
     }
@@ -119,7 +131,6 @@ impl AppViewModel {
     }
 }
 
-/// Chat message view model
 #[derive(Clone, Debug)]
 pub struct ChatMessageView {
     pub sender: String,
@@ -128,7 +139,6 @@ pub struct ChatMessageView {
     pub is_me: bool,
 }
 
-/// Scan result view model
 #[derive(Clone, Debug)]
 pub struct ScanResultView {
     pub ip: String,
