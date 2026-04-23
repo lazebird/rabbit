@@ -556,50 +556,50 @@ pub fn append_settings_output(text: &str) {
 
 pub fn set_systray(value: bool) {
     use rabbit_platform::config::{load_config, save_config};
+    use rabbit_models::config::ConfigValue;
     
     if let Ok(mut config) = load_config() {
-        config.systray = value;
+        config.modules.insert("global", "systray", ConfigValue::Boolean(value));
         save_config(&config).ok();
     }
 }
 
 pub fn set_top(value: bool) {
     use rabbit_platform::config::{load_config, save_config};
+    use rabbit_models::config::ConfigValue;
     
     if let Ok(mut config) = load_config() {
-        config.top = value;
+        config.modules.insert("global", "top", ConfigValue::Boolean(value));
         save_config(&config).ok();
     }
 }
 
 pub fn set_autostart(value: bool) {
     use rabbit_platform::config::{load_config, save_config};
+    use rabbit_models::config::ConfigValue;
     
     if let Ok(mut config) = load_config() {
-        config.autostart = value;
+        config.modules.insert("global", "autostart", ConfigValue::Boolean(value));
         save_config(&config).ok();
     }
 }
 
 pub fn set_autoupdate(value: bool) {
     use rabbit_platform::config::{load_config, save_config};
+    use rabbit_models::config::ConfigValue;
     
     if let Ok(mut config) = load_config() {
-        config.autoupdate = value;
+        config.modules.insert("global", "autoupdate", ConfigValue::Boolean(value));
         save_config(&config).ok();
     }
 }
 
 pub fn set_language(value: &str) {
     use rabbit_platform::config::{load_config, save_config};
-    use rabbit_models::config::Language;
+    use rabbit_models::config::ConfigValue;
     
     if let Ok(mut config) = load_config() {
-        config.language = match value {
-            "English" => Language::English,
-            "中文" => Language::Chinese,
-            _ => Language::System,
-        };
+        config.modules.insert("global", "language", ConfigValue::String(value.to_string()));
         save_config(&config).ok();
     }
 }

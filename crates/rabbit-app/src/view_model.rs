@@ -1,4 +1,4 @@
-use rabbit_models::config::AppConfig;
+use rabbit_models::config::{AppConfig, ConfigValue};
 use rabbit_models::ping::PingSummary;
 use rabbit_platform::config::save_config;
 use rabbit_platform::{Result, PlatformError};
@@ -48,18 +48,19 @@ impl AppViewModel {
         save_config(&self.config)
     }
 
-    pub fn update_global(&mut self, language: rabbit_models::config::Language, theme: rabbit_models::config::Theme, systray: bool, top: bool, autostart: bool, autoupdate: bool) -> Result<()> {
-        self.config.language = language;
-        self.config.theme = theme;
-        self.config.systray = systray;
-        self.config.top = top;
-        self.config.autostart = autostart;
-        self.config.autoupdate = autoupdate;
+    pub fn update_global(&mut self, language: String, theme: String, systray: bool, top: bool, autostart: bool, autoupdate: bool) -> Result<()> {
+        let modules = &mut self.config.modules;
+        modules.insert("global", "language", ConfigValue::String(language));
+        modules.insert("global", "theme", ConfigValue::String(theme));
+        modules.insert("global", "systray", ConfigValue::Boolean(systray));
+        modules.insert("global", "top", ConfigValue::Boolean(top));
+        modules.insert("global", "autostart", ConfigValue::Boolean(autostart));
+        modules.insert("global", "autoupdate", ConfigValue::Boolean(autoupdate));
         save_config(&self.config)
     }
 
     pub fn update_last_tab(&mut self, tab: usize) -> Result<()> {
-        self.config.last_active_tab = tab;
+        self.config.modules.insert("global", "last_active_tab", ConfigValue::Integer(tab as i64));
         save_config(&self.config)
     }
 

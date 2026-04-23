@@ -137,16 +137,12 @@ chat_service: Arc::new(RwLock::new(chat_service)),
 
         // Create main window - load config directly from disk to get window position
         let disk_config = load_config().unwrap_or_else(|_| AppConfig::default());
-        info!("Loaded config: window_x={:?}, window_y={:?}, window_width={:?}, window_height={:?}",
-              disk_config.window_x, disk_config.window_y, disk_config.window_width, disk_config.window_height);
-        let default_x = 100;
-        let default_y = 100;
-        let default_w = 748;
-        let default_h = 518;
-        let win_x = disk_config.window_x.unwrap_or(default_x);
-        let win_y = disk_config.window_y.unwrap_or(default_y);
-        let win_w = disk_config.window_width.unwrap_or(default_w);
-        let win_h = disk_config.window_height.unwrap_or(default_h);
+        let modules = &disk_config.modules;
+        let win_x = modules.get_integer("global", "window_x").unwrap_or(100) as i32;
+        let win_y = modules.get_integer("global", "window_y").unwrap_or(100) as i32;
+        let win_w = modules.get_integer("global", "window_width").unwrap_or(748) as i32;
+        let win_h = modules.get_integer("global", "window_height").unwrap_or(518) as i32;
+        info!("Loaded config: window pos=({}, {}), size=({}x{})", win_x, win_y, win_w, win_h);
         drop(disk_config);
         
         let last_resize_time = Arc::new(AtomicU64::new(
@@ -184,12 +180,13 @@ chat_service: Arc::new(RwLock::new(chat_service)),
 
         // Restore last active tab from config
         let config = self.view_model.read().await.get_config();
-        let last_tab = config.last_active_tab;
-        let autoupdate = config.autoupdate;
-        let top_requested = config.top;
-        let systray_requested = config.systray;
-        let autostart_requested = config.autostart;
-        let http_shell_requested = config.modules.get_bool("http", "shell").unwrap_or(false);
+        let modules = &config.modules;
+        let last_tab = modules.get_integer("global", "last_active_tab").unwrap_or(0) as usize;
+        let autoupdate = modules.get_bool("global", "autoupdate").unwrap_or(true);
+        let top_requested = modules.get_bool("global", "top").unwrap_or(false);
+        let systray_requested = modules.get_bool("global", "systray").unwrap_or(true);
+        let autostart_requested = modules.get_bool("global", "autostart").unwrap_or(false);
+        let http_shell_requested = modules.get_bool("http", "shell").unwrap_or(false);
         drop(config);
         let tab_ptrs: Vec<usize> = vec![
             ping_tab.as_widget_ptr() as usize,
@@ -223,7 +220,7 @@ chat_service: Arc::new(RwLock::new(chat_service)),
                     .unwrap_or(0);
                 if let Ok(_) = view_model_for_tab.try_write() {
                     rabbit_platform::config::update_config(|cfg| {
-                        cfg.last_active_tab = idx;
+                        cfg.modules.insert("global", "last_active_tab", rabbit_models::config::ConfigValue::Integer(idx as i64));
                     }).ok();
                 }
             }
@@ -358,7 +355,7 @@ chat_service: Arc::new(RwLock::new(chat_service)),
                         info!("Window position: x={}, y={}, w={}, h={}", win_x, win_y, win_w, win_h);
 
                         if let Ok(config_dir) = rabbit_platform::config::get_config_dir() {
-                            let config_path = config_dir.join("config.toml");
+                            let config_path = config_dir.join("rabbit.toml");
                             info!("Config path: {:?}", config_path);
                             if let Ok(content) = std::fs::read_to_string(&config_path) {
                                 let mut new_content = content;
@@ -1288,11 +1285,12 @@ impl EventHandler for AppHandle {
                 self.view_model.write().await.update_config(disk_config.clone());
                 
                 let config = disk_config;
-                let autostart = config.autostart;
-                let systray = config.systray;
-                let top = config.top;
-                let http_shell = config.modules.get_bool("http", "shell").unwrap_or(false);
-                let new_ping_interval = config.modules.get_integer("ping", "interval").unwrap_or(1000);
+                let modules = &config.modules;
+                let autostart = modules.get_bool("global", "autostart").unwrap_or(false);
+                let systray = modules.get_bool("global", "systray").unwrap_or(true);
+                let top = modules.get_bool("global", "top").unwrap_or(false);
+                let http_shell = modules.get_bool("http", "shell").unwrap_or(false);
+                let new_ping_interval = modules.get_integer("ping", "interval").unwrap_or(1000);
                 
                 // Check if ping is currently running
                 let ping_was_running = self.view_model.read().await.is_ping_running();

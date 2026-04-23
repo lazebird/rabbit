@@ -101,6 +101,7 @@ impl ConfigValue {
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModuleConfigs {
+    pub global: HashMap<String, ConfigValue>,    // 全局配置
     pub ping: HashMap<String, ConfigValue>,
     pub scan: HashMap<String, ConfigValue>,
     pub http: HashMap<String, ConfigValue>,
@@ -138,9 +139,37 @@ impl ModuleConfigs {
 }
 ```
 
+统一访问接口：
+
+```rust
+// 读取
+config.modules.get_string("global", "language")
+config.modules.get_integer("global", "window_width")
+config.modules.get_bool("global", "systray")
+
+// 写入
+config.modules.insert("global", "systray", ConfigValue::Boolean(true));
+```
+
 ---
 
-## ���段映射表
+## 字段映射表
+
+### global 模块（全局配置）
+
+| ConfigKey | 类型 | 默认值 |
+|-----------|------|--------|
+| `language` | String | "System" |
+| `theme` | String | "System" |
+| `systray` | Boolean | true |
+| `top` | Boolean | false |
+| `autostart` | Boolean | false |
+| `autoupdate` | Boolean | true |
+| `last_active_tab` | Integer | 0 |
+| `window_x` | Integer | 100 |
+| `window_y` | Integer | 100 |
+| `window_width` | Integer | 800 |
+| `window_height` | Integer | 600 |
 
 ### ping 模块
 
@@ -262,19 +291,17 @@ async fn handle_event(event: UiEvent, vm: &AppViewModel) {
 ### ✅ 已完成
 
 - [x] ConfigValue 枚举定义（String, Integer, Boolean, Array）
-- [x] ModuleConfigs 改用 HashMap
+- [x] ModuleConfigs 改用 HashMap，包含 global section
 - [x] get_string/get_integer/get_bool/get_array/insert 方法
 - [x] app.rs 使用 Map 方式读取配置
 - [x] ui_state.rs 使用 insert 方法保存配置
+- [x] view_model.rs 使用通用接口（update_global 接受 String 参数）
+- [x] settings_tab.rs 使用 Map 方式读取配置
 - [x] defaults.rs UI 默认值使用 Map 方式
 - [x] HttpServerConfig/TftpServerConfig/TftpClientConfig From impl
-
-### ⏳ 待完成
-
-- [ ] 文档完善
-- [ ] 集成测试
+- [x] 编译通过、测试通过
 
 ---
 
-文档版本：3.0
+文档版本：3.1
 更新日期：2026-04-23

@@ -141,17 +141,23 @@ impl TabComponent for SettingsTab {
         } else {
             rabbit_models::config::AppConfig::default()
         };
+        let modules = &initial_config.modules;
+
+        let lang_str = modules.get_string("global", "language").unwrap_or_else(|| "System".to_string());
+        let lang_idx = match lang_str.as_str() {
+            "English" => 0,
+            "中文" => 1,
+            _ => 2,
+        };
+        let systray = modules.get_bool("global", "systray").unwrap_or(true);
+        let top = modules.get_bool("global", "top").unwrap_or(false);
+        let autostart = modules.get_bool("global", "autostart").unwrap_or(false);
+        let autoupdate = modules.get_bool("global", "autoupdate").unwrap_or(true);
 
         let mut lang_choice = Choice::default();
         lang_choice.add_choice("English");
         lang_choice.add_choice("中文");
         lang_choice.add_choice("System");
-        // Set initial value from config
-        let lang_idx = match initial_config.language {
-            rabbit_models::config::Language::English => 0,
-            rabbit_models::config::Language::Chinese => 1,
-            rabbit_models::config::Language::System => 2,
-        };
         lang_choice.set_value(lang_idx);
         lang_row.fixed(&lang_choice, 100);
 
@@ -164,19 +170,19 @@ impl TabComponent for SettingsTab {
         check_row.set_spacing(15);
 
         let mut tray_check = CheckButton::default().with_label("Tray");
-        tray_check.set_checked(initial_config.systray);
+        tray_check.set_checked(systray);
         check_row.fixed(&tray_check, 55);
 
         let mut top_check = CheckButton::default().with_label("Top");
-        top_check.set_checked(initial_config.top);
+        top_check.set_checked(top);
         check_row.fixed(&top_check, 50);
 
         let mut autostart_check = CheckButton::default().with_label("AutoStart");
-        autostart_check.set_checked(initial_config.autostart);
+        autostart_check.set_checked(autostart);
         check_row.fixed(&autostart_check, 80);
 
         let mut autoupdate_check = CheckButton::default().with_label("AutoUpdate");
-        autoupdate_check.set_checked(initial_config.autoupdate);
+        autoupdate_check.set_checked(autoupdate);
         check_row.fixed(&autoupdate_check, 90);
 
         Frame::default(); // Spacer

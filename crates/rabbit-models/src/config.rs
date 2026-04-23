@@ -54,34 +54,12 @@ impl ConfigValue {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
-    pub language: Language,
-    pub theme: Theme,
-    pub systray: bool,
-    pub top: bool,
-    pub autostart: bool,
-    pub autoupdate: bool,
-    pub last_active_tab: usize,
-    pub window_x: Option<i32>,
-    pub window_y: Option<i32>,
-    pub window_width: Option<i32>,
-    pub window_height: Option<i32>,
     pub modules: ModuleConfigs,
 }
 
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
-            language: Language::System,
-            theme: Theme::System,
-            systray: true,
-            top: false,
-            autostart: false,
-            autoupdate: true,
-            last_active_tab: 0,
-            window_x: None,
-            window_y: None,
-            window_width: None,
-            window_height: None,
             modules: ModuleConfigs::default(),
         }
     }
@@ -109,6 +87,7 @@ pub enum Theme {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModuleConfigs {
+    pub global: HashMap<String, ConfigValue>,
     pub ping: HashMap<String, ConfigValue>,
     pub scan: HashMap<String, ConfigValue>,
     pub http: HashMap<String, ConfigValue>,
@@ -121,6 +100,7 @@ pub struct ModuleConfigs {
 impl Default for ModuleConfigs {
     fn default() -> Self {
         Self {
+            global: Self::default_global(),
             ping: Self::default_ping(),
             scan: Self::default_scan(),
             http: Self::default_http(),
@@ -135,6 +115,9 @@ impl Default for ModuleConfigs {
 impl ModuleConfigs {
     pub fn merge_defaults(&mut self) {
         let defaults = Self::default();
+        for (k, v) in defaults.global {
+            self.global.entry(k).or_insert(v);
+        }
         for (k, v) in defaults.ping {
             self.ping.entry(k).or_insert(v);
         }
@@ -184,6 +167,7 @@ impl ModuleConfigs {
 
     fn get_map(&self, module: &str) -> Option<&HashMap<String, ConfigValue>> {
         match module {
+            "global" => Some(&self.global),
             "ping" => Some(&self.ping),
             "scan" => Some(&self.scan),
             "http" => Some(&self.http),
@@ -197,6 +181,7 @@ impl ModuleConfigs {
 
     fn get_map_mut(&mut self, module: &str) -> Option<&mut HashMap<String, ConfigValue>> {
         match module {
+            "global" => Some(&mut self.global),
             "ping" => Some(&mut self.ping),
             "scan" => Some(&mut self.scan),
             "http" => Some(&mut self.http),
@@ -206,6 +191,22 @@ impl ModuleConfigs {
             "chat" => Some(&mut self.chat),
             _ => None,
         }
+    }
+
+    fn default_global() -> HashMap<String, ConfigValue> {
+        HashMap::from([
+            ("language".into(), ConfigValue::String("System".into())),
+            ("theme".into(), ConfigValue::String("System".into())),
+            ("systray".into(), ConfigValue::Boolean(true)),
+            ("top".into(), ConfigValue::Boolean(false)),
+            ("autostart".into(), ConfigValue::Boolean(false)),
+            ("autoupdate".into(), ConfigValue::Boolean(true)),
+            ("last_active_tab".into(), ConfigValue::Integer(0)),
+            ("window_x".into(), ConfigValue::Integer(100)),
+            ("window_y".into(), ConfigValue::Integer(100)),
+            ("window_width".into(), ConfigValue::Integer(800)),
+            ("window_height".into(), ConfigValue::Integer(600)),
+        ])
     }
 
     fn default_ping() -> HashMap<String, ConfigValue> {
@@ -295,12 +296,12 @@ mod tests {
     #[test]
     fn test_default_config() {
         let config = AppConfig::default();
-        assert_eq!(config.language, Language::System);
-        assert_eq!(config.theme, Theme::System);
-        assert!(config.systray);
-        assert!(!config.top);
-        assert!(!config.autostart);
-        assert!(config.autoupdate);
+        assert_eq!(config.modules.get_string("global", "language"), Some("System".into()));
+        assert_eq!(config.modules.get_string("global", "theme"), Some("System".into()));
+        assert_eq!(config.modules.get_bool("global", "systray"), Some(true));
+        assert_eq!(config.modules.get_bool("global", "top"), Some(false));
+        assert_eq!(config.modules.get_bool("global", "autostart"), Some(false));
+        assert_eq!(config.modules.get_bool("global", "autoupdate"), Some(true));
     }
 
     #[test]
@@ -308,8 +309,10 @@ mod tests {
         let config = AppConfig::default();
         let json = serde_json::to_string(&config).unwrap();
         let parsed: AppConfig = serde_json::from_str(&json).unwrap();
-        assert_eq!(config.language, parsed.language);
-        assert_eq!(config.theme, parsed.theme);
+        assert_eq!(config.modules.get_string("global", "language"),
+                   parsed.modules.get_string("global", "language"));
+        assert_eq!(config.modules.get_string("global", "theme"),
+                   parsed.modules.get_string("global", "theme"));
     }
 
     #[test]
