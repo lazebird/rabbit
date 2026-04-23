@@ -450,35 +450,28 @@ async fn handle_event(event: UiEvent, vm: &AppViewModel) {
 
 ## 实施计划
 
-### 阶段 1：基础接口 + ConfigValue 定义
+### 阶段 1：基础接口 + ConfigValue 定义 ✅
 
 - [x] `update_and_save()` 方法
 - [x] `update_with()` 通用更新器
 - [x] `update_global()` 方法
 - [x] `update_last_tab()` 方法
-- [ ] 定义 ConfigValue 枚举（String, Integer, Boolean, Array）
-- [ ] 实现 as_str/as_i64/as_bool/as_array 辅助方法
-- [ ] 验证序列化/反序列化
+- [x] 定义 ConfigValue 枚举（String, Integer, Boolean, Array）
+- [x] 实现 as_str/as_i64/as_bool/as_array 辅助方法
+- [x] 验证序列化/反序列化
 
-### 阶段 2：通用 section+map 方法
+### 阶段 2：通用 section+map 方法 ✅
 
-- [ ] 实现 `update_section()` 字段映射（7个模块）
-- [ ] 实现 `get_section()` 读取（7个模块）
-- [ ] 实现 `get_value()` 单值读取
-- [ ] 编译验证
+- [x] 实现 `update_section()` 字段映射（7个模块）
+- [x] 实现 `get_section()` 读取（7个模块）
+- [x] 实现 `get_value()` 单值读取
+- [x] 编译验证
 
-### 阶段 3：移除 ui_state.rs 分散保存
+### 阶段 3：移除 ui_state.rs 分散保存 ✅
 
-- [ ] 改造 `set_systray()` → 调用 ViewModel
-- [ ] 改造 `set_top()` → 调用 ViewModel
-- [ ] 改造 `set_autostart()` → 调用 ViewModel
-- [ ] 改造 `set_autoupdate()` → 调用 ViewModel
-- [ ] 改造 `set_language()` → 调用 ViewModel
-- [ ] 改造 `sync_http_config()` → 调用 ViewModel
-- [ ] 改造 `sync_tftpd_config()` → 调用 ViewModel
-- [ ] 改造 `sync_plan_config()` → 调用 ViewModel
-- [ ] 改造 `sync_scan_config()` → 调用 ViewModel
-- [ ] 改造 `sync_http_start_config()` → 调用 ViewModel
+- [x] ui_state.rs 方法改为发送事件（SettingsUpdate/ModuleUpdate）
+- [x] app.rs 统一处理配置更新
+- [x] 10 个方法改造完成
 
 ### 阶段 4：简化事件参数
 

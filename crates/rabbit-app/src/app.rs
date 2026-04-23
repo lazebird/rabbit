@@ -808,6 +808,49 @@ struct AppHandle {
 impl EventHandler for AppHandle {
     async fn handle_event(&mut self, event: UiEvent) -> anyhow::Result<()> {
         match event {
+            // Module Toggle - 根据配置决定启动/停止
+            UiEvent::ModuleToggle { module } => {
+                let is_running = match module.as_str() {
+                    "ping" => self.view_model.read().await.is_ping_running(),
+                    "scan" => self.view_model.read().await.is_scan_running(),
+                    "http" => self.view_model.read().await.is_http_running(),
+                    "tftpd" => self.view_model.read().await.is_tftp_server_running(),
+                    "chat" => self.view_model.read().await.is_chat_running(),
+                    _ => false,
+                };
+                
+                match module.as_str() {
+                    "ping" => {
+                        if is_running {
+                            send_event(UiEvent::PingStop);
+                        } else {
+                            let config = self.view_model.read().await.get_config();
+                            send_event(UiEvent::PingStart { target: config.modules.ping.target.clone(), options: config.modules.ping.opts_string() });
+                        }
+                    }
+                    "scan" => {
+                        if is_running {
+                            send_event(UiEvent::ScanStop);
+                        } else {
+                            let config = self.view_model.read().await.get_config();
+                            send_event(UiEvent::ScanStart { start_ip: config.modules.scan.start_ip.clone(), end_ip: config.modules.scan.end_ip.clone(), options: String::new() });
+                        }
+                    }
+                    "http" => {
+                        let config = self.view_model.read().await.get_config();
+                        send_event(UiEvent::HttpToggle { port: config.modules.http.port, options: String::new(), shell: config.modules.http.shell });
+                    }
+                    "tftpd" => {
+                        let config = self.view_model.read().await.get_config();
+                        send_event(UiEvent::TftpServerToggle { options: config.modules.tftpd.opts_string() });
+                    }
+                    "chat" => {
+                        let config = self.view_model.read().await.get_config();
+                        send_event(UiEvent::ChatToggle { username: config.modules.chat.username.clone(), port: config.modules.chat.port, broadcast: config.modules.chat.broadcast_addr.clone() });
+                    }
+                    _ => {}
+                }
+            }
             // Ping
             UiEvent::PingStart { target, options } => {
                 info!("Starting ping to {}", target);

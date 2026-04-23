@@ -11,6 +11,9 @@ static mut GLOBAL_EVENT_SENDER: Option<Sender<UiEvent>> = None;
 /// UI Events that can be triggered from UI callbacks
 #[derive(Debug, Clone)]
 pub enum UiEvent {
+    // Module Toggle - 通用模块状态切换
+    ModuleToggle { module: String },
+
     // Ping
     PingStart { target: String, options: String },
     PingStop,

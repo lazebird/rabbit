@@ -1,5 +1,46 @@
 use serde::{Deserialize, Serialize};
 
+/// 通用的配置值类型，支持 String、Integer、Boolean、Array 四种变体
+/// 用于 section+map 方式更新配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ConfigValue {
+    String(String),
+    Integer(i64),
+    Boolean(bool),
+    Array(Vec<ConfigValue>),
+}
+
+impl ConfigValue {
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            ConfigValue::String(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn as_i64(&self) -> Option<i64> {
+        match self {
+            ConfigValue::Integer(n) => Some(*n),
+            _ => None,
+        }
+    }
+
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            ConfigValue::Boolean(b) => Some(*b),
+            _ => None,
+        }
+    }
+
+    pub fn as_array(&self) -> Option<&Vec<ConfigValue>> {
+        match self {
+            ConfigValue::Array(arr) => Some(arr),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
     pub language: Language,

@@ -16,40 +16,41 @@
 
 ## 任务清单汇总
 
-### 阶段 1：ConfigValue 定义
+### 阶段 1：ConfigValue 定义 ✅
 
-- [ ] 定义 ConfigValue 枚举（String, Integer, Boolean, Array）
-- [ ] 实现辅助方法（as_str, as_i64, as_bool, as_array）
-- [ ] 导出 ConfigValue
-- [ ] 验证序列化/反序列化
+- [x] 定义 ConfigValue 枚举（String, Integer, Boolean, Array）
+- [x] 实现辅助方法（as_str, as_i64, as_bool, as_array）
+- [x] 导出 ConfigValue
+- [x] 验证序列化/反序列化
 
-### 阶段 2：section+map 方法
+### 阶段 2：section+map 方法 ✅
 
-- [ ] 定义 ConfigValue 枚举
-- [ ] 添加 as_array 辅助方法
-- [ ] 实现 ping.update_section（6字段）
-- [ ] 实现 http.update_section（6字段 + dirs数组）
-- [ ] 实现 scan.update_section（3字段）
-- [ ] 实现 tftpd.update_section（11字段 + work_dirs数组）
-- [ ] 实现 tftpc.update_section（7字段）
-- [ ] 实现 plan.update_section（6字段）
-- [ ] 实现 chat.update_section（4字段）
-- [ ] 实现 get_section（所有模块）
-- [ ] 实现 get_value
-- [ ] 编译验证
+- [x] 定义 ConfigValue 枚举
+- [x] 添加 as_array 辅助方法
+- [x] 实现 ping.update_section（6字段）
+- [x] 实现 http.update_section（6字段 + dirs数组）
+- [x] 实现 scan.update_section（3字段）
+- [x] 实现 tftpd.update_section（11字段 + work_dirs数组）
+- [x] 实现 tftpc.update_section（7字段）
+- [x] 实现 plan.update_section（6字段）
+- [x] 实现 chat.update_section（4字段）
+- [x] 实现 get_section（7个模块 + dirs数组）
+- [x] 实现 get_value
+- [x] 编译验证
 
-### 阶段 3：统一保存逻辑
+### 阶段 3：统一保存逻辑 ✅
 
-- [ ] 改造 set_systray
-- [ ] 改造 set_top
-- [ ] 改造 set_autostart
-- [ ] 改造 set_autoupdate
-- [ ] 改造 set_language
-- [ ] 改造 sync_http_config
-- [ ] 改造 sync_tftpd_config
-- [ ] 改造 sync_plan_config
-- [ ] 改造 sync_scan_config
-- [ ] 改造 sync_http_start_config
+- [x] 改造 set_systray → 发送 SettingsUpdate 事件
+- [x] 改造 set_top → 发送 SettingsUpdate 事件
+- [x] 改造 set_autostart → 发送 SettingsUpdate 事件
+- [x] 改造 set_autoupdate → 发送 SettingsUpdate 事件
+- [x] 改造 set_language → 发送 SettingsUpdate 事件
+- [x] 改造 sync_http_config → 发送 ModuleUpdate 事件
+- [x] 改造 sync_tftpd_config → 发送 ModuleUpdate 事件
+- [x] 改造 sync_plan_config → 发送 ModuleUpdate 事件
+- [x] 改造 sync_scan_config → 发送 ModuleUpdate 事件
+- [x] 改造 sync_http_start_config → 发送 ModuleUpdate 事件
+- [x] 在 app.rs 中处理 SettingsUpdate 和 ModuleUpdate 事件
 
 ### 阶段 4：简化事件参数
 

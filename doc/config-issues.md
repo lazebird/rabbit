@@ -6,32 +6,7 @@
 
 ## 问题 1：ConfigValue 类型未定义
 
-### 问题描述
-
-view_model.rs 引用了 `rabbit_models::config::ConfigValue`，但该类型不存在。
-
-### 当前代码
-
-```rust
-// view_model.rs
-use rabbit_models::config::{AppConfig, ConfigValue, Language, Theme};
-```
-
-### 编译错误
-
-```
-error[E0432]: unresolved import `rabbit_models::config::ConfigValue`
- --> crates/rabbit-app/src/view_model.rs:1:40
-  |
-1 | use rabbit_models::config::{AppConfig, ConfigValue, Language, Theme};
-  |                                        ^^^^^^^^^^^^ could not be found in `config`
-```
-
-### 原因分析
-
-config-partial-update.md 文档中假设 ConfigValue 已存在，但实际代码中未定义。
-
-### 解决方案
+### 状态：✅ 已解决
 
 在 `rabbit-models/src/config.rs` 中添加 ConfigValue 枚举定义：
 
@@ -46,102 +21,22 @@ pub enum ConfigValue {
 }
 
 impl ConfigValue {
-    pub fn as_str(&self) -> Option<&str> {
-        match self {
-            ConfigValue::String(s) => Some(s),
-            _ => None,
-        }
-    }
-
-    pub fn as_i64(&self) -> Option<i64> {
-        match self {
-            ConfigValue::Integer(n) => Some(*n),
-            _ => None,
-        }
-    }
-
-    pub fn as_bool(&self) -> Option<bool> {
-        match self {
-            ConfigValue::Boolean(b) => Some(*b),
-            _ => None,
-        }
-    }
+    pub fn as_str(&self) -> Option<&str> { ... }
+    pub fn as_i64(&self) -> Option<i64> { ... }
+    pub fn as_bool(&self) -> Option<bool> { ... }
+    pub fn as_array(&self) -> Option<&Vec<ConfigValue>> { ... }
 }
 ```
-
-### 状态
-
-**待修复** - 计划在阶段 1 完成
 
 ---
 
 ## 问题 2：ui_state.rs 分散的 load+save
 
-### 问题描述
+### 状态：✅ 已解决
 
-ui_state.rs 中有多个方法直接调用 load_config 和 save_config，造成配置保存逻辑分散。
-
-### 当前代码
-
-```rust
-pub fn set_systray(value: bool) {
-    use rabbit_platform::config::{load_config, save_config};
-    
-    if let Ok(mut config) = load_config() {
-        config.systray = value;
-        save_config(&config).ok();
-    }
-}
-
-pub fn set_top(value: bool) {
-    use rabbit_platform::config::{load_config, save_config};
-    
-    if let Ok(mut config) = load_config() {
-        config.top = value;
-        save_config(&config).ok();
-    }
-}
-// ... 更多类似方法
-```
-
-### 影响范围
-
-| 方法 | 当前行为 |
-|------|----------|
-| `set_systray` | 直接保存到文件 |
-| `set_top` | 直接保存到文件 |
-| `set_autostart` | 直接保存到文件 |
-| `set_autoupdate` | 直接保存到文件 |
-| `set_language` | 直接保存到文件 |
-| `sync_http_config` | 直接保存到文件 |
-| `sync_tftpd_config` | 直接保存到文件 |
-| `sync_plan_config` | 直接保存到文件 |
-| `sync_scan_config` | 直接保存到文件 |
-| `sync_http_start_config` | 直接保存到文件 |
-
-### 解决方案
-
-将这些方法改造为调用 ViewModel：
-
-```rust
-// 方案：改造为接受 ViewModel 引用
-pub fn set_systray(vm: &mut AppViewModel, value: bool) -> Result<()> {
-    vm.update_global(
-        vm.config.language,
-        vm.config.theme,
-        value,
-        vm.config.top,
-        vm.config.autostart,
-        vm.config.autoupdate,
-    )
-}
-```
-
-或者使用事件通知模式，让 UI 回调更新 ViewModel 后发送事件。
-
-### 状态
-
-**待修复** - 计划在阶段 3 完成
+使用事件通知模式：
+- `SettingsUpdate { field, value }` - 全局设置更新
+- `ModuleUpdate { module, updates }` - 模块配置更新
 
 ---
 
