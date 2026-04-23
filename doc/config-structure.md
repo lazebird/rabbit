@@ -19,6 +19,7 @@
 2. **同步保存**：先保存到磁盘，再发送事件，无时序问题
 3. **内存缓存**：配置常驻内存，避免频繁读文件
 4. **统一入口**：ViewModel 负责所有配置操作
+5. **通用接口**：使用 section+map 方式，避免模块专有接口膨胀
 
 ### 架构流程
 
@@ -28,8 +29,8 @@ UI 点击按钮
     ▼
 ┌─────────────────────────────────────────────────┐
 │  1. 收集输入框值                                 │
-│  2. vm.update_and_save(config)             │ ← 同步更新+保存
-│  3. send_event(UiEvent::ModuleStart)             │ ← 不带参数
+│  2. vm.update_section("ping", updates)    │ ← 同步更新+保存
+│  3. send_event(UiEvent::PingStart)            │ ← 不带参数
 └─────────────────────────────────────────────────┘
     │
     ▼
@@ -37,12 +38,63 @@ UI 点击按钮
     │
     ▼
 ┌─────────────────────────────────────────────────┐
-│  4. vm.get_config()                              │ ← 读取缓存配置
-│  5. service.start(config.modules.ping)          │
+│  4. vm.get_section("ping")                     │ ← 读取缓存配置
+│  5. service.start(ping_config)                 │
 └─────────────────────────────────────────────────┘
 ```
 
-### AppViewModel 接口
+---
+
+## ConfigValue 类型定义
+
+在 `rabbit-models/src/config.rs` 中定义：
+
+```rust
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ConfigValue {
+    String(String),
+    Integer(i64),
+    Boolean(bool),
+    Array(Vec<ConfigValue>),
+}
+
+impl ConfigValue {
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            ConfigValue::String(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn as_i64(&self) -> Option<i64> {
+        match self {
+            ConfigValue::Integer(n) => Some(*n),
+            _ => None,
+        }
+    }
+
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            ConfigValue::Boolean(b) => Some(*b),
+            _ => None,
+        }
+    }
+
+    pub fn as_array(&self) -> Option<&Vec<ConfigValue>> {
+        match self {
+            ConfigValue::Array(arr) => Some(arr),
+            _ => None,
+        }
+    }
+}
+```
+
+---
+
+## AppViewModel 接口
 
 ```rust
 pub struct AppViewModel {
@@ -71,7 +123,7 @@ impl AppViewModel {
 
     // === 通用更新器 ===
 
-    /// 字段更新器 - 通过闭包更新配置
+    /// 字段更新器 - 通过闭包更新配置（复杂场景使用）
     pub fn update_with<F>(&mut self, updater: F) -> Result<()>
     where
         F: FnOnce(&mut AppConfig),
@@ -101,12 +153,20 @@ impl AppViewModel {
 
     // === 通用 section+map 方法 ===
 
-    /// 通过 section+map 更新配置（避免模块专有接口）
+    /// 通过 section+map 更新配置
     pub fn update_section(&mut self, section: &str, updates: HashMap<&str, ConfigValue>) -> Result<()> {
-        // 实现见 config-partial-update.md
         match section {
-            "ping" => { /* 字段映射 */ }
-            "http" => { /* 字段映射 */ }
+            "ping" => {
+                let ping = &mut self.config.modules.ping;
+                if let Some(v) = updates.get("target") {
+                    if let Some(s) = v.as_str() { ping.target = s.to_string(); }
+                }
+                if let Some(v) = updates.get("interval") {
+                    if let Some(n) = v.as_i64() { ping.interval = n as i32; }
+                }
+                // ... 其他字段
+            }
+            "http" => { /* ... */ }
             // ...
             _ => {}
         }
@@ -115,7 +175,12 @@ impl AppViewModel {
 
     /// 读取单个 section 返回 HashMap
     pub fn get_section(&self, section: &str) -> Option<HashMap<String, ConfigValue>> {
-        // 实现见 config-partial-update.md
+        match section {
+            "ping" => { /* ... */ }
+            "http" => { /* ... */ }
+            // ...
+            _ => None,
+        }
     }
 
     /// 读取单个值
@@ -135,7 +200,153 @@ impl AppViewModel {
 }
 ```
 
-### 事件处理（无参数）
+---
+
+## 字段映射表
+
+### ping 模块
+
+| ConfigKey | ConfigField | 类型 |
+|-----------|-------------|------|
+| `target` | ping.target | String |
+| `interval` | ping.interval | i32 |
+| `count` | ping.count | i32 |
+| `stoponloss` | ping.stoponloss | bool |
+| `taskbar` | ping.taskbar | bool |
+| `running` | ping.running | bool |
+
+### http 模块
+
+| ConfigKey | ConfigField | 类型 |
+|-----------|-------------|------|
+| `port` | http.port | u16 |
+| `shell` | http.shell | bool |
+| `autoindex` | http.autoindex | bool |
+| `videoplay` | http.videoplay | bool |
+| `dirs` | http.dirs | Vec\<String\> |
+| `running` | http.running | bool |
+
+### scan 模块
+
+| ConfigKey | ConfigField | 类型 |
+|-----------|-------------|------|
+| `start_ip` | scan.start_ip | String |
+| `end_ip` | scan.end_ip | String |
+| `filter` | scan.filter | bool |
+
+### tftpd 模块
+
+| ConfigKey | ConfigField | 类型 |
+|-----------|-------------|------|
+| `port` | tftpd.port | u16 |
+| `timeout` | tftpd.timeout | i32 |
+| `maxretry` | tftpd.maxretry | i32 |
+| `blksize` | tftpd.blksize | i32 |
+| `qsize` | tftpd.qsize | i32 |
+| `qtout` | tftpd.qtout | i32 |
+| `override_conflicts` | tftpd.override_conflicts | bool |
+| `fslog` | tftpd.fslog | bool |
+| `work_dirs` | tftpd.work_dirs | Vec\<String\> |
+| `working_dir_index` | tftpd.working_dir_index | Option\<usize\> |
+| `running` | tftpd.running | bool |
+
+### tftpc 模块
+
+| ConfigKey | ConfigField | 类型 |
+|-----------|-------------|------|
+| `server_addr` | tftpc.server_addr | String |
+| `server_port` | tftpc.server_port | u16 |
+| `local_path` | tftpc.local_path | String |
+| `remote_file` | tftpc.remote_file | String |
+| `timeout` | tftpc.timeout | i32 |
+| `maxretry` | tftpc.maxretry | i32 |
+| `blksize` | tftpc.blksize | i32 |
+
+### plan 模块
+
+| ConfigKey | ConfigField | 类型 |
+|-----------|-------------|------|
+| `date` | plan.date | String |
+| `time` | plan.time | String |
+| `cycle` | plan.cycle | i32 |
+| `unit` | plan.unit | String |
+| `msg` | plan.msg | String |
+| `override_conflicts` | plan.override_conflicts | bool |
+
+### chat 模块
+
+| ConfigKey | ConfigField | 类型 |
+|-----------|-------------|------|
+| `username` | chat.username | String |
+| `port` | chat.port | u16 |
+| `broadcast_addr` | chat.broadcast_addr | String |
+| `running` | chat.running | bool |
+
+### 全局配置
+
+| ConfigKey | ConfigField | 类型 |
+|-----------|-------------|------|
+| `language` | language | Language |
+| `theme` | theme | Theme |
+| `systray` | systray | bool |
+| `top` | top | bool |
+| `autostart` | autostart | bool |
+| `autoupdate` | autoupdate | bool |
+| `last_active_tab` | last_active_tab | usize |
+
+> **注意**：`window_*` 字段通过专门方法管理，不通过 section+map 接口。
+
+---
+
+## 特殊类型处理
+
+### Vec\<String\> 数组类型
+
+ConfigValue 的 `Array` 变体用于处理数组字段：
+
+**update_section 中的写入**：
+```rust
+"http" => {
+    let http = &mut self.config.modules.http;
+    if let Some(v) = updates.get("dirs") {
+        if let Some(arr) = v.as_array() {
+            http.dirs = arr.iter()
+                .filter_map(|item| item.as_str().map(|s| s.to_string()))
+                .collect();
+        }
+    }
+}
+```
+
+**get_section 中的读取**：
+```rust
+"http" => {
+    let http = &self.config.modules.http;
+    map.insert("dirs".into(), ConfigValue::Array(
+        http.dirs.iter().map(|s| ConfigValue::String(s.clone())).collect()
+    ));
+}
+```
+
+### Option\<usize\> 类型
+
+tftpd.working_dir_index 是 `Option<usize>`：
+
+```rust
+"tftpd" => {
+    let tftpd = &mut self.config.modules.tftpd;
+    // UI 使用 1-based 索引，配置使用 0-based
+    if let Some(v) = updates.get("working_dir_index") {
+        if let Some(n) = v.as_i64() {
+            tftpd.working_dir_index = if n <= 0 { None } else { Some((n - 1) as usize) };
+        }
+    }
+}
+```
+
+---
+
+## 事件处理（无参数）
 
 ```rust
 pub enum UiEvent {
@@ -155,17 +366,17 @@ pub enum UiEvent {
 async fn handle_event(event: UiEvent, vm: &AppViewModel) {
     match event {
         UiEvent::PingStart => {
-            let config = vm.get_config();
-            ping_service.init(config.modules.ping.clone()).await;
+            let config = vm.get_section("ping");
+            ping_service.init(config).await;
             ping_service.start().await;
         }
         UiEvent::HttpToggle => {
-            let config = vm.get_config();
-            if config.modules.http.running {
+            let http = vm.get_section("http").unwrap();
+            let running = http.get("running").and_then(|v| v.as_bool()).unwrap_or(false);
+            if running {
                 http_service.stop().await;
             } else {
-                http_service.init(config.modules.http.clone()).await;
-                http_service.start().await;
+                http_service.start(http).await;
             }
         }
         // ...
@@ -211,17 +422,17 @@ async fn handle_event(event: UiEvent, vm: &AppViewModel) {
 
 | 当前 | 目标 | 说明 |
 |------|------|------|
-| `PingStart { target, options }` | `PingStart` | 从 vm.get_config() 读取 |
-| `ScanStart { start_ip, end_ip, options }` | `ScanStart` | 从 vm.get_config() 读取 |
-| `HttpToggle { port, options, shell }` | `HttpToggle` | 从 vm.get_config() 读取 |
-| `ChatToggle { username, port, broadcast }` | `ChatToggle` | 从 vm.get_config() 读取 |
+| `PingStart { target, options }` | `PingStart` | 从 vm.get_section("ping") 读取 |
+| `ScanStart { start_ip, end_ip, options }` | `ScanStart` | 从 vm.get_section("scan") 读取 |
+| `HttpToggle { port, options, shell }` | `HttpToggle` | 从 vm.get_section("http") 读取 |
+| `ChatToggle { username, port, broadcast }` | `ChatToggle` | 从 vm.get_section("chat") 读取 |
 
-#### B. 需要改造的事件（带参数但不同步配置）
+#### B. 需要改造的事件
 
 | 当前 | 目标 | 说明 |
 |------|------|------|
 | `TftpServerToggle { options }` | `TftpServerToggle` | TFTP 参数通过 sync 方法同步 |
-| `PlanAdd { date, time, cycle, unit, msg }` | `PlanAdd` | 参数直接通过 ViewModel 保存 |
+| `PlanAdd { date, time, cycle, unit, msg }` | `PlanAdd` | 参数通过 ViewModel 保存 |
 
 #### C. 保持原样的事件
 
@@ -233,49 +444,26 @@ async fn handle_event(event: UiEvent, vm: &AppViewModel) {
 | `TftpClientGet { server, local, remote }` | 每次传输不同参数 |
 | `PlanRemove { id }` | 需要事件 ID |
 | `ChatSend { message }` | 消息内容每次不同 |
-| `SettingsSave` | **待讨论**：是否需要，或改为无操作 |
-
-#### D. SettingsSave 事件说明
-
-当前 `SettingsSave` 事件的作用：
-1. 从磁盘重新加载配置（同步 ui_state.rs 中的修改）
-2. 更新 ViewModel
-3. 应用各项设置（autostart, systray, top 等）
-
-**新设计中的变化**：
-- ui_state.rs 的 sync_* 方法改为调用 ViewModel
-- ViewModel 保存配置是同步的
-- 事件处理程序直接从 `vm.get_config()` 读取
-
-**可能的改造**：
-```rust
-// 方案 A：移除 SettingsSave（推荐）
-// UI 回调中已通过 ViewModel 保存，无需额外事件
-
-// 方案 B：保留但简化
-UiEvent::SettingsSave => {
-    // 直接从 ViewModel 获取配置（已是最新的）
-    let config = vm.get_config();
-    apply_settings(config);
-}
-```
+| `SettingsSave` | **待讨论**：推荐移除 |
 
 ---
 
 ## 实施计划
 
-### 阶段 1：基础接口（已完成）
+### 阶段 1：基础接口 + ConfigValue 定义
 
 - [x] `update_and_save()` 方法
 - [x] `update_with()` 通用更新器
 - [x] `update_global()` 方法
 - [x] `update_last_tab()` 方法
+- [ ] 定义 ConfigValue 枚举（String, Integer, Boolean, Array）
+- [ ] 实现 as_str/as_i64/as_bool/as_array 辅助方法
+- [ ] 验证序列化/反序列化
 
 ### 阶段 2：通用 section+map 方法
 
-- [ ] 定义 ConfigValue 类型（见 config-partial-update.md）
-- [ ] 实现 `update_section()` 字段映射（包含 running 状态）
-- [ ] 实现 `get_section()` 读取（包含 running 状态）
+- [ ] 实现 `update_section()` 字段映射（7个模块）
+- [ ] 实现 `get_section()` 读取（7个模块）
 - [ ] 实现 `get_value()` 单值读取
 - [ ] 编译验证
 
@@ -294,7 +482,7 @@ UiEvent::SettingsSave => {
 
 ### 阶段 4：简化事件参数
 
-#### A. 改造为无参数的事件（从 vm.get_config() 读取）
+#### A. 改造为无参数的事件
 
 - [ ] 改造 `PingStart` 事件 → 无参数
 - [ ] 改造 `ScanStart` 事件 → 无参数
@@ -304,25 +492,22 @@ UiEvent::SettingsSave => {
 #### B. 改造事件（参数通过 ViewModel 保存）
 
 - [ ] 改造 `TftpServerToggle` 事件 → 无参数
-- [ ] 改造 `PlanAdd` 事件 → 无参数（参数通过 ui_state 同步）
+- [ ] 改造 `PlanAdd` 事件 → 无参数
 
-#### C. 保持原样的事件
+### 阶段 5：验证与测试
 
-- `TftpServerAddDir` - 需要目录选择 UI
-- `TftpServerRemoveDir` - 需要目录选择 UI
-- `TftpClientPut/Get` - 每次传输不同参数
-- `PlanRemove { id }` - 需要事件 ID
-- `ChatSend { message }` - 消息内容每次不同
+- [ ] 编译通过
+- [ ] 单元测试通过
+- [ ] 集成测试通过
 
 ---
 
 ## 相关文档
 
-- [config-partial-update.md](./config-partial-update.md) - 局部更新方案
 - [config-impl-plan.md](./config-impl-plan.md) - 详细实施计划
 - [config-issues.md](./config-issues.md) - 遇到的问题记录
 
 ---
 
-文档版本：1.1
+文档版本：2.0
 更新日期：2026-04-23
