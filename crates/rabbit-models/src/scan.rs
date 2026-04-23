@@ -3,8 +3,6 @@
 use serde::{Deserialize, Serialize};
 use std::net::Ipv4Addr;
 
-use crate::config::ScanConfig;
-
 /// IP range to scan
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScanRange {
@@ -51,17 +49,6 @@ impl Default for ScannerConfig {
             concurrent: 256,
             retry_count: 1,
         }
-    }
-}
-
-impl From<&ScanConfig> for ScanRange {
-    fn from(config: &ScanConfig) -> Self {
-        let start: Ipv4Addr = config.start_ip.parse().unwrap_or(Ipv4Addr::new(192, 168, 1, 1));
-        let end_last: u32 = config.end_ip.parse().unwrap_or(254);
-        // Assume same subnet for simplicity
-        let octets = start.octets();
-        let end = Ipv4Addr::new(octets[0], octets[1], octets[2], end_last as u8);
-        Self { start, end, port: 0 }
     }
 }
 

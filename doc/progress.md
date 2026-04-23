@@ -575,26 +575,37 @@ cargo fmt
 
 ---
 
-## 附录 C：配置模型统一方案
+## 附录 C：配置模型 HashMap 统一方案
 
-**状态: ✅ 已解决**
+**状态: ✅ 已完成**
 
-项目中存在两套配置模型（config.rs 持久化层 + 业务层），已通过 `From` trait 实现自动转换，并**删除业务层的 `Default` 实现**，确保默认值唯一来源。
+配置模型已从差异化结构体改为统一的 HashMap 方式，确保所有模块使用相同的配置访问模式。
 
-| 转换实现 | Default 状态 |
-|----------|-------------|
-| `From<&HttpConfig> for HttpServerConfig` | ✅ 已删除 |
-| `From<&TftpdConfig> for TftpServerConfig` | ✅ 已删除 |
-| `From<&TftpcConfig> for TftpClientConfig` | ✅ 已删除 |
-| `From<&ChatModuleConfig> for ChatConfig` | ✅ 已删除 |
+| 配置项 | 旧方式 | 新方式 |
+|--------|--------|--------|
+| ping | `PingConfig { target, interval, ... }` | `HashMap<String, ConfigValue>` |
+| http | `HttpConfig { port, shell, ... }` | `HashMap<String, ConfigValue>` |
+| scan | `ScanConfig { start_ip, end_ip, ... }` | `HashMap<String, ConfigValue>` |
+| tftpd | `TftpdConfig { port, timeout, ... }` | `HashMap<String, ConfigValue>` |
+| tftpc | `TftpcConfig { server_addr, ... }` | `HashMap<String, ConfigValue>` |
+| plan | `PlanConfig { date, time, ... }` | `HashMap<String, ConfigValue>` |
+| chat | `ChatConfig { username, port, ... }` | `HashMap<String, ConfigValue>` |
 
-**架构原则**：
-1. 保留分层配置设计（良好的架构实践）
-2. config.rs 负责持久化，业务层负责运行时
-3. **业务层不再保留 Default 降级方案**，所有默认值以 config.rs 为准
-4. 核心服务 `new()` 使用内部占位配置，`init()` 必须传入从 config.rs 转换的配置
+**统一访问接口**：
+```rust
+config.modules.get_string("ping", "target")  // 获取字符串
+config.modules.get_integer("http", "port")    // 获取整数
+config.modules.get_bool("http", "shell")      // 获取布尔值
+config.modules.get_array("http", "dirs")     // 获取数组
+config.modules.insert("http", "port", ConfigValue::Integer(8080))  // 写入
+```
 
-详见 `doc/requirements-gap-analysis.md` 配置模型重复问题章节。
+**服务配置转换**：
+```rust
+impl From<&ModuleConfigs> for HttpServerConfig { ... }
+impl From<&ModuleConfigs> for TftpServerConfig { ... }
+impl From<&ModuleConfigs> for TftpClientConfig { ... }
+```
 
 ---
 

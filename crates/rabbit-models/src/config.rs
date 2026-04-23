@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// 通用的配置值类型，支持 String、Integer、Boolean、Array 四种变体
 /// 用于 section+map 方式更新配置
@@ -26,6 +27,10 @@ impl ConfigValue {
         }
     }
 
+    pub fn as_integer(&self) -> Option<i64> {
+        self.as_i64()
+    }
+
     pub fn as_bool(&self) -> Option<bool> {
         match self {
             ConfigValue::Boolean(b) => Some(*b),
@@ -38,6 +43,12 @@ impl ConfigValue {
             ConfigValue::Array(arr) => Some(arr),
             _ => None,
         }
+    }
+
+    pub fn as_string_array(&self) -> Option<Vec<String>> {
+        self.as_array().map(|arr| {
+            arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect()
+        })
     }
 }
 
@@ -78,13 +89,7 @@ impl Default for AppConfig {
 
 impl AppConfig {
     pub fn merge_defaults(&mut self) {
-        self.modules.ping.merge_defaults();
-        self.modules.scan.merge_defaults();
-        self.modules.http.merge_defaults();
-        self.modules.tftpd.merge_defaults();
-        self.modules.tftpc.merge_defaults();
-        self.modules.plan.merge_defaults();
-        self.modules.chat.merge_defaults();
+        self.modules.merge_defaults();
     }
 }
 
@@ -102,318 +107,184 @@ pub enum Theme {
     System,
 }
 
-/// Module-specific configurations
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModuleConfigs {
-    pub ping: PingConfig,
-    pub scan: ScanConfig,
-    pub http: HttpConfig,
-    pub tftpd: TftpdConfig,
-    pub tftpc: TftpcConfig,
-    pub plan: PlanConfig,
-    pub chat: ChatModuleConfig,
+    pub ping: HashMap<String, ConfigValue>,
+    pub scan: HashMap<String, ConfigValue>,
+    pub http: HashMap<String, ConfigValue>,
+    pub tftpd: HashMap<String, ConfigValue>,
+    pub tftpc: HashMap<String, ConfigValue>,
+    pub plan: HashMap<String, ConfigValue>,
+    pub chat: HashMap<String, ConfigValue>,
 }
 
 impl Default for ModuleConfigs {
     fn default() -> Self {
         Self {
-            ping: PingConfig::default(),
-            scan: ScanConfig::default(),
-            http: HttpConfig::default(),
-            tftpd: TftpdConfig::default(),
-            tftpc: TftpcConfig::default(),
-            plan: PlanConfig::default(),
-            chat: ChatModuleConfig::default(),
+            ping: Self::default_ping(),
+            scan: Self::default_scan(),
+            http: Self::default_http(),
+            tftpd: Self::default_tftpd(),
+            tftpc: Self::default_tftpc(),
+            plan: Self::default_plan(),
+            chat: Self::default_chat(),
         }
     }
 }
 
 impl ModuleConfigs {
     pub fn merge_defaults(&mut self) {
-        self.ping.merge_defaults();
-        self.scan.merge_defaults();
-        self.http.merge_defaults();
-        self.tftpd.merge_defaults();
-        self.tftpc.merge_defaults();
-        self.plan.merge_defaults();
-        self.chat.merge_defaults();
-    }
-}
-
-/// Ping module configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PingConfig {
-    pub target: String,
-    pub interval: i32,
-    pub count: i32,
-    pub stoponloss: bool,
-    pub taskbar: bool,
-    pub log: String,
-    /// Whether ping was running when app was closed
-    pub running: bool,
-}
-
-impl Default for PingConfig {
-    fn default() -> Self {
-        Self {
-            target: String::from("1.1.1.1"),
-            interval: 1000,
-            count: -1,
-            stoponloss: false,
-            taskbar: true,
-            log: String::new(),
-            running: false,
-        }
-    }
-}
-
-impl PingConfig {
-    pub fn merge_defaults(&mut self) {
         let defaults = Self::default();
-        if self.target.is_empty() { self.target = defaults.target; }
-        if self.interval == 0 { self.interval = defaults.interval; }
-        if self.count == 0 { self.count = defaults.count; }
-    }
-
-    pub fn opts_string(&self) -> String {
-        format!(
-            "interval={};count={};stoponloss={}",
-            self.interval, self.count, self.stoponloss
-        )
-    }
-}
-
-/// Scan module configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScanConfig {
-    pub start_ip: String,
-    pub end_ip: String,
-    pub filter: bool,
-}
-
-impl Default for ScanConfig {
-    fn default() -> Self {
-        Self {
-            start_ip: String::from("192.168.1.1"),
-            end_ip: String::from("254"),
-            filter: true,
+        for (k, v) in defaults.ping {
+            self.ping.entry(k).or_insert(v);
+        }
+        for (k, v) in defaults.scan {
+            self.scan.entry(k).or_insert(v);
+        }
+        for (k, v) in defaults.http {
+            self.http.entry(k).or_insert(v);
+        }
+        for (k, v) in defaults.tftpd {
+            self.tftpd.entry(k).or_insert(v);
+        }
+        for (k, v) in defaults.tftpc {
+            self.tftpc.entry(k).or_insert(v);
+        }
+        for (k, v) in defaults.plan {
+            self.plan.entry(k).or_insert(v);
+        }
+        for (k, v) in defaults.chat {
+            self.chat.entry(k).or_insert(v);
         }
     }
-}
 
-impl ScanConfig {
-    pub fn merge_defaults(&mut self) {
-        let defaults = Self::default();
-        if self.start_ip.is_empty() { self.start_ip = defaults.start_ip; }
-        if self.end_ip.is_empty() { self.end_ip = defaults.end_ip; }
+    pub fn get_string(&self, module: &str, key: &str) -> Option<String> {
+        self.get_map(module)?.get(key)?.as_str().map(|s| s.to_string())
     }
 
-    pub fn opts_string(&self) -> String {
-        format!("filter={}", self.filter)
+    pub fn get_integer(&self, module: &str, key: &str) -> Option<i64> {
+        self.get_map(module)?.get(key)?.as_integer()
     }
-}
 
-/// HTTP server configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HttpConfig {
-    pub port: u16,
-    pub shell: bool,
-    pub autoindex: bool,
-    pub videoplay: bool,
-    pub dirs: Vec<String>,
-    /// Whether HTTP server was running when app was closed
-    pub running: bool,
-}
+    pub fn get_bool(&self, module: &str, key: &str) -> Option<bool> {
+        self.get_map(module)?.get(key)?.as_bool()
+    }
 
-impl Default for HttpConfig {
-    fn default() -> Self {
-        Self {
-            port: 8000,
-            shell: false,
-            autoindex: true,
-            videoplay: true,
-            dirs: Vec::new(),
-            running: false,
+    pub fn get_array(&self, module: &str, key: &str) -> Option<Vec<String>> {
+        self.get_map(module)?
+            .get(key)?
+            .as_string_array()
+    }
+
+    pub fn insert(&mut self, module: &str, key: &str, value: ConfigValue) {
+        if let Some(map) = self.get_map_mut(module) {
+            map.insert(key.to_string(), value);
         }
     }
-}
 
-impl HttpConfig {
-    pub fn merge_defaults(&mut self) {
-        if self.port == 0 { self.port = Self::default().port; }
-    }
-
-    pub fn opts_string(&self) -> String {
-        format!(
-            "autoindex={};videoplay={};",
-            self.autoindex, self.videoplay
-        )
-    }
-}
-
-/// TFTP server configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TftpdConfig {
-    pub port: u16,
-    pub timeout: i32,
-    pub maxretry: i32,
-    pub blksize: i32,
-    pub qsize: i32,
-    pub qtout: i32,
-    pub override_conflicts: bool,
-    pub fslog: bool,
-    pub work_dirs: Vec<String>,
-    /// Index of the currently selected working directory (0-based, None = first item)
-    pub working_dir_index: Option<usize>,
-    /// Whether TFTP server was running when app was closed
-    pub running: bool,
-}
-
-impl Default for TftpdConfig {
-    fn default() -> Self {
-        Self {
-            port: 69,
-            timeout: 200,
-            maxretry: 10,
-            blksize: 512,
-            qsize: 2000,
-            qtout: 1000,
-            override_conflicts: false,
-            fslog: false,
-            work_dirs: Vec::new(),
-            working_dir_index: None,
-            running: false,
+    fn get_map(&self, module: &str) -> Option<&HashMap<String, ConfigValue>> {
+        match module {
+            "ping" => Some(&self.ping),
+            "scan" => Some(&self.scan),
+            "http" => Some(&self.http),
+            "tftpd" => Some(&self.tftpd),
+            "tftpc" => Some(&self.tftpc),
+            "plan" => Some(&self.plan),
+            "chat" => Some(&self.chat),
+            _ => None,
         }
     }
-}
 
-impl TftpdConfig {
-    pub fn merge_defaults(&mut self) {
-        let defaults = Self::default();
-        if self.port == 0 { self.port = defaults.port; }
-        if self.timeout == 0 { self.timeout = defaults.timeout; }
-        if self.maxretry == 0 { self.maxretry = defaults.maxretry; }
-        if self.blksize == 0 { self.blksize = defaults.blksize; }
-        if self.qsize == 0 { self.qsize = defaults.qsize; }
-        if self.qtout == 0 { self.qtout = defaults.qtout; }
-    }
-
-    pub fn opts_string(&self) -> String {
-        format!(
-            "timeout={};retry={};blksize={};override={};qsize={};qtout={};fslog={};",
-            self.timeout,
-            self.maxretry,
-            self.blksize,
-            self.override_conflicts,
-            self.qsize,
-            self.qtout,
-            self.fslog
-        )
-    }
-}
-
-/// TFTP client configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TftpcConfig {
-    pub server_addr: String,
-    pub server_port: u16,
-    pub local_path: String,
-    pub remote_file: String,
-    pub timeout: i32,
-    pub maxretry: i32,
-    pub blksize: i32,
-}
-
-impl Default for TftpcConfig {
-    fn default() -> Self {
-        Self {
-            server_addr: String::from("127.0.0.1"),
-            server_port: 69,
-            local_path: String::new(),  // Empty - UI should set appropriate default
-            remote_file: String::new(), // Empty - UI should set appropriate default
-            timeout: 200,
-            maxretry: 10,
-            blksize: 1024,
+    fn get_map_mut(&mut self, module: &str) -> Option<&mut HashMap<String, ConfigValue>> {
+        match module {
+            "ping" => Some(&mut self.ping),
+            "scan" => Some(&mut self.scan),
+            "http" => Some(&mut self.http),
+            "tftpd" => Some(&mut self.tftpd),
+            "tftpc" => Some(&mut self.tftpc),
+            "plan" => Some(&mut self.plan),
+            "chat" => Some(&mut self.chat),
+            _ => None,
         }
     }
-}
 
-impl TftpcConfig {
-    pub fn merge_defaults(&mut self) {
-        let defaults = Self::default();
-        if self.server_addr.is_empty() { self.server_addr = defaults.server_addr; }
-        if self.server_port == 0 { self.server_port = defaults.server_port; }
-        if self.timeout == 0 { self.timeout = defaults.timeout; }
-        if self.maxretry == 0 { self.maxretry = defaults.maxretry; }
-        if self.blksize == 0 { self.blksize = defaults.blksize; }
+    fn default_ping() -> HashMap<String, ConfigValue> {
+        HashMap::from([
+            ("target".into(), ConfigValue::String("1.1.1.1".into())),
+            ("interval".into(), ConfigValue::Integer(1000)),
+            ("count".into(), ConfigValue::Integer(-1)),
+            ("stoponloss".into(), ConfigValue::Boolean(false)),
+            ("taskbar".into(), ConfigValue::Boolean(true)),
+            ("log".into(), ConfigValue::String(String::new())),
+            ("running".into(), ConfigValue::Boolean(false)),
+        ])
     }
 
-    pub fn opts_string(&self) -> String {
-        format!(
-            "timeout={};retry={};blksize={};",
-            self.timeout, self.maxretry, self.blksize
-        )
+    fn default_scan() -> HashMap<String, ConfigValue> {
+        HashMap::from([
+            ("start_ip".into(), ConfigValue::String("192.168.1.1".into())),
+            ("end_ip".into(), ConfigValue::String("254".into())),
+            ("filter".into(), ConfigValue::Boolean(true)),
+        ])
     }
-}
 
-/// Plan/Scheduler configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PlanConfig {
-    pub date: String,
-    pub time: String,
-    pub cycle: i32,
-    pub unit: String,
-    pub msg: String,
-    pub override_conflicts: bool,
-}
-
-impl Default for PlanConfig {
-    fn default() -> Self {
-        Self {
-            date: String::new(),  // Empty - UI should set current date
-            time: String::new(),  // Empty - UI should set current time
-            cycle: 0,
-            unit: String::from("minutes"),
-            msg: String::new(),   // Empty - user should enter
-            override_conflicts: false,
-        }
+    fn default_http() -> HashMap<String, ConfigValue> {
+        HashMap::from([
+            ("port".into(), ConfigValue::Integer(8000)),
+            ("shell".into(), ConfigValue::Boolean(false)),
+            ("autoindex".into(), ConfigValue::Boolean(true)),
+            ("videoplay".into(), ConfigValue::Boolean(true)),
+            ("dirs".into(), ConfigValue::Array(Vec::new())),
+            ("running".into(), ConfigValue::Boolean(false)),
+        ])
     }
-}
 
-impl PlanConfig {
-    pub fn merge_defaults(&mut self) {
-        let defaults = Self::default();
-        if self.unit.is_empty() { self.unit = defaults.unit; }
+    fn default_tftpd() -> HashMap<String, ConfigValue> {
+        HashMap::from([
+            ("port".into(), ConfigValue::Integer(69)),
+            ("timeout".into(), ConfigValue::Integer(200)),
+            ("maxretry".into(), ConfigValue::Integer(10)),
+            ("blksize".into(), ConfigValue::Integer(512)),
+            ("qsize".into(), ConfigValue::Integer(2000)),
+            ("qtout".into(), ConfigValue::Integer(1000)),
+            ("override_conflicts".into(), ConfigValue::Boolean(false)),
+            ("fslog".into(), ConfigValue::Boolean(false)),
+            ("work_dirs".into(), ConfigValue::Array(Vec::new())),
+            ("working_dir_index".into(), ConfigValue::Integer(0)),
+            ("running".into(), ConfigValue::Boolean(false)),
+        ])
     }
-}
 
-/// Chat module configuration (UI defaults)
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatModuleConfig {
-    pub username: String,
-    pub port: u16,
-    pub broadcast_addr: String,
-    /// Whether chat was running when app was closed
-    pub running: bool,
-}
-
-impl Default for ChatModuleConfig {
-    fn default() -> Self {
-        Self {
-            username: String::from("User@PC"),
-            port: 1314,
-            broadcast_addr: String::from("255.255.255.255"),
-            running: false,
-        }
+    fn default_tftpc() -> HashMap<String, ConfigValue> {
+        HashMap::from([
+            ("server_addr".into(), ConfigValue::String("127.0.0.1".into())),
+            ("server_port".into(), ConfigValue::Integer(69)),
+            ("local_path".into(), ConfigValue::String(String::new())),
+            ("remote_file".into(), ConfigValue::String(String::new())),
+            ("timeout".into(), ConfigValue::Integer(200)),
+            ("maxretry".into(), ConfigValue::Integer(10)),
+            ("blksize".into(), ConfigValue::Integer(1024)),
+        ])
     }
-}
 
-impl ChatModuleConfig {
-    pub fn merge_defaults(&mut self) {
-        let defaults = Self::default();
-        if self.username.is_empty() { self.username = defaults.username; }
-        if self.port == 0 { self.port = defaults.port; }
-        if self.broadcast_addr.is_empty() { self.broadcast_addr = defaults.broadcast_addr; }
+    fn default_plan() -> HashMap<String, ConfigValue> {
+        HashMap::from([
+            ("date".into(), ConfigValue::String(String::new())),
+            ("time".into(), ConfigValue::String(String::new())),
+            ("cycle".into(), ConfigValue::Integer(0)),
+            ("unit".into(), ConfigValue::String("minute".into())),
+            ("msg".into(), ConfigValue::String(String::new())),
+            ("override_conflicts".into(), ConfigValue::Boolean(false)),
+        ])
+    }
+
+    fn default_chat() -> HashMap<String, ConfigValue> {
+        HashMap::from([
+            ("username".into(), ConfigValue::String("User@PC".into())),
+            ("port".into(), ConfigValue::Integer(1314)),
+            ("broadcast_addr".into(), ConfigValue::String("255.255.255.255".into())),
+            ("running".into(), ConfigValue::Boolean(false)),
+        ])
     }
 }
 
@@ -442,79 +313,28 @@ mod tests {
     }
 
     #[test]
-    fn test_ping_config_default() {
-        let config = PingConfig::default();
-        assert_eq!(config.target, "1.1.1.1");
-        assert_eq!(config.interval, 1000);
-        assert_eq!(config.count, -1);
-        assert!(!config.stoponloss);
-        assert!(config.taskbar);
+    fn test_module_configs_map() {
+        let config = ModuleConfigs::default();
+        assert_eq!(config.get_string("ping", "target"), Some("1.1.1.1".into()));
+        assert_eq!(config.get_integer("ping", "interval"), Some(1000));
+        assert_eq!(config.get_string("scan", "start_ip"), Some("192.168.1.1".into()));
+        assert_eq!(config.get_integer("http", "port"), Some(8000));
+        assert_eq!(config.get_integer("tftpd", "port"), Some(69));
+        assert_eq!(config.get_string("chat", "username"), Some("User@PC".into()));
     }
 
     #[test]
-    fn test_ping_opts_string() {
-        let config = PingConfig::default();
-        let opts = config.opts_string();
-        assert!(opts.contains("interval=1000"));
-        assert!(opts.contains("count=-1"));
-        assert!(opts.contains("stoponloss=false"));
-    }
+    fn test_config_value_accessors() {
+        let val = ConfigValue::String("test".into());
+        assert_eq!(val.as_str(), Some("test"));
+        assert_eq!(val.as_integer(), None);
+        assert_eq!(val.as_bool(), None);
 
-    #[test]
-    fn test_scan_config_default() {
-        let config = ScanConfig::default();
-        assert_eq!(config.start_ip, "192.168.1.1");
-        assert_eq!(config.end_ip, "254");
-        assert!(config.filter);
-    }
+        let val = ConfigValue::Integer(42);
+        assert_eq!(val.as_str(), None);
+        assert_eq!(val.as_integer(), Some(42));
 
-    #[test]
-    fn test_http_config_default() {
-        let config = HttpConfig::default();
-        assert_eq!(config.port, 8000);
-        assert!(!config.shell);
-        assert!(config.autoindex);  // default is true
-        assert!(config.videoplay);  // default is true
-    }
-
-    #[test]
-    fn test_tftpd_config_default() {
-        let config = TftpdConfig::default();
-        assert_eq!(config.port, 69);
-        assert_eq!(config.timeout, 200);
-        assert_eq!(config.maxretry, 10);
-        assert_eq!(config.blksize, 512);
-        assert_eq!(config.qsize, 2000);
-        assert_eq!(config.qtout, 1000);
-        assert!(!config.override_conflicts);
-        assert!(!config.fslog);
-    }
-
-    #[test]
-    fn test_tftpc_config_default() {
-        let config = TftpcConfig::default();
-        assert_eq!(config.server_addr, "127.0.0.1");
-        assert_eq!(config.server_port, 69);
-        assert_eq!(config.blksize, 1024);
-        assert!(config.local_path.is_empty()); // UI should set platform-appropriate default
-        assert!(config.remote_file.is_empty());
-    }
-
-    #[test]
-    fn test_plan_config_default() {
-        let config = PlanConfig::default();
-        assert!(config.date.is_empty()); // UI should set current date
-        assert!(config.time.is_empty()); // UI should set current time
-        assert_eq!(config.unit, "minutes");
-        assert!(config.msg.is_empty()); // User should enter
-        assert!(!config.override_conflicts);
-    }
-
-    #[test]
-    fn test_chat_config_default() {
-        let config = ChatModuleConfig::default();
-        assert_eq!(config.username, "User@PC");
-        assert_eq!(config.port, 1314);
-        assert_eq!(config.broadcast_addr, "255.255.255.255");
+        let val = ConfigValue::Boolean(true);
+        assert_eq!(val.as_bool(), Some(true));
     }
 }

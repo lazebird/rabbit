@@ -3,7 +3,7 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 
-use crate::config::ChatModuleConfig;
+use crate::config::ModuleConfigs;
 
 /// Chat message
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -39,13 +39,13 @@ pub struct ChatConfig {
     pub multicast_addr: String,
 }
 
-impl From<&ChatModuleConfig> for ChatConfig {
-    fn from(config: &ChatModuleConfig) -> Self {
+impl From<&ModuleConfigs> for ChatConfig {
+    fn from(modules: &ModuleConfigs) -> Self {
         Self {
             enabled: false,
-            username: config.username.clone(),
-            port: config.port,
-            multicast_addr: config.broadcast_addr.clone(),
+            username: modules.get_string("chat", "username").unwrap_or_else(|| "User@PC".into()),
+            port: modules.get_integer("chat", "port").unwrap_or(1314) as u16,
+            multicast_addr: modules.get_string("chat", "broadcast_addr").unwrap_or_else(|| "255.255.255.255".into()),
         }
     }
 }

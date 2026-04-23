@@ -340,11 +340,15 @@ pub fn set_http_selected(idx: i32) {
 /// Sync HTTP items from UI state to config and save
 pub fn sync_http_config() {
     use rabbit_platform::config::{load_config, save_config};
-    
+    use rabbit_models::config::ConfigValue;
+
     if let Some(state) = UiState::global() {
         if let Ok(s) = state.lock() {
             if let Ok(mut config) = load_config() {
-                config.modules.http.dirs = s.http_items.clone();
+                config.modules.http.insert(
+                    "dirs".into(),
+                    ConfigValue::Array(s.http_items.iter().map(|item| ConfigValue::String(item.clone())).collect())
+                );
                 if let Err(e) = save_config(&config) {
                     tracing::warn!("Failed to save HTTP config: {}", e);
                 }
@@ -356,14 +360,19 @@ pub fn sync_http_config() {
 /// Sync TFTP directory from UI state to config and save
 pub fn sync_tftpd_config() {
     use rabbit_platform::config::{load_config, save_config};
-    
+    use rabbit_models::config::ConfigValue;
+
     if let Some(state) = UiState::global() {
         if let Ok(s) = state.lock() {
             if let Ok(mut config) = load_config() {
-                config.modules.tftpd.work_dirs = s.tftpd_dirs.clone();
-                // Convert 1-based UI index to 0-based config index
-                config.modules.tftpd.working_dir_index = s.tftpd_selected_idx
-                    .map(|idx| if idx <= 0 { 0 } else { (idx - 1) as usize });
+                config.modules.tftpd.insert(
+                    "work_dirs".into(),
+                    ConfigValue::Array(s.tftpd_dirs.iter().map(|item| ConfigValue::String(item.clone())).collect())
+                );
+                if let Some(idx) = s.tftpd_selected_idx {
+                    let config_idx = if idx <= 0 { 0 } else { (idx - 1) as i64 };
+                    config.modules.tftpd.insert("working_dir_index".into(), ConfigValue::Integer(config_idx));
+                }
                 if let Err(e) = save_config(&config) {
                     tracing::warn!("Failed to save TFTP config: {}", e);
                 }
@@ -598,13 +607,14 @@ pub fn set_language(value: &str) {
 /// Sync plan configuration when adding a new event
 pub fn sync_plan_config(date: String, time: String, cycle: i32, unit: &str, msg: String) {
     use rabbit_platform::config::{load_config, save_config};
+    use rabbit_models::config::ConfigValue;
     
     if let Ok(mut config) = load_config() {
-        config.modules.plan.date = date;
-        config.modules.plan.time = time;
-        config.modules.plan.cycle = cycle;
-        config.modules.plan.unit = unit.to_string();
-        config.modules.plan.msg = msg;
+        config.modules.insert("plan", "date", ConfigValue::String(date));
+        config.modules.insert("plan", "time", ConfigValue::String(time));
+        config.modules.insert("plan", "cycle", ConfigValue::Integer(cycle as i64));
+        config.modules.insert("plan", "unit", ConfigValue::String(unit.to_string()));
+        config.modules.insert("plan", "msg", ConfigValue::String(msg));
         if let Err(e) = save_config(&config) {
             tracing::warn!("Failed to save plan config: {}", e);
         }
@@ -614,11 +624,12 @@ pub fn sync_plan_config(date: String, time: String, cycle: i32, unit: &str, msg:
 /// Sync scan configuration when starting a scan
 pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
     use rabbit_platform::config::{load_config, save_config};
-    
+    use rabbit_models::config::ConfigValue;
+
     if let Ok(mut config) = load_config() {
-        config.modules.scan.start_ip = start_ip;
-        config.modules.scan.end_ip = end_ip;
-        config.modules.scan.filter = filter;
+        config.modules.scan.insert("start_ip".into(), ConfigValue::String(start_ip));
+        config.modules.scan.insert("end_ip".into(), ConfigValue::String(end_ip));
+        config.modules.scan.insert("filter".into(), ConfigValue::Boolean(filter));
         if let Err(e) = save_config(&config) {
             tracing::warn!("Failed to save scan config: {}", e);
         }
@@ -628,12 +639,13 @@ pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
 /// Sync HTTP configuration when starting the server
 pub fn sync_http_start_config(port: u16, shell: bool, autoindex: bool, videoplay: bool) {
     use rabbit_platform::config::{load_config, save_config};
-    
+    use rabbit_models::config::ConfigValue;
+
     if let Ok(mut config) = load_config() {
-        config.modules.http.port = port;
-        config.modules.http.shell = shell;
-        config.modules.http.autoindex = autoindex;
-        config.modules.http.videoplay = videoplay;
+        config.modules.http.insert("port".into(), ConfigValue::Integer(port as i64));
+        config.modules.http.insert("shell".into(), ConfigValue::Boolean(shell));
+        config.modules.http.insert("autoindex".into(), ConfigValue::Boolean(autoindex));
+        config.modules.http.insert("videoplay".into(), ConfigValue::Boolean(videoplay));
         if let Err(e) = save_config(&config) {
             tracing::warn!("Failed to save HTTP config: {}", e);
         }

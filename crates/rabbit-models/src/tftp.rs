@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 
-use crate::config::{TftpdConfig, TftpcConfig};
+use crate::config::ModuleConfigs;
 
 /// TFTP server configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17,16 +17,18 @@ pub struct TftpServerConfig {
     pub allow_overwrite: bool,
 }
 
-impl From<&TftpdConfig> for TftpServerConfig {
-    fn from(config: &TftpdConfig) -> Self {
+impl From<&ModuleConfigs> for TftpServerConfig {
+    fn from(modules: &ModuleConfigs) -> Self {
         Self {
             enabled: false,
-            bind_addr: format!("0.0.0.0:{}", config.port),
-            root_path: config.work_dirs.first().cloned().unwrap_or_default(),
-            block_size: config.blksize as usize,
-            timeout_secs: config.timeout as u64 / 1000,
+            bind_addr: format!("0.0.0.0:{}", modules.get_integer("tftpd", "port").unwrap_or(69)),
+            root_path: modules.get_array("tftpd", "work_dirs")
+                .and_then(|dirs| dirs.first().cloned())
+                .unwrap_or_default(),
+            block_size: modules.get_integer("tftpd", "blksize").unwrap_or(512) as usize,
+            timeout_secs: modules.get_integer("tftpd", "timeout").unwrap_or(200) as u64 / 1000,
             window_size: 1,
-            allow_overwrite: config.override_conflicts,
+            allow_overwrite: modules.get_bool("tftpd", "override_conflicts").unwrap_or(false),
         }
     }
 }
@@ -40,13 +42,15 @@ pub struct TftpClientConfig {
     pub timeout_secs: u64,
 }
 
-impl From<&TftpcConfig> for TftpClientConfig {
-    fn from(config: &TftpcConfig) -> Self {
+impl From<&ModuleConfigs> for TftpClientConfig {
+    fn from(modules: &ModuleConfigs) -> Self {
+        let server_addr = modules.get_string("tftpc", "server_addr").unwrap_or_else(|| "127.0.0.1".into());
+        let server_port = modules.get_integer("tftpc", "server_port").unwrap_or(69) as u16;
         Self {
-            server_addr: format!("{}:{}", config.server_addr, config.server_port),
+            server_addr: format!("{}:{}", server_addr, server_port),
             local_port: 0,
-            block_size: config.blksize as usize,
-            timeout_secs: config.timeout as u64 / 1000,
+            block_size: modules.get_integer("tftpc", "blksize").unwrap_or(1024) as usize,
+            timeout_secs: modules.get_integer("tftpc", "timeout").unwrap_or(200) as u64 / 1000,
         }
     }
 }

@@ -53,16 +53,16 @@ impl App {
 
         // Create services
         let mut ping_service = PingService::new();
-        let ping_log_file = config.modules.ping.log.clone();
+        let ping_log_file = config.modules.get_string("ping", "log").unwrap_or_default();
         ping_service.init(ping_log_file).await?;
 
         let mut http_service = HttpService::new();
-        http_service.init((&config.modules.http).into()).await?;
+        http_service.init((&config.modules).into()).await?;
 
         let mut tftp_service = TftpService::new();
         tftp_service.init(
-            (&config.modules.tftpd).into(),
-            (&config.modules.tftpc).into(),
+            (&config.modules).into(),
+            (&config.modules).into(),
         ).await?;
 
         let mut plan_service = PlanService::new();
@@ -70,7 +70,7 @@ impl App {
         plan_service.start().await?;
 
         let mut chat_service = ChatService::new();
-        chat_service.init((&config.modules.chat).into()).await?;
+        chat_service.init((&config.modules).into()).await?;
 
         let mut scan_service = ScanService::new();
         scan_service.init(rabbit_models::scan::ScannerConfig::default()).await?;
@@ -103,18 +103,23 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         {
             let config = self.view_model.read().await.get_config();
             // Restore HTTP items
-            for dir in &config.modules.http.dirs {
-                crate::ui_state::add_http_item(dir);
+            if let Some(dirs) = config.modules.get_array("http", "dirs") {
+                for dir in dirs {
+                    crate::ui_state::add_http_item(&dir);
+                }
             }
             // Restore TFTP directories
-            for dir in &config.modules.tftpd.work_dirs {
-                crate::ui_state::add_tftpd_dir(dir);
+            if let Some(dirs) = config.modules.get_array("tftpd", "work_dirs") {
+                for dir in dirs {
+                    crate::ui_state::add_tftpd_dir(&dir);
+                }
             }
             // Restore TFTP working directory selection
-            if let Some(idx) = config.modules.tftpd.working_dir_index {
-                // Convert 0-based config index to 1-based UI index
-                if idx < config.modules.tftpd.work_dirs.len() {
-                    crate::ui_state::set_tftpd_selected((idx + 1) as i32);
+            if let Some(idx) = config.modules.get_integer("tftpd", "working_dir_index") {
+                if let Some(dirs) = config.modules.get_array("tftpd", "work_dirs") {
+                    if idx < dirs.len() as i64 {
+                        crate::ui_state::set_tftpd_selected((idx + 1) as i32);
+                    }
                 }
             }
         }
@@ -184,7 +189,7 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         let top_requested = config.top;
         let systray_requested = config.systray;
         let autostart_requested = config.autostart;
-        let http_shell_requested = config.modules.http.shell;
+        let http_shell_requested = config.modules.get_bool("http", "shell").unwrap_or(false);
         drop(config);
         let tab_ptrs: Vec<usize> = vec![
             ping_tab.as_widget_ptr() as usize,
@@ -464,10 +469,10 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         
         // Restore business running states from config
         let config_for_restore = self.view_model.read().await.get_config();
-        let ping_restore = config_for_restore.modules.ping.running;
-        let http_restore = config_for_restore.modules.http.running;
-        let tftp_restore = config_for_restore.modules.tftpd.running;
-        let chat_restore = config_for_restore.modules.chat.running;
+        let ping_restore = config_for_restore.modules.get_bool("ping", "running").unwrap_or(false);
+        let http_restore = config_for_restore.modules.get_bool("http", "running").unwrap_or(false);
+        let tftp_restore = config_for_restore.modules.get_bool("tftpd", "running").unwrap_or(false);
+        let chat_restore = config_for_restore.modules.get_bool("chat", "running").unwrap_or(false);
         drop(config_for_restore);
         
         info!("Business states to restore: ping={}, http={}, tftpd={}, chat={}", 
@@ -519,7 +524,7 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         let window_handle: Option<usize> = None;
         
         let config = self.view_model.read().await.get_config();
-        let taskbar_enabled = config.modules.ping.taskbar;
+        let taskbar_enabled = config.modules.get_bool("ping", "taskbar").unwrap_or(true);
         drop(config);
         
         let app_clone = Arc::new(RwLock::new(AppHandle {
@@ -610,19 +615,20 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         self.chat_service.write().await.stop().await.ok();
 
         // Save running states to configuration
+        use rabbit_models::config::ConfigValue;
         let mut config = self.view_model.read().await.get_config();
-        config.modules.ping.running = ping_running;
-        config.modules.http.running = http_running;
-        config.modules.tftpd.running = tftp_running;
-        config.modules.chat.running = chat_running;
-        
+        config.modules.insert("ping", "running", ConfigValue::Boolean(ping_running));
+        config.modules.insert("http", "running", ConfigValue::Boolean(http_running));
+        config.modules.insert("tftpd", "running", ConfigValue::Boolean(tftp_running));
+        config.modules.insert("chat", "running", ConfigValue::Boolean(chat_running));
+
         self.view_model.write().await.update_config(config.clone());
-        
+
         rabbit_platform::config::update_config(|cfg| {
-            cfg.modules.ping.running = ping_running;
-            cfg.modules.http.running = http_running;
-            cfg.modules.tftpd.running = tftp_running;
-            cfg.modules.chat.running = chat_running;
+            cfg.modules.insert("ping", "running", ConfigValue::Boolean(ping_running));
+            cfg.modules.insert("http", "running", ConfigValue::Boolean(http_running));
+            cfg.modules.insert("tftpd", "running", ConfigValue::Boolean(tftp_running));
+            cfg.modules.insert("chat", "running", ConfigValue::Boolean(chat_running));
         }).ok();
         
         info!("Saved business running states: ping={}, http={}, tftpd={}, chat={}", 
@@ -809,10 +815,10 @@ impl EventHandler for AppHandle {
                         } else {
                             // Start ping from config
                             let config = self.view_model.read().await.get_config();
-                            let target = config.modules.ping.target.clone();
-                            let interval = config.modules.ping.interval as u64;
-                            let count: i32 = config.modules.ping.count;
-                            let stop_on_loss = config.modules.ping.stoponloss;
+                            let target = config.modules.get_string("ping", "target").unwrap_or_default();
+                            let interval = config.modules.get_integer("ping", "interval").unwrap_or(1000) as u64;
+                            let count: i32 = config.modules.get_integer("ping", "count").unwrap_or(-1) as i32;
+                            let stop_on_loss = config.modules.get_bool("ping", "stoponloss").unwrap_or(false);
                             drop(config);
 
                             if target.is_empty() {
@@ -947,8 +953,8 @@ impl EventHandler for AppHandle {
                             crate::ui_state::set_scan_running(false);
                         } else {
                             let config = self.view_model.read().await.get_config();
-                            let start_ip = config.modules.scan.start_ip.clone();
-                            let end_ip = config.modules.scan.end_ip.clone();
+                            let start_ip = config.modules.get_string("scan", "start_ip").unwrap_or_default();
+                            let end_ip = config.modules.get_string("scan", "end_ip").unwrap_or_default();
 
                             if start_ip.is_empty() || end_ip.is_empty() {
                                 warn!("Scan parameters not configured");
@@ -1022,8 +1028,8 @@ impl EventHandler for AppHandle {
                             crate::ui_state::append_http_log("HTTP server stopped.\r\n");
                         } else {
                             let config = self.view_model.read().await.get_config();
-                            let http_config = config.modules.http.clone();
-                            let server_config: HttpServerConfig = (&http_config).into();
+                            let server_config: HttpServerConfig = (&config.modules).into();
+                            let port = server_config.port;
                             if server_config.root_path.is_empty() {
                                 warn!("No HTTP directories configured, cannot start server");
                                 crate::ui_state::append_http_log("Error: No directories configured. Add files or directories first.\r\n");
@@ -1031,13 +1037,13 @@ impl EventHandler for AppHandle {
                             }
                             drop(config);
 
-                            info!("Starting HTTP server on port {}", http_config.port);
+                            info!("Starting HTTP server on port {}", port);
                             let mut service = self.http_service.write().await;
                             service.init(server_config).await?;
                             service.start().await?;
                             self.view_model.write().await.set_http_running(true);
                             crate::ui_state::set_http_running(true);
-                            crate::ui_state::append_http_log(&format!("HTTP server started on port {}.\r\n", http_config.port));
+                            crate::ui_state::append_http_log(&format!("HTTP server started on port {}.\r\n", port));
 
                             let http_service = self.http_service.clone();
                             let handle = tokio::spawn(async move {
@@ -1067,10 +1073,9 @@ impl EventHandler for AppHandle {
                             crate::ui_state::append_tftpd_log("TFTP server stopped.\r\n");
                         } else {
                             let config = self.view_model.read().await.get_config();
-                            let tftpd_config = config.modules.tftpd.clone();
-                            let tftpc_config = config.modules.tftpc.clone();
-                            let server_config: TftpServerConfig = (&tftpd_config).into();
-                            let client_config: TftpClientConfig = (&tftpc_config).into();
+                            let server_config: TftpServerConfig = (&config.modules).into();
+                            let client_config: TftpClientConfig = (&config.modules).into();
+                            let bind_addr = server_config.bind_addr.clone();
                             if server_config.root_path.is_empty() {
                                 warn!("No TFTP directories configured, cannot start server");
                                 crate::ui_state::append_tftpd_log("Error: No directories configured. Add directories first.\r\n");
@@ -1078,12 +1083,12 @@ impl EventHandler for AppHandle {
                             }
                             drop(config);
 
-                            info!("Starting TFTP server on port {}", tftpd_config.port);
+                            info!("Starting TFTP server on {}", bind_addr);
                             let mut service = self.tftp_service.write().await;
                             service.init(server_config, client_config).await?;
                             service.start_server().await?;
                             self.view_model.write().await.set_tftp_server_running(true);
-                            crate::ui_state::append_tftpd_log(&format!("TFTP server started on port {}.\r\n", tftpd_config.port));
+                            crate::ui_state::append_tftpd_log(&format!("TFTP server started on {}.\r\n", bind_addr));
                         }
                     }
                     "chat" => {
@@ -1095,16 +1100,18 @@ impl EventHandler for AppHandle {
                             crate::ui_state::set_chat_users(&[]);
                         } else {
                             let config = self.view_model.read().await.get_config();
-                            let chat_config = config.modules.chat.clone();
+                            let username = config.modules.get_string("chat", "username").unwrap_or_else(|| "User@PC".into());
+                            let port = config.modules.get_integer("chat", "port").unwrap_or(1314) as u16;
+                            let broadcast_addr = config.modules.get_string("chat", "broadcast_addr").unwrap_or_else(|| "255.255.255.255".into());
                             drop(config);
 
-                            info!("Starting chat as {} on port {}", chat_config.username, chat_config.port);
+                            info!("Starting chat as {} on port {}", username, port);
                             let mut service = self.chat_service.write().await;
                             service.init(ChatConfig {
                                 enabled: true,
-                                username: chat_config.username.clone(),
-                                port: chat_config.port,
-                                multicast_addr: chat_config.broadcast_addr.clone(),
+                                username,
+                                port,
+                                multicast_addr: broadcast_addr,
                             }).await?;
                             service.start().await?;
                             self.view_model.write().await.set_chat_running(true);
@@ -1284,8 +1291,8 @@ impl EventHandler for AppHandle {
                 let autostart = config.autostart;
                 let systray = config.systray;
                 let top = config.top;
-                let http_shell = config.modules.http.shell;
-                let new_ping_interval = config.modules.ping.interval;
+                let http_shell = config.modules.get_bool("http", "shell").unwrap_or(false);
+                let new_ping_interval = config.modules.get_integer("ping", "interval").unwrap_or(1000);
                 
                 // Check if ping is currently running
                 let ping_was_running = self.view_model.read().await.is_ping_running();

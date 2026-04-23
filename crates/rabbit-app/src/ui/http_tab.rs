@@ -53,11 +53,11 @@ impl TabComponent for HttpTab {
         opt_input.set_value(&defaults::http_options());
 
         // Shell checkbox (fixed width) - load from config
-        let http_config = rabbit_platform::config::load_config()
-            .map(|c| c.modules.http)
-            .unwrap_or_default();
+        let shell_checked = rabbit_platform::config::load_config()
+            .map(|c| c.modules.get_bool("http", "shell").unwrap_or(false))
+            .unwrap_or(false);
         let mut shell_check = CheckButton::default().with_label("shell");
-        shell_check.set_checked(http_config.shell);
+        shell_check.set_checked(shell_checked);
         ctrl_row.fixed(&shell_check, 60);
 
         // Start/Stop button (fixed width, right aligned)
