@@ -1,14 +1,49 @@
 //! IP Scanner Service
 
 use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
-use rabbit_models::scan::{ScanRange, ScanResult, ScannerConfig, ScannerState};
-use rabbit_platform::config::load_config;
+pub use rabbit_models::scan::ScanRange;
 use std::net::Ipv4Addr;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock, Semaphore};
 use tokio::task::JoinHandle;
 use tokio::time::{timeout, Duration};
 use tracing::{error, info};
+
+/// Internal Scanner configuration
+#[derive(Debug, Clone)]
+struct ScannerConfig {
+    pub timeout_ms: u64,
+    pub concurrent: usize,
+}
+
+impl Default for ScannerConfig {
+    fn default() -> Self {
+        Self {
+            timeout_ms: 1500,
+            concurrent: 256,
+        }
+    }
+}
+
+/// Internal Scanner state
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ScannerState {
+    Idle,
+    Scanning { progress: u8 },
+    Completed,
+    Cancelled,
+}
+
+/// Internal Scan result
+#[derive(Debug, Clone)]
+struct ScanResult {
+    pub ip: Ipv4Addr,
+    pub online: bool,
+    pub hostname: Option<String>,
+    pub mac_address: Option<String>,
+    pub response_time_ms: Option<f64>,
+    pub open_ports: Vec<u16>,
+}
 
 /// IP Scanner service
 pub struct ScanService {
@@ -49,28 +84,18 @@ impl ScanService {
         }
     }
 
-    /// Initialize with configuration
+    /// Initialize the service
     pub async fn init(&mut self) -> Result<()> {
-        let config = load_config()?;
-        let modules = &config.modules;
-        let scanner_config = ScannerConfig {
-            timeout_ms: modules.get_integer("scan", "timeout_ms").unwrap_or(1500) as u64,
-            concurrent: modules.get_integer("scan", "concurrent").unwrap_or(256) as usize,
-            retry_count: modules.get_integer("scan", "retry_count").unwrap_or(1) as u32,
-        };
-        *self.config.write().await = scanner_config;
         info!("Scan service initialized");
         Ok(())
     }
 
-    /// Start scanning a range using semaphore-based concurrency
+    /// Start scanning a range
     pub async fn scan(&mut self, range: ScanRange) -> Result<()> {
         let mut state = self.state.write().await;
-        if matches!(*state, ScannerState::Scanning { .. }) {
+        if let ScannerState::Scanning { .. } = *state {
             return Err(ServiceError::AlreadyRunning);
         }
-        // Reset to idle if previous scan completed or was cancelled
-        *state = ScannerState::Idle;
         *state = ScannerState::Scanning { progress: 0 };
         drop(state);
 
@@ -78,7 +103,6 @@ impl ScanService {
             let _ = tx.send(UiData::ScanProgress("Starting scan...".to_string())).await;
         }
 
-        // Clear previous results
         self.results.write().await.clear();
 
         let (cancel_tx, mut cancel_rx) = mpsc::channel(1);
@@ -92,12 +116,8 @@ impl ScanService {
         let handle = tokio::spawn(async move {
             let ips = calculate_ip_range(range.start, range.end);
             let total = ips.len();
-
-            // Use semaphore for true concurrent limiting
             let semaphore = Arc::new(Semaphore::new(config.concurrent));
             let completed = Arc::new(std::sync::atomic::AtomicUsize::new(0));
-
-            // Spawn all tasks concurrently, limited by semaphore
             let mut join_set = tokio::task::JoinSet::new();
 
             for ip in ips {
@@ -107,26 +127,30 @@ impl ScanService {
                 let completed_count = completed.clone();
                 let results_clone = results.clone();
                 let state_clone = state.clone();
+                let tx_clone = tx.clone();
 
                 join_set.spawn(async move {
                     let _permit = permit.acquire().await.unwrap();
                     let result = scan_host(ip, port, timeout_ms).await;
 
-                    // Store result immediately
-                    results_clone.write().await.push(result.clone());
+                    if result.online {
+                        if let Some(ref tx) = tx_clone {
+                            let msg = format!("Found online host: {}{}", 
+                                result.ip, 
+                                result.hostname.as_ref().map(|h| format!(" ({})", h)).unwrap_or_default()
+                            );
+                            let _ = tx.send(UiData::Log(Module::Scan, msg)).await;
+                        }
+                    }
 
-                    // Update progress atomically
+                    results_clone.write().await.push(result);
                     let done = completed_count.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
                     let progress = ((done as f64 / total as f64) * 100.0) as u8;
                     *state_clone.write().await = ScannerState::Scanning { progress };
-
-                    result
                 });
             }
 
-            // Collect results as they complete
             while let Some(res) = join_set.join_next().await {
-                // Check for cancellation
                 if cancel_rx.try_recv().is_ok() {
                     join_set.abort_all();
                     *state.write().await = ScannerState::Cancelled;
@@ -135,7 +159,6 @@ impl ScanService {
                     }
                     return;
                 }
-
                 if let Err(e) = res {
                     error!("Scan task error: {}", e);
                 }
@@ -143,21 +166,8 @@ impl ScanService {
 
             *state.write().await = ScannerState::Completed;
             if let Some(ref tx) = tx {
-                let _ = tx.send(UiData::ScanProgress("Scan completed".to_string())).await;
-                
                 let online_count = results.read().await.iter().filter(|r| r.online).count();
-                if online_count > 0 {
-                    let hosts: Vec<String> = results.read().await
-                        .iter()
-                        .filter(|r| r.online)
-                        .map(|r| r.ip.to_string())
-                        .collect();
-                    
-                    for host in hosts {
-                        let _ = tx.send(UiData::Log(Module::Scan, format!("Found online host: {}", host))).await;
-                    }
-                    let _ = tx.send(UiData::Log(Module::Scan, format!("Found {} online hosts", online_count))).await;
-                }
+                let _ = tx.send(UiData::ScanProgress(format!("Scan completed. Found {} online hosts", online_count))).await;
             }
         });
 
@@ -188,72 +198,15 @@ impl ScanService {
         if let Some(tx) = self.cancel_tx.take() {
             let _ = tx.send(()).await;
         }
-
         if let Some(handle) = self.scan_handle.take() {
             let _ = handle.await;
         }
-
         *self.state.write().await = ScannerState::Idle;
         info!("Scan cancelled");
         Ok(())
     }
-
-    /// Get current state
-    pub async fn get_state(&self) -> ScannerState {
-        *self.state.read().await
-    }
-
-    /// Get scan results
-    pub async fn get_results(&self) -> Vec<ScanResult> {
-        self.results.read().await.clone()
-    }
-
-    /// Get only online hosts
-    pub async fn get_online_hosts(&self) -> Vec<ScanResult> {
-        self.results.read().await
-            .iter()
-            .filter(|r| r.online)
-            .cloned()
-            .collect()
-    }
-
-    /// Clear results
-    pub async fn clear_results(&self) {
-        self.results.write().await.clear();
-        *self.state.write().await = ScannerState::Idle;
-    }
-
-    /// Get scan progress
-    pub async fn get_progress(&self) -> Option<ScanProgress> {
-        let state = *self.state.read().await;
-        let results = self.results.read().await;
-        let found_hosts = results.iter().filter(|r| r.online).count();
-
-        match state {
-            ScannerState::Scanning { progress } => Some(ScanProgress {
-                percentage: progress,
-                found_hosts,
-                is_scanning: true,
-            }),
-            ScannerState::Completed => Some(ScanProgress {
-                percentage: 100,
-                found_hosts,
-                is_scanning: false,
-            }),
-            _ => None,
-        }
-    }
-
-    /// Get last scan results
-    pub async fn get_last_results(&self) -> Option<Vec<ScanResult>> {
-        let results = self.results.read().await;
-        if results.is_empty() {
-            None
-        } else {
-            Some(results.clone())
-        }
-    }
 }
+
 
 /// Scan progress information
 #[derive(Debug, Clone)]

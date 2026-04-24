@@ -1,20 +1,5 @@
 use tokio::sync::mpsc;
-
-pub enum UiData {
-    Log(Module, String),
-    PingStats(String),
-    PingState { address: String, progress: u32, total: u32, color: String },
-    ScanProgress(String),
-    PlanReminder(String),
-    ChatMessage(String, String),
-    ChatUserList(String),
-    Error(Module, String),
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Module {
-    Ping, Http, Tftpd, Tftpc, Scan, Chat, Plan,
-}
+pub use rabbit_models::{UiData, Module};
 
 pub struct UiChannels {
     pub ping_tx: mpsc::Sender<UiData>,

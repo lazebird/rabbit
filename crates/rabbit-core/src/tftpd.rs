@@ -1,15 +1,50 @@
 //! TFTP Server Service
 
 use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
-use rabbit_models::tftp::{TftpLogEntry, TftpTransfer};
 use rabbit_platform::config::get_integer;
-
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 use tracing::{error, info};
+
+/// Internal TFTP transfer operation
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TftpOperation {
+    Upload,
+    Download,
+}
+
+/// Internal TFTP transfer state
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TftpTransferState {
+    Transferring { progress: u8 },
+    Completed,
+    Error,
+}
+
+/// Internal TFTP transfer info
+#[derive(Debug, Clone)]
+struct TftpTransfer {
+    pub id: String,
+    pub operation: TftpOperation,
+    pub filename: String,
+    pub remote_addr: String,
+    pub state: TftpTransferState,
+    pub bytes_transferred: u64,
+}
+
+/// Internal TFTP log entry
+#[derive(Debug, Clone)]
+struct TftpLogEntry {
+    pub timestamp: chrono::DateTime<chrono::Local>,
+    pub remote_addr: std::net::SocketAddr,
+    pub operation: String,
+    pub filename: String,
+    pub success: bool,
+    pub bytes_transferred: u64,
+}
 
 /// TFTP server internal configuration
 #[derive(Debug, Clone, Default)]
@@ -29,7 +64,7 @@ impl ServerConfig {
             root_path: get_array_first("tftpd", "work_dirs").unwrap_or_else(|| ".".to_string()),
             block_size: get_integer("tftpd", "blksize").unwrap_or(512) as usize,
             timeout_secs: get_integer("tftpd", "timeout").unwrap_or(200) as u64 / 1000,
-            window_size: 1, // Default window size
+            window_size: 1,
         }
     }
 }
@@ -109,16 +144,16 @@ impl TftpdService {
         let timeout_secs = config.timeout_secs;
         let block_size = config.block_size;
         let window_size = config.window_size;
-        let tx = self.tx.clone();
+        let tx_ui = self.tx.clone();
 
         let handle = tokio::task::spawn_blocking(move || {
             info!("Starting TFTP server on {} with root: {}", bind_addr, root_path);
-            
+
             let rt = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
                 .expect("Failed to create runtime");
-            
+
             rt.block_on(async {
                 match async_tftp::server::TftpServerBuilder::with_dir_rw(&root_path) {
                     Ok(builder) => {
@@ -129,17 +164,21 @@ impl TftpdService {
                                 return;
                             }
                         };
-                        
+
                         let builder = builder
                             .bind(addr)
                             .timeout(std::time::Duration::from_secs(timeout_secs))
                             .block_size_limit(block_size as u16)
                             .window_size_limit(window_size as u16)
                             .max_send_retries(100);
-                        
+
                         match builder.build().await {
                             Ok(server) => {
                                 info!("TFTP server started successfully");
+                                if let Some(ref tx) = tx_ui {
+                                    let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server started".to_string()));
+                                }
+
                                 let server_fut = server.serve();
                                 tokio::select! {
                                     _ = server_fut => {
@@ -163,10 +202,7 @@ impl TftpdService {
         });
 
         self.server_handle = Some(handle);
-        if let Some(tx) = &self.tx {
-            let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server started".to_string()));
-        }
-        info!("TFTP server started");
+        info!("TFTP server handle created");
         Ok(())
     }
 
@@ -183,6 +219,10 @@ impl TftpdService {
 
         if let Some(handle) = self.server_handle.take() {
             let _ = handle.await;
+        }
+
+        if let Some(ref tx) = self.tx {
+            let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server stopped".to_string()));
         }
 
         info!("TFTP server stopped");
@@ -208,12 +248,8 @@ impl TftpdService {
     pub fn is_running(&self) -> bool {
         self.server_handle.is_some()
     }
-
-    /// Get logs
-    pub async fn get_logs(&self) -> Vec<TftpLogEntry> {
-        self.logs.read().await.clone()
-    }
 }
+
 
 
 impl Default for TftpdService {

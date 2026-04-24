@@ -602,15 +602,10 @@ Ok(Self {
         });
 
         // Spawn event handler task
-        #[cfg(target_os = "windows")]
-        let window_handle: Option<usize> = Some(main_win.raw_handle() as usize);
-        #[cfg(not(target_os = "windows"))]
-        let window_handle: Option<usize> = None;
-        
         let config = self.view_model.read().await.get_config();
         let taskbar_enabled = config.modules.get_bool("ping", "taskbar").unwrap_or(true);
         drop(config);
-        
+
         let app_clone = Arc::new(RwLock::new(AppHandle {
             view_model: self.view_model.clone(),
             ping_service: self.ping_service.clone(),
@@ -622,11 +617,10 @@ Ok(Self {
             scan_service: self.scan_service.clone(),
             ping_task: self.ping_task.clone(),
             scan_task: self.scan_task.clone(),
-            #[cfg(target_os = "windows")]
-            window_handle,
             ping_history: std::collections::HashMap::new(),
             taskbar_enabled,
         }));
+
 
         let event_handle = tokio::spawn(async move {
             Self::event_loop(app_clone, event_receiver).await;
@@ -1136,36 +1130,9 @@ impl EventHandler for AppHandle {
             // Plan
             UiEvent::PlanAdd { date, time, cycle, unit, msg } => {
                 info!("Adding plan for {} {}: {} (cycle={}, unit={})", date, time, msg, cycle, unit);
-                use chrono::{Local, NaiveDate, NaiveTime, NaiveDateTime};
-                use rabbit_models::plan::{Schedule, RepeatUnit};
-
-                // Parse datetime
-                let datetime = if let (Ok(d), Ok(t)) = (
-                    NaiveDate::parse_from_str(&date, "%Y/%m/%d"),
-                    NaiveTime::parse_from_str(&time, "%H:%M")
-                ) {
-                    NaiveDateTime::new(d, t).and_local_timezone(Local).unwrap()
-                } else {
-                    Local::now()
-                };
-
-                let schedule = if cycle > 0 {
-                    // Repeating schedule
-                    let repeat_unit = match unit.as_str() {
-                        "hour" => RepeatUnit::Hour,
-                        "day" => RepeatUnit::Day,
-                        _ => RepeatUnit::Minute, // default to minute
-                    };
-                    Schedule::Repeating { datetime, cycle, unit: repeat_unit }
-                } else {
-                    // One-time schedule
-                    Schedule::Once { datetime }
-                };
-                
-                let id = format!("task-{}", uuid::Uuid::new_v4());
-                let task = rabbit_models::plan::Task::new(id, msg, schedule);
-                self.plan_service.write().await.add_task(task).await?;
+                self.plan_service.write().await.add_task(&date, &time, cycle, &unit, &msg).await?;
             }
+
             UiEvent::PlanRemove { id } => {
                 info!("Removing plan {}", id);
                 self.plan_service.write().await.remove_task(&id).await?;
@@ -1337,3 +1304,5 @@ async fn handle_tftp_data(data: UiData) {
         }
     }
 }
+
+

@@ -1,7 +1,6 @@
 //! TFTP Client Service
 
 use crate::{Result, ServiceError, ui_channel::{UiData, Module}};
-use rabbit_models::tftp::TftpTransfer;
 use rabbit_platform::config::{get_integer, get_string};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -17,7 +16,13 @@ const TFTP_OPCODE_DATA: u16 = 3;
 const TFTP_OPCODE_ACK: u16 = 4;
 const TFTP_OPCODE_ERROR: u16 = 5;
 const TFTP_BLOCK_SIZE: usize = 512;
-const TFTP_TIMEOUT_SECS: u64 = 5;
+
+/// Internal TFTP transfer info
+#[derive(Debug, Clone)]
+struct TftpTransfer {
+    pub id: String,
+    pub filename: String,
+}
 
 /// TFTP client internal configuration
 #[derive(Debug, Clone, Default)]
@@ -31,10 +36,12 @@ impl ClientConfig {
     fn from_platform() -> Self {
         let server_addr = get_string("tftpc", "server_addr").unwrap_or_else(|| "127.0.0.1".into());
         let server_port = get_integer("tftpc", "server_port").unwrap_or(69) as u16;
+        let blksize = get_integer("tftpc", "blksize").unwrap_or(1024) as usize;
+        let timeout = get_integer("tftpc", "timeout").unwrap_or(200) as u64 / 1000;
         Self {
             server_addr: format!("{}:{}", server_addr, server_port),
-            block_size: get_integer("tftpc", "blksize").unwrap_or(1024) as usize,
-            timeout_secs: get_integer("tftpc", "timeout").unwrap_or(200) as u64 / 1000,
+            block_size: if blksize == 0 { TFTP_BLOCK_SIZE } else { blksize },
+            timeout_secs: if timeout == 0 { 1 } else { timeout },
         }
     }
 }
@@ -82,25 +89,15 @@ impl TftpcService {
         self.download_from(&config.server_addr, remote_filename, local_path).await
     }
 
-
     async fn upload_to(&self, server_addr: &str, local_path: &str, remote_filename: &str) -> Result<String> {
         let transfer_id = format!("upload_{}_{}", remote_filename, chrono::Local::now().timestamp());
-
         let transfer = TftpTransfer {
             id: transfer_id.clone(),
-            operation: "upload".to_string(),
             filename: remote_filename.to_string(),
-            remote_addr: server_addr.to_string(),
-            state: "transferring".to_string(),
-            progress: 0,
-            bytes_transferred: 0,
-            total_bytes: None,
-            error: None,
         };
 
-        self.transfers.write().await.insert(transfer_id.clone(), transfer.clone());
+        self.transfers.write().await.insert(transfer_id.clone(), transfer);
 
-        let transfers = Arc::clone(&self.transfers);
         let tid = transfer_id.clone();
         let server = server_addr.to_string();
         let local = local_path.to_string();
@@ -108,50 +105,38 @@ impl TftpcService {
         let tx = self.tx.clone();
 
         tokio::spawn(async move {
+            if let Some(ref tx_ui) = tx {
+                let _ = tx_ui.send(UiData::Log(Module::Tftpc, format!("Uploading {} to {}...", local, server))).await;
+            }
+
             match Self::do_upload(&server, &local, &remote).await {
                 Ok(bytes) => {
                     info!("Upload completed: {} bytes", bytes);
-                    if let Some(t) = transfers.write().await.get_mut(&tid) {
-                        t.state = "completed".to_string();
-                        t.bytes_transferred = bytes as u64;
-                        t.progress = 100;
-                    }
-                    if let Some(ref tx) = tx {
-                        let _ = tx.send(UiData::Log(Module::Tftpc, format!("Uploaded {} bytes", bytes)));
+                    if let Some(ref tx_ui) = tx {
+                        let _ = tx_ui.send(UiData::Log(Module::Tftpc, format!("Uploaded {} bytes successfully", bytes))).await;
                     }
                 }
                 Err(e) => {
                     error!("Upload failed: {}", e);
-                    if let Some(t) = transfers.write().await.get_mut(&tid) {
-                        t.state = "error".to_string();
-                        t.error = Some(e.to_string());
+                    if let Some(ref tx_ui) = tx {
+                        let _ = tx_ui.send(UiData::Log(Module::Tftpc, format!("Upload failed: {}", e))).await;
                     }
                 }
             }
         });
 
-        info!("Starting upload: {} -> {}@{}", local_path, remote_filename, server_addr);
         Ok(transfer_id)
     }
 
     async fn download_from(&self, server_addr: &str, remote_filename: &str, local_path: &str) -> Result<String> {
         let transfer_id = format!("download_{}_{}", remote_filename, chrono::Local::now().timestamp());
-
         let transfer = TftpTransfer {
             id: transfer_id.clone(),
-            operation: "download".to_string(),
             filename: remote_filename.to_string(),
-            remote_addr: server_addr.to_string(),
-            state: "transferring".to_string(),
-            progress: 0,
-            bytes_transferred: 0,
-            total_bytes: None,
-            error: None,
         };
 
-        self.transfers.write().await.insert(transfer_id.clone(), transfer.clone());
+        self.transfers.write().await.insert(transfer_id.clone(), transfer);
 
-        let transfers = Arc::clone(&self.transfers);
         let tid = transfer_id.clone();
         let server = server_addr.to_string();
         let local = local_path.to_string();
@@ -159,29 +144,26 @@ impl TftpcService {
         let tx = self.tx.clone();
 
         tokio::spawn(async move {
+            if let Some(ref tx_ui) = tx {
+                let _ = tx_ui.send(UiData::Log(Module::Tftpc, format!("Downloading {} from {}...", remote, server))).await;
+            }
+
             match Self::do_download(&server, &remote, &local).await {
                 Ok(bytes) => {
                     info!("Download completed: {} bytes", bytes);
-                    if let Some(t) = transfers.write().await.get_mut(&tid) {
-                        t.state = "completed".to_string();
-                        t.bytes_transferred = bytes as u64;
-                        t.progress = 100;
-                    }
-                    if let Some(ref tx) = tx {
-                        let _ = tx.send(UiData::Log(Module::Tftpc, format!("Downloaded {} bytes", bytes)));
+                    if let Some(ref tx_ui) = tx {
+                        let _ = tx_ui.send(UiData::Log(Module::Tftpc, format!("Downloaded {} bytes successfully", bytes))).await;
                     }
                 }
                 Err(e) => {
                     error!("Download failed: {}", e);
-                    if let Some(t) = transfers.write().await.get_mut(&tid) {
-                        t.state = "error".to_string();
-                        t.error = Some(e.to_string());
+                    if let Some(ref tx_ui) = tx {
+                        let _ = tx_ui.send(UiData::Log(Module::Tftpc, format!("Download failed: {}", e))).await;
                     }
                 }
             }
         });
 
-        info!("Starting download: {}@{} -> {}", remote_filename, server_addr, local_path);
         Ok(transfer_id)
     }
 
@@ -204,7 +186,6 @@ impl TftpcService {
         let mut filename = remote.as_bytes().to_vec();
         filename.push(0);
         let mode = b"octet";
-        let mode_len = mode.len();
 
         let mut packet = Vec::new();
         packet.extend_from_slice(&TFTP_OPCODE_WRQ.to_be_bytes());
@@ -317,18 +298,6 @@ impl TftpcService {
         file.write_all(&file_data).await?;
 
         Ok(file_data.len() as u64)
-    }
-
-    pub async fn get_transfer(&self, id: &str) -> Option<TftpTransfer> {
-        self.transfers.read().await.get(id).cloned()
-    }
-
-    pub async fn get_active_transfers(&self) -> Vec<TftpTransfer> {
-        self.transfers.read().await
-            .values()
-            .filter(|t| t.state == "transferring")
-            .cloned()
-            .collect()
     }
 }
 

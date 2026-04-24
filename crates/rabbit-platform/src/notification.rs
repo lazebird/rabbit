@@ -1,7 +1,6 @@
 //! Platform notification support
 
 use super::Result;
-use rabbit_models::plan::Task;
 
 /// Show a notification
 pub fn show_notification(title: &str, message: &str) -> Result<()> {
@@ -102,9 +101,9 @@ fn show_notification_macos(title: &str, message: &str) -> Result<()> {
 }
 
 /// Show task reminder notification
-pub fn show_task_reminder(task: &Task) -> Result<()> {
+pub fn show_task_reminder(title: &str, description: Option<&str>) -> Result<()> {
     show_notification(
-        &format!("Reminder: {}", task.title),
-        task.description.as_deref().unwrap_or("Time's up!")
+        &format!("Reminder: {}", title),
+        description.unwrap_or("Time's up!")
     )
 }

@@ -1,11 +1,9 @@
 //! Ping Service
 
 use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
-use rabbit_models::ping::{PingResult, PingState, PingSummary};
 use rabbit_platform::config::get_string;
 use rand::random;
 use serde::{Deserialize, Serialize};
-use socket2::Type;
 use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicU16, AtomicU32, Ordering};
@@ -16,7 +14,7 @@ use tokio::sync::{mpsc, RwLock};
 use tokio::time::interval;
 use tracing::info;
 
-/// Ping target configuration (Runtime model)
+/// Internal Ping target model
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PingTarget {
     pub address: String,
@@ -40,12 +38,26 @@ impl PingTarget {
     }
 }
 
+/// Internal Ping result
+#[derive(Debug, Clone)]
+struct PingResult {
+    pub success: bool,
+    pub duration_ms: Option<f64>,
+    pub ttl: Option<u8>,
+}
+
+/// Internal Ping session state
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PingState {
+    Idle,
+    Running,
+}
+
 /// Ping service for managing ping operations
 pub struct PingService {
     state: Arc<RwLock<PingState>>,
     targets: Arc<RwLock<Vec<PingTarget>>>,
     results: Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
-    consumed: Arc<RwLock<HashMap<String, usize>>>,
     command_tx: Option<mpsc::Sender<PingCommand>>,
     sequence: Arc<AtomicU16>,
     client: Option<Arc<Client>>,
@@ -54,9 +66,7 @@ pub struct PingService {
 }
 
 #[derive(Debug)]
-#[allow(dead_code)]
 enum PingCommand {
-    Start,
     Stop,
     AddTarget(PingTarget),
     RemoveTarget(String),
@@ -68,7 +78,6 @@ impl PingService {
             state: Arc::new(RwLock::new(PingState::Idle)),
             targets: Arc::new(RwLock::new(Vec::new())),
             results: Arc::new(RwLock::new(HashMap::new())),
-            consumed: Arc::new(RwLock::new(HashMap::new())),
             command_tx: None,
             sequence: Arc::new(AtomicU16::new(0)),
             client: None,
@@ -82,7 +91,6 @@ impl PingService {
             state: Arc::new(RwLock::new(PingState::Idle)),
             targets: Arc::new(RwLock::new(Vec::new())),
             results: Arc::new(RwLock::new(HashMap::new())),
-            consumed: Arc::new(RwLock::new(HashMap::new())),
             command_tx: None,
             sequence: Arc::new(AtomicU16::new(0)),
             client: None,
@@ -91,39 +99,14 @@ impl PingService {
         }
     }
 
-    pub async fn send(&self, data: UiData) {
-        if let Some(tx) = &self.tx {
-            let _ = tx.send(data).await;
-        }
-    }
-
     pub async fn init(&mut self) -> Result<()> {
-        let log_file = get_string("ping", "log").unwrap_or_default();
-        
-        // Try to create ping client with RAW socket type to get TTL on Linux
-        // RAW socket requires root/CAP_NET_RAW, so fallback to DGRAM if it fails
-        let config = Config::builder()
-            .sock_type_hint(Type::RAW)
-            .build();
-        let client = match Client::new(&config) {
-            Ok(client) => {
-                info!("Ping service initialized with RAW socket (TTL available)");
-                if !log_file.is_empty() {
-                    info!("Ping log file enabled: {}", log_file);
-                }
-                client
-            }
-            Err(e) => {
-                info!("RAW socket failed ({}), falling back to DGRAM socket", e);
-                Client::new(&config)
-                    .map_err(|e| ServiceError::Other(format!("Failed to create ping client: {}", e)))?
-            }
-        };
+        let config = Config::builder().build();
+        let client = Client::new(&config)
+            .map_err(|e| ServiceError::Other(format!("Failed to create ping client: {}", e)))?;
         self.client = Some(Arc::new(client));
         Ok(())
     }
 
-    /// Start the ping service
     pub async fn start(&mut self) -> Result<()> {
         let mut state = self.state.write().await;
         if *state != PingState::Idle {
@@ -135,41 +118,25 @@ impl PingService {
         let (tx, mut rx) = mpsc::channel(32);
         self.command_tx = Some(tx);
 
-        if let Some(ref tx) = self.tx {
-            let _ = tx.send(UiData::PingState { address: String::new(), progress: 0, total: 0, color: "green".to_string() }).await;
-        }
-
         let state = Arc::clone(&self.state);
         let targets = Arc::clone(&self.targets);
         let results = Arc::clone(&self.results);
-        let consumed = Arc::clone(&self.consumed);
         let sequence = Arc::clone(&self.sequence);
         let sent_count = Arc::clone(&self.sent_count);
         let client = self.client.clone();
-        let tx = self.tx.clone();
+        let tx_ui = self.tx.clone();
 
         tokio::spawn(async move {
-            let mut current_interval_ms = {
-                let targets_guard = targets.read().await;
-                targets_guard.first().map(|t| t.interval_ms).unwrap_or(1000)
-            };
+            let mut current_interval_ms = 1000;
             let mut ping_interval = interval(Duration::from_millis(current_interval_ms));
             let mut sent_per_target: HashMap<String, u32> = HashMap::new();
-
-            if *state.read().await == PingState::Running {
-                if let Some(ref client) = client {
-                    let log_file = get_string("ping", "log").unwrap_or_default();
-                    PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target, &tx).await;
-                }
-            }
 
             loop {
                 tokio::select! {
                     _ = ping_interval.tick() => {
                         if *state.read().await == PingState::Running {
                             if let Some(ref client) = client {
-                                let log_file = get_string("ping", "log").unwrap_or_default();
-                                PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target, &tx).await;
+                                PingService::ping_all(client, &targets, &results, &sequence, &sent_count, &mut sent_per_target, &tx_ui).await;
                             }
                         }
                     }
@@ -177,9 +144,6 @@ impl PingService {
                         match cmd {
                             PingCommand::Stop => {
                                 *state.write().await = PingState::Idle;
-                                if let Some(ref tx) = tx {
-                                    let _ = tx.send(UiData::PingState { address: String::new(), progress: 0, total: 0, color: "gray".to_string() }).await;
-                                }
                                 break;
                             }
                             PingCommand::AddTarget(target) => {
@@ -190,13 +154,8 @@ impl PingService {
                             }
                             PingCommand::RemoveTarget(addr) => {
                                 targets.write().await.retain(|t| t.address != addr);
-                                if let Some(first) = targets.read().await.first() {
-                                    current_interval_ms = first.interval_ms;
-                                    ping_interval = interval(Duration::from_millis(current_interval_ms));
-                                }
                                 sent_per_target.remove(&addr);
                             }
-                            _ => {}
                         }
                     }
                 }
@@ -208,411 +167,125 @@ impl PingService {
 
     pub async fn update(&mut self) -> ServiceUpdateResult {
         let state = *self.state.read().await;
-        match state {
-            PingState::Running => {
-                match self.stop().await {
-                    Ok(()) => ServiceUpdateResult::Stopped("Ping stopped".to_string()),
-                    Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
-                }
+        if state == PingState::Running {
+            match self.stop().await {
+                Ok(()) => ServiceUpdateResult::Stopped("Ping stopped".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
             }
-            PingState::Idle => {
-                match self.start().await {
-                    Ok(()) => ServiceUpdateResult::Started("Ping started".to_string()),
-                    Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
-                }
+        } else {
+            match self.start().await {
+                Ok(()) => ServiceUpdateResult::Started("Ping started".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
             }
-_ => ServiceUpdateResult::NoChange,
         }
     }
 
     pub async fn stop(&mut self) -> Result<()> {
-        if let Some(tx) = &self.command_tx {
+        if let Some(tx) = self.command_tx.take() {
             let _ = tx.send(PingCommand::Stop).await;
         }
         *self.state.write().await = PingState::Idle;
-        self.command_tx = None;
         self.results.write().await.clear();
-        self.consumed.write().await.clear();
         self.targets.write().await.clear();
         self.sent_count.store(0, Ordering::SeqCst);
         Ok(())
     }
 
-    /// Add a ping target
     pub async fn add_target(&self, target: PingTarget) -> Result<()> {
         if let Some(tx) = &self.command_tx {
             tx.send(PingCommand::AddTarget(target)).await
                 .map_err(|_| ServiceError::Other("Command channel closed".into()))?;
-        } else {
-            self.targets.write().await.push(target);
         }
         Ok(())
     }
 
-    /// Remove a ping target
-    pub async fn remove_target(&self, address: &str) -> Result<()> {
-        if let Some(tx) = &self.command_tx {
-            tx.send(PingCommand::RemoveTarget(address.to_string())).await
-                .map_err(|_| ServiceError::Other("Command channel closed".into()))?;
-        } else {
-            self.targets.write().await.retain(|t| t.address != address);
-        }
-        Ok(())
-    }
-
-    /// Get current state
-    pub async fn get_state(&self) -> PingState {
-        *self.state.read().await
-    }
-
-    /// Get all targets
-    pub async fn get_targets(&self) -> Vec<PingTarget> {
-        self.targets.read().await.clone()
-    }
-
-    /// Get new (unconsumed) results for a target since last call
-    pub async fn get_results(&self, address: &str) -> Vec<PingResult> {
-        let results_guard = self.results.read().await;
-        let all = match results_guard.get(address) {
-            Some(v) => v,
-            None => return vec![],
-        };
-        let mut consumed_guard = self.consumed.write().await;
-        let consumed_pos = consumed_guard.entry(address.to_string()).or_insert(0);
-
-        // Simple case: no new results
-        if *consumed_pos >= all.len() {
-            return vec![];
-        }
-
-        let new_results = all[*consumed_pos..].to_vec();
-        *consumed_pos = all.len();
-        drop(consumed_guard);
-        new_results
-    }
-
-    /// Get summary for a target (based on all retained results)
-    pub async fn get_summary(&self, address: &str) -> Option<PingSummary> {
-        let results_guard = self.results.read().await;
-        let results = match results_guard.get(address) {
-            Some(v) if !v.is_empty() => v,
-            _ => return None,
-        };
-
-        let sent = self.sent_count.load(Ordering::SeqCst);
-        let received = results.iter().filter(|r| r.success).count() as u32;
-        let lost = sent - received;
-        let loss_rate = if sent > 0 { (lost as f64 / sent as f64) * 100.0 } else { 0.0 };
-
-        let mut min_ms = f64::INFINITY;
-        let mut max_ms = f64::NEG_INFINITY;
-        let mut sum_ms = 0.0f64;
-        let mut time_count = 0u32;
-        for r in results.iter() {
-            if let Some(ms) = r.duration_ms {
-                if ms < min_ms { min_ms = ms; }
-                if ms > max_ms { max_ms = ms; }
-                sum_ms += ms;
-                time_count += 1;
-            }
-        }
-
-        let (min_opt, max_opt, avg_opt) = if time_count > 0 {
-            (Some(min_ms), Some(max_ms), Some(sum_ms / time_count as f64))
-        } else {
-            (None, None, None)
-        };
-
-        Some(PingSummary {
-            target: address.to_string(),
-            sent,
-            received,
-            lost,
-            loss_rate,
-            min_ms: min_opt,
-            max_ms: max_opt,
-            avg_ms: avg_opt,
-        })
-    }
-    
-    /// Get summary synchronously (without async)
-    fn get_summary_sync(
-        results: &Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
-        sent_count: &Arc<AtomicU32>,
-        address: &str,
-    ) -> Option<PingSummary> {
-        let results_guard = results.try_read().ok()?;
-        let results_vec = results_guard.get(address)?;
-        if results_vec.is_empty() {
-            return None;
-        }
-        let results = results_vec;
-        
-        let sent = sent_count.load(Ordering::SeqCst);
-        let received = results.iter().filter(|r| r.success).count() as u32;
-        let lost = sent.saturating_sub(received);
-        let loss_rate = if sent > 0 { (lost as f64 / sent as f64) * 100.0 } else { 0.0 };
-        
-        let mut min_ms = f64::INFINITY;
-        let mut max_ms = f64::NEG_INFINITY;
-        let mut sum_ms = 0.0f64;
-        let mut time_count = 0u32;
-        
-        for r in results.iter() {
-            if let Some(ms) = r.duration_ms {
-                if ms < min_ms { min_ms = ms; }
-                if ms > max_ms { max_ms = ms; }
-                sum_ms += ms;
-                time_count += 1;
-            }
-        }
-        
-        let (min_opt, max_opt, avg_opt) = if time_count > 0 {
-            (Some(min_ms), Some(max_ms), Some(sum_ms / time_count as f64))
-        } else {
-            (None, None, None)
-        };
-        
-        Some(PingSummary {
-            target: address.to_string(),
-            sent,
-            received,
-            lost,
-            loss_rate,
-            min_ms: min_opt,
-            max_ms: max_opt,
-            avg_ms: avg_opt,
-        })
-    }
-
-    /// Ping all targets
-    pub async fn ping_all(
+    async fn ping_all(
         client: &Arc<Client>,
         targets: &Arc<RwLock<Vec<PingTarget>>>,
         results: &Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
-        consumed: &Arc<RwLock<HashMap<String, usize>>>,
         sequence: &Arc<AtomicU16>,
         sent_count: &Arc<AtomicU32>,
-        log_file: &str,
         sent_per_target: &mut HashMap<String, u32>,
         tx: &Option<mpsc::Sender<UiData>>,
     ) {
-        const MAX_RESULTS: usize = 1000;
-
-        let targets_snapshot = targets.read().await.clone();
-        let mut targets_to_remove = Vec::new();
-
-        for target in &targets_snapshot {
-            // Check if we've reached the count limit for this target
-            let current_sent = sent_per_target.entry(target.address.clone()).or_insert(0);
-            if *current_sent >= target.count {
-                info!("Ping count limit reached for {} ({}/{}), stopping", 
-                      target.address, *current_sent, target.count);
-                targets_to_remove.push(target.address.clone());
+        let targets_guard = targets.read().await;
+        for target in targets_guard.iter() {
+            let address = target.address.clone();
+            let current_sent = sent_per_target.entry(address.clone()).or_insert(0);
+            
+            if target.count > 0 && *current_sent >= target.count {
                 continue;
             }
 
-            sent_count.fetch_add(1, Ordering::SeqCst);
             *current_sent += 1;
+            sent_count.fetch_add(1, Ordering::SeqCst);
             let seq = sequence.fetch_add(1, Ordering::SeqCst);
-            let result = Self::do_ping(client, target, seq).await;
-            let success = result.success;
-            let bytes = result.bytes;
-            let duration_ms = result.duration_ms;
-            let ttl = result.ttl;
 
-            // Write to log file if enabled
-            if !log_file.is_empty() {
-                Self::write_to_log_file(log_file, &target.address, bytes, duration_ms, success).await;
-            }
+            let result = match PingService::do_ping(client, target, seq).await {
+                Ok(res) => res,
+                Err(_) => PingResult {
+                    success: false,
+                    duration_ms: None,
+                    ttl: None,
+                },
+            };
 
             let mut results_guard = results.write().await;
-            let entry = results_guard
-                .entry(target.address.clone())
-                .or_insert_with(Vec::new);
-            entry.push(result);
-            // Keep only the most recent MAX_RESULTS entries to prevent unbounded growth
-            if entry.len() > MAX_RESULTS {
-                let drain_count = entry.len() - MAX_RESULTS;
-                entry.drain(0..drain_count);
-                
-                // Adjust consumed_pos to account for removed results
-                // This ensures get_results() will return the new results
-                let mut consumed_guard = consumed.write().await;
-                if let Some(consumed_pos) = consumed_guard.get_mut(&target.address) {
-                    if *consumed_pos >= drain_count {
-                        *consumed_pos -= drain_count;
-                    } else {
-                        *consumed_pos = 0;
-                    }
-                }
-            }
-            drop(results_guard);
+            let target_results = results_guard.entry(address.clone()).or_insert(Vec::new());
+            target_results.push(result.clone());
 
-            // Check stop_on_loss: if enabled and ping failed, mark target for removal
-            if target.stop_on_loss && !success {
-                targets_to_remove.push(target.address.clone());
-            }
-
-            // Send result to UI via channel
-            if let Some(ref tx) = tx {
-                let msg = if success {
-                    if let Some(ttl) = ttl {
-                        format!("Reply from {}: bytes={} time={:.1}ms TTL={}",
-                            target.address, bytes, duration_ms.unwrap_or(0.0), ttl)
-                    } else {
-                        format!("Reply from {}: bytes={} time={:.1}ms",
-                            target.address, bytes, duration_ms.unwrap_or(0.0))
-                    }
+            if let Some(ref ui_tx) = tx {
+                let msg = if result.success {
+                    format!("Reply from {}: time={:.2}ms TTL={}", 
+                        address, result.duration_ms.unwrap_or(0.0), result.ttl.unwrap_or(0))
                 } else {
-                    "Request timed out.".to_string()
+                    format!("Request to {} timed out", address)
                 };
-                let _ = tx.send(UiData::Log(Module::Ping, msg)).await;
+                let _ = ui_tx.send(UiData::Log(Module::Ping, msg)).await;
                 
-                // Also send stats after each ping
-                if let Some(summary) = Self::get_summary_sync(&results, &sent_count, &target.address) {
-                    let stats = format!(
-                        "Tx {} Rx {} Loss {} Min {:.1}ms Max {:.1}ms Avg {:.1}ms",
-                        summary.sent, summary.received, summary.lost,
-                        summary.min_ms.unwrap_or(0.0),
-                        summary.max_ms.unwrap_or(0.0),
-                        summary.avg_ms.unwrap_or(0.0)
-                    );
-                    let _ = tx.send(UiData::PingStats(stats)).await;
-                }
-            }
-        }
-
-        // Remove targets that triggered stop_on_loss or reached count limit
-        if !targets_to_remove.is_empty() {
-            let mut targets_guard = targets.write().await;
-            for addr in targets_to_remove {
-                targets_guard.retain(|t| t.address != addr);
-            }
-            
-            // Check if all targets are removed (count reached) - send Idle state
-            if targets_guard.is_empty() && !tx.is_none() {
-                if let Some(ref tx) = tx {
-                    let _ = tx.send(UiData::PingState { 
-                        address: String::new(), 
-                        progress: 0, 
-                        total: 0, 
-                        color: "gray".to_string() 
-                    }).await;
-                }
+                let total_sent = *current_sent;
+                let received = target_results.iter().filter(|r| r.success).count();
+                let loss = ((total_sent - received as u32) as f32 / total_sent as f32) * 100.0;
+                let stats = format!("Tx: {} Rx: {} Loss: {:.1}%", total_sent, received, loss);
+                let _ = ui_tx.send(UiData::PingStats(stats)).await;
             }
         }
     }
 
-/// Perform a single ping using surge-ping
-    async fn do_ping(client: &Arc<Client>, target: &PingTarget, seq: u16) -> PingResult {
-        // Parse the target address
-        let addr = match Self::resolve_target(target).await {
-            Some(ip) => ip,
-            None => {
-                return PingResult {
-                    seq,
-                    success: false,
-                    duration_ms: None,
-                    ttl: None,
-                    bytes: 0,
-                    error: Some(format!("Failed to resolve: {}", target.address)),
-                };
-            }
-        };
-
-let mut pinger = client.pinger(addr, PingIdentifier(random())).await;
-        pinger.timeout(Duration::from_millis(target.interval_ms));
-        let payload = [0; 56];
-
-        match pinger.ping(PingSequence(seq), &payload).await {
-            Ok((packet, duration)) => {
-                let duration_ms = duration.as_secs_f64() * 1000.0;
-                let (ttl, bytes) = match &packet {
-                    surge_ping::IcmpPacket::V4(p) => (p.get_ttl(), p.get_size()),
-                    surge_ping::IcmpPacket::V6(p) => (None, 0), // IPv6 doesn't have TTL
-                };
-                PingResult {
-                    seq,
-                    success: true,
-                    duration_ms: Some(duration_ms),
-                    ttl,
-                    bytes,
-                    error: None,
-                }
-            }
-            Err(e) => {
-                PingResult {
-                    seq,
-                    success: false,
-                    duration_ms: None,
-                    ttl: None,
-                    bytes: 0,
-                    error: Some(format!("Ping failed: {}", e)),
-                }
-            }
-        }
-    }
-
-    /// Write ping result to log file
-    async fn write_to_log_file(log_file: &str, target: &str, bytes: usize, duration_ms: Option<f64>, success: bool) {
-        if log_file.is_empty() {
-            return;
-        }
-
-        let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S");
-        let log_line = if success {
-            format!(
-                "[{}] {} - Reply from {}: bytes={} time={:.1}ms\n",
-                timestamp,
-                target,
-                target,
-                bytes,
-                duration_ms.unwrap_or(0.0)
-            )
+    async fn do_ping(client: &Arc<Client>, target: &PingTarget, seq: u16) -> Result<PingResult> {
+        let ip = if let Some(ip) = target.ip {
+            ip
         } else {
-            format!(
-                "[{}] {} - Request timed out\n",
-                timestamp,
-                target
-            )
+            use std::net::ToSocketAddrs;
+            let addr = format!("{}:0", target.address);
+            let mut addrs = addr.to_socket_addrs().map_err(|e| ServiceError::Other(format!("DNS error: {}", e)))?;
+            addrs.next().ok_or_else(|| ServiceError::Other("No address found".into()))?.ip()
         };
 
-        // Append to log file
-        use tokio::fs::OpenOptions;
-        use tokio::io::AsyncWriteExt;
+        let mut pinger = client.pinger(ip, PingIdentifier(random())).await;
+        pinger.timeout(Duration::from_millis(target.timeout_ms));
         
-        match OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(log_file)
-            .await
-        {
-            Ok(mut file) => {
-                if let Err(e) = file.write_all(log_line.as_bytes()).await {
-                    tracing::warn!("Failed to write ping log: {}", e);
-                }
+        match pinger.ping(PingSequence(seq), &[]).await {
+            Ok((packet, duration)) => {
+                let ttl = match packet {
+                    surge_ping::IcmpPacket::V4(p) => p.get_ttl(),
+                    _ => None,
+                };
+                Ok(PingResult {
+                    success: true,
+                    duration_ms: Some(duration.as_secs_f64() * 1000.0),
+                    ttl,
+                })
             }
-            Err(e) => {
-                tracing::warn!("Failed to open ping log file: {}", e);
-            }
-        }
-    }
-
-    /// Resolve target address to IP
-    async fn resolve_target(target: &PingTarget) -> Option<IpAddr> {
-        // If already an IP, use it directly
-        if let Ok(ip) = target.address.parse::<IpAddr>() {
-            return Some(ip);
-        }
-
-        // Try to resolve as hostname
-        match tokio::net::lookup_host(format!("{}:0", target.address)).await {
-            Ok(mut addrs) => addrs.next().map(|addr| addr.ip()),
-            Err(_) => None,
+            Err(_) => Ok(PingResult {
+                success: false,
+                duration_ms: None,
+                ttl: None,
+            }),
         }
     }
 }
+
 
 impl Default for PingService {
     fn default() -> Self {
