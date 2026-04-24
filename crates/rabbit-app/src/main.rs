@@ -38,7 +38,7 @@ fn main() -> anyhow::Result<()> {
         .build()?;
 
     runtime.block_on(async {
-        let app = App::new().await?;
+        let mut app = App::new().await?;
         app.run().await?;
         info!("Rabbit application exited");
         Ok(())

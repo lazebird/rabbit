@@ -1,6 +1,6 @@
 //! IP Scanner Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult};
+use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
 use rabbit_models::scan::{ScanRange, ScanResult, ScannerConfig, ScannerState};
 use rabbit_platform::config::load_config;
 use std::net::Ipv4Addr;
@@ -17,6 +17,7 @@ pub struct ScanService {
     results: Arc<RwLock<Vec<ScanResult>>>,
     cancel_tx: Option<mpsc::Sender<()>>,
     scan_handle: Option<JoinHandle<()>>,
+    tx: Option<mpsc::Sender<UiData>>,
 }
 
 impl ScanService {
@@ -27,6 +28,24 @@ impl ScanService {
             results: Arc::new(RwLock::new(Vec::new())),
             cancel_tx: None,
             scan_handle: None,
+            tx: None,
+        }
+    }
+
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self {
+        Self {
+            config: Arc::new(RwLock::new(ScannerConfig::default())),
+            state: Arc::new(RwLock::new(ScannerState::Idle)),
+            results: Arc::new(RwLock::new(Vec::new())),
+            cancel_tx: None,
+            scan_handle: None,
+            tx: Some(tx),
+        }
+    }
+
+    pub async fn send(&self, data: UiData) {
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(data).await;
         }
     }
 
@@ -53,6 +72,10 @@ impl ScanService {
         *state = ScannerState::Scanning { progress: 0 };
         drop(state);
 
+        if let Some(ref tx) = self.tx {
+            let _ = tx.send(UiData::ScanProgress("Starting scan...".to_string())).await;
+        }
+
         // Clear previous results
         self.results.write().await.clear();
 
@@ -62,6 +85,7 @@ impl ScanService {
         let config = self.config.read().await.clone();
         let state = Arc::clone(&self.state);
         let results = Arc::clone(&self.results);
+        let tx = self.tx.clone();
 
         let handle = tokio::spawn(async move {
             let ips = calculate_ip_range(range.start, range.end);
@@ -104,6 +128,9 @@ impl ScanService {
                 if cancel_rx.try_recv().is_ok() {
                     join_set.abort_all();
                     *state.write().await = ScannerState::Cancelled;
+                    if let Some(ref tx) = tx {
+                        let _ = tx.send(UiData::ScanProgress("Scan cancelled".to_string())).await;
+                    }
                     return;
                 }
 
@@ -113,6 +140,9 @@ impl ScanService {
             }
 
             *state.write().await = ScannerState::Completed;
+            if let Some(ref tx) = tx {
+                let _ = tx.send(UiData::ScanProgress("Scan completed".to_string())).await;
+            }
         });
 
         self.scan_handle = Some(handle);

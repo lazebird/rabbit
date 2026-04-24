@@ -1,6 +1,6 @@
 //! TFTP Server Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult};
+use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
 use rabbit_models::tftp::{TftpLogEntry, TftpServerConfig, TftpTransfer};
 use rabbit_platform::config::load_config;
 use std::collections::HashMap;
@@ -17,6 +17,7 @@ pub struct TftpdService {
     logs: Arc<RwLock<Vec<TftpLogEntry>>>,
     shutdown_tx: Option<tokio::sync::oneshot::Sender<()>>,
     server_handle: Option<JoinHandle<()>>,
+    tx: Option<tokio::sync::mpsc::Sender<UiData>>,
 }
 
 impl TftpdService {
@@ -27,6 +28,24 @@ impl TftpdService {
             logs: Arc::new(RwLock::new(Vec::new())),
             server_handle: None,
             shutdown_tx: None,
+            tx: None,
+        }
+    }
+
+    pub fn with_channel(tx: tokio::sync::mpsc::Sender<UiData>) -> Self {
+        Self {
+            config: Arc::new(RwLock::new(TftpServerConfig::default())),
+            transfers: Arc::new(RwLock::new(HashMap::new())),
+            logs: Arc::new(RwLock::new(Vec::new())),
+            server_handle: None,
+            shutdown_tx: None,
+            tx: Some(tx),
+        }
+    }
+
+    pub async fn send(&self, data: UiData) {
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(data).await;
         }
     }
 
@@ -70,6 +89,7 @@ impl TftpdService {
         let timeout_secs = config.timeout_secs;
         let block_size = config.block_size;
         let window_size = config.window_size;
+        let tx = self.tx.clone();
 
         let handle = tokio::task::spawn_blocking(move || {
             info!("Starting TFTP server on {} with root: {}", bind_addr, root_path);
@@ -123,6 +143,9 @@ impl TftpdService {
         });
 
         self.server_handle = Some(handle);
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server started".to_string()));
+        }
         info!("TFTP server started");
         Ok(())
     }

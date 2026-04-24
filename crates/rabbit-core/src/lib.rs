@@ -16,6 +16,7 @@ pub mod tftpc;
 pub mod plan;
 pub mod chat;
 pub mod scan;
+pub mod ui_channel;
 
 pub use ping::PingService;
 pub use http::HttpService;
@@ -24,6 +25,8 @@ pub use tftpc::TftpcService;
 pub use plan::PlanService;
 pub use chat::ChatService;
 pub use scan::ScanService;
+
+pub use ui_channel::{UiData, Module};
 
 pub type TftpService = TftpdService;
 

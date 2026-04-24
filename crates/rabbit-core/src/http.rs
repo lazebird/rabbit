@@ -1,6 +1,6 @@
 //! HTTP Server Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult};
+use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
 use axum::{
     body::{Body, HttpBody},
     extract::{ConnectInfo, Multipart, Request, State},
@@ -31,6 +31,7 @@ pub struct HttpService {
     logs: Arc<RwLock<Vec<HttpAccessLog>>>,
     shutdown_tx: Option<mpsc::Sender<()>>,
     server_handle: Option<JoinHandle<()>>,
+    tx: Option<mpsc::Sender<UiData>>,
 }
 
 impl HttpService {
@@ -41,6 +42,24 @@ impl HttpService {
             logs: Arc::new(RwLock::new(Vec::new())),
             shutdown_tx: None,
             server_handle: None,
+            tx: None,
+        }
+    }
+
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self {
+        Self {
+            config: Arc::new(RwLock::new(HttpServerConfig::default())),
+            state: Arc::new(RwLock::new(HttpServerState::Stopped)),
+            logs: Arc::new(RwLock::new(Vec::new())),
+            shutdown_tx: None,
+            server_handle: None,
+            tx: Some(tx),
+        }
+    }
+
+    pub async fn send(&self, data: UiData) {
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(data).await;
         }
     }
 
@@ -87,6 +106,7 @@ impl HttpService {
 
         let state = Arc::clone(&self.state);
         let logs = Arc::clone(&self.logs);
+        let tx = self.tx.clone();
 
         let handle = tokio::spawn(async move {
             // Build axum router with access logging and file upload
@@ -140,9 +160,10 @@ impl HttpService {
 
             info!("HTTP server listening on {}", addr);
             *state.write().await = HttpServerState::Running;
-
-            // Report startup success
             let _ = startup_tx.send(Ok(()));
+            if let Some(ref tx) = tx {
+                let _ = tx.send(UiData::Log(Module::Http, "HTTP server started".to_string())).await;
+            }
 
             // Run server with shutdown signal
             let server = axum::serve(listener, app);
@@ -160,6 +181,9 @@ impl HttpService {
             }
 
             *state.write().await = HttpServerState::Stopped;
+            if let Some(ref tx) = tx {
+                let _ = tx.send(UiData::Log(Module::Http, "HTTP server stopped".to_string())).await;
+            }
         });
 
         self.server_handle = Some(handle);

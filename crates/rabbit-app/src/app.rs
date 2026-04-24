@@ -13,12 +13,12 @@ use fltk::{
     prelude::*,
     window::{Window, WindowType},
 };
-use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService};
+use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService, ui_channel::{UiData, Module}};
 use rabbit_models::{AppConfig, ping::PingTarget, scan::{ScanRange, ScannerState}};
 use rabbit_platform::config::{load_config, save_config};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{RwLock, mpsc};
 use tokio::task::JoinHandle;
 use tracing::{info, warn, error};
 use ctrlc;
@@ -36,6 +36,13 @@ pub struct App {
     ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
     scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
     shutdown_flag: Arc<AtomicBool>,
+    http_rx: Option<mpsc::Receiver<UiData>>,
+    ping_rx: Option<mpsc::Receiver<UiData>>,
+    scan_rx: Option<mpsc::Receiver<UiData>>,
+    tftpd_rx: Option<mpsc::Receiver<UiData>>,
+    tftpc_rx: Option<mpsc::Receiver<UiData>>,
+    chat_rx: Option<mpsc::Receiver<UiData>>,
+    plan_rx: Option<mpsc::Receiver<UiData>>,
 }
 
 impl App {
@@ -52,28 +59,37 @@ impl App {
             }
         };
 
-        // Create services
-        let mut ping_service = PingService::new();
+        // Create UI channels
+        let (http_tx, http_rx) = mpsc::channel(100);
+        let (ping_tx, ping_rx) = mpsc::channel(100);
+        let (scan_tx, scan_rx) = mpsc::channel(100);
+        let (tftpd_tx, tftpd_rx) = mpsc::channel(100);
+        let (tftpc_tx, tftpc_rx) = mpsc::channel(100);
+        let (chat_tx, chat_rx) = mpsc::channel(100);
+        let (plan_tx, plan_rx) = mpsc::channel(100);
+
+        // Create services with channels
+        let mut ping_service = PingService::with_channel(ping_tx);
         let ping_log_file = config.modules.get_string("ping", "log").unwrap_or_default();
         ping_service.init(ping_log_file).await?;
 
-        let mut http_service = HttpService::new();
+        let mut http_service = HttpService::with_channel(http_tx);
         http_service.init().await?;
 
-        let mut tftp_server_service = TftpdService::new();
+        let mut tftp_server_service = TftpdService::with_channel(tftpd_tx);
         tftp_server_service.init().await?;
         
-        let mut tftp_client_service = TftpcService::new();
+        let mut tftp_client_service = TftpcService::with_channel(tftpc_tx);
         tftp_client_service.init().await?;
 
-        let mut plan_service = PlanService::new();
+        let mut plan_service = PlanService::with_channel(plan_tx);
         plan_service.init().await?;
         let _ = plan_service.update().await;
 
-        let mut chat_service = ChatService::new();
+        let mut chat_service = ChatService::with_channel(chat_tx);
         chat_service.init().await?;
 
-        let mut scan_service = ScanService::new();
+        let mut scan_service = ScanService::with_channel(scan_tx);
         scan_service.init().await?;
 
         // Create view model
@@ -91,11 +107,18 @@ Ok(Self {
             ping_task: Arc::new(RwLock::new(None)),
             scan_task: Arc::new(RwLock::new(None)),
             shutdown_flag: Arc::new(AtomicBool::new(false)),
+            http_rx: Some(http_rx),
+            ping_rx: Some(ping_rx),
+            scan_rx: Some(scan_rx),
+            tftpd_rx: Some(tftpd_rx),
+            tftpc_rx: Some(tftpc_rx),
+            chat_rx: Some(chat_rx),
+            plan_rx: Some(plan_rx),
         })
     }
 
     /// Run the application
-    pub async fn run(&self) -> anyhow::Result<()> {
+    pub async fn run(&mut self) -> anyhow::Result<()> {
         info!("Running Rabbit application with FLTK UI");
 
         // Initialize UI state and event system
@@ -127,6 +150,67 @@ Ok(Self {
         }
         
         let event_receiver = init_event_system();
+
+        // Spawn UI channel receivers
+        if let Some(mut rx) = self.ping_rx.take() {
+            let view_model = Arc::clone(&self.view_model);
+            tokio::spawn(async move {
+                while let Some(data) = rx.recv().await {
+                    handle_ui_data(data, &view_model).await;
+                }
+            });
+        }
+
+        if let Some(mut rx) = self.scan_rx.take() {
+            let view_model = Arc::clone(&self.view_model);
+            tokio::spawn(async move {
+                while let Some(data) = rx.recv().await {
+                    handle_ui_data(data, &view_model).await;
+                }
+            });
+        }
+
+        if let Some(mut rx) = self.chat_rx.take() {
+            let view_model = Arc::clone(&self.view_model);
+            tokio::spawn(async move {
+                while let Some(data) = rx.recv().await {
+                    handle_ui_data(data, &view_model).await;
+                }
+            });
+        }
+
+        if let Some(mut rx) = self.plan_rx.take() {
+            let view_model = Arc::clone(&self.view_model);
+            tokio::spawn(async move {
+                while let Some(data) = rx.recv().await {
+                    handle_plan_data(data, &view_model).await;
+                }
+            });
+        }
+
+        if let Some(mut rx) = self.http_rx.take() {
+            tokio::spawn(async move {
+                while let Some(data) = rx.recv().await {
+                    handle_http_data(data).await;
+                }
+            });
+        }
+
+        if let Some(mut rx) = self.tftpd_rx.take() {
+            tokio::spawn(async move {
+                while let Some(data) = rx.recv().await {
+                    handle_tftp_data(data).await;
+                }
+            });
+        }
+
+        if let Some(mut rx) = self.tftpc_rx.take() {
+            tokio::spawn(async move {
+                while let Some(data) = rx.recv().await {
+                    handle_tftp_data(data).await;
+                }
+            });
+        }
 
         // Create FLTK application
         let fltk_app = app::App::default();
@@ -853,96 +937,8 @@ impl EventHandler for AppHandle {
                             self.view_model.write().await.set_ping_running(true);
                             crate::ui_state::set_ping_running(true);
 
-                            // Clear ping history for this target
-                            self.ping_history.insert(target.clone(), Vec::new());
-
-                            // Spawn a task to periodically update ping results
-                            let ping_service = self.ping_service.clone();
-                            let target_clone = target.clone();
-                            #[cfg(target_os = "windows")]
-                            let window_handle = self.window_handle;
-                            let taskbar_enabled = self.taskbar_enabled;
-
-                            let handle = tokio::spawn(async move {
-                                let mut recent_results: Vec<bool> = Vec::with_capacity(5);
-
-                                loop {
-                                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-                                    let service = ping_service.read().await;
-                                    let results = service.get_results(&target_clone).await;
-                                    let summary = service.get_summary(&target_clone).await;
-                                    drop(service);
-
-                                    if results.is_empty() {
-                                        if let Some(s) = summary {
-                                            let stats = format!(
-                                                "Tx {} Rx {} Loss {} Min {:.1}ms Max {:.1}ms Avg {:.1}ms",
-                                                s.sent, s.received, s.lost,
-                                                s.min_ms.unwrap_or(0.0),
-                                                s.max_ms.unwrap_or(0.0),
-                                                s.avg_ms.unwrap_or(0.0)
-                                            );
-                                            crate::ui_state::set_ping_stats(&stats);
-                                        }
-                                        continue;
-                                    }
-
-                                    for result in &results {
-                                        if result.success {
-                                            let line = if let Some(ttl) = result.ttl {
-                                                format!(
-                                                    "Reply from {}: bytes={} time={:.1}ms TTL={}",
-                                                    target_clone,
-                                                    result.bytes,
-                                                    result.duration_ms.unwrap_or(0.0),
-                                                    ttl
-                                                )
-                                            } else {
-                                                format!(
-                                                    "Reply from {}: bytes={} time={:.1}ms",
-                                                    target_clone,
-                                                    result.bytes,
-                                                    result.duration_ms.unwrap_or(0.0)
-                                                )
-                                            };
-                                            crate::ui_state::append_ping_output(&line);
-                                        } else {
-                                            crate::ui_state::append_ping_output("Request timed out.");
-                                        }
-
-                                        if taskbar_enabled {
-                                            recent_results.push(result.success);
-                                            if recent_results.len() > 5 {
-                                                recent_results.remove(0);
-                                            }
-                                        }
-                                    }
-
-                                    #[cfg(target_os = "windows")]
-                                    if taskbar_enabled && !recent_results.is_empty() {
-                                        if let Some(hwnd) = window_handle {
-                                            let success_count = recent_results.iter().filter(|&&x| x).count() as u32;
-                                            let total_count = recent_results.len() as u32;
-                                            rabbit_platform::taskbar::windows::update_taskbar_for_ping(
-                                                hwnd, success_count, total_count
-                                            );
-                                        }
-                                    }
-
-                                    if let Some(s) = summary {
-                                        let stats = format!(
-                                            "Tx {} Rx {} Loss {} Min {:.1}ms Max {:.1}ms Avg {:.1}ms",
-                                            s.sent, s.received, s.lost,
-                                            s.min_ms.unwrap_or(0.0),
-                                            s.max_ms.unwrap_or(0.0),
-                                            s.avg_ms.unwrap_or(0.0)
-                                        );
-                                        crate::ui_state::set_ping_stats(&stats);
-                                    }
-                                }
-                            });
-
-                            *self.ping_task.write().await = Some(handle);
+                            // Use channel-based UI updates instead of polling
+                            *self.ping_task.write().await = None;
                         }
                     }
                     "scan" => {
@@ -986,37 +982,8 @@ impl EventHandler for AppHandle {
                             self.view_model.write().await.set_scan_running(true);
                             crate::ui_state::set_scan_running(true);
 
-                            // Spawn result polling task
-                            let scan_service = self.scan_service.clone();
-                            let handle = tokio::spawn(async move {
-                                loop {
-                                    tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-                                    let service = scan_service.read().await;
-                                    let state = service.get_state().await;
-
-                                    match state {
-                                        ScannerState::Scanning { progress } => {
-                                            let results = service.get_results().await;
-                                            let online_count = results.iter().filter(|r| r.online).count();
-                                            crate::ui_state::append_scan_output(&format!("Progress: {}% - Found {} online hosts", progress, online_count));
-                                        }
-                                        ScannerState::Completed => {
-                                            let results = service.get_results().await;
-                                            let online_count = results.iter().filter(|r| r.online).count();
-                                            crate::ui_state::append_scan_output(&format!("\nScan complete! Found {} online hosts.", online_count));
-                                            crate::ui_state::set_scan_running(false);
-                                            break;
-                                        }
-                                        ScannerState::Cancelled => {
-                                            crate::ui_state::append_scan_output("\nScan cancelled.");
-                                            crate::ui_state::set_scan_running(false);
-                                            break;
-                                        }
-                                        _ => {}
-                                    }
-                                }
-                            });
-                            *self.scan_task.write().await = Some(handle);
+// Use channel-based UI updates instead of polling
+                            *self.scan_task.write().await = None;
                         }
                     }
                     "http" => {
@@ -1044,24 +1011,6 @@ impl EventHandler for AppHandle {
                             self.view_model.write().await.set_http_running(true);
                             crate::ui_state::set_http_running(true);
                             crate::ui_state::append_http_log(&format!("HTTP server started on port {}.\r\n", port));
-
-                            let http_service = self.http_service.clone();
-                            let handle = tokio::spawn(async move {
-                                loop {
-                                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-                                    let service = http_service.read().await;
-                                    let logs = service.get_recent_logs(10).await;
-                                    for log in logs {
-                                        let line = format!("{} {} {} - {}\r\n",
-                                            log.timestamp.format("%H:%M:%S"),
-                                            log.method,
-                                            log.path,
-                                            log.status_code
-                                        );
-                                        crate::ui_state::append_http_log(&line);
-                                    }
-                                }
-                            });
                         }
                     }
                     "tftpd" => {
@@ -1109,17 +1058,6 @@ impl EventHandler for AppHandle {
                             service.init().await?;
                             let _ = service.update().await;
                             self.view_model.write().await.set_chat_running(true);
-
-                            let chat_service = self.chat_service.clone();
-                            let handle = tokio::spawn(async move {
-                                loop {
-                                    tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
-                                    let service = chat_service.read().await;
-                                    let users = service.get_all_users().await;
-                                    let usernames: Vec<String> = users.iter().map(|u| u.username.clone()).collect();
-                                    crate::ui_state::set_chat_users(&usernames);
-                                }
-                            });
                         }
                     }
                     _ => {}
@@ -1337,10 +1275,70 @@ impl EventHandler for AppHandle {
             // Version Check
             UiEvent::VersionCheck => {
                 info!("Checking for version updates");
-                // Version check is handled in settings_tab.rs UI thread
-                // This event can be used for programmatic checks if needed
             }
         }
         Ok(())
+    }
+}
+
+async fn handle_ui_data(
+    data: UiData,
+    _view_model: &Arc<RwLock<AppViewModel>>,
+) {
+    match data {
+        UiData::Log(module, msg) => {
+            match module {
+                Module::Ping => crate::ui_state::append_ping_output(&msg),
+                Module::Http => crate::ui_state::append_http_log(&msg),
+                Module::Scan => crate::ui_state::append_scan_output(&msg),
+                Module::Tftpd => crate::ui_state::append_tftpd_log(&msg),
+                Module::Tftpc => crate::ui_state::append_tftpc_log(&msg),
+                Module::Chat => crate::ui_state::append_chat_message(&msg, ""),
+                Module::Plan => {}
+            }
+        }
+        UiData::PingStats(stats) => {
+            crate::ui_state::set_ping_stats(&stats);
+        }
+        UiData::PingState { address: _, progress: _, total: _, color } => {
+            let running = color == "green";
+            crate::ui_state::set_ping_running(running);
+        }
+        UiData::ScanProgress(msg) => {
+            crate::ui_state::append_scan_output(&msg);
+        }
+        UiData::PlanReminder(msg) => {}
+        UiData::ChatMessage(username, msg) => {
+            crate::ui_state::append_chat_message(&username, &msg);
+        }
+        UiData::ChatUserList(users) => {
+            let user_vec: Vec<String> = users.split(',').map(|s| s.to_string()).collect();
+            crate::ui_state::set_chat_users(&user_vec);
+        }
+        UiData::Error(module, msg) => {
+            error!("[{:?}] {}", module, msg);
+        }
+    }
+}
+
+async fn handle_plan_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
+    if let UiData::PlanReminder(msg) = data {
+        info!("Plan reminder: {}", msg);
+    }
+}
+
+async fn handle_http_data(data: UiData) {
+    if let UiData::Log(_, msg) = data {
+        crate::ui_state::append_http_log(&msg);
+    }
+}
+
+async fn handle_tftp_data(data: UiData) {
+    if let UiData::Log(module, msg) = data {
+        match module {
+            Module::Tftpd => crate::ui_state::append_tftpd_log(&msg),
+            Module::Tftpc => crate::ui_state::append_tftpc_log(&msg),
+            _ => {}
+        }
     }
 }

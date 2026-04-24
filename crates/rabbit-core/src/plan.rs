@@ -1,12 +1,12 @@
 //! Task Planner Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult};
+use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
 use chrono::{Datelike, Local};
 use rabbit_models::plan::{Schedule, Task, TaskLog, TaskState, RepeatUnit};
 use rabbit_platform::notification::show_task_reminder;
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{mpsc, RwLock};
 use tokio::time::{interval, Duration};
 use tracing::{error, info};
 
@@ -15,6 +15,7 @@ pub struct PlanService {
     tasks: Arc<RwLock<HashMap<String, Task>>>,
     logs: Arc<RwLock<Vec<TaskLog>>>,
     running: Arc<RwLock<bool>>,
+    tx: Option<mpsc::Sender<UiData>>,
 }
 
 impl PlanService {
@@ -23,6 +24,22 @@ impl PlanService {
             tasks: Arc::new(RwLock::new(HashMap::new())),
             logs: Arc::new(RwLock::new(Vec::new())),
             running: Arc::new(RwLock::new(false)),
+            tx: None,
+        }
+    }
+
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self {
+        Self {
+            tasks: Arc::new(RwLock::new(HashMap::new())),
+            logs: Arc::new(RwLock::new(Vec::new())),
+            running: Arc::new(RwLock::new(false)),
+            tx: Some(tx),
+        }
+    }
+
+    pub async fn send(&self, data: UiData) {
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(data).await;
         }
     }
 
@@ -44,13 +61,14 @@ impl PlanService {
         let tasks = Arc::clone(&self.tasks);
         let logs = Arc::clone(&self.logs);
         let running = Arc::clone(&self.running);
+        let tx = self.tx.clone();
 
         tokio::spawn(async move {
             let mut check_interval = interval(Duration::from_secs(30));
 
             while *running.read().await {
                 check_interval.tick().await;
-                Self::check_tasks(&tasks, &logs).await;
+                Self::check_tasks(&tasks, &logs, &tx).await;
             }
         });
 
@@ -172,6 +190,7 @@ impl PlanService {
     async fn check_tasks(
         tasks: &Arc<RwLock<HashMap<String, Task>>>,
         logs: &Arc<RwLock<Vec<TaskLog>>>,
+        tx: &Option<mpsc::Sender<UiData>>,
     ) {
         let now = Local::now();
         let tasks_to_trigger: Vec<(String, Task)> = tasks.read().await
@@ -186,7 +205,6 @@ impl PlanService {
             .collect();
 
         for (id, mut task) in tasks_to_trigger {
-            // Mark as triggered
             task.trigger();
             
             if let Err(e) = show_task_reminder(&task) {
@@ -199,13 +217,14 @@ impl PlanService {
                 acknowledged_at: None,
             });
 
-            // For repeating schedules, reset to pending after triggering
-            // so it can trigger again at the next interval
+            if let Some(ref tx) = tx {
+                let _ = tx.send(UiData::PlanReminder(task.title.clone())).await;
+            }
+
             if matches!(task.schedule, Schedule::Repeating { .. }) {
                 task.reset_for_next_trigger();
             }
 
-            // Update task in storage
             tasks.write().await.insert(id, task);
         }
     }

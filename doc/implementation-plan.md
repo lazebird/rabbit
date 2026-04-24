@@ -244,14 +244,96 @@ UiData::Error(module, msg) => {
 - ✅ rabbit-app 导入 UiData, Module
 - ✅ 编译通过
 
+## 8. 已完成 (Phase 2-7 - rabbit-core 服务端)
+
+### Phase 2: HTTP 改造 ✅
+- ✅ http.rs 添加 tx 字段
+- ✅ with_channel() 构造函数
+- ✅ send() 方法
+- ✅ 发送: started/stopped 日志
+
+### Phase 3: Ping 改造 ✅
+- ✅ ping.rs 添加 tx 字段
+- ✅ with_channel() 构造函数
+- ✅ send() 方法
+- ✅ 发送: PingState (Running/Idle 状态)
+
+### Phase 4: Scan 改造 ✅
+- ✅ scan.rs 添加 tx 字段
+- ✅ with_channel() 构造函数
+- ✅ send() 方法
+- ✅ 发送: Starting/completed/cancelled 日志
+
+### Phase 5: TFTP 改造 ✅
+- ✅ tftpd.rs 添加 tx 字段
+- ✅ tftpc.rs 添加 tx 字段
+- ✅ 发送: 上传/下载完成日志
+
+### Phase 6: Chat 改造 ✅
+- ✅ chat.rs 添加 tx 字段
+- ✅ with_channel() 构造函数
+- ✅ send() 方法
+- ✅ 发送: ChatMessage, ChatUserList
+
+### Phase 7: Plan 改造 ✅
+- ✅ plan.rs 添加 tx 字段
+- ✅ with_channel() 构造函数
+- ✅ send() 方法
+- ✅ 发送: PlanReminder
+
 ---
 
-## 6. 需要你确认的问题
+## 9. 已完成 (app.rs 集成)
 
-1. **Channel 管理方案**: 方案 A (app.rs 集中创建) 可以吗？
-2. **Plan 模块**: 需要加入 channel 机制吗？
-3. **Error 处理**: 遇到 channel 错误时，记录日志但不显示错误框，可以吗？
+- [x] 创建所有 channel 对 (tx, rx)
+- [x] 用 with_channel() 初始化服务
+- [x] 在 App 结构中保存 receivers
+- [x] 在 run() 中启动 receiver 任务
+- [x] 删除 4 个 tokio::spawn 轮询循环
+- [x] 添加 receiver 处理逻辑
 
 ---
 
-版本: 1.0 | 2026-04-24
+## 10. 验收标准
+
+### Phase 1 验收 ✅
+- [x] UiData, Module 定义在 rabbit-core
+- [x] 编译通过
+
+### Phase 2-7 验收 (服务端) ✅
+- [x] rabbit-core 服务添加 tx
+- [x] 发送 UiData 到 channel
+- [x] 编译通过
+
+### 整体验收 ✅
+- [x] app.rs 集成 channel
+- [x] 删除轮询代码
+- [x] UI 正确接收数据
+- [x] 编译 build 通过
+
+---
+
+## 6. 需要你确认的问题 (之前)
+
+1. **Channel 管理方案**: 方案 A (app.rs 集中创建) 可以吗？ ✅
+2. **Plan 模块**: 需要加入 channel 机制吗？ ✅
+3. **Error 处理**: 遇到 channel 错误时，记录日志但不显示错误框，可以吗？ ✅
+
+---
+
+## 11. 总结
+
+| 阶段 | 状态 | 说明 |
+|------|------|------|
+| Phase 1 | ✅ | UiData/Module 定义 |
+| Phase 2 | ✅ | HTTP channel |
+| Phase 3 | ✅ | Ping channel |
+| Phase 4 | ✅ | Scan channel |
+| Phase 5 | ✅ | TFTP channel |
+| Phase 6 | ✅ | Chat channel |
+| Phase 7 | ✅ | Plan channel |
+| App 集成 | ✅ | 完成 |
+
+---
+
+版本: 1.2 | 2026-04-24

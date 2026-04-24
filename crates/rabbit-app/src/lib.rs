@@ -13,4 +13,5 @@ pub use app::App;
 pub use app::handle_version_check_result;
 pub use view_model::*;
 pub use ui_events::{UiEvent, send_event, init_event_system};
-pub use ui_state::{UiState, append_ping_output, set_ping_stats, set_ping_running, append_scan_output, append_http_log, append_tftpd_log, append_chat_message, set_settings_output, append_settings_output, update_settings_line};
+pub use ui_state::*;
+pub use rabbit_core::ui_channel::{UiData, Module};

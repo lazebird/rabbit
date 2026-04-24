@@ -1,6 +1,6 @@
 //! TFTP Client Service
 
-use crate::{Result, ServiceError};
+use crate::{Result, ServiceError, ui_channel::{UiData, Module}};
 use rabbit_models::tftp::{TftpClientConfig, TftpTransfer};
 use rabbit_platform::config::load_config;
 use std::collections::HashMap;
@@ -23,6 +23,7 @@ const TFTP_TIMEOUT_SECS: u64 = 5;
 pub struct TftpcService {
     config: Arc<RwLock<TftpClientConfig>>,
     transfers: Arc<RwLock<HashMap<String, TftpTransfer>>>,
+    tx: Option<tokio::sync::mpsc::Sender<UiData>>,
 }
 
 impl TftpcService {
@@ -30,6 +31,21 @@ impl TftpcService {
         Self {
             config: Arc::new(RwLock::new(TftpClientConfig::default())),
             transfers: Arc::new(RwLock::new(HashMap::new())),
+            tx: None,
+        }
+    }
+
+    pub fn with_channel(tx: tokio::sync::mpsc::Sender<UiData>) -> Self {
+        Self {
+            config: Arc::new(RwLock::new(TftpClientConfig::default())),
+            transfers: Arc::new(RwLock::new(HashMap::new())),
+            tx: Some(tx),
+        }
+    }
+
+    pub async fn send(&self, data: UiData) {
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(data).await;
         }
     }
 
@@ -73,6 +89,7 @@ impl TftpcService {
         let server = server_addr.to_string();
         let local = local_path.to_string();
         let remote = remote_filename.to_string();
+        let tx = self.tx.clone();
 
         tokio::spawn(async move {
             match Self::do_upload(&server, &local, &remote).await {
@@ -82,6 +99,9 @@ impl TftpcService {
                         t.state = "completed".to_string();
                         t.bytes_transferred = bytes as u64;
                         t.progress = 100;
+                    }
+                    if let Some(ref tx) = tx {
+                        let _ = tx.send(UiData::Log(Module::Tftpc, format!("Uploaded {} bytes", bytes)));
                     }
                 }
                 Err(e) => {
@@ -120,6 +140,7 @@ impl TftpcService {
         let server = server_addr.to_string();
         let local = local_path.to_string();
         let remote = remote_filename.to_string();
+        let tx = self.tx.clone();
 
         tokio::spawn(async move {
             match Self::do_download(&server, &remote, &local).await {
@@ -129,6 +150,9 @@ impl TftpcService {
                         t.state = "completed".to_string();
                         t.bytes_transferred = bytes as u64;
                         t.progress = 100;
+                    }
+                    if let Some(ref tx) = tx {
+                        let _ = tx.send(UiData::Log(Module::Tftpc, format!("Downloaded {} bytes", bytes)));
                     }
                 }
                 Err(e) => {

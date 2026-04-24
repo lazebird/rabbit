@@ -1,6 +1,6 @@
 //! Ping Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult};
+use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
 use rabbit_models::ping::{PingResult, PingState, PingSummary, PingTarget};
 use rand::random;
 use socket2::Type;
@@ -24,8 +24,8 @@ pub struct PingService {
     sequence: Arc<AtomicU16>,
     client: Option<Arc<Client>>,
     sent_count: Arc<AtomicU32>,
-    /// Log file path for ping results (empty string means no logging)
     log_file: String,
+    tx: Option<mpsc::Sender<UiData>>,
 }
 
 #[derive(Debug)]
@@ -49,10 +49,31 @@ impl PingService {
             client: None,
             sent_count: Arc::new(AtomicU32::new(0)),
             log_file: String::new(),
+            tx: None,
         }
     }
 
-    /// Initialize the service
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self {
+        Self {
+            state: Arc::new(RwLock::new(PingState::Idle)),
+            targets: Arc::new(RwLock::new(Vec::new())),
+            results: Arc::new(RwLock::new(HashMap::new())),
+            consumed: Arc::new(RwLock::new(HashMap::new())),
+            command_tx: None,
+            sequence: Arc::new(AtomicU16::new(0)),
+            client: None,
+            sent_count: Arc::new(AtomicU32::new(0)),
+            log_file: String::new(),
+            tx: Some(tx),
+        }
+    }
+
+    pub async fn send(&self, data: UiData) {
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(data).await;
+        }
+    }
+
     pub async fn init(&mut self, log_file: String) -> Result<()> {
         self.log_file = log_file;
         
@@ -91,6 +112,10 @@ impl PingService {
         let (tx, mut rx) = mpsc::channel(32);
         self.command_tx = Some(tx);
 
+        if let Some(ref tx) = self.tx {
+            let _ = tx.send(UiData::PingState { address: String::new(), progress: 0, total: 0, color: "green".to_string() }).await;
+        }
+
         let state = Arc::clone(&self.state);
         let targets = Arc::clone(&self.targets);
         let results = Arc::clone(&self.results);
@@ -99,6 +124,7 @@ impl PingService {
         let sent_count = Arc::clone(&self.sent_count);
         let client = self.client.clone();
         let log_file = self.log_file.clone();
+        let tx = self.tx.clone();
 
         tokio::spawn(async move {
             let mut current_interval_ms = {
@@ -127,6 +153,9 @@ impl PingService {
                         match cmd {
                             PingCommand::Stop => {
                                 *state.write().await = PingState::Idle;
+                                if let Some(ref tx) = tx {
+                                    let _ = tx.send(UiData::PingState { address: String::new(), progress: 0, total: 0, color: "gray".to_string() }).await;
+                                }
                                 break;
                             }
                             PingCommand::AddTarget(target) => {

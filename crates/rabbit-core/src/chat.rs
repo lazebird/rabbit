@@ -1,6 +1,6 @@
 //! LAN Chat Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult};
+use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
 use rabbit_models::chat::{ChatConfig, ChatMessage, ChatRoom, ChatUser, MessageType};
 use rabbit_platform::config::load_config;
 use std::collections::HashMap;
@@ -21,6 +21,7 @@ pub struct ChatService {
     recv_handle: Option<JoinHandle<()>>,
     heartbeat_handle: Option<JoinHandle<()>>,
     user_activity: Arc<RwLock<HashMap<String, tokio::time::Instant>>>,
+    tx: Option<mpsc::Sender<UiData>>,
 }
 
 impl ChatService {
@@ -36,6 +37,29 @@ impl ChatService {
             recv_handle: None,
             heartbeat_handle: None,
             user_activity: Arc::new(RwLock::new(HashMap::new())),
+            tx: None,
+        }
+    }
+
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self {
+        Self {
+            config: Arc::new(RwLock::new(ChatConfig::default())),
+            room: Arc::new(RwLock::new(ChatRoom {
+                messages: Vec::new(),
+                users: Vec::new(),
+            })),
+            socket: Arc::new(RwLock::new(None)),
+            message_tx: None,
+            recv_handle: None,
+            heartbeat_handle: None,
+            user_activity: Arc::new(RwLock::new(HashMap::new())),
+            tx: Some(tx),
+        }
+    }
+
+    pub async fn send(&self, data: UiData) {
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(data).await;
         }
     }
 
@@ -74,11 +98,11 @@ impl ChatService {
         let (tx, mut rx) = mpsc::channel(100);
         self.message_tx = Some(tx);
 
-        let room = Arc::clone(&self.room);
+let room = Arc::clone(&self.room);
         let config = Arc::clone(&self.config);
         let user_activity = Arc::clone(&self.user_activity);
+        let tx = self.tx.clone();
 
-        // Spawn receive task
         let handle = tokio::spawn(async move {
             let mut buf = vec![0u8; 1024];
 
@@ -97,15 +121,19 @@ impl ChatService {
                                     // Add user if not exists
                                     let mut room_guard = room.write().await;
                                     if !room_guard.users.iter().any(|u| u.username == msg.sender) {
-                                        room_guard.users.push(ChatUser {
+room_guard.users.push(ChatUser {
                                             username: msg.sender.clone(),
                                             hostname: String::new(),
                                             online: true,
                                             last_seen: chrono::Local::now(),
                                         });
                                     }
-                                    
-                                    room_guard.messages.push(msg);
+
+                                    room_guard.messages.push(msg.clone());
+
+                                    if let Some(ref tx) = tx {
+                                        let _ = tx.send(UiData::ChatMessage(msg.sender.clone(), msg.content.clone())).await;
+                                    }
                                 }
                             }
                             Err(e) => {
@@ -129,6 +157,7 @@ impl ChatService {
         // Spawn heartbeat task for online status detection
         let room = Arc::clone(&self.room);
         let user_activity = Arc::clone(&self.user_activity);
+        let tx = self.tx.clone();
         let heartbeat_handle = tokio::spawn(async move {
             let mut heartbeat_interval = interval(Duration::from_secs(30));
             let timeout_duration = Duration::from_secs(120); // 2 minutes timeout
@@ -153,6 +182,17 @@ impl ChatService {
                         user.online = false;
                         user.last_seen = chrono::Local::now();
                     }
+                }
+
+                let user_list: String = room_guard.users
+                    .iter()
+                    .filter(|u| u.online)
+                    .map(|u| u.username.clone())
+                    .collect::<Vec<_>>()
+                    .join(",");
+
+                if let Some(ref tx) = tx {
+                    let _ = tx.send(UiData::ChatUserList(user_list)).await;
                 }
 
                 // Update last_seen for online users
