@@ -1,31 +1,6 @@
 //! Ping Module Models
 
 use serde::{Deserialize, Serialize};
-use std::net::IpAddr;
-
-/// Ping target configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PingTarget {
-    pub address: String,
-    pub ip: Option<IpAddr>,
-    pub count: u32,
-    pub interval_ms: u64,
-    pub timeout_ms: u64,
-    pub stop_on_loss: bool,
-}
-
-impl PingTarget {
-    pub fn new(address: impl Into<String>) -> Self {
-        Self {
-            address: address.into(),
-            ip: None,
-            count: 4,
-            interval_ms: 1000,
-            timeout_ms: 2000,
-            stop_on_loss: false,
-        }
-    }
-}
 
 /// Ping result for a single packet
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -64,24 +39,6 @@ pub enum PingState {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_ping_target_new() {
-        let target = PingTarget::new("127.0.0.1");
-        assert_eq!(target.address, "127.0.0.1");
-        assert_eq!(target.count, 4);
-        assert_eq!(target.interval_ms, 1000);
-        assert_eq!(target.timeout_ms, 2000);
-        assert!(target.ip.is_none());
-    }
-
-    #[test]
-    fn test_ping_target_serialization() {
-        let target = PingTarget::new("google.com");
-        let json = serde_json::to_string(&target).unwrap();
-        let parsed: PingTarget = serde_json::from_str(&json).unwrap();
-        assert_eq!(target.address, parsed.address);
-    }
 
     #[test]
     fn test_ping_result_success() {
@@ -136,3 +93,4 @@ mod tests {
         assert_eq!(PingState::Error, PingState::Error);
     }
 }
+

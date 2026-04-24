@@ -1,8 +1,10 @@
 //! Ping Service
 
 use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
-use rabbit_models::ping::{PingResult, PingState, PingSummary, PingTarget};
+use rabbit_models::ping::{PingResult, PingState, PingSummary};
+use rabbit_platform::config::get_string;
 use rand::random;
+use serde::{Deserialize, Serialize};
 use socket2::Type;
 use std::collections::HashMap;
 use std::net::IpAddr;
@@ -14,6 +16,30 @@ use tokio::sync::{mpsc, RwLock};
 use tokio::time::interval;
 use tracing::info;
 
+/// Ping target configuration (Runtime model)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PingTarget {
+    pub address: String,
+    pub ip: Option<IpAddr>,
+    pub count: u32,
+    pub interval_ms: u64,
+    pub timeout_ms: u64,
+    pub stop_on_loss: bool,
+}
+
+impl PingTarget {
+    pub fn new(address: impl Into<String>) -> Self {
+        Self {
+            address: address.into(),
+            ip: None,
+            count: 4,
+            interval_ms: 1000,
+            timeout_ms: 1000,
+            stop_on_loss: false,
+        }
+    }
+}
+
 /// Ping service for managing ping operations
 pub struct PingService {
     state: Arc<RwLock<PingState>>,
@@ -24,7 +50,6 @@ pub struct PingService {
     sequence: Arc<AtomicU16>,
     client: Option<Arc<Client>>,
     sent_count: Arc<AtomicU32>,
-    log_file: String,
     tx: Option<mpsc::Sender<UiData>>,
 }
 
@@ -48,7 +73,6 @@ impl PingService {
             sequence: Arc::new(AtomicU16::new(0)),
             client: None,
             sent_count: Arc::new(AtomicU32::new(0)),
-            log_file: String::new(),
             tx: None,
         }
     }
@@ -63,7 +87,6 @@ impl PingService {
             sequence: Arc::new(AtomicU16::new(0)),
             client: None,
             sent_count: Arc::new(AtomicU32::new(0)),
-            log_file: String::new(),
             tx: Some(tx),
         }
     }
@@ -74,8 +97,8 @@ impl PingService {
         }
     }
 
-    pub async fn init(&mut self, log_file: String) -> Result<()> {
-        self.log_file = log_file;
+    pub async fn init(&mut self) -> Result<()> {
+        let log_file = get_string("ping", "log").unwrap_or_default();
         
         // Try to create ping client with RAW socket type to get TTL on Linux
         // RAW socket requires root/CAP_NET_RAW, so fallback to DGRAM if it fails
@@ -85,8 +108,8 @@ impl PingService {
         let client = match Client::new(&config) {
             Ok(client) => {
                 info!("Ping service initialized with RAW socket (TTL available)");
-                if !self.log_file.is_empty() {
-                    info!("Ping log file enabled: {}", self.log_file);
+                if !log_file.is_empty() {
+                    info!("Ping log file enabled: {}", log_file);
                 }
                 client
             }
@@ -123,7 +146,6 @@ impl PingService {
         let sequence = Arc::clone(&self.sequence);
         let sent_count = Arc::clone(&self.sent_count);
         let client = self.client.clone();
-        let log_file = self.log_file.clone();
         let tx = self.tx.clone();
 
         tokio::spawn(async move {
@@ -136,6 +158,7 @@ impl PingService {
 
             if *state.read().await == PingState::Running {
                 if let Some(ref client) = client {
+                    let log_file = get_string("ping", "log").unwrap_or_default();
                     PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target, &tx).await;
                 }
             }
@@ -145,6 +168,7 @@ impl PingService {
                     _ = ping_interval.tick() => {
                         if *state.read().await == PingState::Running {
                             if let Some(ref client) = client {
+                                let log_file = get_string("ping", "log").unwrap_or_default();
                                 PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target, &tx).await;
                             }
                         }

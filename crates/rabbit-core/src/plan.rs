@@ -1,6 +1,7 @@
 //! Task Planner Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
+use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::UiData};
+
 use chrono::{Datelike, Local};
 use rabbit_models::plan::{Schedule, Task, TaskLog, TaskState, RepeatUnit};
 use rabbit_platform::notification::show_task_reminder;

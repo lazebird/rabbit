@@ -2,16 +2,16 @@
 
 use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
 use axum::{
-    body::{Body, HttpBody},
-    extract::{ConnectInfo, Multipart, Request, State},
-    http::{HeaderValue, StatusCode},
-    middleware::{self, Next},
+    body::HttpBody,
+    extract::{ConnectInfo, Multipart, Request},
+    middleware::Next,
     response::{Html, IntoResponse, Response},
     routing::post,
     Router,
 };
-use rabbit_models::http::{HttpAccessLog, HttpServerConfig, HttpServerState};
-use rabbit_platform::config::load_config;
+use rabbit_models::http::{HttpAccessLog, HttpServerState};
+use rabbit_platform::config::{get_bool, get_integer};
+
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -24,9 +24,32 @@ use tokio::task::JoinHandle;
 use tower_http::services::ServeDir;
 use tracing::{error, info};
 
+/// HTTP server internal configuration
+#[derive(Debug, Clone, Default)]
+struct ServerConfig {
+    pub port: u16,
+    pub root_path: String,
+    pub auto_index: bool,
+    pub video_play: bool,
+}
+
+impl ServerConfig {
+    fn from_platform() -> Self {
+        Self {
+            port: get_integer("http", "port").unwrap_or(8000) as u16,
+            root_path: get_array_first("http", "dirs").unwrap_or_else(|| ".".to_string()),
+            auto_index: get_bool("http", "autoindex").unwrap_or(true),
+            video_play: get_bool("http", "videoplay").unwrap_or(true),
+        }
+    }
+}
+
+fn get_array_first(module: &str, key: &str) -> Option<String> {
+    rabbit_platform::config::get_array(module, key).and_then(|arr| arr.first().cloned())
+}
+
 /// HTTP server service
 pub struct HttpService {
-    config: Arc<RwLock<HttpServerConfig>>,
     state: Arc<RwLock<HttpServerState>>,
     logs: Arc<RwLock<Vec<HttpAccessLog>>>,
     shutdown_tx: Option<mpsc::Sender<()>>,
@@ -37,7 +60,6 @@ pub struct HttpService {
 impl HttpService {
     pub fn new() -> Self {
         Self {
-            config: Arc::new(RwLock::new(HttpServerConfig::default())),
             state: Arc::new(RwLock::new(HttpServerState::Stopped)),
             logs: Arc::new(RwLock::new(Vec::new())),
             shutdown_tx: None,
@@ -48,7 +70,6 @@ impl HttpService {
 
     pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self {
         Self {
-            config: Arc::new(RwLock::new(HttpServerConfig::default())),
             state: Arc::new(RwLock::new(HttpServerState::Stopped)),
             logs: Arc::new(RwLock::new(Vec::new())),
             shutdown_tx: None,
@@ -63,11 +84,8 @@ impl HttpService {
         }
     }
 
-    /// Initialize - internal loads config
+    /// Initialize - now a no-op as config is pulled on start
     pub async fn init(&mut self) -> Result<()> {
-        let config = load_config()?;
-        let runtime_config = HttpServerConfig::from(&config.modules);
-        *self.config.write().await = runtime_config;
         info!("HTTP service initialized");
         Ok(())
     }
@@ -81,11 +99,8 @@ impl HttpService {
         *state = HttpServerState::Starting;
         drop(state);
 
-        let config = self.config.read().await.clone();
-        if !config.enabled {
-            *self.state.write().await = HttpServerState::Stopped;
-            return Ok(());
-        }
+        // Pull configuration directly from platform cache
+        let config = ServerConfig::from_platform();
 
         let addr: SocketAddr = format!("0.0.0.0:{}", config.port).parse()
             .map_err(|e| ServiceError::Config(format!("Invalid address: {}", e)))?;
@@ -111,7 +126,6 @@ impl HttpService {
         let handle = tokio::spawn(async move {
             // Build axum router with access logging and file upload
             let logs_clone = Arc::clone(&logs);
-            let root_clone = root.clone();
             let auto_index = config.auto_index;
             let video_play = config.video_play;
 
@@ -195,6 +209,7 @@ impl HttpService {
         }
     }
 
+
     /// Stop the HTTP server
     pub async fn update(&mut self) -> ServiceUpdateResult {
         let state = *self.state.read().await;
@@ -242,32 +257,11 @@ impl HttpService {
         *self.state.read().await
     }
 
-    /// Get configuration
-    pub async fn get_config(&self) -> HttpServerConfig {
-        self.config.read().await.clone()
-    }
-
-    /// Update configuration (requires restart)
-    pub async fn update_config(&mut self, config: HttpServerConfig) -> Result<()> {
-        let was_running = *self.state.read().await == HttpServerState::Running;
-
-        if was_running {
-            self.stop().await?;
-        }
-
-        *self.config.write().await = config;
-
-        if was_running {
-            self.start().await?;
-        }
-
-        Ok(())
-    }
-
     /// Get access logs
     pub async fn get_logs(&self) -> Vec<HttpAccessLog> {
         self.logs.read().await.clone()
     }
+
 
     /// Get recent logs (limited count)
     pub async fn get_recent_logs(&self, count: usize) -> Vec<HttpAccessLog> {

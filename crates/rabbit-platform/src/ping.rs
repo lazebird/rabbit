@@ -1,8 +1,8 @@
 //! Platform-specific ping implementation
 
 use super::Result;
-use rabbit_models::ping::{PingResult, PingTarget};
 use std::net::IpAddr;
+
 
 /// Platform ping capability
 pub struct PlatformPing;
@@ -20,21 +20,8 @@ impl PlatformPing {
         let addrs: Vec<_> = lookup_host(hostname).await?.collect();
         Ok(addrs.into_iter().next().map(|addr| addr.ip()))
     }
-    
-    /// Ping a single target
-    pub async fn ping_once(&self, _target: &PingTarget) -> Result<PingResult> {
-        // Use surge-ping for actual implementation
-        // This is a placeholder
-        Ok(PingResult {
-            seq: 0,
-            success: false,
-            duration_ms: None,
-            ttl: None,
-            bytes: 0,
-            error: Some("Not implemented".into()),
-        })
-    }
 }
+
 
 /// Check if the application has permission to use raw sockets
 pub fn check_ping_permission() -> bool {

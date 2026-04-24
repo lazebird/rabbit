@@ -1,8 +1,9 @@
 //! LAN Chat Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
-use rabbit_models::chat::{ChatConfig, ChatMessage, ChatRoom, ChatUser, MessageType};
-use rabbit_platform::config::load_config;
+use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::UiData};
+
+use rabbit_models::chat::{ChatMessage, ChatRoom, ChatUser, MessageType};
+use rabbit_platform::config::{get_integer, get_string};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -12,9 +13,24 @@ use tokio::task::JoinHandle;
 use tokio::time::{interval, Duration};
 use tracing::{error, info};
 
+/// LAN Chat internal configuration
+#[derive(Debug, Clone, Default)]
+struct ChatConfig {
+    pub username: String,
+    pub port: u16,
+}
+
+impl ChatConfig {
+    fn from_platform() -> Self {
+        Self {
+            username: get_string("chat", "username").unwrap_or_else(|| "User@PC".to_string()),
+            port: get_integer("chat", "port").unwrap_or(1314) as u16,
+        }
+    }
+}
+
 /// LAN Chat service
 pub struct ChatService {
-    config: Arc<RwLock<ChatConfig>>,
     room: Arc<RwLock<ChatRoom>>,
     socket: Arc<RwLock<Option<Arc<UdpSocket>>>>,
     message_tx: Option<mpsc::Sender<ChatMessage>>,
@@ -27,7 +43,6 @@ pub struct ChatService {
 impl ChatService {
     pub fn new() -> Self {
         Self {
-            config: Arc::new(RwLock::new(ChatConfig::default())),
             room: Arc::new(RwLock::new(ChatRoom {
                 messages: Vec::new(),
                 users: Vec::new(),
@@ -43,7 +58,6 @@ impl ChatService {
 
     pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self {
         Self {
-            config: Arc::new(RwLock::new(ChatConfig::default())),
             room: Arc::new(RwLock::new(ChatRoom {
                 messages: Vec::new(),
                 users: Vec::new(),
@@ -63,11 +77,8 @@ impl ChatService {
         }
     }
 
-    /// Initialize directly from ModuleConfigs
+    /// Initialize - now a no-op as config is pulled on start
     pub async fn init(&mut self) -> Result<()> {
-        let config = load_config()?;
-        let runtime_config = ChatConfig::from(&config.modules);
-        *self.config.write().await = runtime_config;
         info!("Chat service initialized");
         Ok(())
     }
@@ -78,14 +89,11 @@ impl ChatService {
             return Err(ServiceError::AlreadyRunning);
         }
 
-        let _config = self.config.read().await.clone();
-        let config_clone = self.config.read().await.clone();
-        if !config_clone.enabled {
-            return Ok(());
-        }
+        // Pull configuration directly from platform cache
+        let config = ChatConfig::from_platform();
 
         // Create UDP socket
-        let bind_addr = format!("0.0.0.0:{}", config_clone.port);
+        let bind_addr = format!("0.0.0.0:{}", config.port);
         let socket = UdpSocket::bind(&bind_addr).await
             .map_err(|e| ServiceError::Io(e))?;
 
@@ -98,8 +106,7 @@ impl ChatService {
         let (tx, mut rx) = mpsc::channel(100);
         self.message_tx = Some(tx);
 
-let room = Arc::clone(&self.room);
-        let config = Arc::clone(&self.config);
+        let room = Arc::clone(&self.room);
         let user_activity = Arc::clone(&self.user_activity);
         let tx = self.tx.clone();
 
@@ -121,7 +128,7 @@ let room = Arc::clone(&self.room);
                                     // Add user if not exists
                                     let mut room_guard = room.write().await;
                                     if !room_guard.users.iter().any(|u| u.username == msg.sender) {
-room_guard.users.push(ChatUser {
+                                        room_guard.users.push(ChatUser {
                                             username: msg.sender.clone(),
                                             hostname: String::new(),
                                             online: true,
@@ -144,8 +151,7 @@ room_guard.users.push(ChatUser {
                     Some(msg) = rx.recv() => {
                         // Send message
                         let data = serde_json::to_vec(&msg).unwrap_or_default();
-                        let broadcast_addr = format!("255.255.255.255:{}",
-                            config.read().await.port);
+                        let broadcast_addr = format!("255.255.255.255:{}", config.port);
                         let _ = socket.send_to(&data, broadcast_addr).await;
                     }
                 }
@@ -205,7 +211,7 @@ room_guard.users.push(ChatUser {
             }
         });
 
-self.heartbeat_handle = Some(heartbeat_handle);
+        self.heartbeat_handle = Some(heartbeat_handle);
         Ok(())
     }
 
@@ -255,11 +261,11 @@ self.heartbeat_handle = Some(heartbeat_handle);
 
     /// Send a message
     async fn send_message(&self, content: &str, msg_type: MessageType) -> Result<()> {
-        let config = self.config.read().await;
+        let username = get_string("chat", "username").unwrap_or_else(|| "User@PC".to_string());
 
         let message = ChatMessage {
             id: format!("msg_{}", chrono::Local::now().timestamp_millis()),
-            sender: config.username.clone(),
+            sender: username,
             content: content.to_string(),
             timestamp: chrono::Local::now(),
             message_type: msg_type,
@@ -305,18 +311,13 @@ self.heartbeat_handle = Some(heartbeat_handle);
         Ok(())
     }
 
-    /// Update username
-    pub async fn set_username(&self, username: String) -> Result<()> {
-        self.config.write().await.username = username;
-        Ok(())
-    }
-
     /// Parse received message
     fn parse_message(data: &[u8], _addr: SocketAddr) -> Result<ChatMessage> {
         serde_json::from_slice(data)
             .map_err(|e| ServiceError::Other(format!("Parse error: {}", e)))
     }
 }
+
 
 impl Default for ChatService {
     fn default() -> Self {

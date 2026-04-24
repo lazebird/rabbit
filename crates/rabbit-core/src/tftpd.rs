@@ -1,8 +1,9 @@
 //! TFTP Server Service
 
 use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
-use rabbit_models::tftp::{TftpLogEntry, TftpServerConfig, TftpTransfer};
-use rabbit_platform::config::load_config;
+use rabbit_models::tftp::{TftpLogEntry, TftpTransfer};
+use rabbit_platform::config::get_integer;
+
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -10,9 +11,35 @@ use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 use tracing::{error, info};
 
+/// TFTP server internal configuration
+#[derive(Debug, Clone, Default)]
+struct ServerConfig {
+    pub bind_addr: String,
+    pub root_path: String,
+    pub block_size: usize,
+    pub timeout_secs: u64,
+    pub window_size: u16,
+}
+
+impl ServerConfig {
+    fn from_platform() -> Self {
+        let port = get_integer("tftpd", "port").unwrap_or(69);
+        Self {
+            bind_addr: format!("0.0.0.0:{}", port),
+            root_path: get_array_first("tftpd", "work_dirs").unwrap_or_else(|| ".".to_string()),
+            block_size: get_integer("tftpd", "blksize").unwrap_or(512) as usize,
+            timeout_secs: get_integer("tftpd", "timeout").unwrap_or(200) as u64 / 1000,
+            window_size: 1, // Default window size
+        }
+    }
+}
+
+fn get_array_first(module: &str, key: &str) -> Option<String> {
+    rabbit_platform::config::get_array(module, key).and_then(|arr| arr.first().cloned())
+}
+
 /// TFTP Server Service
 pub struct TftpdService {
-    config: Arc<RwLock<TftpServerConfig>>,
     transfers: Arc<RwLock<HashMap<String, TftpTransfer>>>,
     logs: Arc<RwLock<Vec<TftpLogEntry>>>,
     shutdown_tx: Option<tokio::sync::oneshot::Sender<()>>,
@@ -23,7 +50,6 @@ pub struct TftpdService {
 impl TftpdService {
     pub fn new() -> Self {
         Self {
-            config: Arc::new(RwLock::new(TftpServerConfig::default())),
             transfers: Arc::new(RwLock::new(HashMap::new())),
             logs: Arc::new(RwLock::new(Vec::new())),
             server_handle: None,
@@ -34,7 +60,6 @@ impl TftpdService {
 
     pub fn with_channel(tx: tokio::sync::mpsc::Sender<UiData>) -> Self {
         Self {
-            config: Arc::new(RwLock::new(TftpServerConfig::default())),
             transfers: Arc::new(RwLock::new(HashMap::new())),
             logs: Arc::new(RwLock::new(Vec::new())),
             server_handle: None,
@@ -49,11 +74,8 @@ impl TftpdService {
         }
     }
 
-    /// Initialize from ModuleConfigs
+    /// Initialize - now a no-op as config is pulled on start
     pub async fn init(&mut self) -> Result<()> {
-        let config = load_config()?;
-        let server_config = TftpServerConfig::from(&config.modules);
-        *self.config.write().await = server_config;
         info!("TFTP server service initialized");
         Ok(())
     }
@@ -69,10 +91,8 @@ impl TftpdService {
             return Err(ServiceError::AlreadyRunning);
         }
 
-        let config = self.config.read().await.clone();
-        if !config.enabled {
-            return Ok(());
-        }
+        // Pull configuration directly from platform cache
+        let config = ServerConfig::from_platform();
 
         let root = PathBuf::from(&config.root_path);
         if !root.exists() {
@@ -82,8 +102,8 @@ impl TftpdService {
         let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel();
         self.shutdown_tx = Some(shutdown_tx);
 
-        let transfers = Arc::clone(&self.transfers);
-        let logs = Arc::clone(&self.logs);
+        let _transfers = Arc::clone(&self.transfers);
+        let _logs = Arc::clone(&self.logs);
         let bind_addr = config.bind_addr.clone();
         let root_path = config.root_path.clone();
         let timeout_secs = config.timeout_secs;
@@ -189,24 +209,12 @@ impl TftpdService {
         self.server_handle.is_some()
     }
 
-    /// Update config
-    pub async fn update_config(&mut self, config: TftpServerConfig) -> Result<()> {
-        let was_running = self.server_handle.is_some();
-        if was_running {
-            self.stop().await?;
-        }
-        *self.config.write().await = config;
-        if was_running {
-            self.start().await?;
-        }
-        Ok(())
-    }
-
     /// Get logs
     pub async fn get_logs(&self) -> Vec<TftpLogEntry> {
         self.logs.read().await.clone()
     }
 }
+
 
 impl Default for TftpdService {
     fn default() -> Self {

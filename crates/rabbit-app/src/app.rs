@@ -13,8 +13,9 @@ use fltk::{
     prelude::*,
     window::{Window, WindowType},
 };
-use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService, ui_channel::{UiData, Module}};
-use rabbit_models::{AppConfig, ping::PingTarget, scan::{ScanRange, ScannerState}};
+use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService, ui_channel::{UiData, Module}, ping::PingTarget};
+use rabbit_models::{AppConfig, scan::ScanRange};
+
 use rabbit_platform::config::{load_config, save_config};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
@@ -70,8 +71,7 @@ impl App {
 
         // Create services with channels
         let mut ping_service = PingService::with_channel(ping_tx);
-        let ping_log_file = config.modules.get_string("ping", "log").unwrap_or_default();
-        ping_service.init(ping_log_file).await?;
+        ping_service.init().await?;
 
         let mut http_service = HttpService::with_channel(http_tx);
         http_service.init().await?;
@@ -91,6 +91,7 @@ impl App {
 
         let mut scan_service = ScanService::with_channel(scan_tx);
         scan_service.init().await?;
+
 
         // Create view model
         let view_model = AppViewModel::new(config);
@@ -663,9 +664,8 @@ Ok(Self {
 
         // Force exit - FLTK may leave internal threads running
         std::process::exit(0);
-
-        Ok(())
     }
+
 
     /// Event loop for processing UI events
     async fn event_loop(
@@ -1007,22 +1007,17 @@ impl EventHandler for AppHandle {
                             crate::ui_state::set_http_running(false);
                             crate::ui_state::append_http_log("HTTP server stopped.\r\n");
                         } else {
-                            let config = self.view_model.read().await.get_config();
-                            let port = config.modules.get_integer("http", "port").unwrap_or(8000) as u16;
-                            if config.modules.get_array("http", "dirs").map(|d| d.is_empty()).unwrap_or(true) {
+                            if rabbit_platform::config::get_array("http", "dirs").map(|d| d.is_empty()).unwrap_or(true) {
                                 warn!("No HTTP directories configured, cannot start server");
                                 crate::ui_state::append_http_log("Error: No directories configured. Add files or directories first.\r\n");
                                 return Ok(());
                             }
-                            drop(config);
 
-                            info!("Starting HTTP server on port {}", port);
+                            info!("Starting HTTP server");
                             let mut service = self.http_service.write().await;
-                            service.init().await?;
                             let _ = service.update().await;
                             self.view_model.write().await.set_http_running(true);
                             crate::ui_state::set_http_running(true);
-                            crate::ui_state::append_http_log(&format!("HTTP server started on port {}.\r\n", port));
                         }
                     }
                     "tftpd" => {
@@ -1033,22 +1028,16 @@ impl EventHandler for AppHandle {
                             self.view_model.write().await.set_tftp_server_running(false);
                             crate::ui_state::append_tftpd_log("TFTP server stopped.\r\n");
                         } else {
-                            let config = self.view_model.read().await.get_config();
-                            let modules = &config.modules;
-                            let bind_addr = format!("0.0.0.0:{}", modules.get_integer("tftpd", "port").unwrap_or(69));
-                            if modules.get_array("tftpd", "work_dirs").map(|d| d.is_empty()).unwrap_or(true) {
+                            if rabbit_platform::config::get_array("tftpd", "work_dirs").map(|d| d.is_empty()).unwrap_or(true) {
                                 warn!("No TFTP directories configured, cannot start server");
                                 crate::ui_state::append_tftpd_log("Error: No directories configured. Add directories first.\r\n");
                                 return Ok(());
                             }
-                            drop(config);
 
-                            info!("Starting TFTP server on {}", bind_addr);
+                            info!("Starting TFTP server");
                             let mut service = self.tftp_server_service.write().await;
-                            service.init().await?;
                             let _ = service.update().await;
                             self.view_model.write().await.set_tftp_server_running(true);
-                            crate::ui_state::append_tftpd_log(&format!("TFTP server started on {}.\r\n", bind_addr));
                         }
                     }
                     "chat" => {
@@ -1059,19 +1048,13 @@ impl EventHandler for AppHandle {
                             self.view_model.write().await.set_chat_running(false);
                             crate::ui_state::set_chat_users(&[]);
                         } else {
-                            let config = self.view_model.read().await.get_config();
-                            let username = config.modules.get_string("chat", "username").unwrap_or_else(|| "User@PC".into());
-                            let port = config.modules.get_integer("chat", "port").unwrap_or(1314) as u16;
-                            let broadcast_addr = config.modules.get_string("chat", "broadcast_addr").unwrap_or_else(|| "255.255.255.255".into());
-                            drop(config);
-
-                            info!("Starting chat as {} on port {}", username, port);
+                            info!("Starting chat service");
                             let mut service = self.chat_service.write().await;
-                            service.init().await?;
                             let _ = service.update().await;
                             self.view_model.write().await.set_chat_running(true);
                         }
                     }
+
                     _ => {}
                 }
 }

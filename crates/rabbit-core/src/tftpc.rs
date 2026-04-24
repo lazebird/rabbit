@@ -1,8 +1,8 @@
 //! TFTP Client Service
 
 use crate::{Result, ServiceError, ui_channel::{UiData, Module}};
-use rabbit_models::tftp::{TftpClientConfig, TftpTransfer};
-use rabbit_platform::config::load_config;
+use rabbit_models::tftp::TftpTransfer;
+use rabbit_platform::config::{get_integer, get_string};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -19,9 +19,28 @@ const TFTP_OPCODE_ERROR: u16 = 5;
 const TFTP_BLOCK_SIZE: usize = 512;
 const TFTP_TIMEOUT_SECS: u64 = 5;
 
+/// TFTP client internal configuration
+#[derive(Debug, Clone, Default)]
+struct ClientConfig {
+    pub server_addr: String,
+    pub block_size: usize,
+    pub timeout_secs: u64,
+}
+
+impl ClientConfig {
+    fn from_platform() -> Self {
+        let server_addr = get_string("tftpc", "server_addr").unwrap_or_else(|| "127.0.0.1".into());
+        let server_port = get_integer("tftpc", "server_port").unwrap_or(69) as u16;
+        Self {
+            server_addr: format!("{}:{}", server_addr, server_port),
+            block_size: get_integer("tftpc", "blksize").unwrap_or(1024) as usize,
+            timeout_secs: get_integer("tftpc", "timeout").unwrap_or(200) as u64 / 1000,
+        }
+    }
+}
+
 /// TFTP Client Service
 pub struct TftpcService {
-    config: Arc<RwLock<TftpClientConfig>>,
     transfers: Arc<RwLock<HashMap<String, TftpTransfer>>>,
     tx: Option<tokio::sync::mpsc::Sender<UiData>>,
 }
@@ -29,7 +48,6 @@ pub struct TftpcService {
 impl TftpcService {
     pub fn new() -> Self {
         Self {
-            config: Arc::new(RwLock::new(TftpClientConfig::default())),
             transfers: Arc::new(RwLock::new(HashMap::new())),
             tx: None,
         }
@@ -37,7 +55,6 @@ impl TftpcService {
 
     pub fn with_channel(tx: tokio::sync::mpsc::Sender<UiData>) -> Self {
         Self {
-            config: Arc::new(RwLock::new(TftpClientConfig::default())),
             transfers: Arc::new(RwLock::new(HashMap::new())),
             tx: Some(tx),
         }
@@ -49,23 +66,22 @@ impl TftpcService {
         }
     }
 
+    /// Initialize - now a no-op as config is pulled on operations
     pub async fn init(&mut self) -> Result<()> {
-        let config = load_config()?;
-        let client_config = TftpClientConfig::from(&config.modules);
-        *self.config.write().await = client_config;
         info!("TFTP client service initialized");
         Ok(())
     }
 
     pub async fn put(&self, local_path: &str, remote_filename: &str) -> Result<String> {
-        let config = self.config.read().await.clone();
+        let config = ClientConfig::from_platform();
         self.upload_to(&config.server_addr, local_path, remote_filename).await
     }
 
     pub async fn get(&self, remote_filename: &str, local_path: &str) -> Result<String> {
-        let config = self.config.read().await.clone();
+        let config = ClientConfig::from_platform();
         self.download_from(&config.server_addr, remote_filename, local_path).await
     }
+
 
     async fn upload_to(&self, server_addr: &str, local_path: &str, remote_filename: &str) -> Result<String> {
         let transfer_id = format!("upload_{}_{}", remote_filename, chrono::Local::now().timestamp());
@@ -313,11 +329,6 @@ impl TftpcService {
             .filter(|t| t.state == "transferring")
             .cloned()
             .collect()
-    }
-
-    pub async fn update_config(&mut self, config: TftpClientConfig) -> Result<()> {
-        *self.config.write().await = config;
-        Ok(())
     }
 }
 
