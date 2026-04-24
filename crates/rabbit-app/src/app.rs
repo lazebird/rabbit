@@ -898,7 +898,7 @@ impl EventHandler for AppHandle {
                                 });
                             }
                         } else {
-                            // Start ping from config
+                            // Start ping from config (options already saved by UI layer)
                             let config = self.view_model.read().await.get_config();
                             let target = config.modules.get_string("ping", "target").unwrap_or_default();
                             let interval = config.modules.get_integer("ping", "interval").unwrap_or(1000) as u64;
@@ -967,12 +967,24 @@ impl EventHandler for AppHandle {
                                     return Ok(());
                                 }
                             };
-                            let end: std::net::Ipv4Addr = match end_ip.parse() {
-                                Ok(ip) => ip,
-                                Err(_) => {
-                                    warn!("Invalid end IP: {}", end_ip);
-                                    crate::ui_state::append_scan_output(&format!("Error: Invalid end IP {}\n", end_ip));
-                                    return Ok(());
+                            let end: std::net::Ipv4Addr = if let Ok(num) = end_ip.parse::<u8>() {
+                                let parts: Vec<&str> = start_ip.splitn(5, '.').collect();
+                                if parts.len() == 4 {
+                                    let a: u8 = parts[0].parse().unwrap_or(0);
+                                    let b: u8 = parts[1].parse().unwrap_or(0);
+                                    let c: u8 = parts[2].parse().unwrap_or(0);
+                                    std::net::Ipv4Addr::new(a, b, c, num)
+                                } else {
+                                    std::net::Ipv4Addr::new(192, 168, 1, num)
+                                }
+                            } else {
+                                match end_ip.parse() {
+                                    Ok(ip) => ip,
+                                    Err(_) => {
+                                        warn!("Invalid end IP: {}", end_ip);
+                                        crate::ui_state::append_scan_output(&format!("Error: Invalid end IP {}\n", end_ip));
+                                        return Ok(());
+                                    }
                                 }
                             };
 

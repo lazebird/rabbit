@@ -628,7 +628,11 @@ pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
 
     if let Ok(mut config) = load_config() {
         config.modules.scan.insert("start_ip".into(), ConfigValue::String(start_ip));
-        config.modules.scan.insert("end_ip".into(), ConfigValue::String(end_ip));
+        
+        // Save only single number (last octet) for end_ip
+        let end_suffix: u8 = end_ip.parse().unwrap_or(254);
+        config.modules.scan.insert("end_ip".into(), ConfigValue::String(end_suffix.to_string()));
+        
         config.modules.scan.insert("filter".into(), ConfigValue::Boolean(filter));
         if let Err(e) = save_config(&config) {
             tracing::warn!("Failed to save scan config: {}", e);

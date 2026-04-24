@@ -136,7 +136,7 @@ impl PingService {
 
             if *state.read().await == PingState::Running {
                 if let Some(ref client) = client {
-                    PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target).await;
+                    PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target, &tx).await;
                 }
             }
 
@@ -145,7 +145,7 @@ impl PingService {
                     _ = ping_interval.tick() => {
                         if *state.read().await == PingState::Running {
                             if let Some(ref client) = client {
-                                PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target).await;
+                                PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target, &tx).await;
                             }
                         }
                     }
@@ -310,6 +310,56 @@ _ => ServiceUpdateResult::NoChange,
             avg_ms: avg_opt,
         })
     }
+    
+    /// Get summary synchronously (without async)
+    fn get_summary_sync(
+        results: &Arc<RwLock<HashMap<String, Vec<PingResult>>>>,
+        sent_count: &Arc<AtomicU32>,
+        address: &str,
+    ) -> Option<PingSummary> {
+        let results_guard = results.try_read().ok()?;
+        let results_vec = results_guard.get(address)?;
+        if results_vec.is_empty() {
+            return None;
+        }
+        let results = results_vec;
+        
+        let sent = sent_count.load(Ordering::SeqCst);
+        let received = results.iter().filter(|r| r.success).count() as u32;
+        let lost = sent.saturating_sub(received);
+        let loss_rate = if sent > 0 { (lost as f64 / sent as f64) * 100.0 } else { 0.0 };
+        
+        let mut min_ms = f64::INFINITY;
+        let mut max_ms = f64::NEG_INFINITY;
+        let mut sum_ms = 0.0f64;
+        let mut time_count = 0u32;
+        
+        for r in results.iter() {
+            if let Some(ms) = r.duration_ms {
+                if ms < min_ms { min_ms = ms; }
+                if ms > max_ms { max_ms = ms; }
+                sum_ms += ms;
+                time_count += 1;
+            }
+        }
+        
+        let (min_opt, max_opt, avg_opt) = if time_count > 0 {
+            (Some(min_ms), Some(max_ms), Some(sum_ms / time_count as f64))
+        } else {
+            (None, None, None)
+        };
+        
+        Some(PingSummary {
+            target: address.to_string(),
+            sent,
+            received,
+            lost,
+            loss_rate,
+            min_ms: min_opt,
+            max_ms: max_opt,
+            avg_ms: avg_opt,
+        })
+    }
 
     /// Ping all targets
     pub async fn ping_all(
@@ -321,6 +371,7 @@ _ => ServiceUpdateResult::NoChange,
         sent_count: &Arc<AtomicU32>,
         log_file: &str,
         sent_per_target: &mut HashMap<String, u32>,
+        tx: &Option<mpsc::Sender<UiData>>,
     ) {
         const MAX_RESULTS: usize = 1000;
 
@@ -342,10 +393,13 @@ _ => ServiceUpdateResult::NoChange,
             let seq = sequence.fetch_add(1, Ordering::SeqCst);
             let result = Self::do_ping(client, target, seq).await;
             let success = result.success;
+            let bytes = result.bytes;
+            let duration_ms = result.duration_ms;
+            let ttl = result.ttl;
 
             // Write to log file if enabled
             if !log_file.is_empty() {
-                Self::write_to_log_file(log_file, &target.address, &result).await;
+                Self::write_to_log_file(log_file, &target.address, bytes, duration_ms, success).await;
             }
 
             let mut results_guard = results.write().await;
@@ -375,6 +429,34 @@ _ => ServiceUpdateResult::NoChange,
             if target.stop_on_loss && !success {
                 targets_to_remove.push(target.address.clone());
             }
+
+            // Send result to UI via channel
+            if let Some(ref tx) = tx {
+                let msg = if success {
+                    if let Some(ttl) = ttl {
+                        format!("Reply from {}: bytes={} time={:.1}ms TTL={}",
+                            target.address, bytes, duration_ms.unwrap_or(0.0), ttl)
+                    } else {
+                        format!("Reply from {}: bytes={} time={:.1}ms",
+                            target.address, bytes, duration_ms.unwrap_or(0.0))
+                    }
+                } else {
+                    "Request timed out.".to_string()
+                };
+                let _ = tx.send(UiData::Log(Module::Ping, msg)).await;
+                
+                // Also send stats after each ping
+                if let Some(summary) = Self::get_summary_sync(&results, &sent_count, &target.address) {
+                    let stats = format!(
+                        "Tx {} Rx {} Loss {} Min {:.1}ms Max {:.1}ms Avg {:.1}ms",
+                        summary.sent, summary.received, summary.lost,
+                        summary.min_ms.unwrap_or(0.0),
+                        summary.max_ms.unwrap_or(0.0),
+                        summary.avg_ms.unwrap_or(0.0)
+                    );
+                    let _ = tx.send(UiData::PingStats(stats)).await;
+                }
+            }
         }
 
         // Remove targets that triggered stop_on_loss or reached count limit
@@ -382,6 +464,18 @@ _ => ServiceUpdateResult::NoChange,
             let mut targets_guard = targets.write().await;
             for addr in targets_to_remove {
                 targets_guard.retain(|t| t.address != addr);
+            }
+            
+            // Check if all targets are removed (count reached) - send Idle state
+            if targets_guard.is_empty() && !tx.is_none() {
+                if let Some(ref tx) = tx {
+                    let _ = tx.send(UiData::PingState { 
+                        address: String::new(), 
+                        progress: 0, 
+                        total: 0, 
+                        color: "gray".to_string() 
+                    }).await;
+                }
             }
         }
     }
@@ -437,28 +531,26 @@ let mut pinger = client.pinger(addr, PingIdentifier(random())).await;
     }
 
     /// Write ping result to log file
-    async fn write_to_log_file(log_file: &str, target: &str, result: &PingResult) {
+    async fn write_to_log_file(log_file: &str, target: &str, bytes: usize, duration_ms: Option<f64>, success: bool) {
         if log_file.is_empty() {
             return;
         }
 
         let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S");
-        let log_line = if result.success {
+        let log_line = if success {
             format!(
-                "[{}] {} - Reply from {}: bytes={} time={:.1}ms TTL={}\n",
+                "[{}] {} - Reply from {}: bytes={} time={:.1}ms\n",
                 timestamp,
                 target,
                 target,
-                result.bytes,
-                result.duration_ms.unwrap_or(0.0),
-                result.ttl.unwrap_or(0)
+                bytes,
+                duration_ms.unwrap_or(0.0)
             )
         } else {
             format!(
-                "[{}] {} - {}\n",
+                "[{}] {} - Request timed out\n",
                 timestamp,
-                target,
-                result.error.as_deref().unwrap_or("Request timed out")
+                target
             )
         };
 

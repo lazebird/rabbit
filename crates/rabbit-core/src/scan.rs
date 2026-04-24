@@ -66,9 +66,11 @@ impl ScanService {
     /// Start scanning a range using semaphore-based concurrency
     pub async fn scan(&mut self, range: ScanRange) -> Result<()> {
         let mut state = self.state.write().await;
-        if *state != ScannerState::Idle {
+        if matches!(*state, ScannerState::Scanning { .. }) {
             return Err(ServiceError::AlreadyRunning);
         }
+        // Reset to idle if previous scan completed or was cancelled
+        *state = ScannerState::Idle;
         *state = ScannerState::Scanning { progress: 0 };
         drop(state);
 
@@ -142,6 +144,20 @@ impl ScanService {
             *state.write().await = ScannerState::Completed;
             if let Some(ref tx) = tx {
                 let _ = tx.send(UiData::ScanProgress("Scan completed".to_string())).await;
+                
+                let online_count = results.read().await.iter().filter(|r| r.online).count();
+                if online_count > 0 {
+                    let hosts: Vec<String> = results.read().await
+                        .iter()
+                        .filter(|r| r.online)
+                        .map(|r| r.ip.to_string())
+                        .collect();
+                    
+                    for host in hosts {
+                        let _ = tx.send(UiData::Log(Module::Scan, format!("Found online host: {}", host))).await;
+                    }
+                    let _ = tx.send(UiData::Log(Module::Scan, format!("Found {} online hosts", online_count))).await;
+                }
             }
         });
 
@@ -177,7 +193,7 @@ impl ScanService {
             let _ = handle.await;
         }
 
-        *self.state.write().await = ScannerState::Cancelled;
+        *self.state.write().await = ScannerState::Idle;
         info!("Scan cancelled");
         Ok(())
     }

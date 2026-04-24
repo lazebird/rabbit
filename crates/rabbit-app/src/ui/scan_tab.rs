@@ -103,16 +103,20 @@ impl TabComponent for ScanTab {
                     return;
                 }
 
-                let end_ip = if end_suffix.is_empty() {
-                    start_ip.clone()
-                } else {
-                    let parts: Vec<&str> = start_ip.splitn(4, '.').collect();
+                let end_ip = if end_suffix.is_empty() || end_suffix.parse::<u8>().is_ok() {
+                    let parts: Vec<&str> = start_ip.splitn(5, '.').collect();
                     if parts.len() == 4 {
-                        format!("{}.{}.{}.{}", parts[0], parts[1], parts[2], end_suffix)
+                        if end_suffix.is_empty() {
+                            parts[3].to_string()
+                        } else {
+                            format!("{}.{}.{}.{}", parts[0], parts[1], parts[2], end_suffix)
+                        }
                     } else {
                         fltk::dialog::alert_default("Invalid start IP address format! (expected x.x.x.x)");
                         return;
                     }
+                } else {
+                    end_suffix.to_string()
                 };
 
                 crate::ui_state::sync_scan_config(start_ip.clone(), end_ip.clone(), false);
