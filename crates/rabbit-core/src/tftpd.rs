@@ -1,6 +1,6 @@
 //! TFTP Server Service
 
-use crate::{Result, ServiceError};
+use crate::{Result, ServiceError, ServiceUpdateResult};
 use rabbit_models::tftp::{TftpLogEntry, TftpServerConfig, TftpTransfer};
 use rabbit_platform::config::load_config;
 use std::collections::HashMap;
@@ -144,6 +144,21 @@ impl TftpdService {
 
         info!("TFTP server stopped");
         Ok(())
+    }
+
+    /// Update service (toggle start/stop)
+    pub async fn update(&mut self) -> ServiceUpdateResult {
+        if self.is_running() {
+            match self.stop().await {
+                Ok(()) => ServiceUpdateResult::Stopped("TFTP server stopped".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
+            }
+        } else {
+            match self.start().await {
+                Ok(()) => ServiceUpdateResult::Started("TFTP server started".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
+            }
+        }
     }
 
     /// Check if running

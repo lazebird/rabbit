@@ -29,6 +29,36 @@ pub type TftpService = TftpdService;
 
 use thiserror::Error;
 
+#[derive(Debug)]
+pub enum ServiceUpdateResult {
+    Started(String),
+    Stopped(String),
+    Error(String),
+    NoChange,
+}
+
+impl ServiceUpdateResult {
+    pub fn is_running(&self) -> bool {
+        matches!(self, Self::Started(_) | Self::NoChange)
+    }
+
+    pub fn message(&self) -> &str {
+        match self {
+            Self::Started(m) => m,
+            Self::Stopped(m) => m,
+            Self::Error(m) => m,
+            Self::NoChange => "",
+        }
+    }
+
+    pub fn ok(&self) -> Option<String> {
+        match self {
+            Self::Error(_) => None,
+            _ => Some(self.message().to_string()),
+        }
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum ServiceError {
     #[error("Service not started")]

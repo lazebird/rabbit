@@ -1,6 +1,6 @@
 //! LAN Chat Service
 
-use crate::{Result, ServiceError};
+use crate::{Result, ServiceError, ServiceUpdateResult};
 use rabbit_models::chat::{ChatConfig, ChatMessage, ChatRoom, ChatUser, MessageType};
 use rabbit_platform::config::load_config;
 use std::collections::HashMap;
@@ -165,16 +165,28 @@ impl ChatService {
             }
         });
 
-        self.heartbeat_handle = Some(heartbeat_handle);
-
-        // Send announcement
-        self.send_message("Joined the chat", MessageType::Announcement).await?;
-
-        info!("Chat service started on port {}", config_clone.port);
+self.heartbeat_handle = Some(heartbeat_handle);
         Ok(())
     }
 
-    /// Stop the chat service
+    pub async fn update(&mut self) -> ServiceUpdateResult {
+        if self.recv_handle.is_some() {
+            match self.stop().await {
+                Ok(()) => ServiceUpdateResult::Stopped("Chat stopped".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
+            }
+        } else {
+            match self.start().await {
+                Ok(()) => ServiceUpdateResult::Started("Chat started".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
+            }
+        }
+    }
+
+    pub fn is_running(&self) -> bool {
+        self.recv_handle.is_some()
+    }
+
     pub async fn stop(&mut self) -> Result<()> {
         // Send leave announcement
         self.send_message("Left the chat", MessageType::Announcement).await.ok();

@@ -1,6 +1,6 @@
 //! IP Scanner Service
 
-use crate::{Result, ServiceError};
+use crate::{Result, ServiceError, ServiceUpdateResult};
 use rabbit_models::scan::{ScanRange, ScanResult, ScannerConfig, ScannerState};
 use rabbit_platform::config::load_config;
 use std::net::Ipv4Addr;
@@ -119,7 +119,25 @@ impl ScanService {
         Ok(())
     }
 
-    /// Cancel ongoing scan
+    pub async fn update(&mut self) -> ServiceUpdateResult {
+        let state = *self.state.read().await;
+        match state {
+            ScannerState::Idle => ServiceUpdateResult::NoChange,
+            _ => match self.cancel().await {
+                Ok(()) => ServiceUpdateResult::Stopped("Scan cancelled".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to cancel: {}", e)),
+            }
+        }
+    }
+
+    pub fn is_running(&self) -> bool {
+        if let Ok(s) = self.state.try_read() {
+            matches!(*s, ScannerState::Scanning { .. })
+        } else {
+            false
+        }
+    }
+
     pub async fn cancel(&mut self) -> Result<()> {
         if let Some(tx) = self.cancel_tx.take() {
             let _ = tx.send(()).await;

@@ -68,7 +68,7 @@ impl App {
 
         let mut plan_service = PlanService::new();
         plan_service.init().await?;
-        plan_service.start().await?;
+        let _ = plan_service.update().await;
 
         let mut chat_service = ChatService::new();
         chat_service.init().await?;
@@ -608,11 +608,11 @@ Ok(Self {
         let chat_running = self.view_model.read().await.is_chat_running();
 
         // Stop all services
-        self.ping_service.write().await.stop().await.ok();
-        self.http_service.write().await.stop().await.ok();
-        self.tftp_server_service.write().await.stop().await.ok();
-        self.plan_service.write().await.stop().await.ok();
-        self.chat_service.write().await.stop().await.ok();
+        self.ping_service.write().await.update().await.ok();
+        self.http_service.write().await.update().await.ok();
+        self.tftp_server_service.write().await.update().await.ok();
+        self.plan_service.write().await.update().await.ok();
+        self.chat_service.write().await.update().await.ok();
 
         // Save running states to configuration
         use rabbit_models::config::ConfigValue;
@@ -804,7 +804,7 @@ impl EventHandler for AppHandle {
                             if let Some(handle) = self.ping_task.write().await.take() {
                                 handle.abort();
                             }
-                            self.ping_service.write().await.stop().await?;
+                            let _ = self.ping_service.write().await.update().await;
                             self.view_model.write().await.set_ping_running(false);
                             crate::ui_state::set_ping_running(false);
                             // Reset window title
@@ -1040,7 +1040,7 @@ impl EventHandler for AppHandle {
                             info!("Starting HTTP server on port {}", port);
                             let mut service = self.http_service.write().await;
                             service.init().await?;
-                            service.start().await?;
+                            let _ = service.update().await;
                             self.view_model.write().await.set_http_running(true);
                             crate::ui_state::set_http_running(true);
                             crate::ui_state::append_http_log(&format!("HTTP server started on port {}.\r\n", port));
@@ -1085,7 +1085,7 @@ impl EventHandler for AppHandle {
                             info!("Starting TFTP server on {}", bind_addr);
                             let mut service = self.tftp_server_service.write().await;
                             service.init().await?;
-                            service.start_server().await?;
+                            let _ = service.update().await;
                             self.view_model.write().await.set_tftp_server_running(true);
                             crate::ui_state::append_tftpd_log(&format!("TFTP server started on {}.\r\n", bind_addr));
                         }
@@ -1107,7 +1107,7 @@ impl EventHandler for AppHandle {
                             info!("Starting chat as {} on port {}", username, port);
                             let mut service = self.chat_service.write().await;
                             service.init().await?;
-                            service.start().await?;
+                            let _ = service.update().await;
                             self.view_model.write().await.set_chat_running(true);
 
                             let chat_service = self.chat_service.clone();

@@ -1,6 +1,6 @@
 //! Ping Service
 
-use crate::{Result, ServiceError};
+use crate::{Result, ServiceError, ServiceUpdateResult};
 use rabbit_models::ping::{PingResult, PingState, PingSummary, PingTarget};
 use rand::random;
 use socket2::Type;
@@ -101,17 +101,13 @@ impl PingService {
         let log_file = self.log_file.clone();
 
         tokio::spawn(async move {
-            // Get initial interval from first target (default 1000ms)
             let mut current_interval_ms = {
                 let targets_guard = targets.read().await;
                 targets_guard.first().map(|t| t.interval_ms).unwrap_or(1000)
             };
             let mut ping_interval = interval(Duration::from_millis(current_interval_ms));
-
-            // Track pings sent per target address for count enforcement
             let mut sent_per_target: HashMap<String, u32> = HashMap::new();
 
-            // Immediately trigger first ping, then wait for interval
             if *state.read().await == PingState::Running {
                 if let Some(ref client) = client {
                     PingService::ping_all(client, &targets, &results, &consumed, &sequence, &sent_count, &log_file, &mut sent_per_target).await;
@@ -134,22 +130,17 @@ impl PingService {
                                 break;
                             }
                             PingCommand::AddTarget(target) => {
-                                // Update interval if this is the first target or has different interval
                                 current_interval_ms = target.interval_ms;
-                                // Recreate interval timer with new interval
                                 ping_interval = interval(Duration::from_millis(current_interval_ms));
-                                // Initialize sent count for new target
                                 sent_per_target.entry(target.address.clone()).or_insert(0);
                                 targets.write().await.push(target);
                             }
                             PingCommand::RemoveTarget(addr) => {
                                 targets.write().await.retain(|t| t.address != addr);
-                                // Update interval from remaining targets if needed
                                 if let Some(first) = targets.read().await.first() {
                                     current_interval_ms = first.interval_ms;
                                     ping_interval = interval(Duration::from_millis(current_interval_ms));
                                 }
-                                // Remove tracking for this target
                                 sent_per_target.remove(&addr);
                             }
                             _ => {}
@@ -162,7 +153,25 @@ impl PingService {
         Ok(())
     }
 
-    /// Stop the ping service
+    pub async fn update(&mut self) -> ServiceUpdateResult {
+        let state = *self.state.read().await;
+        match state {
+            PingState::Running => {
+                match self.stop().await {
+                    Ok(()) => ServiceUpdateResult::Stopped("Ping stopped".to_string()),
+                    Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
+                }
+            }
+            PingState::Idle => {
+                match self.start().await {
+                    Ok(()) => ServiceUpdateResult::Started("Ping started".to_string()),
+                    Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
+                }
+            }
+_ => ServiceUpdateResult::NoChange,
+        }
+    }
+
     pub async fn stop(&mut self) -> Result<()> {
         if let Some(tx) = &self.command_tx {
             let _ = tx.send(PingCommand::Stop).await;

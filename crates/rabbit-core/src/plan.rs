@@ -1,6 +1,6 @@
 //! Task Planner Service
 
-use crate::{Result, ServiceError};
+use crate::{Result, ServiceError, ServiceUpdateResult};
 use chrono::{Datelike, Local};
 use rabbit_models::plan::{Schedule, Task, TaskLog, TaskState, RepeatUnit};
 use rabbit_platform::notification::show_task_reminder;
@@ -58,7 +58,25 @@ impl PlanService {
         Ok(())
     }
 
-    /// Stop the scheduler
+    pub async fn update(&mut self) -> ServiceUpdateResult {
+        let running = *self.running.read().await;
+        if running {
+            match self.stop().await {
+                Ok(()) => ServiceUpdateResult::Stopped("Plan service stopped".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
+            }
+        } else {
+            match self.start().await {
+                Ok(()) => ServiceUpdateResult::Started("Plan service started".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
+            }
+        }
+    }
+
+    pub fn is_running(&self) -> bool {
+        *self.running.blocking_read()
+    }
+
     pub async fn stop(&mut self) -> Result<()> {
         *self.running.write().await = false;
         info!("Plan service stopped");

@@ -1,6 +1,6 @@
 //! HTTP Server Service
 
-use crate::{Result, ServiceError};
+use crate::{Result, ServiceError, ServiceUpdateResult};
 use axum::{
     body::{Body, HttpBody},
     extract::{ConnectInfo, Multipart, Request, State},
@@ -172,6 +172,33 @@ impl HttpService {
     }
 
     /// Stop the HTTP server
+    pub async fn update(&mut self) -> ServiceUpdateResult {
+        let state = *self.state.read().await;
+        match state {
+            HttpServerState::Running => {
+                match self.stop().await {
+                    Ok(()) => ServiceUpdateResult::Stopped("HTTP server stopped".to_string()),
+                    Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
+                }
+            }
+            HttpServerState::Stopped => {
+                match self.start().await {
+                    Ok(()) => ServiceUpdateResult::Started("HTTP server started".to_string()),
+                    Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
+                }
+            }
+            _ => ServiceUpdateResult::NoChange,
+        }
+    }
+
+    pub fn is_running(&self) -> bool {
+        if let Ok(s) = self.state.try_read() {
+            *s == HttpServerState::Running
+        } else {
+            false
+        }
+    }
+
     pub async fn stop(&mut self) -> Result<()> {
         if let Some(tx) = self.shutdown_tx.take() {
             let _ = tx.send(()).await;
