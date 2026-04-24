@@ -31,7 +31,7 @@ pub struct ChatUser {
 }
 
 /// Chat configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ChatConfig {
     pub enabled: bool,
     pub username: String,

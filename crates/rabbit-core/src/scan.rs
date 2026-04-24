@@ -2,6 +2,7 @@
 
 use crate::{Result, ServiceError};
 use rabbit_models::scan::{ScanRange, ScanResult, ScannerConfig, ScannerState};
+use rabbit_platform::config::load_config;
 use std::net::Ipv4Addr;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock, Semaphore};
@@ -30,8 +31,15 @@ impl ScanService {
     }
 
     /// Initialize with configuration
-    pub async fn init(&mut self, config: ScannerConfig) -> Result<()> {
-        *self.config.write().await = config;
+    pub async fn init(&mut self) -> Result<()> {
+        let config = load_config()?;
+        let modules = &config.modules;
+        let scanner_config = ScannerConfig {
+            timeout_ms: modules.get_integer("scan", "timeout_ms").unwrap_or(1500) as u64,
+            concurrent: modules.get_integer("scan", "concurrent").unwrap_or(256) as usize,
+            retry_count: modules.get_integer("scan", "retry_count").unwrap_or(1) as u32,
+        };
+        *self.config.write().await = scanner_config;
         info!("Scan service initialized");
         Ok(())
     }

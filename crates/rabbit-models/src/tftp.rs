@@ -6,7 +6,7 @@ use std::net::SocketAddr;
 use crate::config::ModuleConfigs;
 
 /// TFTP server configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct TftpServerConfig {
     pub enabled: bool,
     pub bind_addr: String,
@@ -34,7 +34,7 @@ impl From<&ModuleConfigs> for TftpServerConfig {
 }
 
 /// TFTP client configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct TftpClientConfig {
     pub server_addr: String,
     pub local_port: u16,

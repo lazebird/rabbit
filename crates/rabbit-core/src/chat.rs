@@ -2,6 +2,7 @@
 
 use crate::{Result, ServiceError};
 use rabbit_models::chat::{ChatConfig, ChatMessage, ChatRoom, ChatUser, MessageType};
+use rabbit_platform::config::load_config;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -25,7 +26,7 @@ pub struct ChatService {
 impl ChatService {
     pub fn new() -> Self {
         Self {
-            config: Arc::new(RwLock::new(Self::placeholder_config())),
+            config: Arc::new(RwLock::new(ChatConfig::default())),
             room: Arc::new(RwLock::new(ChatRoom {
                 messages: Vec::new(),
                 users: Vec::new(),
@@ -38,18 +39,11 @@ impl ChatService {
         }
     }
 
-    fn placeholder_config() -> ChatConfig {
-        ChatConfig {
-            enabled: false,
-            username: String::new(),
-            port: 0,
-            multicast_addr: String::new(),
-        }
-    }
-
-    /// Initialize with configuration
-    pub async fn init(&mut self, config: ChatConfig) -> Result<()> {
-        *self.config.write().await = config;
+    /// Initialize directly from ModuleConfigs
+    pub async fn init(&mut self) -> Result<()> {
+        let config = load_config()?;
+        let runtime_config = ChatConfig::from(&config.modules);
+        *self.config.write().await = runtime_config;
         info!("Chat service initialized");
         Ok(())
     }

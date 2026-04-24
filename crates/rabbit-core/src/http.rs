@@ -11,6 +11,7 @@ use axum::{
     Router,
 };
 use rabbit_models::http::{HttpAccessLog, HttpServerConfig, HttpServerState};
+use rabbit_platform::config::load_config;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -35,7 +36,7 @@ pub struct HttpService {
 impl HttpService {
     pub fn new() -> Self {
         Self {
-            config: Arc::new(RwLock::new(Self::placeholder_config())),
+            config: Arc::new(RwLock::new(HttpServerConfig::default())),
             state: Arc::new(RwLock::new(HttpServerState::Stopped)),
             logs: Arc::new(RwLock::new(Vec::new())),
             shutdown_tx: None,
@@ -43,23 +44,11 @@ impl HttpService {
         }
     }
 
-    /// Create a placeholder config for internal use before initialization
-    fn placeholder_config() -> HttpServerConfig {
-        HttpServerConfig {
-            enabled: false,
-            port: 0,
-            root_path: String::new(),
-            allow_upload: false,
-            allow_delete: false,
-            shell: false,
-            auto_index: false,
-            video_play: false,
-        }
-    }
-
-    /// Initialize with configuration
-    pub async fn init(&mut self, config: HttpServerConfig) -> Result<()> {
-        *self.config.write().await = config;
+    /// Initialize - internal loads config
+    pub async fn init(&mut self) -> Result<()> {
+        let config = load_config()?;
+        let runtime_config = HttpServerConfig::from(&config.modules);
+        *self.config.write().await = runtime_config;
         info!("HTTP service initialized");
         Ok(())
     }

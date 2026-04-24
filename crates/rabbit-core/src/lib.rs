@@ -3,24 +3,29 @@
 //! This crate contains all business services:
 //! - PingService: ICMP ping functionality
 //! - HttpService: HTTP server
-//! - TftpService: TFTP server/client
+//! - TftpdService: TFTP server
+//! - TftpcService: TFTP client
 //! - PlanService: Task planner
 //! - ChatService: LAN chat
 //! - ScanService: IP scanner
 
 pub mod ping;
 pub mod http;
-pub mod tftp;
+pub mod tftpd;
+pub mod tftpc;
 pub mod plan;
 pub mod chat;
 pub mod scan;
 
 pub use ping::PingService;
 pub use http::HttpService;
-pub use tftp::TftpService;
+pub use tftpd::TftpdService;
+pub use tftpc::TftpcService;
 pub use plan::PlanService;
 pub use chat::ChatService;
 pub use scan::ScanService;
+
+pub type TftpService = TftpdService;
 
 use thiserror::Error;
 

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::{ConfigValue, ModuleConfigs};
 
 /// HTTP server configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct HttpServerConfig {
     pub enabled: bool,
     pub port: u16,

@@ -78,9 +78,9 @@ rabbit/
 | 模块 | 职责 |
 |------|------|
 | app.rs | 主入口、事件处理、生命周期管理 |
-| view_model.rs | 统一配置管理、状态管理 |
+| view_model.rs | 统一配置管理（使用 HashMap） |
 | ui/ | FLTK 界面展示 |
-| ui_state.rs | UI 状态同步 |
+| ui_state.rs | UI 状态同步（使用 insert） |
 
 ### rabbit-core (Business Services)
 
@@ -97,10 +97,11 @@ rabbit/
 
 | 模型 | 职责 |
 |------|------|
-| AppConfig | 应用配置结构 |
-| PingConfig | Ping 模块配置 |
-| HttpConfig | HTTP 模块配置 |
-| ModuleConfigs | 所有模块配置集合 |
+| AppConfig | 应用配置结构（仅含 modules） |
+| ModuleConfigs | 所有模块配置（HashMap 方式） |
+| ConfigValue | 通用的配置值类型 |
+| HttpServerConfig | HTTP 服务运行时配置 |
+| TftpServerConfig | TFTP 服务运行时配置 |
 
 ### rabbit-platform (Infrastructure)
 
@@ -128,6 +129,22 @@ rabbit/
 
 ---
 
-文档版本：1.0
+## 配置访问方式
+
+所有模块配置统一使用 HashMap 方式访问：
+
+```rust
+// 读取
+config.modules.get_string("global", "language")
+config.modules.get_integer("http", "port")
+config.modules.get_bool("ping", "stoponloss")
+
+// 写入
+config.modules.insert("global", "systray", ConfigValue::Boolean(true));
+```
+
+---
+
+文档版本：2.0
 创建日期：2026-04-16
 更新日期：2026-04-23

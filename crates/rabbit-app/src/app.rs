@@ -13,8 +13,8 @@ use fltk::{
     prelude::*,
     window::{Window, WindowType},
 };
-use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpService};
-use rabbit_models::{AppConfig, chat::ChatConfig, http::HttpServerConfig, ping::PingTarget, scan::{ScanRange, ScannerState}, tftp::{TftpClientConfig, TftpServerConfig}};
+use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService};
+use rabbit_models::{AppConfig, ping::PingTarget, scan::{ScanRange, ScannerState}};
 use rabbit_platform::config::{load_config, save_config};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
@@ -28,7 +28,8 @@ pub struct App {
     view_model: Arc<RwLock<AppViewModel>>,
     ping_service: Arc<RwLock<PingService>>,
     http_service: Arc<RwLock<HttpService>>,
-    tftp_service: Arc<RwLock<TftpService>>,
+    tftp_server_service: Arc<RwLock<TftpdService>>,
+    tftp_client_service: Arc<RwLock<TftpcService>>,
     plan_service: Arc<RwLock<PlanService>>,
     chat_service: Arc<RwLock<ChatService>>,
     scan_service: Arc<RwLock<ScanService>>,
@@ -57,34 +58,35 @@ impl App {
         ping_service.init(ping_log_file).await?;
 
         let mut http_service = HttpService::new();
-        http_service.init((&config.modules).into()).await?;
+        http_service.init().await?;
 
-        let mut tftp_service = TftpService::new();
-        tftp_service.init(
-            (&config.modules).into(),
-            (&config.modules).into(),
-        ).await?;
+        let mut tftp_server_service = TftpdService::new();
+        tftp_server_service.init().await?;
+        
+        let mut tftp_client_service = TftpcService::new();
+        tftp_client_service.init().await?;
 
         let mut plan_service = PlanService::new();
         plan_service.init().await?;
         plan_service.start().await?;
 
         let mut chat_service = ChatService::new();
-        chat_service.init((&config.modules).into()).await?;
+        chat_service.init().await?;
 
         let mut scan_service = ScanService::new();
-        scan_service.init(rabbit_models::scan::ScannerConfig::default()).await?;
+        scan_service.init().await?;
 
         // Create view model
         let view_model = AppViewModel::new(config);
 
-        Ok(Self {
+Ok(Self {
             view_model: Arc::new(RwLock::new(view_model)),
             ping_service: Arc::new(RwLock::new(ping_service)),
             http_service: Arc::new(RwLock::new(http_service)),
-            tftp_service: Arc::new(RwLock::new(tftp_service)),
+            tftp_server_service: Arc::new(RwLock::new(tftp_server_service)),
+            tftp_client_service: Arc::new(RwLock::new(tftp_client_service)),
             plan_service: Arc::new(RwLock::new(plan_service)),
-chat_service: Arc::new(RwLock::new(chat_service)),
+            chat_service: Arc::new(RwLock::new(chat_service)),
             scan_service: Arc::new(RwLock::new(scan_service)),
             ping_task: Arc::new(RwLock::new(None)),
             scan_task: Arc::new(RwLock::new(None)),
@@ -528,7 +530,8 @@ chat_service: Arc::new(RwLock::new(chat_service)),
             view_model: self.view_model.clone(),
             ping_service: self.ping_service.clone(),
             http_service: self.http_service.clone(),
-            tftp_service: self.tftp_service.clone(),
+            tftp_server_service: self.tftp_server_service.clone(),
+            tftp_client_service: self.tftp_client_service.clone(),
             plan_service: self.plan_service.clone(),
             chat_service: self.chat_service.clone(),
             scan_service: self.scan_service.clone(),
@@ -607,7 +610,7 @@ chat_service: Arc::new(RwLock::new(chat_service)),
         // Stop all services
         self.ping_service.write().await.stop().await.ok();
         self.http_service.write().await.stop().await.ok();
-        self.tftp_service.write().await.stop_server().await.ok();
+        self.tftp_server_service.write().await.stop().await.ok();
         self.plan_service.write().await.stop().await.ok();
         self.chat_service.write().await.stop().await.ok();
 
@@ -770,7 +773,8 @@ struct AppHandle {
     view_model: Arc<RwLock<AppViewModel>>,
     ping_service: Arc<RwLock<PingService>>,
     http_service: Arc<RwLock<HttpService>>,
-    tftp_service: Arc<RwLock<TftpService>>,
+    tftp_server_service: Arc<RwLock<TftpdService>>,
+    tftp_client_service: Arc<RwLock<TftpcService>>,
     plan_service: Arc<RwLock<PlanService>>,
     chat_service: Arc<RwLock<ChatService>>,
     scan_service: Arc<RwLock<ScanService>>,
@@ -1025,9 +1029,8 @@ impl EventHandler for AppHandle {
                             crate::ui_state::append_http_log("HTTP server stopped.\r\n");
                         } else {
                             let config = self.view_model.read().await.get_config();
-                            let server_config: HttpServerConfig = (&config.modules).into();
-                            let port = server_config.port;
-                            if server_config.root_path.is_empty() {
+                            let port = config.modules.get_integer("http", "port").unwrap_or(8000) as u16;
+                            if config.modules.get_array("http", "dirs").map(|d| d.is_empty()).unwrap_or(true) {
                                 warn!("No HTTP directories configured, cannot start server");
                                 crate::ui_state::append_http_log("Error: No directories configured. Add files or directories first.\r\n");
                                 return Ok(());
@@ -1036,7 +1039,7 @@ impl EventHandler for AppHandle {
 
                             info!("Starting HTTP server on port {}", port);
                             let mut service = self.http_service.write().await;
-                            service.init(server_config).await?;
+                            service.init().await?;
                             service.start().await?;
                             self.view_model.write().await.set_http_running(true);
                             crate::ui_state::set_http_running(true);
@@ -1065,15 +1068,14 @@ impl EventHandler for AppHandle {
                         let is_running = self.view_model.read().await.is_tftp_server_running();
                         if is_running {
                             info!("Stopping TFTP server");
-                            self.tftp_service.write().await.stop_server().await?;
+                            self.tftp_server_service.write().await.stop_server().await?;
                             self.view_model.write().await.set_tftp_server_running(false);
                             crate::ui_state::append_tftpd_log("TFTP server stopped.\r\n");
                         } else {
                             let config = self.view_model.read().await.get_config();
-                            let server_config: TftpServerConfig = (&config.modules).into();
-                            let client_config: TftpClientConfig = (&config.modules).into();
-                            let bind_addr = server_config.bind_addr.clone();
-                            if server_config.root_path.is_empty() {
+                            let modules = &config.modules;
+                            let bind_addr = format!("0.0.0.0:{}", modules.get_integer("tftpd", "port").unwrap_or(69));
+                            if modules.get_array("tftpd", "work_dirs").map(|d| d.is_empty()).unwrap_or(true) {
                                 warn!("No TFTP directories configured, cannot start server");
                                 crate::ui_state::append_tftpd_log("Error: No directories configured. Add directories first.\r\n");
                                 return Ok(());
@@ -1081,8 +1083,8 @@ impl EventHandler for AppHandle {
                             drop(config);
 
                             info!("Starting TFTP server on {}", bind_addr);
-                            let mut service = self.tftp_service.write().await;
-                            service.init(server_config, client_config).await?;
+                            let mut service = self.tftp_server_service.write().await;
+                            service.init().await?;
                             service.start_server().await?;
                             self.view_model.write().await.set_tftp_server_running(true);
                             crate::ui_state::append_tftpd_log(&format!("TFTP server started on {}.\r\n", bind_addr));
@@ -1104,12 +1106,7 @@ impl EventHandler for AppHandle {
 
                             info!("Starting chat as {} on port {}", username, port);
                             let mut service = self.chat_service.write().await;
-                            service.init(ChatConfig {
-                                enabled: true,
-                                username,
-                                port,
-                                multicast_addr: broadcast_addr,
-                            }).await?;
+                            service.init().await?;
                             service.start().await?;
                             self.view_model.write().await.set_chat_running(true);
 
@@ -1155,8 +1152,8 @@ impl EventHandler for AppHandle {
                 }
                 info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, maxretry, blksize);
                 
-                let tftp_service = self.tftp_service.write().await;
-                match tftp_service.upload_to(&server, &local, &remote).await {
+                let tftp_client_service = self.tftp_client_service.write().await;
+                match tftp_client_service.put(&local, &remote).await {
                     Ok(transfer_id) => {
                         info!("TFTP upload started with transfer ID: {}", transfer_id);
                     }
@@ -1192,8 +1189,8 @@ impl EventHandler for AppHandle {
                 }
                 info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, maxretry, blksize);
                 
-                let tftp_service = self.tftp_service.write().await;
-                match tftp_service.download_from(&server, &remote, &local).await {
+                let tftp_client_service = self.tftp_client_service.write().await;
+                match tftp_client_service.get(&remote, &local).await {
                     Ok(transfer_id) => {
                         info!("TFTP download started with transfer ID: {}", transfer_id);
                     }
