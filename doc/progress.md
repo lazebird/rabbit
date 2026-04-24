@@ -579,32 +579,61 @@ cargo fmt
 
 **状态: ✅ 已完成**
 
-配置模型已从差异化结构体改为统一的 HashMap 方式，确保所有模块使用相同的配置访问模式。
+配置模型已从差异化结构体改为统一的 HashMap 方式，所有配置（包括全局配置）通过 `modules.global` 统一管理。
 
-| 配置项 | 旧方式 | 新方式 |
-|--------|--------|--------|
-| ping | `PingConfig { target, interval, ... }` | `HashMap<String, ConfigValue>` |
-| http | `HttpConfig { port, shell, ... }` | `HashMap<String, ConfigValue>` |
-| scan | `ScanConfig { start_ip, end_ip, ... }` | `HashMap<String, ConfigValue>` |
-| tftpd | `TftpdConfig { port, timeout, ... }` | `HashMap<String, ConfigValue>` |
-| tftpc | `TftpcConfig { server_addr, ... }` | `HashMap<String, ConfigValue>` |
-| plan | `PlanConfig { date, time, ... }` | `HashMap<String, ConfigValue>` |
-| chat | `ChatConfig { username, port, ... }` | `HashMap<String, ConfigValue>` |
+### 配置结构
 
-**统一访问接口**：
 ```rust
-config.modules.get_string("ping", "target")  // 获取字符串
-config.modules.get_integer("http", "port")    // 获取整数
-config.modules.get_bool("http", "shell")      // 获取布尔值
-config.modules.get_array("http", "dirs")     // 获取数组
-config.modules.insert("http", "port", ConfigValue::Integer(8080))  // 写入
+pub struct ModuleConfigs {
+    pub global: HashMap<String, ConfigValue>,    // 全局配置
+    pub ping: HashMap<String, ConfigValue>,
+    pub scan: HashMap<String, ConfigValue>,
+    pub http: HashMap<String, ConfigValue>,
+    pub tftpd: HashMap<String, ConfigValue>,
+    pub tftpc: HashMap<String, ConfigValue>,
+    pub plan: HashMap<String, ConfigValue>,
+    pub chat: HashMap<String, ConfigValue>,
+}
 ```
 
-**服务配置转换**：
+### global 模块字段
+
+| Key | 类型 | 默认值 |
+|-----|------|--------|
+| `language` | String | "System" |
+| `theme` | String | "System" |
+| `systray` | Boolean | true |
+| `top` | Boolean | false |
+| `autostart` | Boolean | false |
+| `autoupdate` | Boolean | true |
+| `last_active_tab` | Integer | 0 |
+| `window_x/y/width/height` | Integer | 100/100/800/600 |
+
+### 统一访问接口
+
 ```rust
-impl From<&ModuleConfigs> for HttpServerConfig { ... }
-impl From<&ModuleConfigs> for TftpServerConfig { ... }
-impl From<&ModuleConfigs> for TftpClientConfig { ... }
+// 读取
+config.modules.get_string("global", "language")
+config.modules.get_integer("http", "port")
+config.modules.get_bool("ping", "stoponloss")
+config.modules.get_array("http", "dirs")
+
+// 写入
+config.modules.insert("global", "systray", ConfigValue::Boolean(true));
+```
+
+### 配置文件
+
+统一使用 `rabbit.toml`：
+```toml
+[modules.global]
+language = "System"
+systray = true
+...
+
+[modules.ping]
+target = "1.1.1.1"
+...
 ```
 
 ---

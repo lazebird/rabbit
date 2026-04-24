@@ -1,59 +1,41 @@
-# Rabbit 配置数据结构优化方案
+# Rabbit 配置数据结构方案
 
-## 问题背景
+## 概述
 
-当前配置系统存在以下问题：
-
-1. **配置保存分散**：ui_state.rs、app.rs、view_model.rs 多处独立 load+save
-2. **时序问题**：配置更新和事件发送可能不同步
-3. **内存缓存缺失**：每次读取都从文件加载
-4. **统一入口缺失**：缺少集中的配置管理接口
+Rabbit 应用使用统一的配置管理方案，所有配置通过 `ModuleConfigs` 的 HashMap 结构存储，支持灵活的键值访问。
 
 ---
 
-## 统一配置管理方案
+## 数据结构
 
-### 设计原则
-
-1. **单一数据源**：AppConfig 是唯一内存数据源
-2. **同步保存**：先保存到磁盘，再发送事件，无时序问题
-3. **内存缓存**：配置常驻内存，避免频繁读文件
-4. **统一入口**：ViewModel 负责所有配置操作
-5. **通用接口**：使用 section+map 方式，避免模块专有接口膨胀
-
-### 架构流程
-
-```
-UI 点击按钮
-    │
-    ▼
-┌─────────────────────────────────────────────────┐
-│  1. 收集输入框值                                 │
-│  2. vm.update_config(config)              │ ← 同步更新+保存
-│  3. send_event(UiEvent::ModuleToggle)           │ ← 不带参数
-└─────────────────────────────────────────────────┘
-    │
-    ▼
-业务模块 handle_event
-    │
-    ▼
-┌─────────────────────────────────────────────────┐
-│  4. vm.get_config()                            │ ← 读取缓存配置
-│  5. config.modules.get_string("ping", "target")│ ← Map 方式访问
-│  6. service.start(ping_config)                 │
-└─────────────────────────────────────────────────┘
-```
-
----
-
-## ConfigValue 类型定义
-
-在 `rabbit-models/src/config.rs` 中定义：
+### AppConfig
 
 ```rust
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppConfig {
+    pub modules: ModuleConfigs,
+}
+```
 
+### ModuleConfigs
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModuleConfigs {
+    pub global: HashMap<String, ConfigValue>,    // 全局配置
+    pub ping: HashMap<String, ConfigValue>,      // Ping 模块
+    pub scan: HashMap<String, ConfigValue>,     // 扫描模块
+    pub http: HashMap<String, ConfigValue>,     // HTTP 服务模块
+    pub tftpd: HashMap<String, ConfigValue>,   // TFTP 服务模块
+    pub tftpc: HashMap<String, ConfigValue>,   // TFTP 客户端模块
+    pub plan: HashMap<String, ConfigValue>,     // 计划任务模块
+    pub chat: HashMap<String, ConfigValue>,     // 局域网聊天模块
+}
+```
+
+### ConfigValue
+
+```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ConfigValue {
@@ -62,246 +44,249 @@ pub enum ConfigValue {
     Boolean(bool),
     Array(Vec<ConfigValue>),
 }
-
-impl ConfigValue {
-    pub fn as_str(&self) -> Option<&str> {
-        match self {
-            ConfigValue::String(s) => Some(s),
-            _ => None,
-        }
-    }
-
-    pub fn as_i64(&self) -> Option<i64> {
-        match self {
-            ConfigValue::Integer(n) => Some(*n),
-            _ => None,
-        }
-    }
-
-    pub fn as_bool(&self) -> Option<bool> {
-        match self {
-            ConfigValue::Boolean(b) => Some(*b),
-            _ => None,
-        }
-    }
-
-    pub fn as_array(&self) -> Option<&Vec<ConfigValue>> {
-        match self {
-            ConfigValue::Array(arr) => Some(arr),
-            _ => None,
-        }
-    }
-}
 ```
 
 ---
 
-## ModuleConfigs HashMap 结构
+## 统一接口
+
+### 读取配置
 
 ```rust
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModuleConfigs {
-    pub global: HashMap<String, ConfigValue>,    // 全局配置
-    pub ping: HashMap<String, ConfigValue>,
-    pub scan: HashMap<String, ConfigValue>,
-    pub http: HashMap<String, ConfigValue>,
-    pub tftpd: HashMap<String, ConfigValue>,
-    pub tftpc: HashMap<String, ConfigValue>,
-    pub plan: HashMap<String, ConfigValue>,
-    pub chat: HashMap<String, ConfigValue>,
-}
+// 读取字符串
+config.modules.get_string("global", "language")
 
-impl ModuleConfigs {
-    pub fn get_string(&self, module: &str, key: &str) -> Option<String> {
-        self.get_map(module)?.get(key)?.as_str().map(|s| s.to_string())
-    }
+// 读取整数
+config.modules.get_integer("http", "port")
 
-    pub fn get_integer(&self, module: &str, key: &str) -> Option<i64> {
-        self.get_map(module)?.get(key)?.as_integer()
-    }
+// 读取布尔值
+config.modules.get_bool("ping", "stoponloss")
 
-    pub fn get_bool(&self, module: &str, key: &str) -> Option<bool> {
-        self.get_map(module)?.get(key)?.as_bool()
-    }
-
-    pub fn get_array(&self, module: &str, key: &str) -> Option<Vec<String>> {
-        self.get_map(module)?.get(key)?.as_string_array()
-    }
-
-    pub fn insert(&mut self, module: &str, key: &str, value: ConfigValue) {
-        if let Some(map) = self.get_map_mut(module) {
-            map.insert(key.to_string(), value);
-        }
-    }
-
-    fn get_map(&self, module: &str) -> Option<&HashMap<String, ConfigValue>> { ... }
-    fn get_map_mut(&mut self, module: &str) -> Option<&mut HashMap<String, ConfigValue>> { ... }
-}
+// 读取数组
+config.modules.get_array("http", "dirs")
 ```
 
-统一访问接口：
+### 写入配置
 
 ```rust
-// 读取
-config.modules.get_string("global", "language")
-config.modules.get_integer("global", "window_width")
-config.modules.get_bool("global", "systray")
-
-// 写入
+// 写入值
 config.modules.insert("global", "systray", ConfigValue::Boolean(true));
+config.modules.insert("http", "port", ConfigValue::Integer(8080));
+```
+
+---
+
+## 配置文件
+
+### 文件位置
+
+- **Linux**: `~/.config/rabbit/rabbit.toml`
+- **Windows**: `%APPDATA%/rabbit/rabbit.toml`
+
+### 文件格式
+
+```toml
+[modules.global]
+language = "System"
+theme = "System"
+systray = true
+top = false
+autostart = false
+autoupdate = true
+last_active_tab = 0
+window_x = 100
+window_y = 100
+window_width = 800
+window_height = 600
+
+[modules.ping]
+target = "1.1.1.1"
+interval = 1000
+count = -1
+stoponloss = false
+taskbar = true
+log = ""
+running = false
+
+[modules.scan]
+start_ip = "192.168.1.1"
+end_ip = "254"
+filter = true
+
+[modules.http]
+port = 8000
+shell = false
+autoindex = true
+videoplay = true
+dirs = []
+running = false
+
+[modules.tftpd]
+port = 69
+timeout = 200
+maxretry = 10
+blksize = 512
+qsize = 2000
+qtout = 1000
+override_conflicts = false
+fslog = false
+work_dirs = []
+working_dir_index = 0
+running = false
+
+[modules.tftpc]
+server_addr = "127.0.0.1"
+server_port = 69
+local_path = ""
+remote_file = ""
+timeout = 200
+maxretry = 10
+blksize = 1024
+
+[modules.plan]
+date = ""
+time = ""
+cycle = 0
+unit = "minute"
+msg = ""
+override_conflicts = false
+
+[modules.chat]
+username = "User@PC"
+port = 1314
+broadcast_addr = "255.255.255.255"
+running = false
 ```
 
 ---
 
 ## 字段映射表
 
-### global 模块（全局配置）
+### global (全局配置)
 
-| ConfigKey | 类型 | 默认值 |
-|-----------|------|--------|
-| `language` | String | "System" |
-| `theme` | String | "System" |
-| `systray` | Boolean | true |
-| `top` | Boolean | false |
-| `autostart` | Boolean | false |
-| `autoupdate` | Boolean | true |
-| `last_active_tab` | Integer | 0 |
-| `window_x` | Integer | 100 |
-| `window_y` | Integer | 100 |
-| `window_width` | Integer | 800 |
-| `window_height` | Integer | 600 |
+| Key | 类型 | 默认值 | 说明 |
+|-----|------|--------|------|
+| `language` | String | "System" | 语言: System/English/Chinese |
+| `theme` | String | "System" | 主题: System/Light/Dark |
+| `systray` | Boolean | true | 托盘图标 |
+| `top` | Boolean | false | 窗口置顶 |
+| `autostart` | Boolean | false | 开机自启 |
+| `autoupdate` | Boolean | true | 自动更新 |
+| `last_active_tab` | Integer | 0 | 最后活动标签页 |
+| `window_x` | Integer | 100 | 窗口 X 坐标 |
+| `window_y` | Integer | 100 | 窗口 Y 坐标 |
+| `window_width` | Integer | 800 | 窗口宽度 |
+| `window_height` | Integer | 600 | 窗口高度 |
 
-### ping 模块
+### ping (Ping 模块)
 
-| ConfigKey | 类型 | 默认值 |
-|-----------|------|--------|
-| `target` | String | "1.1.1.1" |
-| `interval` | Integer | 1000 |
-| `count` | Integer | -1 |
-| `stoponloss` | Boolean | false |
-| `taskbar` | Boolean | true |
-| `log` | String | "" |
-| `running` | Boolean | false |
+| Key | 类型 | 默认值 | 说明 |
+|-----|------|--------|------|
+| `target` | String | "1.1.1.1" | 目标地址 |
+| `interval` | Integer | 1000 | 间隔(ms) |
+| `count` | Integer | -1 | 次数(-1无限) |
+| `stoponloss` | Boolean | false | 丢包停止 |
+| `taskbar` | Boolean | true | 任务栏状态 |
+| `log` | String | "" | 日志 |
+| `running` | Boolean | false | 运行状态 |
 
-### http 模块
+### http (HTTP 服务)
 
-| ConfigKey | 类型 | 默认值 |
-|-----------|------|--------|
-| `port` | Integer | 8000 |
-| `shell` | Boolean | false |
-| `autoindex` | Boolean | true |
-| `videoplay` | Boolean | true |
-| `dirs` | Array | [] |
-| `running` | Boolean | false |
+| Key | 类型 | 默认值 | 说明 |
+|-----|------|--------|------|
+| `port` | Integer | 8000 | 端口 |
+| `shell` | Boolean | false | Shell 访问 |
+| `autoindex` | Boolean | true | 目录列表 |
+| `videoplay` | Boolean | true | 视频播放 |
+| `dirs` | Array | [] | 共享目录 |
+| `running` | Boolean | false | 运行状态 |
 
-### scan 模块
+### scan (IP 扫描)
 
-| ConfigKey | 类型 | 默认值 |
-|-----------|------|--------|
-| `start_ip` | String | "192.168.1.1" |
-| `end_ip` | String | "254" |
-| `filter` | Boolean | true |
+| Key | 类型 | 默认值 | 说明 |
+|-----|------|--------|------|
+| `start_ip` | String | "192.168.1.1" | 起始 IP |
+| `end_ip` | String | "254" | 结束 IP |
+| `filter` | Boolean | true | 过滤条件 |
 
-### tftpd 模块
+### tftpd (TFTP 服务)
 
-| ConfigKey | 类型 | 默认值 |
-|-----------|------|--------|
-| `port` | Integer | 69 |
-| `timeout` | Integer | 200 |
-| `maxretry` | Integer | 10 |
-| `blksize` | Integer | 512 |
-| `qsize` | Integer | 2000 |
-| `qtout` | Integer | 1000 |
-| `override_conflicts` | Boolean | false |
-| `fslog` | Boolean | false |
-| `work_dirs` | Array | [] |
-| `working_dir_index` | Integer | 0 |
-| `running` | Boolean | false |
+| Key | 类型 | 默认值 | 说明 |
+|-----|------|--------|------|
+| `port` | Integer | 69 | 端口 |
+| `timeout` | Integer | 200 | 超时(ms) |
+| `maxretry` | Integer | 10 | 最大重试 |
+| `blksize` | Integer | 512 | 块大小 |
+| `qsize` | Integer | 2000 | 队列大小 |
+| `qtout` | Integer | 1000 | 队列超时 |
+| `override_conflicts` | Boolean | false | 覆盖冲突 |
+| `fslog` | Boolean | false | 文件日志 |
+| `work_dirs` | Array | [] | 工作目录 |
+| `working_dir_index` | Integer | 0 | 当前目录索引 |
+| `running` | Boolean | false | 运行状态 |
 
-### tftpc 模块
+### tftpc (TFTP 客户端)
 
-| ConfigKey | 类型 | 默认值 |
-|-----------|------|--------|
-| `server_addr` | String | "127.0.0.1" |
-| `server_port` | Integer | 69 |
-| `local_path` | String | "" |
-| `remote_file` | String | "" |
-| `timeout` | Integer | 200 |
-| `maxretry` | Integer | 10 |
-| `blksize` | Integer | 1024 |
+| Key | 类型 | 默认值 | 说明 |
+|-----|------|--------|------|
+| `server_addr` | String | "127.0.0.1" | 服务器地址 |
+| `server_port` | Integer | 69 | 服务器端口 |
+| `local_path` | String | "" | 本地路径 |
+| `remote_file` | String | "" | 远程文件 |
+| `timeout` | Integer | 200 | 超时(ms) |
+| `maxretry` | Integer | 10 | 最大重试 |
+| `blksize` | Integer | 1024 | 块大小 |
 
-### plan 模块
+### plan (计划任务)
 
-| ConfigKey | 类型 | 默认值 |
-|-----------|------|--------|
-| `date` | String | "" |
-| `time` | String | "" |
-| `cycle` | Integer | 0 |
-| `unit` | String | "minute" |
-| `msg` | String | "" |
-| `override_conflicts` | Boolean | false |
+| Key | 类型 | 默认值 | 说明 |
+|-----|------|--------|------|
+| `date` | String | "" | 日期 |
+| `time` | String | "" | 时间 |
+| `cycle` | Integer | 0 | 周期 |
+| `unit` | String | "minute" | 单位 |
+| `msg` | String | "" | 消息 |
+| `override_conflicts` | Boolean | false | 覆盖冲突 |
 
-### chat 模块
+### chat (局域网聊天)
 
-| ConfigKey | 类型 | 默认值 |
-|-----------|------|--------|
-| `username` | String | "User@PC" |
-| `port` | Integer | 1314 |
-| `broadcast_addr` | String | "255.255.255.255" |
-| `running` | Boolean | false |
+| Key | 类型 | 默认值 | 说明 |
+|-----|------|--------|------|
+| `username` | String | "User@PC" | 用户名 |
+| `port` | Integer | 1314 | 端口 |
+| `broadcast_addr` | String | "255.255.255.255" | 广播地址 |
+| `running` | Boolean | false | 运行状态 |
 
 ---
 
-## UiEvent 简化事件
+## 加载/保存接口
+
+### rabbit-platform
 
 ```rust
-pub enum UiEvent {
-    ModuleToggle { module: String, running: bool },
-    // ...
-}
+// 加载配置
+pub fn load_config() -> Result<AppConfig>
 
-async fn handle_event(event: UiEvent, vm: &AppViewModel) {
-    match event {
-        UiEvent::ModuleToggle { module, running } => {
-            config.modules.insert(&module, "running", ConfigValue::Boolean(running));
-            vm.update_config(config);
-            // 业务模块从 vm.get_config() 读取最新配置
-        }
-    }
-}
+// 保存配置
+pub fn save_config(config: &AppConfig) -> Result<()>
+
+// 更新配置
+pub fn update_config<F>(modifier: F) -> Result<()>
+where
+    F: FnOnce(&mut AppConfig),
 ```
-
----
-
-## 优点
-
-| 方面 | 说明 |
-|------|------|
-| **无时序问题** | 同步保存完成后再发送事件 |
-| **单一入口** | 只通过 ViewModel 保存 |
-| **一致性** | 业务模块总是读取最新配置 |
-| **性能** | 内存缓存避免频繁读文件 |
-| **代码简化** | 移除分散的 load+save 逻辑 |
-| **通用化** | section+map 避免模块专有接口膨胀 |
 
 ---
 
 ## 实施状态
 
-### ✅ 已完成
-
-- [x] ConfigValue 枚举定义（String, Integer, Boolean, Array）
-- [x] ModuleConfigs 改用 HashMap，包含 global section
-- [x] get_string/get_integer/get_bool/get_array/insert 方法
-- [x] app.rs 使用 Map 方式读取配置
-- [x] ui_state.rs 使用 insert 方法保存配置
-- [x] view_model.rs 使用通用接口（update_global 接受 String 参数）
-- [x] settings_tab.rs 使用 Map 方式读取配置
-- [x] defaults.rs UI 默认值使用 Map 方式
-- [x] HttpServerConfig/TftpServerConfig/TftpClientConfig From impl
-- [x] 编译通过、测试通过
+- [x] ConfigValue 枚举定义
+- [x] ModuleConfigs HashMap 结构
+- [x] global 模块统一管理全局配置
+- [x] 统一访问接口 (get_string/get_integer/get_bool/get_array/insert)
+- [x] 配置文件统一为 rabbit.toml
 
 ---
 
-文档版本：3.1
+文档版本：4.0
 更新日期：2026-04-23
