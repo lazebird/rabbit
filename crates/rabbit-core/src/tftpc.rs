@@ -2,7 +2,6 @@
 
 use crate::{Result, ServiceError, ui_channel::{UiData, Module}};
 use rabbit_platform::config::{get_integer, get_string};
-use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -16,13 +15,6 @@ const TFTP_OPCODE_DATA: u16 = 3;
 const TFTP_OPCODE_ACK: u16 = 4;
 const TFTP_OPCODE_ERROR: u16 = 5;
 const TFTP_BLOCK_SIZE: usize = 512;
-
-/// Internal TFTP transfer info
-#[derive(Debug, Clone)]
-struct TftpTransfer {
-    pub id: String,
-    pub filename: String,
-}
 
 /// TFTP client internal configuration
 #[derive(Debug, Clone, Default)]
@@ -48,21 +40,18 @@ impl ClientConfig {
 
 /// TFTP Client Service
 pub struct TftpcService {
-    transfers: Arc<RwLock<HashMap<String, TftpTransfer>>>,
     tx: Option<tokio::sync::mpsc::Sender<UiData>>,
 }
 
 impl TftpcService {
     pub fn new() -> Self {
         Self {
-            transfers: Arc::new(RwLock::new(HashMap::new())),
             tx: None,
         }
     }
 
     pub fn with_channel(tx: tokio::sync::mpsc::Sender<UiData>) -> Self {
         Self {
-            transfers: Arc::new(RwLock::new(HashMap::new())),
             tx: Some(tx),
         }
     }
@@ -91,14 +80,7 @@ impl TftpcService {
 
     async fn upload_to(&self, server_addr: &str, local_path: &str, remote_filename: &str) -> Result<String> {
         let transfer_id = format!("upload_{}_{}", remote_filename, chrono::Local::now().timestamp());
-        let transfer = TftpTransfer {
-            id: transfer_id.clone(),
-            filename: remote_filename.to_string(),
-        };
 
-        self.transfers.write().await.insert(transfer_id.clone(), transfer);
-
-        let _tid = transfer_id.clone();
         let server = server_addr.to_string();
         let local = local_path.to_string();
         let remote = remote_filename.to_string();
@@ -130,14 +112,7 @@ impl TftpcService {
 
     async fn download_from(&self, server_addr: &str, remote_filename: &str, local_path: &str) -> Result<String> {
         let transfer_id = format!("download_{}_{}", remote_filename, chrono::Local::now().timestamp());
-        let transfer = TftpTransfer {
-            id: transfer_id.clone(),
-            filename: remote_filename.to_string(),
-        };
 
-        self.transfers.write().await.insert(transfer_id.clone(), transfer);
-
-        let _tid = transfer_id.clone();
         let server = server_addr.to_string();
         let local = local_path.to_string();
         let remote = remote_filename.to_string();

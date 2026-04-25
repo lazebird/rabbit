@@ -30,14 +30,9 @@ enum HttpServerState {
     Running,
 }
 
-/// Internal HTTP access log
+/// Internal HTTP access log file path
 struct HttpAccessLog {
-    pub timestamp: chrono::DateTime<chrono::Local>,
-    pub method: String,
-    pub path: String,
-    pub status_code: u16,
-    pub bytes_sent: u64,
-    pub client_addr: String,
+    pub log_path: String,
 }
 
 /// HTTP server internal configuration
@@ -341,16 +336,11 @@ async fn access_log_middleware(
     let bytes_sent = response.body().size_hint().lower();
 
     let log_entry = HttpAccessLog {
-        timestamp: chrono::Local::now(),
-        method: method.to_string(),
-        path: uri.path().to_string(),
-        status_code: status.as_u16(),
-        bytes_sent,
-        client_addr: client_addr.clone(),
+        log_path: String::new(),
     };
 
-    let log_msg = format!("[{}] {} {} {} - {} bytes ({}ms)", 
-        log_entry.timestamp.format("%H:%M:%S"),
+    let log_msg = format!("[{}] {} {} {} - {} bytes ({}ms)",
+        chrono::Local::now().format("%H:%M:%S"),
         method, uri.path(), status.as_u16(), bytes_sent, duration.as_millis()
     );
 

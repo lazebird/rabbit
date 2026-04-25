@@ -131,11 +131,10 @@ impl TabComponent for HttpTab {
         let item_browser_explore = item_browser.clone();
 
         // Add button callback - choose between file and directory
-        add_btn.set_callback(move |_| {
-            // Show choice dialog: File or Directory?
-            let choice = fltk::dialog::choice_default("Add file or directory?", "File", "Directory", "");
+add_btn.set_callback(move |_| {
+            let choice = fltk::dialog::choice2_default("Add file or directory?", "File", "Directory", "");
             match choice {
-                0 => {
+                Some(0) => {
                     // User chose File - open file picker
                     use fltk::dialog::NativeFileChooser;
                     let mut dialog = NativeFileChooser::new(fltk::dialog::NativeFileChooserType::BrowseFile);
@@ -150,7 +149,7 @@ impl TabComponent for HttpTab {
                         }
                     }
                 }
-                1 => {
+                Some(1) => {
                     // User chose Directory - open folder picker
                     use fltk::dialog::NativeFileChooser;
                     let mut dialog = NativeFileChooser::new(fltk::dialog::NativeFileChooserType::BrowseDir);

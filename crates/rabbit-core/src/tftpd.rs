@@ -9,29 +9,10 @@ use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 use tracing::{error, info};
 
-/// Internal TFTP transfer operation
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum TftpOperation {
-    Upload,
-    Download,
-}
-
-/// Internal TFTP transfer state
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum TftpTransferState {
-    Transferring { progress: u8 },
-    Completed,
-    Error,
-}
-
 /// Internal TFTP transfer info
 #[derive(Debug, Clone)]
 struct TftpTransfer {
-    pub id: String,
-    pub operation: TftpOperation,
     pub filename: String,
-    pub remote_addr: String,
-    pub state: TftpTransferState,
     pub bytes_transferred: u64,
 }
 

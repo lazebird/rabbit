@@ -603,8 +603,6 @@ Ok(Self {
 
         // Spawn event handler task
         let config = self.view_model.read().await.get_config();
-        let taskbar_enabled = config.modules.get_bool("ping", "taskbar").unwrap_or(true);
-        drop(config);
 
         let app_clone = Arc::new(RwLock::new(AppHandle {
             view_model: self.view_model.clone(),
@@ -617,8 +615,6 @@ Ok(Self {
             scan_service: self.scan_service.clone(),
             ping_task: self.ping_task.clone(),
             scan_task: self.scan_task.clone(),
-            ping_history: std::collections::HashMap::new(),
-            taskbar_enabled,
         }));
 
 
@@ -863,13 +859,6 @@ struct AppHandle {
     scan_service: Arc<RwLock<ScanService>>,
     ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
     scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
-    /// Window handle for taskbar updates (Windows only)
-    #[cfg(target_os = "windows")]
-    window_handle: Option<usize>,
-    /// Track last 5 ping results per target for taskbar
-    ping_history: std::collections::HashMap<String, Vec<bool>>,
-    /// Whether taskbar integration is enabled
-    taskbar_enabled: bool,
 }
 
 #[async_trait::async_trait]

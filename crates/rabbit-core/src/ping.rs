@@ -68,7 +68,6 @@ pub struct PingService {
 #[derive(Debug)]
 enum PingCommand {
     Stop,
-    AddTarget(PingTarget),
 }
 
 impl PingService {
@@ -159,13 +158,6 @@ impl PingService {
                                 info!("Ping task received Stop command");
                                 *service.state.write().await = PingState::Idle;
                                 break;
-                            }
-                            PingCommand::AddTarget(target) => {
-                                info!("Ping task adding target: {}", target.address);
-                                current_interval_ms = target.interval_ms;
-                                ping_interval = interval(Duration::from_millis(current_interval_ms));
-                                // 注意: target 已经在 app.rs 中放入了 service.targets，这里不需要重复加入
-                                // 实际上，app.rs 调用 add_target 就是放入了 Vec
                             }
                         }
                     }
