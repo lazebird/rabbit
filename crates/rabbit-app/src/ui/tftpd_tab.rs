@@ -104,7 +104,7 @@ impl TabComponent for TftpdTab {
         let mut log_display_clone = log_display.clone();
         let mut dir_browser_add = dir_browser.clone();
         let mut dir_browser_remove = dir_browser.clone();
-        let mut dir_browser_explore = dir_browser.clone();
+        let dir_browser_explore = dir_browser.clone();
 
         // Add button callbacks
         add_btn.set_callback(move |_| {

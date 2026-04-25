@@ -1,4 +1,3 @@
-use rabbit_models::config::ModuleConfigs;
 use rabbit_platform::config::load_config;
 
 pub fn ping_target() -> String {

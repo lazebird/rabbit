@@ -2,7 +2,7 @@
 
 use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::UiData};
 
-use chrono::{DateTime, Datelike, Local, NaiveDate, NaiveTime, NaiveDateTime};
+use chrono::{DateTime, Local, NaiveDate, NaiveTime, NaiveDateTime};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};

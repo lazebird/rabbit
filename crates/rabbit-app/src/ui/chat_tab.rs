@@ -140,7 +140,7 @@ impl TabComponent for ChatTab {
         // Clone inputs for callbacks
         let username_input_clone = username_input.clone();
         let port_input_clone = port_input.clone();
-        let broadcast_input_clone = broadcast_input.clone();
+        let _broadcast_input_clone = broadcast_input.clone();
         let mut toggle_btn_clone = toggle_btn.clone();
 
         let mut msg_input_clone = msg_input.clone();

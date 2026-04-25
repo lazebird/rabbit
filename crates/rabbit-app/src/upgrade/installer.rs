@@ -98,7 +98,7 @@ rmdir /s /q "{}"
 }
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-fn install_unix(new_version_path: &Path, current_exe: PathBuf, current_dir: &Path) -> Result<(), String> {
+fn install_unix(new_version_path: &Path, current_exe: PathBuf, _current_dir: &Path) -> Result<(), String> {
     use std::fs;
     use std::os::unix::fs::PermissionsExt;
 

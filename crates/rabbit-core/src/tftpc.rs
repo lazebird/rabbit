@@ -98,7 +98,7 @@ impl TftpcService {
 
         self.transfers.write().await.insert(transfer_id.clone(), transfer);
 
-        let tid = transfer_id.clone();
+        let _tid = transfer_id.clone();
         let server = server_addr.to_string();
         let local = local_path.to_string();
         let remote = remote_filename.to_string();
@@ -137,7 +137,7 @@ impl TftpcService {
 
         self.transfers.write().await.insert(transfer_id.clone(), transfer);
 
-        let tid = transfer_id.clone();
+        let _tid = transfer_id.clone();
         let server = server_addr.to_string();
         let local = local_path.to_string();
         let remote = remote_filename.to_string();

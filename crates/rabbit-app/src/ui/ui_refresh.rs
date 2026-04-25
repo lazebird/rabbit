@@ -296,7 +296,7 @@ fn do_refresh() {
     // Update HTTP browser with items and selection
     if let Some(state) = crate::ui_state::UiState::global() {
         if let Ok(s) = state.lock() {
-            if let Some(mut browser) = unsafe { HTTP_BROWSER.as_mut() } {
+            if let Some(browser) = unsafe { HTTP_BROWSER.as_mut() } {
                 browser.clear();
                 let selected_idx = s.http_selected_idx.unwrap_or(0);
                 for (i, item) in s.http_items.iter().enumerate() {

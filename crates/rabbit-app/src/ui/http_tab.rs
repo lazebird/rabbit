@@ -56,7 +56,7 @@ impl TabComponent for HttpTab {
         let shell_checked = rabbit_platform::config::load_config()
             .map(|c| c.modules.get_bool("http", "shell").unwrap_or(false))
             .unwrap_or(false);
-        let mut shell_check = CheckButton::default().with_label("shell");
+        let shell_check = CheckButton::default().with_label("shell");
         shell_check.set_checked(shell_checked);
         ctrl_row.fixed(&shell_check, 60);
 
@@ -128,7 +128,7 @@ impl TabComponent for HttpTab {
         let mut log_display_clone = log_display.clone();
         let mut item_browser_add = item_browser.clone();
         let mut item_browser_remove = item_browser.clone();
-        let mut item_browser_explore = item_browser.clone();
+        let item_browser_explore = item_browser.clone();
 
         // Add button callback - choose between file and directory
         add_btn.set_callback(move |_| {
@@ -225,8 +225,8 @@ impl TabComponent for HttpTab {
         toggle_btn.set_callback(move |_| {
             let label = toggle_btn_clone.label();
             let port = port_input_clone.value().parse::<u16>().unwrap_or(8000);
-            let options = opt_input_clone.value();
-            let shell = shell_check_clone.is_checked();
+            let _options = opt_input_clone.value();
+            let _shell = shell_check_clone.is_checked();
 
             if label == "Start" {
                 if let Some(state) = UiState::global() {

@@ -13,7 +13,7 @@ use fltk::{
     prelude::*,
     window::{Window, WindowType},
 };
-use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService, ServiceUpdateResult, ui_channel::{UiData, Module}, ping::PingTarget};
+use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService, ServiceUpdateResult, ui_channel::{UiData, Module}};
 use rabbit_models::AppConfig;
 
 use rabbit_platform::config::{load_config, save_config};
@@ -1250,7 +1250,7 @@ async fn handle_ui_data(
         UiData::ScanProgress(msg) => {
             crate::ui_state::append_scan_output(&msg);
         }
-        UiData::PlanReminder(msg) => {}
+        UiData::PlanReminder(_msg) => {}
         UiData::ChatMessage(username, msg) => {
             crate::ui_state::append_chat_message(&username, &msg);
         }

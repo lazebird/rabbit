@@ -88,7 +88,7 @@ impl TabComponent for ScanTab {
         // Clone inputs for callback
         let start_ip_input_clone = start_ip_input.clone();
         let end_input_clone = end_input.clone();
-        let opt_input_clone = opt_input.clone();
+        let _opt_input_clone = opt_input.clone();
         let start_btn_for_cb = start_btn.clone();
 
         // Add button callback - just send event, refresh loop updates button

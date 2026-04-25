@@ -15,8 +15,8 @@ use fltk::{
 };
 
 use crate::ui_events::{UiEvent, send_event};
-use crate::upgrade::{self, VersionsManifest, PlatformInfo};
-use crate::ui_state::{set_settings_output, append_settings_output};
+use crate::upgrade::{self, VersionsManifest};
+use crate::ui_state::append_settings_output;
 use super::{TabComponent, Colors, Spacing};
 
 // ============================================================
@@ -257,7 +257,7 @@ impl TabComponent for SettingsTab {
         help_btn.set_callback(|_| open_url(HELP_URL));
 
         // Version check callback
-        let output_clone = output_display.clone();
+        let _output_clone = output_display.clone();
         let mut version_frame_handle = version_frame.clone();
         version_frame_handle.handle(move |_, ev| {
             if ev == fltk::enums::Event::Push {
@@ -276,11 +276,11 @@ impl TabComponent for SettingsTab {
         });
 
         // Auto-save callbacks - update config then save
-        let mut lang_choice_clone = lang_choice.clone();
-        let mut tray_check_clone = tray_check.clone();
-        let mut top_check_clone = top_check.clone();
-        let mut autostart_check_clone = autostart_check.clone();
-        let mut autoupdate_check_clone = autoupdate_check.clone();
+        let lang_choice_clone = lang_choice.clone();
+        let tray_check_clone = tray_check.clone();
+        let top_check_clone = top_check.clone();
+        let autostart_check_clone = autostart_check.clone();
+        let autoupdate_check_clone = autoupdate_check.clone();
         
         lang_choice.set_callback(move |_| {
             let idx = lang_choice_clone.value();
