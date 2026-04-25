@@ -627,6 +627,11 @@ Ok(Self {
         });
 
         // Restore business states after event loop is ready
+        let config = rabbit_platform::config::load_config().unwrap_or_default();
+        if config.modules.get_bool("ping", "auto_start").unwrap_or(false) {
+            info!("Auto-starting ping service");
+            send_event(UiEvent::ModuleToggle { module: "ping".into() });
+        }
         if ping_restore_flag {
             info!("Restoring ping service state");
             send_event(UiEvent::ModuleToggle { module: "ping".into() });
@@ -892,8 +897,8 @@ impl EventHandler for AppHandle {
                                 });
                             }
                         } else {
-                            // Start ping from config (options already saved by UI layer)
-                            let config = self.view_model.read().await.get_config();
+                            // Start ping from config
+                            let config = rabbit_platform::config::load_config().unwrap_or_default();
                             let target = config.modules.get_string("ping", "target").unwrap_or_default();
                             let interval = config.modules.get_integer("ping", "interval").unwrap_or(1000) as u64;
                             let count: i32 = config.modules.get_integer("ping", "count").unwrap_or(-1) as i32;
@@ -905,14 +910,15 @@ impl EventHandler for AppHandle {
                                 return Ok(());
                             }
 
+                            // Start ping
                             info!("Starting ping to {} (interval={}ms, count={})", target, interval, count);
 
-                            // Cancel any existing ping task first
+                            // Cancel any existing ping task
                             if let Some(handle) = self.ping_task.write().await.take() {
                                 handle.abort();
                             }
 
-                            // Set window title to target address
+                            // Set window title
                             let target_label = target.clone();
                             if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
                                 fltk::app::awake_callback(move || {
@@ -921,18 +927,23 @@ impl EventHandler for AppHandle {
                             }
 
                             let mut service = self.ping_service.write().await;
+                            // 确保服务是 Idle 状态，如果是 Running 则先停止
+                            if service.is_running().await {
+                                let _ = service.stop().await;
+                            }
+                            
+                            // 启动服务并添加目标
                             service.start().await?;
-
                             let mut target_obj = PingTarget::new(&target);
                             target_obj.interval_ms = interval;
                             target_obj.count = if count < 0 { u32::MAX } else { count as u32 };
                             target_obj.stop_on_loss = stop_on_loss;
                             service.add_target(target_obj).await?;
+
                             self.view_model.write().await.set_ping_running(true);
                             crate::ui_state::set_ping_running(true);
 
-                            // Use channel-based UI updates instead of polling
-                            *self.ping_task.write().await = None;
+
                         }
                     }
                     "scan" => {
@@ -1248,9 +1259,41 @@ async fn handle_ui_data(
     _view_model: &Arc<RwLock<AppViewModel>>,
 ) {
     match data {
+        UiData::ServiceStatus(module, running) => {
+            info!("Received ServiceStatus: {:?} running={}", module, running);
+            match module {
+                Module::Ping => {
+                    crate::ui_state::set_ping_running(running);
+                    let mut vm = _view_model.write().await;
+                    vm.set_ping_running(running);
+                    if !running {
+                        if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                            fltk::app::awake_callback(move || {
+                                win.set_label("Rabbit");
+                            });
+                        }
+                    }
+                }
+                Module::Scan => {
+                    crate::ui_state::set_scan_running(running);
+                    let mut vm = _view_model.write().await;
+                    vm.set_scan_running(running);
+                }
+                _ => {}
+            }
+            fltk::app::awake();
+        }
+        UiData::PingStats(stats) => {
+            info!("app.rs: Received PingStats={}", stats);
+            crate::ui_state::set_ping_stats(&stats);
+            fltk::app::awake();
+        }
         UiData::Log(module, msg) => {
             match module {
-                Module::Ping => crate::ui_state::append_ping_output(&msg),
+                Module::Ping => {
+                    info!("app.rs: Received PingLog={}", msg);
+                    crate::ui_state::append_ping_output(&msg);
+                }
                 Module::Http => crate::ui_state::append_http_log(&msg),
                 Module::Scan => crate::ui_state::append_scan_output(&msg),
                 Module::Tftpd => crate::ui_state::append_tftpd_log(&msg),
@@ -1258,14 +1301,10 @@ async fn handle_ui_data(
                 Module::Chat => crate::ui_state::append_chat_message(&msg, ""),
                 Module::Plan => {}
             }
+            fltk::app::awake();
         }
-        UiData::PingStats(stats) => {
-            crate::ui_state::set_ping_stats(&stats);
-        }
-        UiData::PingState { address: _, progress: _, total: _, color } => {
-            let running = color == "green";
-            crate::ui_state::set_ping_running(running);
-        }
+
+        UiData::PingState { .. } => {}
         UiData::ScanProgress(msg) => {
             crate::ui_state::append_scan_output(&msg);
         }

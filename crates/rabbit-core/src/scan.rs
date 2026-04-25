@@ -166,8 +166,8 @@ impl ScanService {
 
             *state.write().await = ScannerState::Completed;
             if let Some(ref tx) = tx {
-                let online_count = results.read().await.iter().filter(|r| r.online).count();
-                let _ = tx.send(UiData::ScanProgress(format!("Scan completed. Found {} online hosts", online_count))).await;
+                let _ = tx.send(UiData::ServiceStatus(Module::Scan, false)).await;
+                let _ = tx.send(UiData::Log(Module::Scan, "Scan finished.".to_string())).await;
             }
         });
 

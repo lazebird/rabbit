@@ -221,6 +221,7 @@ pub fn set_ping_running(running: bool) {
         if let Ok(mut s) = state.lock() {
             s.ping_running = running;
             s.updated.insert("ping_running".to_string(), true);
+            tracing::info!("set_ping_running: {} (updated marked true)", running);
         }
     }
 }

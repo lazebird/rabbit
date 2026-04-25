@@ -33,6 +33,9 @@ pub enum UiData {
     
     // ═══ 错误 ═══
     Error(Module, String),
+    
+    // ═══ 通用状态更新 ═══
+    ServiceStatus(Module, bool), // (模块, 是否运行中)
 }
 
 /// 模块索引枚举

@@ -196,9 +196,7 @@ fn do_refresh() {
         check!("ping_output");
         check!("ping_stats");
         check!("scan_output");
-        check!("scan_running");
         check!("http_log");
-        // http_running handled separately in Phase 1 end
         check!("http_items");
         check!("tftpd_log");
         check!("tftpd_dirs");
@@ -207,6 +205,9 @@ fn do_refresh() {
         check!("chat_messages");
         check!("chat_users");
         check!("settings_output");
+        check!("ping_running");
+        check!("scan_running");
+        check!("http_running");
 
         if keys.is_empty() {
             return;
@@ -231,26 +232,24 @@ fn do_refresh() {
                         s.tftpd_dirs.join("\n") + "\n"
                     }
                 }
+                "ping_running" => s.ping_running.to_string(),
+                "scan_running" => s.scan_running.to_string(),
+                "http_running" => s.http_running.to_string(),
                 _ => String::new(),
             };
             (k, v)
         }).collect();
 
-        let http_updated = s.is_updated("http_running");
-        if http_updated { s.clear_updated("http_running"); }
-        let http_running = s.http_running;
-
-        let scan_updated = s.is_updated("scan_running");
-        if scan_updated { s.clear_updated("scan_running"); }
-        let scan_running = s.scan_running;
-
-        let ping_updated = s.is_updated("ping_running");
-        if ping_updated { s.clear_updated("ping_running"); }
         let ping_running = s.ping_running;
+        let http_running = s.http_running;
+        let scan_running = s.scan_running;
+        
+        let ping_updated = keys.contains(&"ping_running");
+        let http_updated = keys.contains(&"http_running");
+        let scan_updated = keys.contains(&"scan_running");
 
         drop(s);
-        let http_state = if http_updated { Some(http_running) } else { None };
-        (data, if ping_updated { Some(ping_running) } else { None }, http_state, if scan_updated { Some(scan_running) } else { None })
+        (data, if ping_updated { Some(ping_running) } else { None }, if http_updated { Some(http_running) } else { None }, if scan_updated { Some(scan_running) } else { None })
     };
 
     // Phase 2: Update displays without holding the lock
