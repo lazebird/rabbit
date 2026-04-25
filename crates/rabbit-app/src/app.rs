@@ -13,8 +13,8 @@ use fltk::{
     prelude::*,
     window::{Window, WindowType},
 };
-use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService, ui_channel::{UiData, Module}, ping::PingTarget};
-use rabbit_models::{AppConfig, scan::ScanRange};
+use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService, ServiceUpdateResult, ui_channel::{UiData, Module}, ping::PingTarget};
+use rabbit_models::AppConfig;
 
 use rabbit_platform::config::{load_config, save_config};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -897,53 +897,39 @@ impl EventHandler for AppHandle {
                                 });
                             }
                         } else {
-                            // Start ping from config
-                            let config = rabbit_platform::config::load_config().unwrap_or_default();
-                            let target = config.modules.get_string("ping", "target").unwrap_or_default();
-                            let interval = config.modules.get_integer("ping", "interval").unwrap_or(1000) as u64;
-                            let count: i32 = config.modules.get_integer("ping", "count").unwrap_or(-1) as i32;
-                            let stop_on_loss = config.modules.get_bool("ping", "stoponloss").unwrap_or(false);
-                            drop(config);
-
-                            if target.is_empty() {
-                                warn!("Ping target is empty, cannot start ping");
-                                return Ok(());
-                            }
-
-                            // Start ping
-                            info!("Starting ping to {} (interval={}ms, count={})", target, interval, count);
+                            // Start ping - service reads config internally
+                            info!("Starting ping service");
 
                             // Cancel any existing ping task
                             if let Some(handle) = self.ping_task.write().await.take() {
                                 handle.abort();
                             }
 
-                            // Set window title
-                            let target_label = target.clone();
-                            if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
-                                fltk::app::awake_callback(move || {
-                                    win.set_label(&target_label);
-                                });
+                            // Set window title from config
+                            if let Some(target) = rabbit_platform::config::load_config()
+                                .ok()
+                                .and_then(|c| c.modules.get_string("ping", "target").filter(|s| !s.is_empty()))
+                            {
+                                if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                                    fltk::app::awake_callback(move || {
+                                        win.set_label(&target);
+                                    });
+                                }
                             }
 
-                            let mut service = self.ping_service.write().await;
-                            // 确保服务是 Idle 状态，如果是 Running 则先停止
-                            if service.is_running().await {
-                                let _ = service.stop().await;
+                            // Use unified update interface - service handles start/stop internally
+                            let result = self.ping_service.write().await.update().await;
+                            match result {
+                                ServiceUpdateResult::Started(_) => {
+                                    self.view_model.write().await.set_ping_running(true);
+                                    crate::ui_state::set_ping_running(true);
+                                }
+                                ServiceUpdateResult::Stopped(_) => {
+                                    self.view_model.write().await.set_ping_running(false);
+                                    crate::ui_state::set_ping_running(false);
+                                }
+                                _ => {}
                             }
-                            
-                            // 启动服务并添加目标
-                            service.start().await?;
-                            let mut target_obj = PingTarget::new(&target);
-                            target_obj.interval_ms = interval;
-                            target_obj.count = if count < 0 { u32::MAX } else { count as u32 };
-                            target_obj.stop_on_loss = stop_on_loss;
-                            service.add_target(target_obj).await?;
-
-                            self.view_model.write().await.set_ping_running(true);
-                            crate::ui_state::set_ping_running(true);
-
-
                         }
                     }
                     "scan" => {
@@ -954,115 +940,71 @@ impl EventHandler for AppHandle {
                             self.view_model.write().await.set_scan_running(false);
                             crate::ui_state::set_scan_running(false);
                         } else {
-                            let config = self.view_model.read().await.get_config();
-                            let start_ip = config.modules.get_string("scan", "start_ip").unwrap_or_default();
-                            let end_ip = config.modules.get_string("scan", "end_ip").unwrap_or_default();
-
-                            if start_ip.is_empty() || end_ip.is_empty() {
-                                warn!("Scan parameters not configured");
-                                crate::ui_state::append_scan_output("Error: Please enter IP range first.\n");
-                                return Ok(());
+                            // Use unified update interface - service handles start/stop internally
+                            info!("Starting scan service");
+                            let result = self.scan_service.write().await.update().await;
+                            match result {
+                                ServiceUpdateResult::Started(_) => {
+                                    self.view_model.write().await.set_scan_running(true);
+                                    crate::ui_state::set_scan_running(true);
+                                }
+                                ServiceUpdateResult::Stopped(_) => {
+                                    self.view_model.write().await.set_scan_running(false);
+                                    crate::ui_state::set_scan_running(false);
+                                }
+                                _ => {}
                             }
-
-                            let start: std::net::Ipv4Addr = match start_ip.parse() {
-                                Ok(ip) => ip,
-                                Err(_) => {
-                                    warn!("Invalid start IP: {}", start_ip);
-                                    crate::ui_state::append_scan_output(&format!("Error: Invalid start IP {}\n", start_ip));
-                                    return Ok(());
-                                }
-                            };
-                            let end: std::net::Ipv4Addr = if let Ok(num) = end_ip.parse::<u8>() {
-                                let parts: Vec<&str> = start_ip.splitn(5, '.').collect();
-                                if parts.len() == 4 {
-                                    let a: u8 = parts[0].parse().unwrap_or(0);
-                                    let b: u8 = parts[1].parse().unwrap_or(0);
-                                    let c: u8 = parts[2].parse().unwrap_or(0);
-                                    std::net::Ipv4Addr::new(a, b, c, num)
-                                } else {
-                                    std::net::Ipv4Addr::new(192, 168, 1, num)
-                                }
-                            } else {
-                                match end_ip.parse() {
-                                    Ok(ip) => ip,
-                                    Err(_) => {
-                                        warn!("Invalid end IP: {}", end_ip);
-                                        crate::ui_state::append_scan_output(&format!("Error: Invalid end IP {}\n", end_ip));
-                                        return Ok(());
-                                    }
-                                }
-                            };
-
-                            info!("Starting scan from {} to {}", start_ip, end_ip);
-                            let range = ScanRange::new(start, end);
-                            self.scan_service.write().await.scan(range).await?;
-                            self.view_model.write().await.set_scan_running(true);
-                            crate::ui_state::set_scan_running(true);
-
-// Use channel-based UI updates instead of polling
                             *self.scan_task.write().await = None;
                         }
                     }
-                    "http" => {
-                        let is_running = self.view_model.read().await.is_http_running();
-                        if is_running {
-                            info!("Stopping HTTP server");
-                            self.http_service.write().await.stop().await?;
-                            self.view_model.write().await.set_http_running(false);
-                            crate::ui_state::set_http_running(false);
-                            crate::ui_state::append_http_log("HTTP server stopped.\r\n");
-                        } else {
-                            if rabbit_platform::config::get_array("http", "dirs").map(|d| d.is_empty()).unwrap_or(true) {
-                                warn!("No HTTP directories configured, cannot start server");
-                                crate::ui_state::append_http_log("Error: No directories configured. Add files or directories first.\r\n");
-                                return Ok(());
+"http" => {
+                        // Use unified update interface
+                        let result = self.http_service.write().await.update().await;
+                        match result {
+                            ServiceUpdateResult::Started(_) => {
+                                self.view_model.write().await.set_http_running(true);
+                                crate::ui_state::set_http_running(true);
                             }
-
-                            info!("Starting HTTP server");
-                            let mut service = self.http_service.write().await;
-                            let _ = service.update().await;
-                            self.view_model.write().await.set_http_running(true);
-                            crate::ui_state::set_http_running(true);
+                            ServiceUpdateResult::Stopped(_) => {
+                                self.view_model.write().await.set_http_running(false);
+                                crate::ui_state::set_http_running(false);
+                                crate::ui_state::append_http_log("HTTP server stopped.\r\n");
+                            }
+                            _ => {}
                         }
                     }
                     "tftpd" => {
-                        let is_running = self.view_model.read().await.is_tftp_server_running();
-                        if is_running {
-                            info!("Stopping TFTP server");
-                            self.tftp_server_service.write().await.stop_server().await?;
-                            self.view_model.write().await.set_tftp_server_running(false);
-                            crate::ui_state::append_tftpd_log("TFTP server stopped.\r\n");
-                        } else {
-                            if rabbit_platform::config::get_array("tftpd", "work_dirs").map(|d| d.is_empty()).unwrap_or(true) {
-                                warn!("No TFTP directories configured, cannot start server");
-                                crate::ui_state::append_tftpd_log("Error: No directories configured. Add directories first.\r\n");
-                                return Ok(());
+                        // Use unified update interface
+                        let result = self.tftp_server_service.write().await.update().await;
+                        match result {
+                            ServiceUpdateResult::Started(_) => {
+                                self.view_model.write().await.set_tftp_server_running(true);
                             }
-
-                            info!("Starting TFTP server");
-                            let mut service = self.tftp_server_service.write().await;
-                            let _ = service.update().await;
-                            self.view_model.write().await.set_tftp_server_running(true);
+                            ServiceUpdateResult::Stopped(_) => {
+                                self.view_model.write().await.set_tftp_server_running(false);
+                                crate::ui_state::append_tftpd_log("TFTP server stopped.\r\n");
+                            }
+                            _ => {}
                         }
                     }
                     "chat" => {
-                        let is_running = self.view_model.read().await.is_chat_running();
-                        if is_running {
-                            info!("Stopping chat service");
-                            self.chat_service.write().await.stop().await?;
-                            self.view_model.write().await.set_chat_running(false);
-                            crate::ui_state::set_chat_users(&[]);
-                        } else {
-                            info!("Starting chat service");
-                            let mut service = self.chat_service.write().await;
-                            let _ = service.update().await;
-                            self.view_model.write().await.set_chat_running(true);
+                        // Use unified update interface
+                        let result = self.chat_service.write().await.update().await;
+                        match result {
+                            ServiceUpdateResult::Started(_) => {
+                                self.view_model.write().await.set_chat_running(true);
+                            }
+                            ServiceUpdateResult::Stopped(_) => {
+                                self.view_model.write().await.set_chat_running(false);
+                                crate::ui_state::set_chat_users(&[]);
+                            }
+                            _ => {}
                         }
                     }
 
                     _ => {}
                 }
-}
+            }
             UiEvent::TftpClientPut { server, local, remote, options } => {
                 info!("TFTP put {} -> {}@{} with options: {}", local, remote, server, options);
                 

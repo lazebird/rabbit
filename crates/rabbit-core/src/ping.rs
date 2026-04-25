@@ -1,7 +1,6 @@
 //! Ping Service
 
 use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
-use rabbit_platform::config::get_string;
 use rand::random;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -130,6 +129,11 @@ impl PingService {
         tokio::spawn(async move {
             info!("Ping task started");
             
+            // 内部自动加载配置并添加目标
+            if let Err(e) = service.add_target().await {
+                error!("Failed to add target: {}", e);
+            }
+            
             // 确保任务启动时立即检查 targets
             let mut current_interval_ms = 1000;
             if let Some(first) = service.targets.read().await.first() {
@@ -217,9 +221,30 @@ impl PingService {
         Ok(())
     }
 
-    pub async fn add_target(&self, target: PingTarget) -> Result<()> {
-        info!("Directly adding target: {}", target.address);
-        self.targets.write().await.push(target);
+    fn load_target_from_config(&self) -> Option<PingTarget> {
+        let config = rabbit_platform::config::load_config().ok()?;
+        let target = config.modules.get_string("ping", "target")?;
+        if target.is_empty() {
+            return None;
+        }
+        
+        let interval = config.modules.get_integer("ping", "interval").unwrap_or(1000) as u64;
+        let count: i32 = config.modules.get_integer("ping", "count").unwrap_or(-1) as i32;
+        let stop_on_loss = config.modules.get_bool("ping", "stoponloss").unwrap_or(false);
+        
+        let mut target_obj = PingTarget::new(&target);
+        target_obj.interval_ms = interval;
+        target_obj.count = if count < 0 { u32::MAX } else { count as u32 };
+        target_obj.stop_on_loss = stop_on_loss;
+        
+        Some(target_obj)
+    }
+
+    pub async fn add_target(&self) -> Result<()> {
+        if let Some(target) = self.load_target_from_config() {
+            info!("Adding target from config: {}", target.address);
+            self.targets.write().await.push(target);
+        }
         Ok(())
     }
 

@@ -90,8 +90,44 @@ impl ScanService {
         Ok(())
     }
 
-    /// Start scanning a range
-    pub async fn scan(&mut self, range: ScanRange) -> Result<()> {
+    fn load_range_from_config(&self) -> Option<ScanRange> {
+        let config = rabbit_platform::config::load_config().ok()?;
+        
+        let start_ip = config.modules.get_string("scan", "start_ip")?;
+        let end_ip = config.modules.get_string("scan", "end_ip")?;
+        
+        if start_ip.is_empty() || end_ip.is_empty() {
+            return None;
+        }
+        
+        let start: Ipv4Addr = start_ip.parse().ok()?;
+        
+        // 支持简写格式: 1 表示 .1
+        let end: Ipv4Addr = if let Ok(num) = end_ip.parse::<u8>() {
+            let parts: Vec<&str> = start_ip.splitn(5, '.').collect();
+            if parts.len() == 4 {
+                let a: u8 = parts[0].parse().unwrap_or(192);
+                let b: u8 = parts[1].parse().unwrap_or(168);
+                let c: u8 = parts[2].parse().unwrap_or(1);
+                Ipv4Addr::new(a, b, c, num)
+            } else {
+                Ipv4Addr::new(192, 168, 1, num)
+            }
+        } else {
+            end_ip.parse().ok()?
+        };
+        
+        Some(ScanRange::new(start, end))
+    }
+
+    pub async fn start(&mut self) -> Result<()> {
+        let range = match self.load_range_from_config() {
+            Some(r) => r,
+            None => {
+                return Err(ServiceError::Other("Invalid scan configuration".to_string()));
+            }
+        };
+        
         let mut state = self.state.write().await;
         if let ScannerState::Scanning { .. } = *state {
             return Err(ServiceError::AlreadyRunning);
@@ -135,9 +171,15 @@ impl ScanService {
 
                     if result.online {
                         if let Some(ref tx) = tx_clone {
-                            let msg = format!("Found online host: {}{}", 
+                            let ip = result.ip;
+                            let mac = result.mac_address.clone().or_else(|| get_mac_from_arp(ip));
+                            let mac_info = mac.as_ref()
+                                .map(|m| format!(" [MAC: {}]", m))
+                                .unwrap_or_default();
+                            let msg = format!("Found online host: {}{}{}", 
                                 result.ip, 
-                                result.hostname.as_ref().map(|h| format!(" ({})", h)).unwrap_or_default()
+                                result.hostname.as_ref().map(|h| format!(" ({})", h)).unwrap_or_default(),
+                                mac_info
                             );
                             let _ = tx.send(UiData::Log(Module::Scan, msg)).await;
                         }
@@ -178,7 +220,12 @@ impl ScanService {
     pub async fn update(&mut self) -> ServiceUpdateResult {
         let state = *self.state.read().await;
         match state {
-            ScannerState::Idle => ServiceUpdateResult::NoChange,
+            ScannerState::Idle => {
+                match self.start().await {
+                    Ok(()) => ServiceUpdateResult::Started("Scan started".to_string()),
+                    Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
+                }
+            }
             _ => match self.cancel().await {
                 Ok(()) => ServiceUpdateResult::Stopped("Scan cancelled".to_string()),
                 Err(e) => ServiceUpdateResult::Error(format!("Failed to cancel: {}", e)),
