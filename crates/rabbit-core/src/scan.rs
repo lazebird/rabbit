@@ -275,17 +275,22 @@ async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
 
     // If specific port given, try TCP connect
     // If port == 0, do parallel ping (ICMP-like via multi-port TCP)
-    let (online, response_time) = if port == 0 {
-        ping_host_parallel(ip, timeout_ms).await
+    let online = if port == 0 {
+        ping_host_parallel(ip, timeout_ms).await.0
     } else {
         let addr = format!("{}:{}", ip, port);
-        let result = timeout(
+        let tcp_result = timeout(
             Duration::from_millis(timeout_ms),
             tokio::net::TcpStream::connect(&addr)
         ).await;
-        let is_online = matches!(&result, Ok(Ok(_)));
-        let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-        (is_online, if is_online { Some(elapsed) } else { None })
+        matches!(&tcp_result, Ok(Ok(_)))
+    };
+
+    // Get response time from parallel ping if that was used
+    let response_time_ms = if port == 0 {
+        ping_host_parallel(ip, timeout_ms).await.1
+    } else {
+        None
     };
 
     // Try to resolve hostname
@@ -302,13 +307,13 @@ async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
         None
     };
 
-    ScanResult {
+ScanResult {
         ip,
         online,
         hostname,
         mac_address,
-        response_time_ms: response_time,
-        open_ports: Vec::new(),
+        response_time_ms,
+        open_ports: vec![],
     }
 }
 

@@ -12,7 +12,6 @@ use tracing::{error, info};
 /// Internal Task model
 #[derive(Debug, Clone)]
 struct Task {
-    pub id: String,
     pub title: String,
     pub schedule: Schedule,
     pub enabled: bool,
@@ -22,9 +21,8 @@ struct Task {
 }
 
 impl Task {
-    pub fn new(id: String, title: String, schedule: Schedule) -> Self {
+    pub fn new(title: String, schedule: Schedule) -> Self {
         Self {
-            id,
             title,
             schedule,
             enabled: true,
@@ -76,15 +74,9 @@ enum TaskState {
     Pending,
     Triggered,
     Acknowledged,
-    Snoozed,
 }
 
-/// Task execution log
-#[derive(Debug, Clone)]
-struct TaskLog {
-    pub task_id: String,
-    pub triggered_at: DateTime<Local>,
-}
+type TaskLog = String;
 
 /// Task planner service
 pub struct PlanService {
@@ -201,7 +193,7 @@ impl PlanService {
         };
         
         let id = format!("task-{}", uuid::Uuid::new_v4());
-        let task = Task::new(id.clone(), msg.to_string(), schedule);
+        let task = Task::new(msg.to_string(), schedule);
         
         self.tasks.write().await.insert(id.clone(), task);
         info!("Added task: {}", id);
@@ -240,10 +232,7 @@ impl PlanService {
                 error!("Failed to show notification: {}", e);
             }
 
-            logs.write().await.push(TaskLog {
-                task_id: task.id.clone(),
-                triggered_at: now,
-            });
+            logs.write().await.push(task.title.clone());
 
             if let Some(ref tx) = tx {
                 let _ = tx.send(UiData::PlanReminder(task.title.clone())).await;

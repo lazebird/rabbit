@@ -28,12 +28,12 @@ impl ClientConfig {
     fn from_platform() -> Self {
         let server_addr = get_string("tftpc", "server_addr").unwrap_or_else(|| "127.0.0.1".into());
         let server_port = get_integer("tftpc", "server_port").unwrap_or(69) as u16;
-        let blksize = get_integer("tftpc", "blksize").unwrap_or(1024) as usize;
-        let timeout = get_integer("tftpc", "timeout").unwrap_or(200) as u64 / 1000;
+        let blksize = get_integer("tftpc", "blksize").unwrap_or(512) as usize;
+        let timeout = get_integer("tftpc", "timeout").unwrap_or(3) as u64;
         Self {
             server_addr: format!("{}:{}", server_addr, server_port),
-            block_size: if blksize == 0 { TFTP_BLOCK_SIZE } else { blksize },
-            timeout_secs: if timeout == 0 { 1 } else { timeout },
+            block_size: blksize,
+            timeout_secs: timeout,
         }
     }
 }
@@ -70,28 +70,30 @@ impl TftpcService {
 
     pub async fn put(&self, local_path: &str, remote_filename: &str) -> Result<String> {
         let config = ClientConfig::from_platform();
-        self.upload_to(&config.server_addr, local_path, remote_filename).await
+        self.upload_to(&config.server_addr, local_path, remote_filename, config.block_size, config.timeout_secs).await
     }
 
     pub async fn get(&self, remote_filename: &str, local_path: &str) -> Result<String> {
         let config = ClientConfig::from_platform();
-        self.download_from(&config.server_addr, remote_filename, local_path).await
+        self.download_from(&config.server_addr, remote_filename, local_path, config.block_size, config.timeout_secs).await
     }
 
-    async fn upload_to(&self, server_addr: &str, local_path: &str, remote_filename: &str) -> Result<String> {
+    async fn upload_to(&self, server_addr: &str, local_path: &str, remote_filename: &str, block_size: usize, timeout_secs: u64) -> Result<String> {
         let transfer_id = format!("upload_{}_{}", remote_filename, chrono::Local::now().timestamp());
 
         let server = server_addr.to_string();
         let local = local_path.to_string();
         let remote = remote_filename.to_string();
         let tx = self.tx.clone();
+        let blk_size = block_size;
+        let timeout = timeout_secs;
 
         tokio::spawn(async move {
             if let Some(ref tx_ui) = tx {
                 let _ = tx_ui.send(UiData::Log(Module::Tftpc, format!("Uploading {} to {}...", local, server))).await;
             }
 
-            match Self::do_upload(&server, &local, &remote).await {
+            match Self::do_upload(&server, &local, &remote, blk_size, timeout).await {
                 Ok(bytes) => {
                     info!("Upload completed: {} bytes", bytes);
                     if let Some(ref tx_ui) = tx {
@@ -110,20 +112,22 @@ impl TftpcService {
         Ok(transfer_id)
     }
 
-    async fn download_from(&self, server_addr: &str, remote_filename: &str, local_path: &str) -> Result<String> {
+async fn download_from(&self, server_addr: &str, remote_filename: &str, local_path: &str, block_size: usize, timeout_secs: u64) -> Result<String> {
         let transfer_id = format!("download_{}_{}", remote_filename, chrono::Local::now().timestamp());
 
         let server = server_addr.to_string();
         let local = local_path.to_string();
         let remote = remote_filename.to_string();
         let tx = self.tx.clone();
+        let blk_size = block_size;
+        let timeout = timeout_secs;
 
         tokio::spawn(async move {
             if let Some(ref tx_ui) = tx {
                 let _ = tx_ui.send(UiData::Log(Module::Tftpc, format!("Downloading {} from {}...", remote, server))).await;
             }
 
-            match Self::do_download(&server, &remote, &local).await {
+            match Self::do_download(&server, &remote, &local, blk_size, timeout).await {
                 Ok(bytes) => {
                     info!("Download completed: {} bytes", bytes);
                     if let Some(ref tx_ui) = tx {
@@ -142,7 +146,7 @@ impl TftpcService {
         Ok(transfer_id)
     }
 
-    async fn do_upload(server: &str, local: &str, remote: &str) -> Result<u64> {
+    async fn do_upload(server: &str, local: &str, remote: &str, block_size: usize, timeout_secs: u64) -> Result<u64> {
         let local_file = PathBuf::from(local);
         if !local_file.exists() {
             return Err(ServiceError::Io(std::io::Error::new(
@@ -166,10 +170,14 @@ impl TftpcService {
         packet.extend_from_slice(&TFTP_OPCODE_WRQ.to_be_bytes());
         packet.extend_from_slice(&filename);
         packet.extend_from_slice(mode);
+        packet.extend_from_slice(b"blksize");
+        packet.push(0);
+        packet.extend_from_slice(format!("{}", block_size).as_bytes());
+        packet.push(0);
 
         socket.send(&packet).await?;
 
-        let mut buf = [0u8; 516];
+        let mut buf = vec![0u8; block_size + 4];
         let (bytes_read, _) = socket.recv_from(&mut buf).await?;
         if bytes_read < 4 {
             return Err(ServiceError::Other("Invalid response".to_string()));
@@ -211,7 +219,7 @@ impl TftpcService {
         Ok(file_size)
     }
 
-    async fn do_download(server: &str, remote: &str, local: &str) -> Result<u64> {
+    async fn do_download(server: &str, remote: &str, local: &str, block_size: usize, timeout_secs: u64) -> Result<u64> {
         let socket = UdpSocket::bind("0.0.0.0:0").await?;
         socket.connect(server).await?;
 
@@ -223,6 +231,10 @@ impl TftpcService {
         packet.extend_from_slice(&TFTP_OPCODE_RRQ.to_be_bytes());
         packet.extend_from_slice(&filename);
         packet.extend_from_slice(mode);
+        packet.extend_from_slice(b"blksize");
+        packet.push(0);
+        packet.extend_from_slice(format!("{}", block_size).as_bytes());
+        packet.push(0);
 
         socket.send(&packet).await?;
 
@@ -231,7 +243,7 @@ impl TftpcService {
         let mut retries = 3;
 
         while retries > 0 {
-            let mut buf = [0u8; 516];
+            let mut buf = vec![0u8; block_size + 4];
             match socket.recv_from(&mut buf).await {
                 Ok((bytes_read, _)) if bytes_read >= 4 => {
                     let opcode = u16::from_be_bytes([buf[0], buf[1]]);
@@ -246,7 +258,7 @@ impl TftpcService {
                             ack.extend_from_slice(&block_num.to_be_bytes());
                             socket.send(&ack).await?;
 
-                            if bytes_read < 516 {
+                            if bytes_read < block_size + 4 {
                                 break;
                             }
                             retries = 3;

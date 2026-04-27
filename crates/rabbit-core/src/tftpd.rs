@@ -9,24 +9,6 @@ use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 use tracing::{error, info};
 
-/// Internal TFTP transfer info
-#[derive(Debug, Clone)]
-struct TftpTransfer {
-    pub filename: String,
-    pub bytes_transferred: u64,
-}
-
-/// Internal TFTP log entry
-#[derive(Debug, Clone)]
-struct TftpLogEntry {
-    pub timestamp: chrono::DateTime<chrono::Local>,
-    pub remote_addr: std::net::SocketAddr,
-    pub operation: String,
-    pub filename: String,
-    pub success: bool,
-    pub bytes_transferred: u64,
-}
-
 /// TFTP server internal configuration
 #[derive(Debug, Clone, Default)]
 struct ServerConfig {
@@ -56,8 +38,6 @@ fn get_array_first(module: &str, key: &str) -> Option<String> {
 
 /// TFTP Server Service
 pub struct TftpdService {
-    transfers: Arc<RwLock<HashMap<String, TftpTransfer>>>,
-    logs: Arc<RwLock<Vec<TftpLogEntry>>>,
     shutdown_tx: Option<tokio::sync::oneshot::Sender<()>>,
     server_handle: Option<JoinHandle<()>>,
     tx: Option<tokio::sync::mpsc::Sender<UiData>>,
@@ -66,8 +46,6 @@ pub struct TftpdService {
 impl TftpdService {
     pub fn new() -> Self {
         Self {
-            transfers: Arc::new(RwLock::new(HashMap::new())),
-            logs: Arc::new(RwLock::new(Vec::new())),
             server_handle: None,
             shutdown_tx: None,
             tx: None,
@@ -76,8 +54,6 @@ impl TftpdService {
 
     pub fn with_channel(tx: tokio::sync::mpsc::Sender<UiData>) -> Self {
         Self {
-            transfers: Arc::new(RwLock::new(HashMap::new())),
-            logs: Arc::new(RwLock::new(Vec::new())),
             server_handle: None,
             shutdown_tx: None,
             tx: Some(tx),
@@ -118,8 +94,6 @@ impl TftpdService {
         let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel();
         self.shutdown_tx = Some(shutdown_tx);
 
-        let _transfers = Arc::clone(&self.transfers);
-        let _logs = Arc::clone(&self.logs);
         let bind_addr = config.bind_addr.clone();
         let root_path = config.root_path.clone();
         let timeout_secs = config.timeout_secs;

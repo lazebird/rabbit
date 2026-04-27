@@ -9,8 +9,6 @@
 //! - ChatService: LAN chat
 //! - ScanService: IP scanner
 
-#![allow(dead_code)]
-
 pub mod ping;
 pub mod http;
 pub mod tftpd;

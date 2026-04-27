@@ -37,14 +37,12 @@ struct ChatUser {
 /// LAN Chat internal configuration
 #[derive(Debug, Clone, Default)]
 struct ChatConfig {
-    pub username: String,
     pub port: u16,
 }
 
 impl ChatConfig {
     fn from_platform() -> Self {
         Self {
-            username: get_string("chat", "username").unwrap_or_else(|| "User@PC".to_string()),
             port: get_integer("chat", "port").unwrap_or(1314) as u16,
         }
     }

@@ -30,11 +30,6 @@ enum HttpServerState {
     Running,
 }
 
-/// Internal HTTP access log file path
-struct HttpAccessLog {
-    pub log_path: String,
-}
-
 /// HTTP server internal configuration
 #[derive(Debug, Clone, Default)]
 struct ServerConfig {
@@ -42,6 +37,7 @@ struct ServerConfig {
     pub root_path: String,
     pub auto_index: bool,
     pub video_play: bool,
+    pub log_path: Option<String>,
 }
 
 impl ServerConfig {
@@ -51,6 +47,7 @@ impl ServerConfig {
             root_path: get_array_first("http", "dirs").unwrap_or_else(|| ".".to_string()),
             auto_index: get_bool("http", "autoindex").unwrap_or(true),
             video_play: get_bool("http", "videoplay").unwrap_or(true),
+            log_path: rabbit_platform::config::get_string("http", "log"),
         }
     }
 }
@@ -62,7 +59,7 @@ fn get_array_first(module: &str, key: &str) -> Option<String> {
 /// HTTP server service
 pub struct HttpService {
     state: Arc<RwLock<HttpServerState>>,
-    logs: Arc<RwLock<Vec<HttpAccessLog>>>,
+    log_path: Option<String>,
     shutdown_tx: Option<mpsc::Sender<()>>,
     server_handle: Option<JoinHandle<()>>,
     tx: Option<mpsc::Sender<UiData>>,
@@ -72,7 +69,7 @@ impl HttpService {
     pub fn new() -> Self {
         Self {
             state: Arc::new(RwLock::new(HttpServerState::Stopped)),
-            logs: Arc::new(RwLock::new(Vec::new())),
+            log_path: None,
             shutdown_tx: None,
             server_handle: None,
             tx: None,
@@ -82,7 +79,7 @@ impl HttpService {
     pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self {
         Self {
             state: Arc::new(RwLock::new(HttpServerState::Stopped)),
-            logs: Arc::new(RwLock::new(Vec::new())),
+            log_path: None,
             shutdown_tx: None,
             server_handle: None,
             tx: Some(tx),
@@ -126,18 +123,17 @@ impl HttpService {
 
         let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
         self.shutdown_tx = Some(shutdown_tx);
+        self.log_path = config.log_path.clone();
 
         // Oneshot channel to report startup result
         let (startup_tx, startup_rx) = oneshot::channel::<Result<()>>();
 
         let state_arc = Arc::clone(&self.state);
-        let logs_arc = Arc::clone(&self.logs);
         let tx_clone = self.tx.clone();
 
         let handle = tokio::spawn(async move {
             let auto_index = config.auto_index;
             let video_play = config.video_play;
-            let logs_middleware = Arc::clone(&logs_arc);
             let tx_middleware = tx_clone.clone();
 
             let app = Router::new()
@@ -149,7 +145,6 @@ impl HttpService {
                 .layer(axum::extract::Extension(root.clone()))
                 .layer(axum::middleware::from_fn(
                     move |req: Request, next: Next| {
-                        let logs = Arc::clone(&logs_middleware);
                         let ui_tx = tx_middleware.clone();
                         async move {
                             let uri = req.uri().path().to_string();
@@ -163,7 +158,7 @@ impl HttpService {
                                 }
                             }
                             
-                            access_log_middleware(req, next, logs, ui_tx).await
+                            access_log_middleware(req, next, ui_tx).await
                         }
                     },
                 ));
@@ -317,16 +312,10 @@ fn generate_video_player(uri: &str, mime: &str) -> String {
 async fn access_log_middleware(
     request: Request,
     next: Next,
-    logs: Arc<RwLock<Vec<HttpAccessLog>>>,
-    tx: Option<mpsc::Sender<UiData>>,
+    ui_tx: Option<mpsc::Sender<UiData>>,
 ) -> Response {
     let method = request.method().clone();
     let uri = request.uri().clone();
-    let client_addr = request
-        .extensions()
-        .get::<ConnectInfo<SocketAddr>>()
-        .map(|addr| addr.0.to_string())
-        .unwrap_or_else(|| "unknown".to_string());
 
     let start = Instant::now();
     let response = next.run(request).await;
@@ -335,23 +324,13 @@ async fn access_log_middleware(
     let status = response.status();
     let bytes_sent = response.body().size_hint().lower();
 
-    let log_entry = HttpAccessLog {
-        log_path: String::new(),
-    };
-
     let log_msg = format!("[{}] {} {} {} - {} bytes ({}ms)",
         chrono::Local::now().format("%H:%M:%S"),
         method, uri.path(), status.as_u16(), bytes_sent, duration.as_millis()
     );
 
-    if let Some(ui_tx) = tx {
-        let _ = ui_tx.send(UiData::Log(Module::Http, log_msg)).await;
-    }
-
-    let mut logs = logs.write().await;
-    logs.push(log_entry);
-    if logs.len() > 1000 {
-        logs.remove(0);
+    if let Some(ref ui_tx) = ui_tx {
+        let _ = ui_tx.send(UiData::Log(Module::Http, log_msg.clone())).await;
     }
 
     response
