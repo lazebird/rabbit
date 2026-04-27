@@ -37,6 +37,7 @@ fltk = { workspace = true }
 dirs = { workspace = true }
 async-trait = "0.1"
 uuid = { version = "1.0", features = ["v4"] }
+parking_lot = "0.12"
 
 # Upgrade management
 ureq = { version = "2", features = ["tls"] }

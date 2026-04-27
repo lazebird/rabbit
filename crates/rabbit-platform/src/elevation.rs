@@ -1,6 +1,7 @@
+#![allow(dead_code)]
+
 use elevated_command::Command as ElevatedCommand;
 use std::path::absolute;
-use std::process::exit;
 use std::process::Command as StdCommand;
 use std::thread;
 use std::time::Duration;
@@ -179,25 +180,23 @@ fn restart_with_elevation() -> Result<(), String> {
 }
 
 pub fn ensure_elevated() {
-    #[cfg(debug_assertions)]
+    #[cfg(any(debug_assertions, target_os = "android", target_os = "ios"))]
     {
         return;
     }
 
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    #[cfg(not(any(debug_assertions, target_os = "android", target_os = "ios")))]
     {
-        return;
-    }
+        if is_elevated() {
+            return;
+        }
 
-    if is_elevated() {
-        return;
-    }
-
-    match restart_with_elevation() {
-        Ok(()) => exit(0),
-        Err(e) => {
-            show_error_dialog("elevation failed", &e);
-            exit(1);
+        match restart_with_elevation() {
+            Ok(()) => std::process::exit(0),
+            Err(e) => {
+                show_error_dialog("elevation failed", &e);
+                std::process::exit(1);
+            }
         }
     }
 }

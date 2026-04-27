@@ -4,164 +4,173 @@
 //! This reduces CPU usage from ~100% (busy-waiting every frame) to near-idle.
 
 use fltk::{prelude::*, text::TextDisplay, browser::Browser};
+use parking_lot::Mutex;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 type DisplayStore = RefCell<HashMap<&'static str, TextDisplay>>;
 type BrowserStore = RefCell<HashMap<&'static str, Browser>>;
 
 /// Global storage for text display widgets.
-/// SAFETY: Only accessed from the main FLTK thread.
-static mut DISPLAYS: Option<DisplayStore> = None;
+static DISPLAYS: Mutex<Option<DisplayStore>> = Mutex::new(None);
 
 /// Global storage for browser widgets.
-/// SAFETY: Only accessed from the main FLTK thread.
-static mut BROWSERS: Option<BrowserStore> = None;
+static BROWSERS: Mutex<Option<BrowserStore>> = Mutex::new(None);
 
 /// Register a text display widget for centralized refresh management.
 pub fn register_display(key: &'static str, display: TextDisplay) {
-    unsafe {
-        DISPLAYS.get_or_insert_with(|| RefCell::new(HashMap::new()))
-            .borrow_mut()
-            .insert(key, display);
-    }
+    DISPLAYS.lock()
+        .get_or_insert_with(|| RefCell::new(HashMap::new()))
+        .borrow_mut()
+        .insert(key, display);
 }
 
 /// Register a browser widget for centralized refresh management.
 pub fn register_browser(key: &'static str, browser: Browser) {
-    unsafe {
-        BROWSERS.get_or_insert_with(|| RefCell::new(HashMap::new()))
-            .borrow_mut()
-            .insert(key, browser);
-    }
+    BROWSERS.lock()
+        .get_or_insert_with(|| RefCell::new(HashMap::new()))
+        .borrow_mut()
+        .insert(key, browser);
 }
 
 /// Register the HTTP toggle button for centralized state sync.
-pub static mut HTTP_BTN: Option<fltk::button::Button> = None;
-pub static mut HTTP_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+static HTTP_BTN: Mutex<Option<fltk::button::Button>> = Mutex::new(None);
+static HTTP_ACCENT: Mutex<fltk::enums::Color> = Mutex::new(fltk::enums::Color::from_rgb(0, 0, 0));
 pub const HTTP_STOP_COLOR: u32 = 0xE57373;
 
 pub fn register_http_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
-    unsafe {
-        HTTP_BTN = Some(btn);
-        HTTP_ACCENT = accent;
-    }
+    *HTTP_BTN.lock() = Some(btn);
+    *HTTP_ACCENT.lock() = accent;
+}
+
+pub fn get_http_btn() -> Option<fltk::button::Button> {
+    HTTP_BTN.lock().clone()
 }
 
 /// Register the HTTP browser widget for centralized item refresh.
-static mut HTTP_BROWSER: Option<Browser> = None;
+static HTTP_BROWSER: Mutex<Option<Browser>> = Mutex::new(None);
 
 pub fn register_http_browser(browser: Browser) {
-    unsafe {
-        HTTP_BROWSER = Some(browser);
-    }
+    *HTTP_BROWSER.lock() = Some(browser);
 }
 
 /// Register the Ping toggle button for centralized state sync.
-static mut PING_BTN: Option<fltk::button::Button> = None;
-static mut PING_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+static PING_BTN: Mutex<Option<fltk::button::Button>> = Mutex::new(None);
+static PING_ACCENT: Mutex<fltk::enums::Color> = Mutex::new(fltk::enums::Color::from_rgb(0, 0, 0));
 
 pub fn register_ping_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
-    unsafe {
-        PING_BTN = Some(btn);
-        PING_ACCENT = accent;
-    }
+    *PING_BTN.lock() = Some(btn);
+    *PING_ACCENT.lock() = accent;
+}
+
+pub fn get_ping_btn() -> Option<fltk::button::Button> {
+    PING_BTN.lock().clone()
 }
 
 /// Register the Scan toggle button for centralized state sync.
-static mut SCAN_BTN: Option<fltk::button::Button> = None;
-static mut SCAN_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+static SCAN_BTN: Mutex<Option<fltk::button::Button>> = Mutex::new(None);
+static SCAN_ACCENT: Mutex<fltk::enums::Color> = Mutex::new(fltk::enums::Color::from_rgb(0, 0, 0));
 
 pub fn register_scan_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
-    unsafe {
-        SCAN_BTN = Some(btn);
-        SCAN_ACCENT = accent;
-    }
+    *SCAN_BTN.lock() = Some(btn);
+    *SCAN_ACCENT.lock() = accent;
+}
+
+pub fn get_scan_btn() -> Option<fltk::button::Button> {
+    SCAN_BTN.lock().clone()
 }
 
 /// Register the TFTP Server toggle button for centralized state sync.
-static mut TFTPD_BTN: Option<fltk::button::Button> = None;
-static mut TFTPD_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+static TFTPD_BTN: Mutex<Option<fltk::button::Button>> = Mutex::new(None);
+static TFTPD_ACCENT: Mutex<fltk::enums::Color> = Mutex::new(fltk::enums::Color::from_rgb(0, 0, 0));
 
 pub fn register_tftpd_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
-    unsafe {
-        TFTPD_BTN = Some(btn);
-        TFTPD_ACCENT = accent;
-    }
+    *TFTPD_BTN.lock() = Some(btn);
+    *TFTPD_ACCENT.lock() = accent;
+}
+
+pub fn get_tftpd_btn() -> Option<fltk::button::Button> {
+    TFTPD_BTN.lock().clone()
 }
 
 /// Register the TFTP Client action button for centralized state sync.
-static mut TFTPC_BTN: Option<fltk::button::Button> = None;
-static mut TFTPC_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+static TFTPC_BTN: Mutex<Option<fltk::button::Button>> = Mutex::new(None);
+static TFTPC_ACCENT: Mutex<fltk::enums::Color> = Mutex::new(fltk::enums::Color::from_rgb(0, 0, 0));
 
 pub fn register_tftpc_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
-    unsafe {
-        TFTPC_BTN = Some(btn);
-        TFTPC_ACCENT = accent;
-    }
+    *TFTPC_BTN.lock() = Some(btn);
+    *TFTPC_ACCENT.lock() = accent;
+}
+
+pub fn get_tftpc_btn() -> Option<fltk::button::Button> {
+    TFTPC_BTN.lock().clone()
 }
 
 /// Register the Plan action button for centralized state sync.
-static mut PLAN_BTN: Option<fltk::button::Button> = None;
-static mut PLAN_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+static PLAN_BTN: Mutex<Option<fltk::button::Button>> = Mutex::new(None);
+static PLAN_ACCENT: Mutex<fltk::enums::Color> = Mutex::new(fltk::enums::Color::from_rgb(0, 0, 0));
 
 pub fn register_plan_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
-    unsafe {
-        PLAN_BTN = Some(btn);
-        PLAN_ACCENT = accent;
-    }
+    *PLAN_BTN.lock() = Some(btn);
+    *PLAN_ACCENT.lock() = accent;
+}
+
+pub fn get_plan_btn() -> Option<fltk::button::Button> {
+    PLAN_BTN.lock().clone()
 }
 
 /// Register the Chat action button for centralized state sync.
-static mut CHAT_BTN: Option<fltk::button::Button> = None;
-static mut CHAT_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+static CHAT_BTN: Mutex<Option<fltk::button::Button>> = Mutex::new(None);
+static CHAT_ACCENT: Mutex<fltk::enums::Color> = Mutex::new(fltk::enums::Color::from_rgb(0, 0, 0));
 
 pub fn register_chat_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
-    unsafe {
-        CHAT_BTN = Some(btn);
-        CHAT_ACCENT = accent;
-    }
+    *CHAT_BTN.lock() = Some(btn);
+    *CHAT_ACCENT.lock() = accent;
+}
+
+pub fn get_chat_btn() -> Option<fltk::button::Button> {
+    CHAT_BTN.lock().clone()
 }
 
 /// Register the Settings action button for centralized state sync.
-static mut SETTINGS_BTN: Option<fltk::button::Button> = None;
-static mut SETTINGS_ACCENT: fltk::enums::Color = fltk::enums::Color::from_rgb(0, 0, 0);
+static SETTINGS_BTN: Mutex<Option<fltk::button::Button>> = Mutex::new(None);
+static SETTINGS_ACCENT: Mutex<fltk::enums::Color> = Mutex::new(fltk::enums::Color::from_rgb(0, 0, 0));
 
 pub fn register_settings_button(btn: fltk::button::Button, accent: fltk::enums::Color) {
-    unsafe {
-        SETTINGS_BTN = Some(btn);
-        SETTINGS_ACCENT = accent;
-    }
+    *SETTINGS_BTN.lock() = Some(btn);
+    *SETTINGS_ACCENT.lock() = accent;
+}
+
+pub fn get_settings_btn() -> Option<fltk::button::Button> {
+    SETTINGS_BTN.lock().clone()
 }
 
 /// Trigger the main button of a specific tab by index (0=Ping, 1=Scan, 2=HTTP, 3=TFTPD, 4=TFTPC, 5=PLAN, 6=CHAT, 7=Settings)
 pub fn trigger_tab_button(tab_index: usize) {
-    unsafe {
-        let btn = match tab_index {
-            0 => PING_BTN.as_mut(),
-            1 => SCAN_BTN.as_mut(),
-            2 => HTTP_BTN.as_mut(),
-            3 => TFTPD_BTN.as_mut(),
-            4 => TFTPC_BTN.as_mut(),
-            5 => PLAN_BTN.as_mut(),
-            6 => CHAT_BTN.as_mut(),
-            7 => SETTINGS_BTN.as_mut(),
-            _ => None,
-        };
-        if let Some(btn) = btn {
-            btn.do_callback();
-        }
+    let btn = match tab_index {
+        0 => PING_BTN.lock().clone(),
+        1 => SCAN_BTN.lock().clone(),
+        2 => HTTP_BTN.lock().clone(),
+        3 => TFTPD_BTN.lock().clone(),
+        4 => TFTPC_BTN.lock().clone(),
+        5 => PLAN_BTN.lock().clone(),
+        6 => CHAT_BTN.lock().clone(),
+        7 => SETTINGS_BTN.lock().clone(),
+        _ => None,
+    };
+    if let Some(mut btn) = btn {
+        btn.do_callback();
     }
 }
-static mut REFRESH_RUNNING: bool = true;
+
+static REFRESH_RUNNING: AtomicBool = AtomicBool::new(true);
 
 /// Start the centralized refresh loop. Fires every 100ms (10Hz).
 pub fn start_refresh_loop() {
     fn tick() {
-        unsafe {
-            if !REFRESH_RUNNING {
-                return; // Don't reschedule if stopped
-            }
+        if !REFRESH_RUNNING.load(Ordering::SeqCst) {
+            return;
         }
         do_refresh();
         fltk::app::repeat_timeout2(0.1, tick);
@@ -171,9 +180,7 @@ pub fn start_refresh_loop() {
 
 /// Stop the refresh loop. Call before exiting.
 pub fn stop_refresh_loop() {
-    unsafe {
-        REFRESH_RUNNING = false;
-    }
+    REFRESH_RUNNING.store(false, Ordering::SeqCst);
 }
 
 fn do_refresh() {
@@ -253,7 +260,8 @@ fn do_refresh() {
     };
 
     // Phase 2: Update displays without holding the lock
-    let Some(store) = (unsafe { DISPLAYS.as_ref() }) else { return };
+    let displays_guard = DISPLAYS.lock();
+    let Some(store) = displays_guard.as_ref() else { return };
     let mut map = store.borrow_mut();
 
     for (key, value) in &snapshot.0 {
@@ -274,7 +282,7 @@ fn do_refresh() {
     drop(map);
 
     // Update browsers (tftpd_dirs and http_items)
-    if let Some(browser_store) = unsafe { BROWSERS.as_ref() } {
+    if let Some(browser_store) = BROWSERS.lock().as_ref() {
         let mut browser_map = browser_store.borrow_mut();
         for (key, value) in &snapshot.0 {
             if *key == "tftpd_dirs" {
@@ -296,7 +304,7 @@ fn do_refresh() {
     // Update HTTP browser with items and selection
     if let Some(state) = crate::ui_state::UiState::global() {
         if let Ok(s) = state.lock() {
-            if let Some(browser) = unsafe { HTTP_BROWSER.as_mut() } {
+            if let Some(browser) = HTTP_BROWSER.lock().as_mut() {
                 browser.clear();
                 let selected_idx = s.http_selected_idx.unwrap_or(0);
                 for (i, item) in s.http_items.iter().enumerate() {
@@ -323,39 +331,39 @@ fn do_refresh() {
     // Phase 3: Sync button states (only when explicitly updated)
     // Ping button
     if let Some(running) = snapshot.1 {
-        if let Some(btn) = unsafe { PING_BTN.as_mut() } {
+        if let Some(btn) = PING_BTN.lock().as_mut() {
             if running {
                 btn.set_label("Stop");
                 btn.set_color(fltk::enums::Color::from_hex(HTTP_STOP_COLOR));
             } else {
                 btn.set_label("Start");
-                btn.set_color(unsafe { PING_ACCENT });
+                btn.set_color(*PING_ACCENT.lock());
             }
             btn.redraw();
         }
     }
     // HTTP button
     if let Some(running) = snapshot.2 {
-        if let Some(btn) = unsafe { HTTP_BTN.as_mut() } {
+        if let Some(btn) = HTTP_BTN.lock().as_mut() {
             if running {
                 btn.set_label("Stop");
                 btn.set_color(fltk::enums::Color::from_hex(HTTP_STOP_COLOR));
             } else {
                 btn.set_label("Start");
-                btn.set_color(unsafe { HTTP_ACCENT });
+                btn.set_color(*HTTP_ACCENT.lock());
             }
             btn.redraw();
         }
     }
     // Scan button
     if let Some(running) = snapshot.3 {
-        if let Some(btn) = unsafe { SCAN_BTN.as_mut() } {
+        if let Some(btn) = SCAN_BTN.lock().as_mut() {
             if running {
                 btn.set_label("Stop");
                 btn.set_color(fltk::enums::Color::from_hex(HTTP_STOP_COLOR));
             } else {
                 btn.set_label("Start");
-                btn.set_color(unsafe { SCAN_ACCENT });
+                btn.set_color(*SCAN_ACCENT.lock());
             }
             btn.redraw();
         }

@@ -3,7 +3,8 @@
 //! This module provides thread-safe access to UI text buffers
 //! so services can update the display without direct FLTK access.
 
-use std::sync::{Arc, Mutex};
+use parking_lot::Mutex;
+use std::sync::{Arc, Mutex as StdMutex};
 use std::collections::HashMap;
 
 /// Trim a string to at most `max_lines` lines, removing oldest lines from the front.
@@ -30,10 +31,10 @@ fn trim_lines(s: &mut String, max_lines: usize) {
 }
 
 /// Global main window for updating title
-static mut MAIN_WINDOW: Option<fltk::window::Window> = None;
+static MAIN_WINDOW: Mutex<Option<fltk::window::Window>> = Mutex::new(None);
 
 /// Global UI state singleton
-static mut GLOBAL_UI_STATE: Option<Arc<Mutex<UiState>>> = None;
+static GLOBAL_UI_STATE: Mutex<Option<Arc<StdMutex<UiState>>>> = Mutex::new(None);
 
 /// UI State containing all text buffers
 #[derive(Debug, Default)]
@@ -84,25 +85,21 @@ impl UiState {
     }
 
     pub fn set_main_window(window: fltk::window::Window) {
-        unsafe {
-            MAIN_WINDOW = Some(window);
-        }
+        *MAIN_WINDOW.lock() = Some(window);
     }
 
     pub fn get_main_window() -> Option<fltk::window::Window> {
-        unsafe { MAIN_WINDOW.clone() }
+        MAIN_WINDOW.lock().clone()
     }
 
-    pub fn init() -> Arc<Mutex<UiState>> {
-        let state = Arc::new(Mutex::new(UiState::new()));
-        unsafe {
-            GLOBAL_UI_STATE = Some(state.clone());
-        }
+    pub fn init() -> Arc<StdMutex<UiState>> {
+        let state = Arc::new(StdMutex::new(UiState::new()));
+        *GLOBAL_UI_STATE.lock() = Some(state.clone());
         state
     }
 
-    pub fn global() -> Option<Arc<Mutex<UiState>>> {
-        unsafe { GLOBAL_UI_STATE.clone() }
+    pub fn global() -> Option<Arc<StdMutex<UiState>>> {
+        GLOBAL_UI_STATE.lock().clone()
     }
 
     pub fn append_ping(&mut self, line: &str) {

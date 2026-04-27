@@ -90,6 +90,7 @@ pub struct DownloadProgress {
 }
 
 /// Detect current platform identifier
+#[allow(unreachable_code)]
 fn current_platform() -> &'static str {
     #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
     return "windows-x64";
@@ -101,5 +102,13 @@ fn current_platform() -> &'static str {
     return "macos-x64";
     #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
     return "macos-arm64";
-    "unknown"
+    #[cfg(not(any(
+        all(target_os = "windows", target_arch = "x86_64"),
+        all(target_os = "linux", target_arch = "x86_64"),
+        all(target_os = "linux", target_arch = "aarch64"),
+        all(target_os = "macos", target_arch = "x86_64"),
+        all(target_os = "macos", target_arch = "aarch64")
+    )))]
+    return "unsupported";
+    unreachable!();
 }
