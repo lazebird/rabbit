@@ -3,7 +3,7 @@
 use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
 use axum::{
     body::HttpBody,
-    extract::{ConnectInfo, Multipart, Request},
+    extract::{Multipart, Request},
     middleware::Next,
     response::{Html, IntoResponse, Response},
     routing::post,

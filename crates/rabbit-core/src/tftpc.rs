@@ -3,10 +3,8 @@
 use crate::{Result, ServiceError, ui_channel::{UiData, Module}};
 use rabbit_platform::config::{get_integer, get_string};
 use std::path::PathBuf;
-use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::UdpSocket;
-use tokio::sync::RwLock;
 use tracing::{error, info};
 
 const TFTP_OPCODE_RRQ: u16 = 1;
@@ -146,7 +144,7 @@ async fn download_from(&self, server_addr: &str, remote_filename: &str, local_pa
         Ok(transfer_id)
     }
 
-    async fn do_upload(server: &str, local: &str, remote: &str, block_size: usize, timeout_secs: u64) -> Result<u64> {
+    async fn do_upload(server: &str, local: &str, remote: &str, block_size: usize, _timeout_secs: u64) -> Result<u64> {
         let local_file = PathBuf::from(local);
         if !local_file.exists() {
             return Err(ServiceError::Io(std::io::Error::new(
@@ -219,7 +217,7 @@ async fn download_from(&self, server_addr: &str, remote_filename: &str, local_pa
         Ok(file_size)
     }
 
-    async fn do_download(server: &str, remote: &str, local: &str, block_size: usize, timeout_secs: u64) -> Result<u64> {
+    async fn do_download(server: &str, remote: &str, local: &str, block_size: usize, _timeout_secs: u64) -> Result<u64> {
         let socket = UdpSocket::bind("0.0.0.0:0").await?;
         socket.connect(server).await?;
 

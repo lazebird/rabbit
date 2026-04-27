@@ -41,8 +41,6 @@ struct ScanResult {
     pub online: bool,
     pub hostname: Option<String>,
     pub mac_address: Option<String>,
-    pub response_time_ms: Option<f64>,
-    pub open_ports: Vec<u16>,
 }
 
 /// IP Scanner service
@@ -271,7 +269,7 @@ impl Default for ScanService {
 
 /// Scan a single host with parallel port probing
 async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
-    let start = tokio::time::Instant::now();
+    let _start = tokio::time::Instant::now();
 
     // If specific port given, try TCP connect
     // If port == 0, do parallel ping (ICMP-like via multi-port TCP)
@@ -284,13 +282,6 @@ async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
             tokio::net::TcpStream::connect(&addr)
         ).await;
         matches!(&tcp_result, Ok(Ok(_)))
-    };
-
-    // Get response time from parallel ping if that was used
-    let response_time_ms = if port == 0 {
-        ping_host_parallel(ip, timeout_ms).await.1
-    } else {
-        None
     };
 
     // Try to resolve hostname
@@ -312,8 +303,6 @@ ScanResult {
         online,
         hostname,
         mac_address,
-        response_time_ms,
-        open_ports: vec![],
     }
 }
 

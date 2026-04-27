@@ -602,7 +602,7 @@ Ok(Self {
         });
 
         // Spawn event handler task
-        let config = self.view_model.read().await.get_config();
+        let _config = self.view_model.read().await.get_config();
 
         let app_clone = Arc::new(RwLock::new(AppHandle {
             view_model: self.view_model.clone(),
