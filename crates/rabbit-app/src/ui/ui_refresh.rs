@@ -239,22 +239,24 @@ fn do_refresh() {
                         s.tftpd_dirs.join("\n") + "\n"
                     }
                 }
-                "ping_running" => s.ping_running.to_string(),
-                "scan_running" => s.scan_running.to_string(),
-                "http_running" => s.http_running.to_string(),
+                "ping_running" | "scan_running" | "http_running" => {
+                    let val = s.updated.get(k).copied().unwrap_or(false);
+                    val.to_string()
+                }
                 _ => String::new(),
             };
             (k, v)
         }).collect();
 
-        let ping_running = s.ping_running;
-        let http_running = s.http_running;
-        let scan_running = s.scan_running;
-        
         let ping_updated = keys.contains(&"ping_running");
         let http_updated = keys.contains(&"http_running");
         let scan_updated = keys.contains(&"scan_running");
-
+        
+        // 使用 updated 标志作为运行状态
+        let ping_running = ping_updated;
+        let http_running = http_updated;
+        let scan_running = scan_updated;
+        
         drop(s);
         (data, if ping_updated { Some(ping_running) } else { None }, if http_updated { Some(http_running) } else { None }, if scan_updated { Some(scan_running) } else { None })
     };

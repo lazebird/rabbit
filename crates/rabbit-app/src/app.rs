@@ -680,11 +680,12 @@ Ok(Self {
     async fn cleanup(&self) -> anyhow::Result<()> {
         info!("Cleaning up resources");
 
-        // Get current running states before stopping services
-        let ping_running = self.view_model.read().await.is_ping_running();
-        let http_running = self.view_model.read().await.is_http_running();
-        let tftp_running = self.view_model.read().await.is_tftp_server_running();
-        let chat_running = self.view_model.read().await.is_chat_running();
+        // Get config for running states (已在配置中持久化)
+        let config = self.view_model.read().await.get_config();
+        let ping_running = config.modules.get_bool("ping", "running").unwrap_or(false);
+        let http_running = config.modules.get_bool("http", "running").unwrap_or(false);
+        let tftp_running = config.modules.get_bool("tftpd", "running").unwrap_or(false);
+        let chat_running = config.modules.get_bool("chat", "running").unwrap_or(false);
 
         // Stop all services
         self.ping_service.write().await.update().await.ok();
@@ -693,20 +694,20 @@ Ok(Self {
         self.plan_service.write().await.update().await.ok();
         self.chat_service.write().await.update().await.ok();
 
-        // Save running states to configuration
+        // 已停止，将配置中的 running 设为 false
         use rabbit_models::config::ConfigValue;
         let mut config = self.view_model.read().await.get_config();
-        config.modules.insert("ping", "running", ConfigValue::Boolean(ping_running));
-        config.modules.insert("http", "running", ConfigValue::Boolean(http_running));
-        config.modules.insert("tftpd", "running", ConfigValue::Boolean(tftp_running));
-        config.modules.insert("chat", "running", ConfigValue::Boolean(chat_running));
+        config.modules.insert("ping", "running", ConfigValue::Boolean(false));
+        config.modules.insert("http", "running", ConfigValue::Boolean(false));
+        config.modules.insert("tftpd", "running", ConfigValue::Boolean(false));
+        config.modules.insert("chat", "running", ConfigValue::Boolean(false));
 
         self.view_model.write().await.update_config(config.clone());
 
         rabbit_platform::config::update_config(|cfg| {
-            cfg.modules.insert("ping", "running", ConfigValue::Boolean(ping_running));
-            cfg.modules.insert("http", "running", ConfigValue::Boolean(http_running));
-            cfg.modules.insert("tftpd", "running", ConfigValue::Boolean(tftp_running));
+            cfg.modules.insert("ping", "running", ConfigValue::Boolean(false));
+            cfg.modules.insert("http", "running", ConfigValue::Boolean(false));
+            cfg.modules.insert("tftpd", "running", ConfigValue::Boolean(false));
             cfg.modules.insert("chat", "running", ConfigValue::Boolean(chat_running));
         }).ok();
         
@@ -869,7 +870,8 @@ impl EventHandler for AppHandle {
             UiEvent::ModuleToggle { module } => {
                 match module.as_str() {
                     "ping" => {
-                        let is_running = self.view_model.read().await.is_ping_running();
+                        let config = self.view_model.read().await.get_config();
+                        let is_running = config.modules.get_bool("ping", "running").unwrap_or(false);
                         if is_running {
                             // Stop ping
                             info!("Stopping ping service");
@@ -877,7 +879,6 @@ impl EventHandler for AppHandle {
                                 handle.abort();
                             }
                             let _ = self.ping_service.write().await.update().await;
-                            self.view_model.write().await.set_ping_running(false);
                             crate::ui_state::set_ping_running(false);
                             // Reset window title
                             if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
@@ -910,11 +911,9 @@ impl EventHandler for AppHandle {
                             let result = self.ping_service.write().await.update().await;
                             match result {
                                 ServiceUpdateResult::Started(_) => {
-                                    self.view_model.write().await.set_ping_running(true);
                                     crate::ui_state::set_ping_running(true);
                                 }
                                 ServiceUpdateResult::Stopped(_) => {
-                                    self.view_model.write().await.set_ping_running(false);
                                     crate::ui_state::set_ping_running(false);
                                 }
                                 _ => {}
@@ -922,23 +921,21 @@ impl EventHandler for AppHandle {
                         }
                     }
                     "scan" => {
-                        let is_running = self.view_model.read().await.is_scan_running();
+                        let config = self.view_model.read().await.get_config();
+                        let is_running = config.modules.get_bool("scan", "running").unwrap_or(false);
                         if is_running {
                             info!("Stopping scan service");
                             self.scan_service.write().await.cancel().await?;
-                            self.view_model.write().await.set_scan_running(false);
                             crate::ui_state::set_scan_running(false);
                         } else {
-                            // Use unified update interface - service handles start/stop internally
+// Use unified update interface - service handles start/stop internally
                             info!("Starting scan service");
                             let result = self.scan_service.write().await.update().await;
                             match result {
                                 ServiceUpdateResult::Started(_) => {
-                                    self.view_model.write().await.set_scan_running(true);
                                     crate::ui_state::set_scan_running(true);
                                 }
                                 ServiceUpdateResult::Stopped(_) => {
-                                    self.view_model.write().await.set_scan_running(false);
                                     crate::ui_state::set_scan_running(false);
                                 }
                                 _ => {}
@@ -946,16 +943,13 @@ impl EventHandler for AppHandle {
                             *self.scan_task.write().await = None;
                         }
                     }
-"http" => {
-                        // Use unified update interface
+                    "http" => {
                         let result = self.http_service.write().await.update().await;
                         match result {
                             ServiceUpdateResult::Started(_) => {
-                                self.view_model.write().await.set_http_running(true);
                                 crate::ui_state::set_http_running(true);
                             }
                             ServiceUpdateResult::Stopped(_) => {
-                                self.view_model.write().await.set_http_running(false);
                                 crate::ui_state::set_http_running(false);
                                 crate::ui_state::append_http_log("HTTP server stopped.\r\n");
                             }
@@ -963,14 +957,13 @@ impl EventHandler for AppHandle {
                         }
                     }
                     "tftpd" => {
-                        // Use unified update interface
                         let result = self.tftp_server_service.write().await.update().await;
                         match result {
                             ServiceUpdateResult::Started(_) => {
-                                self.view_model.write().await.set_tftp_server_running(true);
+                                crate::ui_state::set_http_running(true);
                             }
                             ServiceUpdateResult::Stopped(_) => {
-                                self.view_model.write().await.set_tftp_server_running(false);
+                                crate::ui_state::set_http_running(false);
                                 crate::ui_state::append_tftpd_log("TFTP server stopped.\r\n");
                             }
                             _ => {}
@@ -981,10 +974,9 @@ impl EventHandler for AppHandle {
                         let result = self.chat_service.write().await.update().await;
                         match result {
                             ServiceUpdateResult::Started(_) => {
-                                self.view_model.write().await.set_chat_running(true);
+                                // Chat running state tracked by service
                             }
                             ServiceUpdateResult::Stopped(_) => {
-                                self.view_model.write().await.set_chat_running(false);
                                 crate::ui_state::set_chat_users(&[]);
                             }
                             _ => {}
@@ -1131,8 +1123,8 @@ impl EventHandler for AppHandle {
                 let http_shell = modules.get_bool("http", "shell").unwrap_or(false);
                 let new_ping_interval = modules.get_integer("ping", "interval").unwrap_or(1000);
                 
-                // Check if ping is currently running
-                let ping_was_running = self.view_model.read().await.is_ping_running();
+                // Check if ping is currently running (从配置读取)
+                let ping_was_running = modules.get_bool("ping", "running").unwrap_or(false);
                 
                 // Apply autostart setting
                 if let Err(e) = rabbit_platform::autostart::set_autostart(autostart) {
@@ -1195,8 +1187,6 @@ async fn handle_ui_data(
             match module {
                 Module::Ping => {
                     crate::ui_state::set_ping_running(running);
-                    let mut vm = _view_model.write().await;
-                    vm.set_ping_running(running);
                     if !running {
                         if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
                             fltk::app::awake_callback(move || {
@@ -1207,8 +1197,6 @@ async fn handle_ui_data(
                 }
                 Module::Scan => {
                     crate::ui_state::set_scan_running(running);
-                    let mut vm = _view_model.write().await;
-                    vm.set_scan_running(running);
                 }
                 _ => {}
             }

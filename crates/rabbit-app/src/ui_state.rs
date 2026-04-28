@@ -41,22 +41,18 @@ static GLOBAL_UI_STATE: Mutex<Option<Arc<StdMutex<UiState>>>> = Mutex::new(None)
 pub struct UiState {
     pub ping_output: String,
     pub ping_stats: String,
-    pub ping_running: bool,
     pub scan_output: String,
-    pub scan_running: bool,
     pub http_log: String,
-    pub http_running: bool,
     pub http_items: Vec<String>,
-    pub http_selected_idx: Option<i32>,  // Track selected item index (1-based)
+    pub http_selected_idx: Option<i32>,
     pub tftpd_log: String,
     pub tftpd_dirs: Vec<String>,
-    pub tftpd_selected_idx: Option<i32>,  // Track selected directory index (1-based)
+    pub tftpd_selected_idx: Option<i32>,
     pub tftpc_log: String,
     pub plan_list: String,
     pub chat_messages: String,
     pub chat_users: String,
     pub settings_output: String,
-    // Flags to track which buffers have been updated
     pub updated: HashMap<String, bool>,
 }
 
@@ -65,11 +61,8 @@ impl UiState {
         Self {
             ping_output: String::new(),
             ping_stats: String::from("Ready"),
-            ping_running: false,
             scan_output: String::new(),
-            scan_running: false,
             http_log: String::new(),
-            http_running: false,
             http_items: Vec::new(),
             http_selected_idx: None,
             tftpd_log: String::new(),
@@ -204,25 +197,6 @@ pub fn set_scan_output(text: &str) {
     }
 }
 
-pub fn set_scan_running(running: bool) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.scan_running = running;
-            s.updated.insert("scan_running".to_string(), true);
-        }
-    }
-}
-
-pub fn set_ping_running(running: bool) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.ping_running = running;
-            s.updated.insert("ping_running".to_string(), true);
-            tracing::info!("set_ping_running: {} (updated marked true)", running);
-        }
-    }
-}
-
 pub fn append_http_log(line: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
@@ -231,13 +205,35 @@ pub fn append_http_log(line: &str) {
     }
 }
 
-pub fn set_http_running(running: bool) {
-    tracing::info!("set_http_running: {}", running);
+pub fn set_http_log(text: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
-            s.http_running = running;
-            s.updated.insert("http_running".to_string(), true);
-            tracing::info!("inserted: updated contains http_running={}", s.updated.get("http_running").copied().unwrap_or(false));
+            s.http_log = text.to_string();
+            s.updated.insert("http_log".to_string(), true);
+        }
+    }
+}
+
+pub fn set_scan_running(running: bool) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.updated.insert("scan_running".to_string(), running);
+        }
+    }
+}
+
+pub fn set_ping_running(running: bool) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.updated.insert("ping_running".to_string(), running);
+        }
+    }
+}
+
+pub fn set_http_running(running: bool) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.updated.insert("http_running".to_string(), running);
         }
     }
 }

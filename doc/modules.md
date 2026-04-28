@@ -47,10 +47,10 @@ rabbit/
 │   │       │   ├── styles.rs    # 样式定义
 │   │       │   └── ui_refresh.rs # 集中式 UI 刷新
 │   │       └── upgrade/         # 升级模块
-│   │           ├── mod.rs
-│   │           ├── models.rs
-│   │           ├── downloader.rs
-│   │           └── installer.rs
+│   │           ├── mod.rs       # 升级模块入口
+│   │           ├── models.rs   # 版本数据结构
+│   │           ├── downloader.rs # 下载器
+│   │           └── installer.rs   # 安装器
 │   │
 │   ├── rabbit-core/       # 业务服务
 │   │   └── src/
@@ -104,10 +104,52 @@ rabbit/
 | `main.rs` | 程序入口、Tokio 运行时初始化、日志初始化 |
 | `lib.rs` | 库入口、App 导出 |
 | `app.rs` | 主应用、事件处理、生命周期管理、UI channel 接收 |
-| `view_model.rs` | 统一配置管理 |
+| `view_model.rs` | 统一配置管理、运行状态跟踪 |
 | `ui_state.rs` | UI 状态同步（全局状态、刷新标记） |
 | `ui_events.rs` | UI 事件系统（事件发送/接收） |
 | `ui/ui_refresh.rs` | 集中式 UI 刷新（100ms 定时器） |
+
+### AppViewModel
+
+```rust
+pub struct AppViewModel {
+    config: AppConfig,  // 仅含配置，无运行时状态
+}
+
+impl AppViewModel {
+    pub fn new(config: AppConfig) -> Self
+    pub fn get_config(&self) -> AppConfig
+    pub fn update_config(&mut self, config: AppConfig)
+    pub fn save_settings(&mut self) -> Result<()>
+    pub fn update_and_save(&mut self, config: AppConfig) -> Result<()>
+    pub fn update_global(&mut self, language, theme, systray, top, autostart, autoupdate) -> Result<()>
+    pub fn update_last_tab(&mut self, tab: usize) -> Result<()>
+}
+```
+
+运行状态由各 Service 内部管理，通过 config.modules.get_bool() 获取配置中的持久化状态。
+
+### App
+
+```rust
+pub struct App {
+    view_model: Arc<RwLock<AppViewModel>>,
+    ping_service: Arc<RwLock<PingService>>,
+    http_service: Arc<RwLock<HttpService>>,
+    tftp_server_service: Arc<RwLock<TftpdService>>,
+    tftp_client_service: Arc<RwLock<TftpcService>>,
+    plan_service: Arc<RwLock<PlanService>>,
+    chat_service: Arc<RwLock<ChatService>>,
+    scan_service: Arc<RwLock<ScanService>>,
+    shutdown_flag: Arc<AtomicBool>,
+    // ... receivers
+}
+
+impl App {
+    pub async fn new() -> anyhow::Result<Self>
+    pub async fn run(&mut self) -> anyhow::Result<()>
+}
+```
 
 ### 对外接口
 
@@ -119,6 +161,21 @@ pub async fn run(&mut self) -> anyhow::Result<()>
 // ViewModel 配置访问
 pub fn get_config(&self) -> AppConfig
 pub fn update_config(&mut self, config: AppConfig)
+```
+
+### Upgrade Module
+
+```rust
+// Upgrade 模块接口
+pub use models::{UpdateStatus, VersionsManifest, PlatformInfo};
+pub use downloader::{download_update, DownloadProgress};
+pub use installer::{install_update, get_current_exe_path};
+
+// 主要类型
+pub struct VersionsManifest { ... }
+pub struct PlatformInfo { ... }
+pub enum UpdateStatus { NoUpdate, Available, Downloading, Ready, Installing, Done }
+pub struct DownloadProgress { bytes_downloaded, total_bytes, ... }
 ```
 
 ### UI Channel 接收
@@ -271,10 +328,10 @@ pub enum UiData {
     Error(Module, String),
     
     // 通用状态更新
-    ServiceStatus(Module, bool),
+    ServiceStatus(Module, bool), // (模块, 是否运行中)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Module {
     Ping, Http, Tftpd, Tftpc, Scan, Chat, Plan,
 }
@@ -386,6 +443,8 @@ rabbit_platform
 
 ## 配置访问方式
 
+### 通用模块配置
+
 所有模块配置统一使用 HashMap 方式：
 
 ```rust
@@ -398,8 +457,22 @@ config.modules.get_bool("ping", "stoponloss")
 config.modules.insert("global", "systray", ConfigValue::Boolean(true))
 ```
 
+### TFTP 配置字段
+
+| 模块 | 字段 | 类型 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| tftpd | timeout | Integer | 200 | 超时秒数 |
+| tftpd | maxretry | Integer | 10 | 最大重试次数 |
+| tftpd | blksize | Integer | 512 | 块大小 |
+| tftpd | override_conflicts | Boolean | false | 覆盖冲突文件 |
+| tftpd | qsize | Integer | 2000 | 队列大小 |
+| tftpd | qtout | Integer | 1000 | 队列超时(ms) |
+| tftpd | fslog | Boolean | false | 文件服务日志 |
+| tftpc | server_addr | String | "" | 服务器地址 |
+| tftpc | port | Integer | 69 | 服务器端口 |
+
 ---
 
-文档版本：4.0
+文档版本：4.3
 创建日期：2026-04-16
-更新日期：2026-04-25
+更新日期：2026-04-28
