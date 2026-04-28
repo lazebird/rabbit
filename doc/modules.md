@@ -151,8 +151,17 @@ pub struct App {
     plan_service: Arc<RwLock<PlanService>>,
     chat_service: Arc<RwLock<ChatService>>,
     scan_service: Arc<RwLock<ScanService>>,
+    ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
+    scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
     shutdown_flag: Arc<AtomicBool>,
-    // ... receivers
+    // UI data receivers
+    http_rx: Option<mpsc::Receiver<UiData>>,
+    ping_rx: Option<mpsc::Receiver<UiData>>,
+    scan_rx: Option<mpsc::Receiver<UiData>>,
+    tftpd_rx: Option<mpsc::Receiver<UiData>>,
+    tftpc_rx: Option<mpsc::Receiver<UiData>>,
+    chat_rx: Option<mpsc::Receiver<UiData>>,
+    plan_rx: Option<mpsc::Receiver<UiData>>,
 }
 
 impl App {
@@ -211,11 +220,10 @@ async fn handle_ui_data(data: UiData, view_model: &Arc<RwLock<AppViewModel>>)
 所有服务实现统一接口：
 
 ```rust
-pub async fn init(&mut self) -> Result<()>     // 初始化
-pub async fn update(&mut self) -> ServiceUpdateResult  // 切换状态
-pub async fn is_running(&self) -> bool         // 运行状态
-pub async fn stop(&mut self) -> Result<()>     // 停止
+pub async fn update(&mut self) -> ServiceUpdateResult  // 切换状态 (启动/停止)
 ```
+
+> 注：init() 已在 0.2.0 中移除，各服务按需懒初始化
 
 ### Channel 推送接口
 
@@ -223,6 +231,15 @@ pub async fn stop(&mut self) -> Result<()>     // 停止
 
 ```rust
 pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+```
+
+### UiData/Module 来源
+
+`UiData` 和 `Module` 枚举定义在 `rabbit-models`，`rabbit-core` 负责 re-export：
+
+```rust
+// rabbit-core/src/lib.rs
+pub use ui_channel::{UiData, Module};
 ```
 
 ### PingService
@@ -237,11 +254,6 @@ pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
 ```rust
 pub fn new() -> Self
 pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn init(&mut self) -> Result<()>
-pub async fn start(&mut self) -> Result<()>
-pub async fn stop(&mut self) -> Result<()>
-pub async fn is_running(&self) -> bool
-pub async fn add_target(&self, target: PingTarget) -> Result<()>
 pub async fn update(&mut self) -> ServiceUpdateResult
 ```
 
@@ -253,6 +265,13 @@ pub async fn update(&mut self) -> ServiceUpdateResult
 | 职责 | HTTP 文件服务器 |
 | 依赖 | `axum` |
 
+**接口**：
+```rust
+pub fn new() -> Self
+pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+pub async fn update(&mut self) -> ServiceUpdateResult
+```
+
 ### TftpdService
 
 | 项目 | 说明 |
@@ -261,12 +280,27 @@ pub async fn update(&mut self) -> ServiceUpdateResult
 | 职责 | TFTP 服务器 |
 | 依赖 | `async-tftp` |
 
+**接口**：
+```rust
+pub fn new() -> Self
+pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+pub async fn update(&mut self) -> ServiceUpdateResult
+```
+
 ### TftpcService
 
 | 项目 | 说明 |
 |------|------|
 | 文件 | `src/tftpc.rs` |
 | 职责 | TFTP 客户端 |
+
+**接口**：
+```rust
+pub fn new() -> Self
+pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+pub async fn put(&self, local_path: &str, remote_filename: &str) -> Result<String>
+pub async fn get(&self, remote_filename: &str, local_path: &str) -> Result<String>
+```
 
 ### ScanService
 
@@ -275,6 +309,13 @@ pub async fn update(&mut self) -> ServiceUpdateResult
 | 文件 | `src/scan.rs` |
 | 职责 | IP 扫描 |
 
+**接口**：
+```rust
+pub fn new() -> Self
+pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+pub async fn update(&mut self) -> ServiceUpdateResult
+```
+
 ### ChatService
 
 | 项目 | 说明 |
@@ -282,12 +323,30 @@ pub async fn update(&mut self) -> ServiceUpdateResult
 | 文件 | `src/chat.rs` |
 | 职责 | 局域网聊天 |
 
+**接口**：
+```rust
+pub fn new() -> Self
+pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+pub async fn update(&mut self) -> ServiceUpdateResult
+pub async fn send_text(&self, content: &str) -> Result<()>
+pub async fn refresh_users(&self) -> Result<()>
+```
+
 ### PlanService
 
 | 项目 | 说明 |
 |------|------|
 | 文件 | `src/plan.rs` |
 | 职责 | 定时提醒 |
+
+**接口**：
+```rust
+pub fn new() -> Self
+pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+pub async fn update(&mut self) -> ServiceUpdateResult
+pub async fn add_task(&self, date: &str, time: &str, cycle: i32, unit: &str, msg: &str) -> Result<()>
+pub async fn remove_task(&self, id: &str) -> Result<()>
+```
 
 ### UiChannel 模块
 
@@ -483,6 +542,6 @@ config.modules.insert("global", "systray", ConfigValue::Boolean(true))
 
 ---
 
-文档版本：4.4
+文档版本：5.0
 创建日期：2026-04-16
 更新日期：2026-04-28

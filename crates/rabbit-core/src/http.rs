@@ -92,12 +92,6 @@ impl HttpService {
         }
     }
 
-    /// Initialize - now a no-op as config is pulled on start
-    pub async fn init(&mut self) -> Result<()> {
-        info!("HTTP service initialized");
-        Ok(())
-    }
-
     /// Start the HTTP server
     pub async fn start(&mut self) -> Result<()> {
         let mut state = self.state.write().await;
@@ -230,15 +224,7 @@ impl HttpService {
         }
     }
 
-    pub fn is_running(&self) -> bool {
-        if let Ok(s) = self.state.try_read() {
-            *s == HttpServerState::Running
-        } else {
-            false
-        }
-    }
-
-    pub async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> Result<()> {
         if let Some(tx) = self.shutdown_tx.take() {
             let _ = tx.send(()).await;
         }

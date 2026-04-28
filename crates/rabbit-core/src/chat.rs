@@ -90,12 +90,6 @@ impl ChatService {
         }
     }
 
-    /// Initialize - now a no-op as config is pulled on start
-    pub async fn init(&mut self) -> Result<()> {
-        info!("Chat service initialized");
-        Ok(())
-    }
-
     /// Start the chat service
     pub async fn start(&mut self) -> Result<()> {
         if self.recv_handle.is_some() {
@@ -185,11 +179,7 @@ impl ChatService {
         }
     }
 
-    pub fn is_running(&self) -> bool {
-        self.recv_handle.is_some()
-    }
-
-    pub async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> Result<()> {
         self.send_message("Left the chat", MessageType::Announcement).await.ok();
 
         if let Some(tx) = self.message_tx.take() {

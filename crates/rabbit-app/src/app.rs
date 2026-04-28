@@ -70,27 +70,20 @@ impl App {
         let (plan_tx, plan_rx) = mpsc::channel(100);
 
         // Create services with channels
-        let mut ping_service = PingService::with_channel(ping_tx);
-        ping_service.init().await?;
+        let ping_service = PingService::with_channel(ping_tx);
 
-        let mut http_service = HttpService::with_channel(http_tx);
-        http_service.init().await?;
+        let http_service = HttpService::with_channel(http_tx);
 
-        let mut tftp_server_service = TftpdService::with_channel(tftpd_tx);
-        tftp_server_service.init().await?;
+        let tftp_server_service = TftpdService::with_channel(tftpd_tx);
         
-        let mut tftp_client_service = TftpcService::with_channel(tftpc_tx);
-        tftp_client_service.init().await?;
+        let tftp_client_service = TftpcService::with_channel(tftpc_tx);
 
         let mut plan_service = PlanService::with_channel(plan_tx);
-        plan_service.init().await?;
         let _ = plan_service.update().await;
 
-        let mut chat_service = ChatService::with_channel(chat_tx);
-        chat_service.init().await?;
+        let chat_service = ChatService::with_channel(chat_tx);
 
-        let mut scan_service = ScanService::with_channel(scan_tx);
-        scan_service.init().await?;
+        let scan_service = ScanService::with_channel(scan_tx);
 
 
         // Create view model

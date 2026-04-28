@@ -82,12 +82,6 @@ impl ScanService {
         }
     }
 
-    /// Initialize the service
-    pub async fn init(&mut self) -> Result<()> {
-        info!("Scan service initialized");
-        Ok(())
-    }
-
     fn load_range_from_config(&self) -> Option<ScanRange> {
         let config = rabbit_platform::config::load_config().ok()?;
         

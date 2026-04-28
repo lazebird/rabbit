@@ -60,12 +60,6 @@ impl TftpcService {
         }
     }
 
-    /// Initialize - now a no-op as config is pulled on operations
-    pub async fn init(&mut self) -> Result<()> {
-        info!("TFTP client service initialized");
-        Ok(())
-    }
-
     pub async fn put(&self, local_path: &str, remote_filename: &str) -> Result<String> {
         let config = ClientConfig::from_platform();
         self.upload_to(&config.server_addr, local_path, remote_filename, config.block_size, config.timeout_secs).await

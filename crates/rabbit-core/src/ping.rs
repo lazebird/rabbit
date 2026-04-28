@@ -99,15 +99,14 @@ impl PingService {
         }
     }
 
-    pub async fn init(&mut self) -> Result<()> {
-        let config = Config::builder().build();
-        let client = Client::new(&config)
-            .map_err(|e| ServiceError::Other(format!("Failed to create ping client: {}", e)))?;
-        self.client = Some(Arc::new(client));
-        Ok(())
-    }
-
-    pub async fn start(&mut self) -> Result<()> {
+    async fn start(&mut self) -> Result<()> {
+        if self.client.is_none() {
+            let config = Config::builder().build();
+            let client = Client::new(&config)
+                .map_err(|e| ServiceError::Other(format!("Failed to create ping client: {}", e)))?;
+            self.client = Some(Arc::new(client));
+        }
+        
         let mut state = self.state.write().await;
         if *state != PingState::Idle {
             error!("Ping service cannot start: service is not Idle");
@@ -197,11 +196,11 @@ impl PingService {
         }
     }
 
-    pub async fn is_running(&self) -> bool {
+    async fn is_running(&self) -> bool {
         self.state.read().await.clone() == PingState::Running
     }
 
-    pub async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> Result<()> {
         if let Some(tx) = self.command_tx.take() {
             let _ = tx.send(PingCommand::Stop).await;
         }
@@ -232,7 +231,7 @@ impl PingService {
         Some(target_obj)
     }
 
-    pub async fn add_target(&self) -> Result<()> {
+    async fn add_target(&self) -> Result<()> {
         if let Some(target) = self.load_target_from_config() {
             info!("Adding target from config: {}", target.address);
             self.targets.write().await.push(target);

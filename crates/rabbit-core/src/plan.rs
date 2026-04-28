@@ -111,12 +111,6 @@ impl PlanService {
         }
     }
 
-    /// Initialize the service
-    pub async fn init(&mut self) -> Result<()> {
-        info!("Plan service initialized");
-        Ok(())
-    }
-
     /// Start the scheduler
     pub async fn start(&mut self) -> Result<()> {
         let mut running = self.running.write().await;
@@ -159,11 +153,7 @@ impl PlanService {
         }
     }
 
-    pub fn is_running(&self) -> bool {
-        *self.running.blocking_read()
-    }
-
-    pub async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> Result<()> {
         *self.running.write().await = false;
         info!("Plan service stopped");
         Ok(())

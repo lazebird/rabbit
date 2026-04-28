@@ -63,12 +63,6 @@ impl TftpdService {
         }
     }
 
-    /// Initialize - now a no-op as config is pulled on start
-    pub async fn init(&mut self) -> Result<()> {
-        info!("TFTP server service initialized");
-        Ok(())
-    }
-
     /// Start TFTP server
     pub async fn start(&mut self) -> Result<()> {
         self.start_server().await
@@ -159,7 +153,7 @@ impl TftpdService {
     }
 
     /// Stop TFTP server
-    pub async fn stop(&mut self) -> Result<()> {
+    async fn stop(&mut self) -> Result<()> {
         self.stop_server().await
     }
 
@@ -197,7 +191,7 @@ impl TftpdService {
     }
 
     /// Check if running
-    pub fn is_running(&self) -> bool {
+    fn is_running(&self) -> bool {
         self.server_handle.is_some()
     }
 }
