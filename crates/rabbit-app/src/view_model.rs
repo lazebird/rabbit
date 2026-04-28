@@ -15,32 +15,53 @@ impl AppViewModel {
         self.config.clone()
     }
 
+    pub fn set_config(&mut self, config: AppConfig) {
+        self.config = config;
+    }
+
+    pub fn save(&self) -> Result<()> {
+        save_config(&self.config)
+    }
+
+    pub fn get_string(&self, section: &str, key: &str) -> Option<String> {
+        self.config.modules.get_string(section, key)
+    }
+
+    pub fn get_integer(&self, section: &str, key: &str) -> Option<i64> {
+        self.config.modules.get_integer(section, key)
+    }
+
+    pub fn get_bool(&self, section: &str, key: &str) -> Option<bool> {
+        self.config.modules.get_bool(section, key)
+    }
+
+    pub fn get_array(&self, section: &str, key: &str) -> Option<Vec<String>> {
+        self.config.modules.get_array(section, key)
+    }
+
+    pub fn set_string(&mut self, section: &str, key: &str, value: String) {
+        self.config.modules.insert(section, key, ConfigValue::String(value));
+    }
+
+    pub fn set_integer(&mut self, section: &str, key: &str, value: i64) {
+        self.config.modules.insert(section, key, ConfigValue::Integer(value));
+    }
+
+    pub fn set_bool(&mut self, section: &str, key: &str, value: bool) {
+        self.config.modules.insert(section, key, ConfigValue::Boolean(value));
+    }
+
+    pub fn set_array(&mut self, section: &str, key: &str, value: Vec<String>) {
+        let arr: Vec<ConfigValue> = value.into_iter().map(ConfigValue::String).collect();
+        self.config.modules.insert(section, key, ConfigValue::Array(arr));
+    }
+
     pub fn update_config(&mut self, config: AppConfig) {
         self.config = config;
     }
 
-    pub fn save_settings(&mut self) -> Result<()> {
-        save_config(&self.config)
-    }
-
     pub fn update_and_save(&mut self, config: AppConfig) -> Result<()> {
         self.config = config;
-        save_config(&self.config)
-    }
-
-    pub fn update_global(&mut self, language: String, theme: String, systray: bool, top: bool, autostart: bool, autoupdate: bool) -> Result<()> {
-        let modules = &mut self.config.modules;
-        modules.insert("global", "language", ConfigValue::String(language));
-        modules.insert("global", "theme", ConfigValue::String(theme));
-        modules.insert("global", "systray", ConfigValue::Boolean(systray));
-        modules.insert("global", "top", ConfigValue::Boolean(top));
-        modules.insert("global", "autostart", ConfigValue::Boolean(autostart));
-        modules.insert("global", "autoupdate", ConfigValue::Boolean(autoupdate));
-        save_config(&self.config)
-    }
-
-    pub fn update_last_tab(&mut self, tab: usize) -> Result<()> {
-        self.config.modules.insert("global", "last_active_tab", ConfigValue::Integer(tab as i64));
         save_config(&self.config)
     }
 }

@@ -113,21 +113,31 @@ rabbit/
 
 ```rust
 pub struct AppViewModel {
-    config: AppConfig,  // 仅含配置，无运行时状态
+    config: AppConfig,
 }
 
 impl AppViewModel {
+    // 基础
     pub fn new(config: AppConfig) -> Self
     pub fn get_config(&self) -> AppConfig
+    pub fn set_config(&mut self, config: AppConfig)
+    pub fn save(&self) -> Result<()>
     pub fn update_config(&mut self, config: AppConfig)
-    pub fn save_settings(&mut self) -> Result<()>
     pub fn update_and_save(&mut self, config: AppConfig) -> Result<()>
-    pub fn update_global(&mut self, language, theme, systray, top, autostart, autoupdate) -> Result<()>
-    pub fn update_last_tab(&mut self, tab: usize) -> Result<()>
+    
+    // 通用读写 (section + key)
+    pub fn get_string(&self, section: &str, key: &str) -> Option<String>
+    pub fn get_integer(&self, section: &str, key: &str) -> Option<i64>
+    pub fn get_bool(&self, section: &str, key: &str) -> Option<bool>
+    pub fn get_array(&self, section: &str, key: &str) -> Option<Vec<String>>
+    pub fn set_string(&mut self, section: &str, key: &str, value: String)
+    pub fn set_integer(&mut self, section: &str, key: &str, value: i64)
+    pub fn set_bool(&mut self, section: &str, key: &str, value: bool)
+    pub fn set_array(&mut self, section: &str, key: &str, value: Vec<String>)
 }
 ```
 
-运行状态由各 Service 内部管理，通过 config.modules.get_bool() 获取配置中的持久化状态。
+运行状态由各 Service 内部管理，通过通用接口读写。
 
 ### App
 
@@ -473,6 +483,6 @@ config.modules.insert("global", "systray", ConfigValue::Boolean(true))
 
 ---
 
-文档版本：4.3
+文档版本：4.4
 创建日期：2026-04-16
 更新日期：2026-04-28
