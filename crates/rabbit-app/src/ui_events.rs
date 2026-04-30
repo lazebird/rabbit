@@ -4,7 +4,7 @@
 //! This module provides a message passing system to bridge the two.
 
 use parking_lot::Mutex;
-use std::sync::mpsc::{channel, Sender, Receiver};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 /// Global event sender (initialized in App::run)
 static GLOBAL_EVENT_SENDER: Mutex<Option<Sender<UiEvent>>> = Mutex::new(None);

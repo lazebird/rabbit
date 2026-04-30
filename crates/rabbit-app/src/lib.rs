@@ -4,14 +4,14 @@
 
 pub mod app;
 pub mod ui;
-pub mod view_model;
 pub mod ui_events;
 pub mod ui_state;
 pub mod upgrade;
+pub mod view_model;
 
-pub use app::App;
 pub use app::handle_version_check_result;
-pub use view_model::*;
-pub use ui_events::{UiEvent, send_event, init_event_system};
+pub use app::App;
+pub use rabbit_core::ui_channel::{Module, UiData};
+pub use ui_events::{init_event_system, send_event, UiEvent};
 pub use ui_state::*;
-pub use rabbit_core::ui_channel::{UiData, Module};
+pub use view_model::*;

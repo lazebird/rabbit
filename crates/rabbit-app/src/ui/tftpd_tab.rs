@@ -15,9 +15,9 @@ use fltk::{
     text::{TextBuffer, TextDisplay, WrapMode},
 };
 
-use crate::ui_events::{UiEvent, send_event};
+use super::{defaults, Colors, TabComponent};
+use crate::ui_events::{send_event, UiEvent};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors, defaults};
 
 /// TFTP Server Tab Component
 pub struct TftpdTab;
@@ -27,7 +27,7 @@ impl TabComponent for TftpdTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "TFTPD").column();
-        grp.set_margin(0);  // Remove margin to match old version
+        grp.set_margin(0); // Remove margin to match old version
         grp.set_spacing(4);
 
         // Control row - matching old version layout
@@ -84,7 +84,7 @@ impl TabComponent for TftpdTab {
         let log_buf = TextBuffer::default();
         log_display.set_buffer(Some(log_buf));
         log_display.wrap_mode(WrapMode::AtBounds, 0);
-        log_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
+        log_display.set_frame(fltk::enums::FrameType::FlatBox); // Remove border
 
         grp.end();
 
@@ -202,7 +202,7 @@ impl TabComponent for TftpdTab {
         // Register displays with centralized refresh manager
         super::ui_refresh::register_display("tftpd_log", log_display.clone());
         super::ui_refresh::register_browser("tftpd_dirs", dir_browser.clone());
-        
+
         // Register button for Enter key support
         super::ui_refresh::register_tftpd_button(toggle_btn.clone(), colors.accent);
 

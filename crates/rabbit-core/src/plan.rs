@@ -1,8 +1,8 @@
 //! Task Planner Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::UiData};
+use crate::{ui_channel::UiData, Result, ServiceError, ServiceUpdateResult};
 
-use chrono::{DateTime, Local, NaiveDate, NaiveTime, NaiveDateTime};
+use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
@@ -55,11 +55,7 @@ impl Task {
 #[derive(Debug, Clone)]
 enum Schedule {
     Once { datetime: DateTime<Local> },
-    Repeating { 
-        datetime: DateTime<Local>,
-        cycle: i32,
-        unit: RepeatUnit,
-    },
+    Repeating { datetime: DateTime<Local>, cycle: i32, unit: RepeatUnit },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -111,8 +107,8 @@ impl PlanService {
         }
     }
 
-    /// Start the scheduler
-    pub async fn start(&mut self) -> Result<()> {
+    /// 内部启动 Plan 服务
+    async fn start(&mut self) -> Result<()> {
         let mut running = self.running.write().await;
         if *running {
             return Err(ServiceError::AlreadyRunning);
@@ -153,6 +149,13 @@ impl PlanService {
         }
     }
 
+    /// 程序退出时调用，销毁资源，不发状态通告
+    pub async fn destroy(&mut self) -> Result<()> {
+        *self.running.write().await = false;
+        info!("Plan service destroyed");
+        Ok(())
+    }
+
     async fn stop(&mut self) -> Result<()> {
         *self.running.write().await = false;
         info!("Plan service stopped");
@@ -162,10 +165,7 @@ impl PlanService {
     /// Add a new task with simple parameters
     pub async fn add_task(&self, date: &str, time: &str, cycle: i32, unit: &str, msg: &str) -> Result<()> {
         // Parse datetime
-        let datetime = if let (Ok(d), Ok(t)) = (
-            NaiveDate::parse_from_str(date, "%Y/%m/%d"),
-            NaiveTime::parse_from_str(time, "%H:%M")
-        ) {
+        let datetime = if let (Ok(d), Ok(t)) = (NaiveDate::parse_from_str(date, "%Y/%m/%d"), NaiveTime::parse_from_str(time, "%H:%M")) {
             NaiveDateTime::new(d, t).and_local_timezone(Local).unwrap()
         } else {
             Local::now()
@@ -181,10 +181,10 @@ impl PlanService {
         } else {
             Schedule::Once { datetime }
         };
-        
+
         let id = format!("task-{}", uuid::Uuid::new_v4());
         let task = Task::new(msg.to_string(), schedule);
-        
+
         self.tasks.write().await.insert(id.clone(), task);
         info!("Added task: {}", id);
         Ok(())
@@ -198,22 +198,15 @@ impl PlanService {
     }
 
     /// Check and trigger tasks
-    async fn check_tasks(
-        tasks: &Arc<RwLock<HashMap<String, Task>>>,
-        logs: &Arc<RwLock<Vec<TaskLog>>>,
-        tx: &Option<mpsc::Sender<UiData>>,
-    ) {
+    async fn check_tasks(tasks: &Arc<RwLock<HashMap<String, Task>>>, logs: &Arc<RwLock<Vec<TaskLog>>>, tx: &Option<mpsc::Sender<UiData>>) {
         let now = Local::now();
-        
+
         // 收集需要触发的任务 ID（只读锁）
-        let task_ids: Vec<String> = tasks.read().await
+        let task_ids: Vec<String> = tasks
+            .read()
+            .await
             .iter()
-            .filter(|(_, t)| {
-                t.enabled 
-                    && !t.is_snoozed() 
-                    && t.state != TaskState::Acknowledged
-                    && Self::should_trigger(&t.schedule, now)
-            })
+            .filter(|(_, t)| t.enabled && !t.is_snoozed() && t.state != TaskState::Acknowledged && Self::should_trigger(&t.schedule, now))
             .map(|(id, _)| id.clone())
             .collect();
 
@@ -226,7 +219,7 @@ impl PlanService {
         for id in task_ids {
             if let Some(task) = tasks_guard.get_mut(&id) {
                 task.trigger();
-                
+
                 if let Err(e) = rabbit_platform::notification::show_task_reminder(&task.title, None) {
                     error!("Failed to show notification: {}", e);
                 }
@@ -268,7 +261,6 @@ impl PlanService {
         }
     }
 }
-
 
 impl Default for PlanService {
     fn default() -> Self {

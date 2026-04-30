@@ -3,29 +3,29 @@
 //! This module contains FLTK UI components organized by tab.
 //! Each tab is implemented in its own file for better maintainability.
 
-pub mod styles;
-pub mod defaults;
-pub mod ping_tab;
-pub mod scan_tab;
-pub mod http_tab;
-pub mod tftpd_tab;
-pub mod tftpc_tab;
-pub mod plan_tab;
 pub mod chat_tab;
+pub mod defaults;
+pub mod http_tab;
+pub mod ping_tab;
+pub mod plan_tab;
+pub mod scan_tab;
 pub mod settings_tab;
+pub mod styles;
+pub mod tftpc_tab;
+pub mod tftpd_tab;
 pub mod ui_refresh;
 
-pub use styles::{Colors, Spacing, format_ping_stats, format_ping_result, format_bytes};
-pub use defaults::*;
-pub use ping_tab::PingTab;
-pub use scan_tab::ScanTab;
-pub use http_tab::HttpTab;
-pub use tftpd_tab::TftpdTab;
-pub use tftpc_tab::TftpcTab;
-pub use plan_tab::PlanTab;
 pub use chat_tab::ChatTab;
-pub use settings_tab::SettingsTab;
+pub use defaults::*;
+pub use http_tab::HttpTab;
+pub use ping_tab::PingTab;
+pub use plan_tab::PlanTab;
+pub use scan_tab::ScanTab;
 pub use settings_tab::check_version_update;
+pub use settings_tab::SettingsTab;
+pub use styles::{format_bytes, format_ping_result, format_ping_stats, Colors, Spacing};
+pub use tftpc_tab::TftpcTab;
+pub use tftpd_tab::TftpdTab;
 
 use fltk::group::Flex;
 

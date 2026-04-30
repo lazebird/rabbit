@@ -6,20 +6,20 @@
 
 use fltk::{
     button::Button,
+    enums::{Align, Color, Event},
     frame::Frame,
     group::Flex,
     input::Input,
     menu::Choice,
     prelude::*,
     text::{TextBuffer, TextDisplay, WrapMode},
-    enums::{Event, Align, Color},
     window::Window,
 };
 
-use chrono::{Datelike, Timelike, NaiveDate, Local};
-use crate::ui_events::{UiEvent, send_event};
+use super::{defaults, Colors, TabComponent};
+use crate::ui_events::{send_event, UiEvent};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors, defaults};
+use chrono::{Datelike, Local, NaiveDate, Timelike};
 
 /// Plan Tab Component
 pub struct PlanTab;
@@ -29,7 +29,7 @@ impl TabComponent for PlanTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "PLAN").column();
-        grp.set_margin(0);  // Remove margin to match old version
+        grp.set_margin(0); // Remove margin to match old version
         grp.set_spacing(4);
 
         // Control row - matching old version compact layout
@@ -137,7 +137,7 @@ impl TabComponent for PlanTab {
         let event_buf = TextBuffer::default();
         event_display.set_buffer(Some(event_buf));
         event_display.wrap_mode(WrapMode::AtBounds, 0);
-        event_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
+        event_display.set_frame(fltk::enums::FrameType::FlatBox); // Remove border
 
         grp.end();
 
@@ -175,7 +175,8 @@ impl TabComponent for PlanTab {
                 1 => "hour",
                 2 => "day",
                 _ => "minute",
-            }.to_string();
+            }
+            .to_string();
             let msg = opt_input_clone.value();
 
             // Save plan configuration before sending event (which moves values)
@@ -190,15 +191,8 @@ impl TabComponent for PlanTab {
             let event_id = uuid::Uuid::new_v4().to_string()[..8].to_string();
             if let Some(state) = UiState::global() {
                 if let Ok(mut s) = state.lock() {
-                    let cycle_str = if cycle > 0 {
-                        format!(" (Repeat every {} {})", cycle, unit)
-                    } else {
-                        " (One-time)".to_string()
-                    };
-                    s.plan_list.push_str(&format!(
-                        "[{}] {} {} - {}{}\n",
-                        event_id, date, time, msg, cycle_str
-                    ));
+                    let cycle_str = if cycle > 0 { format!(" (Repeat every {} {})", cycle, unit) } else { " (One-time)".to_string() };
+                    s.plan_list.push_str(&format!("[{}] {} {} - {}{}\n", event_id, date, time, msg, cycle_str));
                     s.updated.insert("plan_list".to_string(), true);
                 }
             }
@@ -222,7 +216,7 @@ impl TabComponent for PlanTab {
 
         // Register display with centralized refresh manager
         super::ui_refresh::register_display("plan_list", event_display.clone());
-        
+
         // Register add button for Enter key support (primary action)
         super::ui_refresh::register_plan_button(add_btn.clone(), colors.accent);
 
@@ -247,8 +241,7 @@ impl PlanTab {
 /// Show a professional date picker dialog with dropdown choices and Today button.
 fn show_date_picker(date_input: &mut Input) {
     let current_val = date_input.value();
-    let init_date = NaiveDate::parse_from_str(&current_val, "%Y/%m/%d")
-        .unwrap_or_else(|_| Local::now().naive_local().date());
+    let init_date = NaiveDate::parse_from_str(&current_val, "%Y/%m/%d").unwrap_or_else(|_| Local::now().naive_local().date());
 
     let today = Local::now().naive_local().date();
     let current_year = today.year();
@@ -396,16 +389,14 @@ fn show_date_picker(date_input: &mut Input) {
 fn get_days_in_month(year: i32, month: u32) -> u32 {
     let next_month = if month == 12 { 1 } else { month + 1 };
     let next_yr = if month == 12 { year + 1 } else { year };
-    let first_of_next = NaiveDate::from_ymd_opt(next_yr, next_month, 1)
-        .unwrap_or_else(|| Local::now().naive_local().date());
+    let first_of_next = NaiveDate::from_ymd_opt(next_yr, next_month, 1).unwrap_or_else(|| Local::now().naive_local().date());
     (first_of_next - chrono::Days::new(1)).day()
 }
 
 /// Show a time picker dialog with dropdown choices for hour/minute.
 fn show_time_picker(time_input: &mut Input) {
     let current_val = time_input.value();
-    let current_time = chrono::NaiveTime::parse_from_str(&current_val, "%H:%M")
-        .unwrap_or_else(|_| chrono::NaiveTime::from_hms_opt(0, 0, 0).unwrap());
+    let current_time = chrono::NaiveTime::parse_from_str(&current_val, "%H:%M").unwrap_or_else(|_| chrono::NaiveTime::from_hms_opt(0, 0, 0).unwrap());
 
     let init_hour = current_time.hour() as i32;
     let init_minute = current_time.minute() as i32;

@@ -3,7 +3,7 @@
 //! Replaces per-tab `add_idle3` busy-loops with a single 100ms timeout callback.
 //! This reduces CPU usage from ~100% (busy-waiting every frame) to near-idle.
 
-use fltk::{prelude::*, text::TextDisplay, browser::Browser};
+use fltk::{browser::Browser, prelude::*, text::TextDisplay};
 use parking_lot::Mutex;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -20,18 +20,12 @@ static BROWSERS: Mutex<Option<BrowserStore>> = Mutex::new(None);
 
 /// Register a text display widget for centralized refresh management.
 pub fn register_display(key: &'static str, display: TextDisplay) {
-    DISPLAYS.lock()
-        .get_or_insert_with(|| RefCell::new(HashMap::new()))
-        .borrow_mut()
-        .insert(key, display);
+    DISPLAYS.lock().get_or_insert_with(|| RefCell::new(HashMap::new())).borrow_mut().insert(key, display);
 }
 
 /// Register a browser widget for centralized refresh management.
 pub fn register_browser(key: &'static str, browser: Browser) {
-    BROWSERS.lock()
-        .get_or_insert_with(|| RefCell::new(HashMap::new()))
-        .borrow_mut()
-        .insert(key, browser);
+    BROWSERS.lock().get_or_insert_with(|| RefCell::new(HashMap::new())).borrow_mut().insert(key, browser);
 }
 
 /// Register the HTTP toggle button for centralized state sync.
@@ -220,45 +214,53 @@ fn do_refresh() {
             return;
         }
 
-        let data: Vec<(&str, String)> = keys.iter().map(|&k| {
-            let v = match k {
-                "ping_output"   => s.ping_output.clone(),
-                "ping_stats"    => s.ping_stats.clone(),
-                "scan_output"   => s.scan_output.clone(),
-                "http_log"      => s.http_log.clone(),
-                "tftpd_log"     => s.tftpd_log.clone(),
-                "tftpc_log"     => s.tftpc_log.clone(),
-                "plan_list"     => s.plan_list.clone(),
-                "chat_messages" => s.chat_messages.clone(),
-                "chat_users"    => s.chat_users.clone(),
-                "settings_output" => s.settings_output.clone(),
-                "tftpd_dirs"    => {
-                    if s.tftpd_dirs.is_empty() {
-                        "(no directories added)\n".to_string()
-                    } else {
-                        s.tftpd_dirs.join("\n") + "\n"
+        let data: Vec<(&str, String)> = keys
+            .iter()
+            .map(|&k| {
+                let v = match k {
+                    "ping_output" => s.ping_output.clone(),
+                    "ping_stats" => s.ping_stats.clone(),
+                    "scan_output" => s.scan_output.clone(),
+                    "http_log" => s.http_log.clone(),
+                    "tftpd_log" => s.tftpd_log.clone(),
+                    "tftpc_log" => s.tftpc_log.clone(),
+                    "plan_list" => s.plan_list.clone(),
+                    "chat_messages" => s.chat_messages.clone(),
+                    "chat_users" => s.chat_users.clone(),
+                    "settings_output" => s.settings_output.clone(),
+                    "tftpd_dirs" => {
+                        if s.tftpd_dirs.is_empty() {
+                            "(no directories added)\n".to_string()
+                        } else {
+                            s.tftpd_dirs.join("\n") + "\n"
+                        }
                     }
-                }
-                "ping_running" | "scan_running" | "http_running" => {
-                    let val = s.updated.get(k).copied().unwrap_or(false);
-                    val.to_string()
-                }
-                _ => String::new(),
-            };
-            (k, v)
-        }).collect();
+                    "ping_running" | "scan_running" | "http_running" => {
+                        let val = s.updated.get(k).copied().unwrap_or(false);
+                        val.to_string()
+                    }
+                    _ => String::new(),
+                };
+                (k, v)
+            })
+            .collect();
 
         let ping_updated = keys.contains(&"ping_running");
         let http_updated = keys.contains(&"http_running");
         let scan_updated = keys.contains(&"scan_running");
-        
+
         // 使用 updated 标志作为运行状态
         let ping_running = ping_updated;
         let http_running = http_updated;
         let scan_running = scan_updated;
-        
+
         drop(s);
-        (data, if ping_updated { Some(ping_running) } else { None }, if http_updated { Some(http_running) } else { None }, if scan_updated { Some(scan_running) } else { None })
+        (
+            data,
+            if ping_updated { Some(ping_running) } else { None },
+            if http_updated { Some(http_running) } else { None },
+            if scan_updated { Some(scan_running) } else { None },
+        )
     };
 
     // Phase 2: Update displays without holding the lock
@@ -267,15 +269,20 @@ fn do_refresh() {
     let mut map = store.borrow_mut();
 
     for (key, value) in &snapshot.0 {
-        if *key == "http_running" { continue; }
-        if *key == "tftpd_dirs" { continue; } // Handle browsers separately
+        if *key == "http_running" {
+            continue;
+        }
+        if *key == "tftpd_dirs" {
+            continue;
+        } // Handle browsers separately
         let Some(display) = map.get_mut(key) else { continue };
         if let Some(mut buf) = display.buffer() {
             buf.set_text(value);
             // Auto-scroll for all log-type displays when new content arrives
-            if matches!(*key, "ping_output" | "scan_output" | "http_log"
-                              | "tftpd_log" | "tftpc_log" | "plan_list"
-                              | "chat_messages" | "settings_output") {
+            if matches!(
+                *key,
+                "ping_output" | "scan_output" | "http_log" | "tftpd_log" | "tftpc_log" | "plan_list" | "chat_messages" | "settings_output"
+            ) {
                 let lines = buf.count_lines(0, buf.length());
                 display.scroll(lines, 0);
             }

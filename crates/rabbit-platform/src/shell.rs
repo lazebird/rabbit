@@ -13,31 +13,17 @@ mod windows {
     pub fn register_directory_context(exe_path: &str) -> Result<(), String> {
         // Registry path for directory context menu
         let reg_path = r"HKEY_CLASSES_ROOT\Directory\shell\RabbitHTTPServer";
-        
+
         // Set display name for the menu item
         Command::new("reg")
-            .args(&[
-                "add",
-                reg_path,
-                "/ve",
-                "/d",
-                "Open with Rabbit HTTP Server",
-                "/f",
-            ])
+            .args(&["add", reg_path, "/ve", "/d", "Open with Rabbit HTTP Server", "/f"])
             .output()
             .map_err(|e| format!("Failed to register context menu: {}", e))?;
 
         // Set command to execute
         let cmd_path = format!("{}\\command", reg_path);
         Command::new("reg")
-            .args(&[
-                "add",
-                &cmd_path,
-                "/ve",
-                "/d",
-                &format!("\"{}\" --http-server \"%1\"", exe_path),
-                "/f",
-            ])
+            .args(&["add", &cmd_path, "/ve", "/d", &format!("\"{}\" --http-server \"%1\"", exe_path), "/f"])
             .output()
             .map_err(|e| format!("Failed to register command: {}", e))?;
 
@@ -47,7 +33,7 @@ mod windows {
     /// Unregister HTTP server context menu for directories
     pub fn unregister_directory_context() -> Result<(), String> {
         let reg_path = r"HKEY_CLASSES_ROOT\Directory\shell\RabbitHTTPServer";
-        
+
         Command::new("reg")
             .args(&["delete", reg_path, "/f"])
             .output()
@@ -58,29 +44,15 @@ mod windows {
     /// Register HTTP server context menu for files
     pub fn register_file_context(exe_path: &str) -> Result<(), String> {
         let reg_path = r"HKEY_CLASSES_ROOT\*\shell\RabbitHTTPServer";
-        
+
         Command::new("reg")
-            .args(&[
-                "add",
-                reg_path,
-                "/ve",
-                "/d",
-                "Open with Rabbit HTTP Server",
-                "/f",
-            ])
+            .args(&["add", reg_path, "/ve", "/d", "Open with Rabbit HTTP Server", "/f"])
             .output()
             .map_err(|e| format!("Failed to register file context menu: {}", e))?;
 
         let cmd_path = format!("{}\\command", reg_path);
         Command::new("reg")
-            .args(&[
-                "add",
-                &cmd_path,
-                "/ve",
-                "/d",
-                &format!("\"{}\" --http-server \"%1\"", exe_path),
-                "/f",
-            ])
+            .args(&["add", &cmd_path, "/ve", "/d", &format!("\"{}\" --http-server \"%1\"", exe_path), "/f"])
             .output()
             .map_err(|e| format!("Failed to register file command: {}", e))?;
 
@@ -90,7 +62,7 @@ mod windows {
     /// Unregister HTTP server context menu for files
     pub fn unregister_file_context() -> Result<(), String> {
         let reg_path = r"HKEY_CLASSES_ROOT\*\shell\RabbitHTTPServer";
-        
+
         Command::new("reg")
             .args(&["delete", reg_path, "/f"])
             .output()

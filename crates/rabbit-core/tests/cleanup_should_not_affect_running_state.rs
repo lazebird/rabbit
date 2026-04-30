@@ -1,0 +1,148 @@
+//! 测试场景：程序退出时 cleanup 不应影响运行状态的保存
+//!
+//! 问题背景：cleanup 先调用 update() 停止服务，导致保存的 running=false
+//! 正确行为：cleanup 调用 destroy() 销毁资源，同时先读取真实运行状态再保存
+
+use rabbit_core::{
+    ui_channel::{self, Module, UiData},
+    ChatService, HttpService, PingService, PlanService, ScanService, ServiceUpdateResult, TftpdService,
+};
+use tokio::sync::mpsc;
+
+/// 辅助：创建一个带 channel 的服务，并返回 (service, rx)
+fn make_ping() -> (PingService, mpsc::Receiver<UiData>) {
+    let (tx, rx) = mpsc::channel(100);
+    (PingService::with_channel(tx), rx)
+}
+
+fn make_http() -> (HttpService, mpsc::Receiver<UiData>) {
+    let (tx, rx) = mpsc::channel(100);
+    (HttpService::with_channel(tx), rx)
+}
+
+/// 测试 cleanup 场景：destroy 不应发送 ServiceStatus 通告
+/// 原来 update() 会发通告导致 UI 误以为服务被停止
+#[tokio::test]
+async fn cleanup_ping_destroy_should_not_send_status() {
+    let (mut svc, mut rx) = make_ping();
+
+    // 先启动服务（模拟正常运行）
+    let result = svc.update().await;
+    assert!(matches!(result, ServiceUpdateResult::Started(_)));
+
+    // 模拟 cleanup：只调用 destroy，不应发 ServiceStatus 通告
+    let _ = svc.destroy().await;
+
+    // 短暂等待，确认没有 ServiceStatus(false) 被发出
+    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
+    // destroy 不应发状态通告
+    while let Ok(data) = rx.try_recv() {
+        assert!(
+            !matches!(data, UiData::ServiceStatus(Module::Ping, false)),
+            "destroy() should NOT send ServiceStatus(false), only update() should"
+        );
+    }
+}
+
+/// 测试 update 停止时应发状态通告（UI 层据此更新配置）
+#[tokio::test]
+async fn update_stop_should_send_status() {
+    let (mut svc, mut rx) = make_ping();
+
+    // 启动
+    let result = svc.update().await;
+    assert!(matches!(result, ServiceUpdateResult::Started(_)));
+
+    // 停止（通过 update）
+    let result = svc.update().await;
+    assert!(matches!(result, ServiceUpdateResult::Stopped(_)));
+
+    // 应该收到 ServiceStatus(false) 通告
+    let mut found = false;
+    while let Ok(data) = rx.try_recv() {
+        if matches!(data, UiData::ServiceStatus(Module::Ping, false)) {
+            found = true;
+            break;
+        }
+    }
+    assert!(found, "update() stop should send ServiceStatus(false) so UI can save config");
+}
+
+/// 测试 is_running 在 destroy 后应为 false
+#[tokio::test]
+async fn is_running_after_destroy() {
+    let (mut svc, _) = make_ping();
+
+    // 启动
+    let _ = svc.update().await;
+    assert!(svc.is_running().await, "should be running after update() start");
+
+    // destroy
+    let _ = svc.destroy().await;
+    assert!(!svc.is_running().await, "should not be running after destroy()");
+}
+
+/// 测试 HTTP service destroy 不发通告
+#[tokio::test]
+async fn cleanup_http_destroy_should_not_send_status() {
+    let (mut svc, mut rx) = make_http();
+
+    // 启动（可能因端口占用失败，这里只测 destroy 行为）
+    let _ = svc.update().await;
+
+    // destroy 不应发 ServiceStatus
+    let _ = svc.destroy().await;
+    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
+    while let Ok(data) = rx.try_recv() {
+        assert!(!matches!(data, UiData::ServiceStatus(Module::Http, false)), "HTTP destroy() should NOT send ServiceStatus");
+    }
+}
+
+/// 集成测试：模拟完整 cleanup 流程
+/// 1. 服务运行中 2. cleanup 调用 destroy 3. 保存配置时应读到 running=true
+#[tokio::test]
+async fn cleanup_flow_preserves_running_state() {
+    let (mut ping, _) = make_ping();
+    let (mut http, _) = make_http();
+    let (mut tftpd, _) = {
+        let (tx, rx) = mpsc::channel(100);
+        (TftpdService::with_channel(tx), rx)
+    };
+    let (mut chat, _) = {
+        let (tx, rx) = mpsc::channel(100);
+        (ChatService::with_channel(tx), rx)
+    };
+    let (mut plan, _) = {
+        let (tx, rx) = mpsc::channel(100);
+        (PlanService::with_channel(tx), rx)
+    };
+    let (mut scan, _) = {
+        let (tx, rx) = mpsc::channel(100);
+        (ScanService::with_channel(tx), rx)
+    };
+
+    // 模拟启动部分服务
+    let ping_running = {
+        let r = ping.update().await;
+        matches!(r, ServiceUpdateResult::Started(_))
+    };
+    let http_running = {
+        let r = http.update().await;
+        // HTTP 可能因端口占用失败，所以只看结果
+        matches!(r, ServiceUpdateResult::Started(_))
+    };
+
+    // 模拟 cleanup：只 destroy，不 update
+    let _ = ping.destroy().await;
+    let _ = http.destroy().await;
+    let _ = tftpd.destroy().await;
+    let _ = chat.destroy().await;
+    let _ = plan.destroy().await;
+    let _ = scan.destroy().await;
+
+    // 保存配置时应使用 cleanup 前读取的状态
+    // ping_running/http_running 是在 destroy 前记录的
+    assert_eq!(ping_running, ping.is_running().await, "ping running state should be preserved in config (read BEFORE cleanup)");
+}

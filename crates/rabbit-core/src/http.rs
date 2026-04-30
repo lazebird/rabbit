@@ -1,6 +1,9 @@
 //! HTTP Server Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
+use crate::{
+    ui_channel::{Module, UiData},
+    Result, ServiceError, ServiceUpdateResult,
+};
 use axum::{
     body::HttpBody,
     extract::{Multipart, Request},
@@ -103,8 +106,8 @@ impl HttpService {
         crate::send_ui(&self.tx, data).await;
     }
 
-    /// Start the HTTP server
-    pub async fn start(&mut self) -> Result<()> {
+    /// 内部启动 HTTP 服务器
+    async fn start(&mut self) -> Result<()> {
         let mut state = self.state.write().await;
         if *state != HttpServerState::Stopped {
             return Err(ServiceError::AlreadyRunning);
@@ -115,15 +118,11 @@ impl HttpService {
         // Pull configuration directly from platform cache
         let config = ServerConfig::from_platform();
 
-        let addr: SocketAddr = format!("0.0.0.0:{}", config.port).parse()
-            .map_err(|e| ServiceError::Config(format!("Invalid address: {}", e)))?;
+        let addr: SocketAddr = format!("0.0.0.0:{}", config.port).parse().map_err(|e| ServiceError::Config(format!("Invalid address: {}", e)))?;
 
         let root = PathBuf::from(&config.root_path);
         if !root.exists() {
-            return Err(ServiceError::Config(format!(
-                "Root path does not exist: {}",
-                config.root_path
-            )));
+            return Err(ServiceError::Config(format!("Root path does not exist: {}", config.root_path)));
         }
 
         let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
@@ -143,40 +142,32 @@ impl HttpService {
 
             let app = Router::new()
                 .route("/upload", post(upload_handler))
-                .fallback_service(
-                    ServeDir::new(&root)
-                        .append_index_html_on_directories(auto_index)
-                )
+                .fallback_service(ServeDir::new(&root).append_index_html_on_directories(auto_index))
                 .layer(axum::extract::Extension(root.clone()))
-                .layer(axum::middleware::from_fn(
-                    move |req: Request, next: Next| {
-                        let ui_tx = tx_middleware.clone();
-                        async move {
-                            let uri = req.uri().path().to_string();
-                            let mime = path2mime(&uri);
-                            
-                            if video_play && is_video_mime(mime) {
-                                let query = req.uri().query().unwrap_or("");
-                                if query.contains("videoplay=true") || !query.contains("videoplay=false") {
-                                    let player_html = generate_video_player(&uri, mime);
-                                    return Html(player_html).into_response();
-                                }
+                .layer(axum::middleware::from_fn(move |req: Request, next: Next| {
+                    let ui_tx = tx_middleware.clone();
+                    async move {
+                        let uri = req.uri().path().to_string();
+                        let mime = path2mime(&uri);
+
+                        if video_play && is_video_mime(mime) {
+                            let query = req.uri().query().unwrap_or("");
+                            if query.contains("videoplay=true") || !query.contains("videoplay=false") {
+                                let player_html = generate_video_player(&uri, mime);
+                                return Html(player_html).into_response();
                             }
-                            
-                            access_log_middleware(req, next, ui_tx).await
                         }
-                    },
-                ));
+
+                        access_log_middleware(req, next, ui_tx).await
+                    }
+                }));
 
             let listener = match tokio::net::TcpListener::bind(addr).await {
                 Ok(l) => l,
                 Err(e) => {
                     error!("Failed to bind HTTP server: {}", e);
                     *state_arc.write().await = HttpServerState::Stopped;
-                    let _ = startup_tx.send(Err(ServiceError::Other(format!(
-                        "Failed to bind to port {}: {}",
-                        config.port, e
-                    ))));
+                    let _ = startup_tx.send(Err(ServiceError::Other(format!("Failed to bind to port {}: {}", config.port, e))));
                     return;
                 }
             };
@@ -216,23 +207,33 @@ impl HttpService {
         }
     }
 
+    /// 公开接口：启停切换，会发状态通告
     pub async fn update(&mut self) -> ServiceUpdateResult {
         let state = *self.state.read().await;
         match state {
-            HttpServerState::Running => {
-                match self.stop().await {
-                    Ok(()) => ServiceUpdateResult::Stopped("HTTP server stopped".to_string()),
-                    Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
-                }
-            }
-            HttpServerState::Stopped => {
-                match self.start().await {
-                    Ok(()) => ServiceUpdateResult::Started("HTTP server started".to_string()),
-                    Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
-                }
-            }
+            HttpServerState::Running => match self.stop().await {
+                Ok(()) => ServiceUpdateResult::Stopped("HTTP server stopped".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
+            },
+            HttpServerState::Stopped => match self.start().await {
+                Ok(()) => ServiceUpdateResult::Started("HTTP server started".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
+            },
             _ => ServiceUpdateResult::NoChange,
         }
+    }
+
+    /// 程序退出时调用，销毁资源，不发状态通告
+    pub async fn destroy(&mut self) -> Result<()> {
+        if let Some(tx) = self.shutdown_tx.take() {
+            let _ = tx.send(()).await;
+        }
+        if let Some(handle) = self.server_handle.take() {
+            let _ = handle.await;
+        }
+        *self.state.write().await = HttpServerState::Stopped;
+        info!("HTTP server destroyed");
+        Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
@@ -292,11 +293,7 @@ fn generate_video_player(uri: &str, mime: &str) -> String {
     )
 }
 
-async fn access_log_middleware(
-    request: Request,
-    next: Next,
-    ui_tx: Option<mpsc::Sender<UiData>>,
-) -> Response {
+async fn access_log_middleware(request: Request, next: Next, ui_tx: Option<mpsc::Sender<UiData>>) -> Response {
     let method = request.method().clone();
     let uri = request.uri().clone();
 
@@ -307,9 +304,14 @@ async fn access_log_middleware(
     let status = response.status();
     let bytes_sent = response.body().size_hint().lower();
 
-    let log_msg = format!("[{}] {} {} {} - {} bytes ({}ms)",
+    let log_msg = format!(
+        "[{}] {} {} {} - {} bytes ({}ms)",
         chrono::Local::now().format("%H:%M:%S"),
-        method, uri.path(), status.as_u16(), bytes_sent, duration.as_millis()
+        method,
+        uri.path(),
+        status.as_u16(),
+        bytes_sent,
+        duration.as_millis()
     );
 
     if let Some(ref ui_tx) = ui_tx {
@@ -319,10 +321,7 @@ async fn access_log_middleware(
     response
 }
 
-async fn upload_handler(
-    axum::extract::Extension(root): axum::extract::Extension<PathBuf>,
-    mut multipart: Multipart,
-) -> Html<String> {
+async fn upload_handler(axum::extract::Extension(root): axum::extract::Extension<PathBuf>, mut multipart: Multipart) -> Html<String> {
     while let Ok(Some(mut field)) = multipart.next_field().await {
         let name = field.name().unwrap_or("unknown").to_string();
         let file_name = field.file_name().unwrap_or("unnamed").to_string();
@@ -339,17 +338,11 @@ async fn upload_handler(
                         }
                     }
                     if success {
-                        return Html(format!(
-                            "<html><body><h1>Upload Successful</h1><p>File '{}' saved.</p><a href=\"/\">Back</a></body></html>",
-                            file_name
-                        ));
+                        return Html(format!("<html><body><h1>Upload Successful</h1><p>File '{}' saved.</p><a href=\"/\">Back</a></body></html>", file_name));
                     }
                 }
                 Err(e) => {
-                    return Html(format!(
-                        "<html><body><h1>Upload Failed</h1><p>Failed to create file: {}</p><a href=\"/\">Back</a></body></html>",
-                        e
-                    ));
+                    return Html(format!("<html><body><h1>Upload Failed</h1><p>Failed to create file: {}</p><a href=\"/\">Back</a></body></html>", e));
                 }
             }
         }

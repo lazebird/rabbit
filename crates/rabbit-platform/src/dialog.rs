@@ -14,11 +14,7 @@ use std::path::PathBuf;
 ///
 /// # Returns
 /// Selected file path or None if cancelled
-pub fn open_file_dialog(
-    title: &str,
-    default_path: Option<&str>,
-    _filters: &[(&str, &[&str])],
-) -> Result<Option<PathBuf>> {
+pub fn open_file_dialog(title: &str, default_path: Option<&str>, _filters: &[(&str, &[&str])]) -> Result<Option<PathBuf>> {
     // Platform-specific implementation
     #[cfg(target_os = "linux")]
     {
@@ -75,28 +71,19 @@ pub fn open_folder_dialog(title: &str, default_path: Option<&str>) -> Result<Opt
 pub fn open_url(url: &str) -> Result<()> {
     #[cfg(target_os = "linux")]
     {
-        std::process::Command::new("xdg-open")
-            .arg(url)
-            .spawn()
-            .map_err(PlatformError::Io)?;
+        std::process::Command::new("xdg-open").arg(url).spawn().map_err(PlatformError::Io)?;
         Ok(())
     }
 
     #[cfg(target_os = "windows")]
     {
-        std::process::Command::new("cmd")
-            .args(["/C", "start", url])
-            .spawn()
-            .map_err(PlatformError::Io)?;
+        std::process::Command::new("cmd").args(["/C", "start", url]).spawn().map_err(PlatformError::Io)?;
         Ok(())
     }
 
     #[cfg(target_os = "macos")]
     {
-        std::process::Command::new("open")
-            .arg(url)
-            .spawn()
-            .map_err(PlatformError::Io)?;
+        std::process::Command::new("open").arg(url).spawn().map_err(PlatformError::Io)?;
         Ok(())
     }
 
@@ -116,11 +103,7 @@ pub fn open_file_manager(path: &str) -> Result<()> {
         // Try different file managers
         let managers = ["xdg-open", "nautilus", "dolphin", "thunar", "pcmanfm"];
         for manager in &managers {
-            if std::process::Command::new(manager)
-                .arg(path_str)
-                .spawn()
-                .is_ok()
-            {
+            if std::process::Command::new(manager).arg(path_str).spawn().is_ok() {
                 return Ok(());
             }
         }
@@ -129,19 +112,13 @@ pub fn open_file_manager(path: &str) -> Result<()> {
 
     #[cfg(target_os = "windows")]
     {
-        std::process::Command::new("explorer")
-            .arg(path_str)
-            .spawn()
-            .map_err(|e| PlatformError::Io(e))?;
+        std::process::Command::new("explorer").arg(path_str).spawn().map_err(|e| PlatformError::Io(e))?;
         Ok(())
     }
 
     #[cfg(target_os = "macos")]
     {
-        std::process::Command::new("open")
-            .arg(path_str)
-            .spawn()
-            .map_err(|e| PlatformError::Io(e))?;
+        std::process::Command::new("open").arg(path_str).spawn().map_err(|e| PlatformError::Io(e))?;
         Ok(())
     }
 
@@ -156,9 +133,7 @@ pub fn open_file_manager(path: &str) -> Result<()> {
 fn open_file_dialog_linux(title: &str, default_path: Option<&str>) -> Result<Option<PathBuf>> {
     // Try zenity first
     let mut cmd = std::process::Command::new("zenity");
-    cmd.arg("--file-selection")
-        .arg("--title")
-        .arg(title);
+    cmd.arg("--file-selection").arg("--title").arg(title);
 
     if let Some(path) = default_path {
         cmd.arg("--filename").arg(path);
@@ -188,10 +163,7 @@ fn open_file_dialog_linux(title: &str, default_path: Option<&str>) -> Result<Opt
 #[cfg(target_os = "linux")]
 fn open_folder_dialog_linux(title: &str, default_path: Option<&str>) -> Result<Option<PathBuf>> {
     let mut cmd = std::process::Command::new("zenity");
-    cmd.arg("--file-selection")
-        .arg("--directory")
-        .arg("--title")
-        .arg(title);
+    cmd.arg("--file-selection").arg("--directory").arg("--title").arg(title);
 
     if let Some(path) = default_path {
         cmd.arg("--filename").arg(path);
@@ -247,9 +219,7 @@ fn open_file_dialog_kdialog(title: &str, default_path: Option<&str>) -> Result<O
 #[cfg(target_os = "linux")]
 fn open_folder_dialog_kdialog(title: &str, default_path: Option<&str>) -> Result<Option<PathBuf>> {
     let mut cmd = std::process::Command::new("kdialog");
-    cmd.arg("--getexistingdirectory")
-        .arg("--title")
-        .arg(title);
+    cmd.arg("--getexistingdirectory").arg("--title").arg(title);
 
     if let Some(path) = default_path {
         cmd.arg(path);
@@ -277,10 +247,7 @@ fn open_folder_dialog_kdialog(title: &str, default_path: Option<&str>) -> Result
 
 // Windows implementations
 #[cfg(target_os = "windows")]
-fn open_file_dialog_windows(
-    _title: &str,
-    _default_path: Option<&str>,
-) -> Result<Option<PathBuf>> {
+fn open_file_dialog_windows(_title: &str, _default_path: Option<&str>) -> Result<Option<PathBuf>> {
     // Windows file dialog requires COM/OLE which is complex
     // For now, return not supported - can use rfd crate later
     Err(PlatformError::NotSupported)

@@ -1,6 +1,9 @@
 //! TFTP Client Service
 
-use crate::{Result, ServiceError, ui_channel::{UiData, Module}};
+use crate::{
+    ui_channel::{Module, UiData},
+    Result, ServiceError,
+};
 use rabbit_platform::config::{get_integer, get_string};
 use std::path::PathBuf;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -43,15 +46,11 @@ pub struct TftpcService {
 
 impl TftpcService {
     pub fn new() -> Self {
-        Self {
-            tx: None,
-        }
+        Self { tx: None }
     }
 
     pub fn with_channel(tx: tokio::sync::mpsc::Sender<UiData>) -> Self {
-        Self {
-            tx: Some(tx),
-        }
+        Self { tx: Some(tx) }
     }
 
     pub async fn send(&self, data: UiData) {
@@ -102,7 +101,7 @@ impl TftpcService {
         Ok(transfer_id)
     }
 
-async fn download_from(&self, server_addr: &str, remote_filename: &str, local_path: &str, block_size: usize, timeout_secs: u64) -> Result<String> {
+    async fn download_from(&self, server_addr: &str, remote_filename: &str, local_path: &str, block_size: usize, timeout_secs: u64) -> Result<String> {
         let transfer_id = format!("download_{}_{}", remote_filename, chrono::Local::now().timestamp());
 
         let server = server_addr.to_string();
@@ -139,10 +138,7 @@ async fn download_from(&self, server_addr: &str, remote_filename: &str, local_pa
     async fn do_upload(server: &str, local: &str, remote: &str, block_size: usize, _timeout_secs: u64) -> Result<u64> {
         let local_file = PathBuf::from(local);
         if !local_file.exists() {
-            return Err(ServiceError::Io(std::io::Error::new(
-                std::io::ErrorKind::NotFound,
-                "Local file not found",
-            )));
+            return Err(ServiceError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "Local file not found")));
         }
 
         let mut file = tokio::fs::File::open(local_file).await?;
@@ -186,7 +182,7 @@ async fn download_from(&self, server_addr: &str, remote_filename: &str, local_pa
 
         while offset < file_content.len() {
             let chunk = &file_content[offset..std::cmp::min(offset + TFTP_BLOCK_SIZE, file_content.len())];
-            
+
             let mut packet = Vec::new();
             packet.extend_from_slice(&TFTP_OPCODE_DATA.to_be_bytes());
             packet.extend_from_slice(&block_num.to_be_bytes());

@@ -8,12 +8,12 @@ pub fn show_notification(title: &str, message: &str) -> Result<()> {
     {
         show_notification_windows(title, message)
     }
-    
+
     #[cfg(target_os = "linux")]
     {
         show_notification_linux(title, message)
     }
-    
+
     #[cfg(target_os = "macos")]
     {
         show_notification_macos(title, message)
@@ -24,11 +24,11 @@ pub fn show_notification(title: &str, message: &str) -> Result<()> {
 fn show_notification_windows(title: &str, message: &str) -> Result<()> {
     // Use PowerShell to show a Windows 10+ toast notification
     use std::process::Command;
-    
+
     // Escape strings for PowerShell
     let ps_title = title.replace('"', "\\\"").replace('\n', " ");
     let ps_message = message.replace('"', "\\\"").replace('\n', " ");
-    
+
     // PowerShell script to show toast notification using BALLOON tip (simpler, more reliable)
     let script = format!(
         r#"
@@ -43,14 +43,11 @@ fn show_notification_windows(title: &str, message: &str) -> Result<()> {
         Start-Sleep -Seconds 2
         $balloon.Dispose()
         "#,
-        ps_title,
-        ps_message
+        ps_title, ps_message
     );
-    
-    let result = Command::new("powershell")
-        .args(&["-NoProfile", "-WindowStyle", "Hidden", "-Command", &script])
-        .output();
-    
+
+    let result = Command::new("powershell").args(&["-NoProfile", "-WindowStyle", "Hidden", "-Command", &script]).output();
+
     match result {
         Ok(_) => Ok(()),
         Err(_) => {
@@ -65,11 +62,9 @@ fn show_notification_windows(title: &str, message: &str) -> Result<()> {
 fn show_notification_linux(title: &str, message: &str) -> Result<()> {
     // Try notify-send first
     use std::process::Command;
-    
-    let result = Command::new("notify-send")
-        .args([title, message])
-        .output();
-    
+
+    let result = Command::new("notify-send").args([title, message]).output();
+
     match result {
         Ok(_) => Ok(()),
         Err(_) => {
@@ -83,14 +78,11 @@ fn show_notification_linux(title: &str, message: &str) -> Result<()> {
 #[cfg(target_os = "macos")]
 fn show_notification_macos(title: &str, message: &str) -> Result<()> {
     use std::process::Command;
-    
+
     let result = Command::new("osascript")
-        .args(&[
-            "-e",
-            &format!(r#"display notification "{}" with title "{}""#, message, title)
-        ])
+        .args(&["-e", &format!(r#"display notification "{}" with title "{}""#, message, title)])
         .output();
-    
+
     match result {
         Ok(_) => Ok(()),
         Err(_) => {
@@ -102,8 +94,5 @@ fn show_notification_macos(title: &str, message: &str) -> Result<()> {
 
 /// Show task reminder notification
 pub fn show_task_reminder(title: &str, description: Option<&str>) -> Result<()> {
-    show_notification(
-        &format!("Reminder: {}", title),
-        description.unwrap_or("Time's up!")
-    )
+    show_notification(&format!("Reminder: {}", title), description.unwrap_or("Time's up!"))
 }

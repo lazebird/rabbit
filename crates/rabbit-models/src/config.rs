@@ -46,9 +46,7 @@ impl ConfigValue {
     }
 
     pub fn as_string_array(&self) -> Option<Vec<String>> {
-        self.as_array().map(|arr| {
-            arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect()
-        })
+        self.as_array().map(|arr| arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect())
     }
 }
 
@@ -146,9 +144,7 @@ impl ModuleConfigs {
     }
 
     pub fn get_array(&self, module: &str, key: &str) -> Option<Vec<String>> {
-        self.get_map(module)?
-            .get(key)?
-            .as_string_array()
+        self.get_map(module)?.get(key)?.as_string_array()
     }
 
     pub fn insert(&mut self, module: &str, key: &str, value: ConfigValue) {
@@ -301,10 +297,8 @@ mod tests {
         let config = AppConfig::default();
         let json = serde_json::to_string(&config).unwrap();
         let parsed: AppConfig = serde_json::from_str(&json).unwrap();
-        assert_eq!(config.modules.get_string("global", "language"),
-                   parsed.modules.get_string("global", "language"));
-        assert_eq!(config.modules.get_string("global", "theme"),
-                   parsed.modules.get_string("global", "theme"));
+        assert_eq!(config.modules.get_string("global", "language"), parsed.modules.get_string("global", "language"));
+        assert_eq!(config.modules.get_string("global", "theme"), parsed.modules.get_string("global", "theme"));
     }
 
     #[test]

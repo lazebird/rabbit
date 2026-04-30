@@ -1,5 +1,5 @@
+pub use rabbit_models::{Module, UiData};
 use tokio::sync::mpsc;
-pub use rabbit_models::{UiData, Module};
 
 /// Helper to send data through UI channel (eliminates duplicate send() implementations)
 pub async fn send_ui(tx: &Option<mpsc::Sender<UiData>>, data: UiData) {

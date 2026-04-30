@@ -6,6 +6,6 @@ pub mod downloader;
 pub mod installer;
 pub mod models;
 
-pub use models::{UpdateStatus, VersionsManifest, PlatformInfo};
 pub use downloader::{download_update, DownloadProgress};
-pub use installer::{install_update, get_current_exe_path};
+pub use installer::{get_current_exe_path, install_update};
+pub use models::{PlatformInfo, UpdateStatus, VersionsManifest};

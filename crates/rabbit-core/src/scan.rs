@@ -1,6 +1,9 @@
 //! IP Scanner Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
+use crate::{
+    ui_channel::{Module, UiData},
+    Result, ServiceError, ServiceUpdateResult,
+};
 pub use rabbit_models::scan::ScanRange;
 use std::net::Ipv4Addr;
 use std::sync::Arc;
@@ -18,10 +21,7 @@ struct ScannerConfig {
 
 impl Default for ScannerConfig {
     fn default() -> Self {
-        Self {
-            timeout_ms: 1500,
-            concurrent: 256,
-        }
+        Self { timeout_ms: 1500, concurrent: 256 }
     }
 }
 
@@ -82,16 +82,16 @@ impl ScanService {
 
     fn load_range_from_config(&self) -> Option<ScanRange> {
         let config = rabbit_platform::config::load_config().ok()?;
-        
+
         let start_ip = config.modules.get_string("scan", "start_ip")?;
         let end_ip = config.modules.get_string("scan", "end_ip")?;
-        
+
         if start_ip.is_empty() || end_ip.is_empty() {
             return None;
         }
-        
+
         let start: Ipv4Addr = start_ip.parse().ok()?;
-        
+
         // 支持简写格式: 1 表示 .1
         let end: Ipv4Addr = if let Ok(num) = end_ip.parse::<u8>() {
             let parts: Vec<&str> = start_ip.splitn(5, '.').collect();
@@ -106,18 +106,19 @@ impl ScanService {
         } else {
             end_ip.parse().ok()?
         };
-        
+
         Some(ScanRange::new(start, end))
     }
 
-    pub async fn start(&mut self) -> Result<()> {
+    /// 内部启动 Scan 服务
+    async fn start(&mut self) -> Result<()> {
         let range = match self.load_range_from_config() {
             Some(r) => r,
             None => {
                 return Err(ServiceError::Other("Invalid scan configuration".to_string()));
             }
         };
-        
+
         let mut state = self.state.write().await;
         if let ScannerState::Scanning { .. } = *state {
             return Err(ServiceError::AlreadyRunning);
@@ -163,11 +164,10 @@ impl ScanService {
                         if let Some(ref tx) = tx_clone {
                             let ip = result.ip;
                             let mac = result.mac_address.clone().or_else(|| get_mac_from_arp(ip));
-                            let mac_info = mac.as_ref()
-                                .map(|m| format!(" [MAC: {}]", m))
-                                .unwrap_or_default();
-                            let msg = format!("Found online host: {}{}{}", 
-                                result.ip, 
+                            let mac_info = mac.as_ref().map(|m| format!(" [MAC: {}]", m)).unwrap_or_default();
+                            let msg = format!(
+                                "Found online host: {}{}{}",
+                                result.ip,
                                 result.hostname.as_ref().map(|h| format!(" ({})", h)).unwrap_or_default(),
                                 mac_info
                             );
@@ -210,25 +210,28 @@ impl ScanService {
     pub async fn update(&mut self) -> ServiceUpdateResult {
         let state = *self.state.read().await;
         match state {
-            ScannerState::Idle => {
-                match self.start().await {
-                    Ok(()) => ServiceUpdateResult::Started("Scan started".to_string()),
-                    Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
-                }
-            }
+            ScannerState::Idle => match self.start().await {
+                Ok(()) => ServiceUpdateResult::Started("Scan started".to_string()),
+                Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
+            },
             _ => match self.cancel().await {
                 Ok(()) => ServiceUpdateResult::Stopped("Scan cancelled".to_string()),
                 Err(e) => ServiceUpdateResult::Error(format!("Failed to cancel: {}", e)),
-            }
+            },
         }
     }
 
-    pub fn is_running(&self) -> bool {
-        if let Ok(s) = self.state.try_read() {
-            matches!(*s, ScannerState::Scanning { .. })
-        } else {
-            false
+    /// 程序退出时调用，销毁资源，不发状态通告
+    pub async fn destroy(&mut self) -> Result<()> {
+        if let Some(tx) = self.cancel_tx.take() {
+            let _ = tx.send(()).await;
         }
+        if let Some(handle) = self.scan_handle.take() {
+            let _ = handle.await;
+        }
+        *self.state.write().await = ScannerState::Idle;
+        info!("Scan service destroyed");
+        Ok(())
     }
 
     pub async fn cancel(&mut self) -> Result<()> {
@@ -243,7 +246,6 @@ impl ScanService {
         Ok(())
     }
 }
-
 
 /// Scan progress information
 #[derive(Debug, Clone)]
@@ -267,35 +269,21 @@ async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
         ping_host_parallel(ip, timeout_ms).await.0
     } else {
         let addr = format!("{}:{}", ip, port);
-        let tcp_result = timeout(
-            Duration::from_millis(timeout_ms),
-            tokio::net::TcpStream::connect(&addr)
-        ).await;
+        let tcp_result = timeout(Duration::from_millis(timeout_ms), tokio::net::TcpStream::connect(&addr)).await;
         matches!(&tcp_result, Ok(Ok(_)))
     };
 
     // Try to resolve hostname
-    let hostname = if online {
-        resolve_hostname(ip).await
-    } else {
-        None
-    };
+    let hostname = if online { resolve_hostname(ip).await } else { None };
 
     // Try to get MAC address from ARP table (use spawn_blocking for sync file I/O)
     let mac_address = if online {
-        tokio::task::spawn_blocking(move || get_mac_from_arp(ip))
-            .await
-            .unwrap_or_default()
+        tokio::task::spawn_blocking(move || get_mac_from_arp(ip)).await.unwrap_or_default()
     } else {
         None
     };
 
-ScanResult {
-        ip,
-        online,
-        hostname,
-        mac_address,
-    }
+    ScanResult { ip, online, hostname, mac_address }
 }
 
 /// Ping a host using parallel TCP connect attempts to multiple common ports
@@ -309,9 +297,7 @@ async fn ping_host_parallel(ip: Ipv4Addr, timeout_ms: u64) -> (bool, Option<f64>
     let mut join_set = tokio::task::JoinSet::new();
     for port in common_ports {
         let addr = format!("{}:{}", ip, port);
-        join_set.spawn(async move {
-            tokio::net::TcpStream::connect(&addr).await
-        });
+        join_set.spawn(async move { tokio::net::TcpStream::connect(&addr).await });
     }
 
     // Wait for first success or timeout
@@ -322,7 +308,8 @@ async fn ping_host_parallel(ip: Ipv4Addr, timeout_ms: u64) -> (bool, Option<f64>
             }
         }
         false
-    }).await;
+    })
+    .await;
 
     let elapsed = start.elapsed().as_secs_f64() * 1000.0;
     match result {
@@ -335,16 +322,17 @@ async fn ping_host_parallel(ip: Ipv4Addr, timeout_ms: u64) -> (bool, Option<f64>
 async fn resolve_hostname(ip: Ipv4Addr) -> Option<String> {
     // Use DNS reverse lookup via dns-lookup crate
     use std::net::IpAddr;
-    
+
     let ip_addr = IpAddr::V4(ip);
-    
+
     // Perform reverse DNS lookup (blocking operation)
-    tokio::task::spawn_blocking(move || {
-        match dns_lookup::lookup_addr(&ip_addr) {
-            Ok(name) if !name.is_empty() => Some(name),
-            _ => None,
-        }
-    }).await.ok().flatten()
+    tokio::task::spawn_blocking(move || match dns_lookup::lookup_addr(&ip_addr) {
+        Ok(name) if !name.is_empty() => Some(name),
+        _ => None,
+    })
+    .await
+    .ok()
+    .flatten()
 }
 
 /// Get MAC address from ARP table (Linux: /proc/net/arp)
@@ -376,7 +364,5 @@ fn calculate_ip_range(start: Ipv4Addr, end: Ipv4Addr) -> Vec<Ipv4Addr> {
     let start_u32 = u32::from(start);
     let end_u32 = u32::from(end);
 
-    (start_u32..=end_u32)
-        .map(Ipv4Addr::from)
-        .collect()
+    (start_u32..=end_u32).map(Ipv4Addr::from).collect()
 }

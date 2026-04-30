@@ -4,8 +4,8 @@
 //! so services can update the display without direct FLTK access.
 
 use parking_lot::Mutex;
-use std::sync::{Arc, Mutex as StdMutex};
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex as StdMutex};
 
 /// Trim a string to at most `max_lines` lines, removing oldest lines from the front.
 fn trim_lines(s: &mut String, max_lines: usize) {
@@ -310,11 +310,7 @@ pub fn remove_http_item(path: &str) {
                 if let Some(sel) = s.http_selected_idx {
                     let sel_usize = sel as usize;
                     if sel_usize > s.http_items.len() {
-                        s.http_selected_idx = if s.http_items.is_empty() {
-                            None
-                        } else {
-                            Some(s.http_items.len() as i32)
-                        };
+                        s.http_selected_idx = if s.http_items.is_empty() { None } else { Some(s.http_items.len() as i32) };
                     }
                 }
                 s.updated.insert("http_items".to_string(), true);
@@ -333,16 +329,16 @@ pub fn set_http_selected(idx: i32) {
 
 /// Sync HTTP items from UI state to config and save
 pub fn sync_http_config() {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
+    use rabbit_platform::config::{load_config, save_config};
 
     if let Some(state) = UiState::global() {
         if let Ok(s) = state.lock() {
             if let Ok(mut config) = load_config() {
-                config.modules.http.insert(
-                    "dirs".into(),
-                    ConfigValue::Array(s.http_items.iter().map(|item| ConfigValue::String(item.clone())).collect())
-                );
+                config
+                    .modules
+                    .http
+                    .insert("dirs".into(), ConfigValue::Array(s.http_items.iter().map(|item| ConfigValue::String(item.clone())).collect()));
                 if let Err(e) = save_config(&config) {
                     tracing::warn!("Failed to save HTTP config: {}", e);
                 }
@@ -353,16 +349,16 @@ pub fn sync_http_config() {
 
 /// Sync TFTP directory from UI state to config and save
 pub fn sync_tftpd_config() {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
+    use rabbit_platform::config::{load_config, save_config};
 
     if let Some(state) = UiState::global() {
         if let Ok(s) = state.lock() {
             if let Ok(mut config) = load_config() {
-                config.modules.tftpd.insert(
-                    "work_dirs".into(),
-                    ConfigValue::Array(s.tftpd_dirs.iter().map(|item| ConfigValue::String(item.clone())).collect())
-                );
+                config
+                    .modules
+                    .tftpd
+                    .insert("work_dirs".into(), ConfigValue::Array(s.tftpd_dirs.iter().map(|item| ConfigValue::String(item.clone())).collect()));
                 if let Some(idx) = s.tftpd_selected_idx {
                     let config_idx = if idx <= 0 { 0 } else { (idx - 1) as i64 };
                     config.modules.tftpd.insert("working_dir_index".into(), ConfigValue::Integer(config_idx));
@@ -412,18 +408,11 @@ pub fn set_plan_list(list: &str) {
 pub fn append_plan_event(id: &str, date: &str, time: &str, cycle: i32, unit: &str, msg: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
-            let cycle_str = if cycle > 0 {
-                format!(" (Repeat every {} {})", cycle, unit)
-            } else {
-                " (One-time)".to_string()
-            };
+            let cycle_str = if cycle > 0 { format!(" (Repeat every {} {})", cycle, unit) } else { " (One-time)".to_string() };
             if s.plan_list.contains("No scheduled events") {
                 s.plan_list = "Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n".to_string();
             }
-            s.plan_list.push_str(&format!(
-                "[{}] {} {} - {}{}\n",
-                id, date, time, msg, cycle_str
-            ));
+            s.plan_list.push_str(&format!("[{}] {} {} - {}{}\n", id, date, time, msg, cycle_str));
             s.updated.insert("plan_list".to_string(), true);
         }
     }
@@ -549,9 +538,9 @@ pub fn append_settings_output(text: &str) {
 // These update the UI state and trigger config save via the SettingsSave event
 
 pub fn set_systray(value: bool) {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
-    
+    use rabbit_platform::config::{load_config, save_config};
+
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "systray", ConfigValue::Boolean(value));
         save_config(&config).ok();
@@ -559,9 +548,9 @@ pub fn set_systray(value: bool) {
 }
 
 pub fn set_top(value: bool) {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
-    
+    use rabbit_platform::config::{load_config, save_config};
+
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "top", ConfigValue::Boolean(value));
         save_config(&config).ok();
@@ -569,9 +558,9 @@ pub fn set_top(value: bool) {
 }
 
 pub fn set_autostart(value: bool) {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
-    
+    use rabbit_platform::config::{load_config, save_config};
+
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "autostart", ConfigValue::Boolean(value));
         save_config(&config).ok();
@@ -579,9 +568,9 @@ pub fn set_autostart(value: bool) {
 }
 
 pub fn set_autoupdate(value: bool) {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
-    
+    use rabbit_platform::config::{load_config, save_config};
+
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "autoupdate", ConfigValue::Boolean(value));
         save_config(&config).ok();
@@ -589,9 +578,9 @@ pub fn set_autoupdate(value: bool) {
 }
 
 pub fn set_language(value: &str) {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
-    
+    use rabbit_platform::config::{load_config, save_config};
+
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "language", ConfigValue::String(value.to_string()));
         save_config(&config).ok();
@@ -600,9 +589,9 @@ pub fn set_language(value: &str) {
 
 /// Sync plan configuration when adding a new event
 pub fn sync_plan_config(date: String, time: String, cycle: i32, unit: &str, msg: String) {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
-    
+    use rabbit_platform::config::{load_config, save_config};
+
     if let Ok(mut config) = load_config() {
         config.modules.insert("plan", "date", ConfigValue::String(date));
         config.modules.insert("plan", "time", ConfigValue::String(time));
@@ -617,16 +606,16 @@ pub fn sync_plan_config(date: String, time: String, cycle: i32, unit: &str, msg:
 
 /// Sync scan configuration when starting a scan
 pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
+    use rabbit_platform::config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         config.modules.scan.insert("start_ip".into(), ConfigValue::String(start_ip));
-        
+
         // Save only single number (last octet) for end_ip
         let end_suffix: u8 = end_ip.parse().unwrap_or(254);
         config.modules.scan.insert("end_ip".into(), ConfigValue::String(end_suffix.to_string()));
-        
+
         config.modules.scan.insert("filter".into(), ConfigValue::Boolean(filter));
         if let Err(e) = save_config(&config) {
             tracing::warn!("Failed to save scan config: {}", e);
@@ -636,8 +625,8 @@ pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
 
 /// Sync HTTP configuration when starting the server
 pub fn sync_http_start_config(port: u16, shell: bool, autoindex: bool, videoplay: bool) {
-    use rabbit_platform::config::{load_config, save_config};
     use rabbit_models::config::ConfigValue;
+    use rabbit_platform::config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         config.modules.http.insert("port".into(), ConfigValue::Integer(port as i64));

@@ -9,24 +9,24 @@
 //! - ChatService: LAN chat
 //! - ScanService: IP scanner
 
-pub mod ping;
-pub mod http;
-pub mod tftpd;
-pub mod tftpc;
-pub mod plan;
 pub mod chat;
+pub mod http;
+pub mod ping;
+pub mod plan;
 pub mod scan;
+pub mod tftpc;
+pub mod tftpd;
 pub mod ui_channel;
 
-pub use ping::PingService;
-pub use http::HttpService;
-pub use tftpd::TftpdService;
-pub use tftpc::TftpcService;
-pub use plan::PlanService;
 pub use chat::ChatService;
+pub use http::HttpService;
+pub use ping::PingService;
+pub use plan::PlanService;
 pub use scan::ScanService;
+pub use tftpc::TftpcService;
+pub use tftpd::TftpdService;
 
-pub use ui_channel::{UiData, Module, send_ui};
+pub use ui_channel::{send_ui, Module, UiData};
 
 pub type TftpService = TftpdService;
 
@@ -66,19 +66,19 @@ impl ServiceUpdateResult {
 pub enum ServiceError {
     #[error("Service not started")]
     NotStarted,
-    
+
     #[error("Service already running")]
     AlreadyRunning,
-    
+
     #[error("Configuration error: {0}")]
     Config(String),
-    
+
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
-    
+
     #[error("Platform error: {0}")]
     Platform(#[from] rabbit_platform::PlatformError),
-    
+
     #[error("Other error: {0}")]
     Other(String),
 }

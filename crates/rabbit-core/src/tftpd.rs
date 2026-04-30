@@ -1,6 +1,9 @@
 //! TFTP Server Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::{UiData, Module}};
+use crate::{
+    ui_channel::{Module, UiData},
+    Result, ServiceError, ServiceUpdateResult,
+};
 use rabbit_platform::config::get_integer;
 use std::path::PathBuf;
 use tokio::task::JoinHandle;
@@ -61,13 +64,13 @@ impl TftpdService {
         crate::send_ui(&self.tx, data).await;
     }
 
-    /// Start TFTP server
-    pub async fn start(&mut self) -> Result<()> {
+    /// 内部启动 TFTP 服务器
+    async fn start(&mut self) -> Result<()> {
         self.start_server().await
     }
 
-    /// Start TFTP server
-    pub async fn start_server(&mut self) -> Result<()> {
+    /// 内部启动 TFTP 服务器
+    async fn start_server(&mut self) -> Result<()> {
         if self.server_handle.is_some() {
             return Err(ServiceError::AlreadyRunning);
         }
@@ -93,10 +96,7 @@ impl TftpdService {
         let handle = tokio::task::spawn_blocking(move || {
             info!("Starting TFTP server on {} with root: {}", bind_addr, root_path);
 
-            let rt = tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .expect("Failed to create runtime");
+            let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().expect("Failed to create runtime");
 
             rt.block_on(async {
                 match async_tftp::server::TftpServerBuilder::with_dir_rw(&root_path) {
@@ -117,11 +117,11 @@ impl TftpdService {
                             .max_send_retries(100);
 
                         match builder.build().await {
-                             Ok(server) => {
-                                 info!("TFTP server started successfully");
-                                 if let Some(ref tx) = tx_ui {
-                                     let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server started".to_string())).await;
-                                 }
+                            Ok(server) => {
+                                info!("TFTP server started successfully");
+                                if let Some(ref tx) = tx_ui {
+                                    let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server started".to_string())).await;
+                                }
 
                                 let server_fut = server.serve();
                                 tokio::select! {
@@ -155,8 +155,8 @@ impl TftpdService {
         self.stop_server().await
     }
 
-    /// Stop TFTP server
-    pub async fn stop_server(&mut self) -> Result<()> {
+    /// 内部停止 TFTP 服务器
+    async fn stop_server(&mut self) -> Result<()> {
         if let Some(tx) = self.shutdown_tx.take() {
             let _ = tx.send(());
         }
@@ -173,9 +173,9 @@ impl TftpdService {
         Ok(())
     }
 
-    /// Update service (toggle start/stop)
+    /// 公开接口：启停切换，会发状态通告
     pub async fn update(&mut self) -> ServiceUpdateResult {
-        if self.is_running() {
+        if self.server_handle.is_some() {
             match self.stop().await {
                 Ok(()) => ServiceUpdateResult::Stopped("TFTP server stopped".to_string()),
                 Err(e) => ServiceUpdateResult::Error(format!("Failed to stop: {}", e)),
@@ -188,13 +188,18 @@ impl TftpdService {
         }
     }
 
-    /// Check if running
-    fn is_running(&self) -> bool {
-        self.server_handle.is_some()
+    /// 程序退出时调用，销毁资源，不发状态通告
+    pub async fn destroy(&mut self) -> Result<()> {
+        if let Some(tx) = self.shutdown_tx.take() {
+            let _ = tx.send(());
+        }
+        if let Some(handle) = self.server_handle.take() {
+            let _ = handle.await;
+        }
+        info!("TFTP server destroyed");
+        Ok(())
     }
 }
-
-
 
 impl Default for TftpdService {
     fn default() -> Self {

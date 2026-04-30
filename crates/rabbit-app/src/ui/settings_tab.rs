@@ -6,18 +6,18 @@
 
 use fltk::{
     button::{Button, CheckButton},
+    enums::Align,
     frame::Frame,
     group::Flex,
     menu::Choice,
     prelude::*,
-    enums::Align,
     text::{TextBuffer, TextDisplay, WrapMode},
 };
 
-use crate::ui_events::{UiEvent, send_event};
-use crate::upgrade::{self, VersionsManifest};
+use super::{Colors, Spacing, TabComponent};
+use crate::ui_events::{send_event, UiEvent};
 use crate::ui_state::append_settings_output;
-use super::{TabComponent, Colors, Spacing};
+use crate::upgrade::{self, VersionsManifest};
 
 // ============================================================
 // Version Check Helper
@@ -39,9 +39,7 @@ pub fn check_version_update() -> upgrade::UpdateStatus {
         Ok(content) => {
             let trimmed = content.trim();
             if !trimmed.starts_with('{') {
-                return upgrade::UpdateStatus::CheckError(
-                    "Server returned non-JSON response".to_string()
-                );
+                return upgrade::UpdateStatus::CheckError("Server returned non-JSON response".to_string());
             }
 
             match serde_json::from_str::<VersionsManifest>(trimmed) {
@@ -86,21 +84,33 @@ const HELP_URL: &str = "https://github.com/lazebird/rabbit/blob/rewrite/doc/manu
 /// Open a URL in the system default browser
 fn open_url(url: &str) {
     #[cfg(target_os = "windows")]
-    { let _ = std::process::Command::new("cmd").args(["/c", "start", url]).spawn(); }
+    {
+        let _ = std::process::Command::new("cmd").args(["/c", "start", url]).spawn();
+    }
     #[cfg(target_os = "macos")]
-    { let _ = std::process::Command::new("open").arg(url).spawn(); }
+    {
+        let _ = std::process::Command::new("open").arg(url).spawn();
+    }
     #[cfg(target_os = "linux")]
-    { let _ = std::process::Command::new("xdg-open").arg(url).spawn(); }
+    {
+        let _ = std::process::Command::new("xdg-open").arg(url).spawn();
+    }
 }
 
 /// Open a folder in the system file explorer
 fn open_folder(path: &str) {
     #[cfg(target_os = "windows")]
-    { let _ = std::process::Command::new("explorer").arg(path).spawn(); }
+    {
+        let _ = std::process::Command::new("explorer").arg(path).spawn();
+    }
     #[cfg(target_os = "macos")]
-    { let _ = std::process::Command::new("open").arg(path).spawn(); }
+    {
+        let _ = std::process::Command::new("open").arg(path).spawn();
+    }
     #[cfg(target_os = "linux")]
-    { let _ = std::process::Command::new("xdg-open").arg(path).spawn(); }
+    {
+        let _ = std::process::Command::new("xdg-open").arg(path).spawn();
+    }
 }
 
 /// Get config folder path (matches rabbit-platform::config::get_config_dir)
@@ -221,7 +231,7 @@ impl TabComponent for SettingsTab {
         output_display.set_buffer(Some(output_buf));
         output_display.wrap_mode(WrapMode::AtBounds, 0);
         output_display.set_text_size(14);
-        output_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
+        output_display.set_frame(fltk::enums::FrameType::FlatBox); // Remove border
 
         // Initialize output from ui_state
         if let Some(state) = crate::ui_state::UiState::global() {
@@ -277,7 +287,7 @@ impl TabComponent for SettingsTab {
         let top_check_clone = top_check.clone();
         let autostart_check_clone = autostart_check.clone();
         let autoupdate_check_clone = autoupdate_check.clone();
-        
+
         lang_choice.set_callback(move |_| {
             let idx = lang_choice_clone.value();
             let lang = match idx {

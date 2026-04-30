@@ -1,18 +1,16 @@
 //! Platform-specific installation logic
 
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 /// Get current executable path
 pub fn get_current_exe_path() -> Result<PathBuf, String> {
-    std::env::current_exe()
-        .map_err(|e| format!("Failed to get current exe path: {}", e))
+    std::env::current_exe().map_err(|e| format!("Failed to get current exe path: {}", e))
 }
 
 /// Verify SHA256 checksum of downloaded file
 fn verify_sha256(path: &Path, expected: &str) -> Result<(), String> {
-    let data = std::fs::read(path)
-        .map_err(|e| format!("Failed to read file: {}", e))?;
+    let data = std::fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?;
 
     let mut hasher = Sha256::new();
     hasher.update(&data);
@@ -36,8 +34,7 @@ pub fn install_update(new_version_path: &Path, expected_sha256: &str) -> Result<
 
     // Step 2: Get current executable path
     let current_exe = get_current_exe_path()?;
-    let current_dir = current_exe.parent()
-        .ok_or("Failed to get current directory")?.to_path_buf();
+    let current_dir = current_exe.parent().ok_or("Failed to get current directory")?.to_path_buf();
 
     // Step 3: Create and execute platform-specific update script
     #[cfg(target_os = "windows")]
@@ -61,13 +58,11 @@ fn install_windows(new_version_path: &Path, current_exe: PathBuf, current_dir: &
     use std::fs;
 
     let update_dir = std::env::temp_dir().join("rabbit_update");
-    fs::create_dir_all(&update_dir)
-        .map_err(|e| format!("Failed to create update directory: {}", e))?;
+    fs::create_dir_all(&update_dir).map_err(|e| format!("Failed to create update directory: {}", e))?;
 
     // Copy new version to update directory
     let temp_exe = update_dir.join("rabbit.exe");
-    fs::copy(new_version_path, &temp_exe)
-        .map_err(|e| format!("Failed to copy new version: {}", e))?;
+    fs::copy(new_version_path, &temp_exe).map_err(|e| format!("Failed to copy new version: {}", e))?;
 
     // Create update script
     let script_path = update_dir.join("update.bat");
@@ -84,8 +79,7 @@ rmdir /s /q "{}"
         update_dir.display()
     );
 
-    fs::write(&script_path, script_content)
-        .map_err(|e| format!("Failed to write update script: {}", e))?;
+    fs::write(&script_path, script_content).map_err(|e| format!("Failed to write update script: {}", e))?;
 
     // Execute update script
     std::process::Command::new("cmd")
@@ -103,21 +97,16 @@ fn install_unix(new_version_path: &Path, current_exe: PathBuf, _current_dir: &Pa
     use std::os::unix::fs::PermissionsExt;
 
     let update_dir = PathBuf::from("/tmp/rabbit_update");
-    fs::create_dir_all(&update_dir)
-        .map_err(|e| format!("Failed to create update directory: {}", e))?;
+    fs::create_dir_all(&update_dir).map_err(|e| format!("Failed to create update directory: {}", e))?;
 
     // Copy new version to update directory
     let temp_exe = update_dir.join("rabbit");
-    fs::copy(new_version_path, &temp_exe)
-        .map_err(|e| format!("Failed to copy new version: {}", e))?;
+    fs::copy(new_version_path, &temp_exe).map_err(|e| format!("Failed to copy new version: {}", e))?;
 
     // Set executable permission
-    let mut perms = fs::metadata(&temp_exe)
-        .map_err(|e| format!("Failed to get file metadata: {}", e))?
-        .permissions();
+    let mut perms = fs::metadata(&temp_exe).map_err(|e| format!("Failed to get file metadata: {}", e))?.permissions();
     perms.set_mode(0o755);
-    fs::set_permissions(&temp_exe, perms)
-        .map_err(|e| format!("Failed to set permissions: {}", e))?;
+    fs::set_permissions(&temp_exe, perms).map_err(|e| format!("Failed to set permissions: {}", e))?;
 
     // Create update script
     let script_path = update_dir.join("update.sh");
@@ -135,16 +124,12 @@ rm -rf /tmp/rabbit_update
         current_exe.display()
     );
 
-    fs::write(&script_path, script_content)
-        .map_err(|e| format!("Failed to write update script: {}", e))?;
+    fs::write(&script_path, script_content).map_err(|e| format!("Failed to write update script: {}", e))?;
 
     // Set script executable permission
-    let mut script_perms = fs::metadata(&script_path)
-        .map_err(|e| format!("Failed to get script metadata: {}", e))?
-        .permissions();
+    let mut script_perms = fs::metadata(&script_path).map_err(|e| format!("Failed to get script metadata: {}", e))?.permissions();
     script_perms.set_mode(0o755);
-    fs::set_permissions(&script_path, script_perms)
-        .map_err(|e| format!("Failed to set script permissions: {}", e))?;
+    fs::set_permissions(&script_path, script_perms).map_err(|e| format!("Failed to set script permissions: {}", e))?;
 
     // Execute update script
     std::process::Command::new("bash")

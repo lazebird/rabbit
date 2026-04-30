@@ -20,7 +20,7 @@ pub async fn get_interfaces() -> Result<Vec<NetworkInterface>> {
     {
         get_interfaces_unix().await
     }
-    
+
     #[cfg(target_os = "windows")]
     {
         get_interfaces_windows().await
@@ -30,17 +30,14 @@ pub async fn get_interfaces() -> Result<Vec<NetworkInterface>> {
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 async fn get_interfaces_unix() -> Result<Vec<NetworkInterface>> {
     use std::process::Command;
-    
+
     // Use ip command on Linux, ifconfig on macOS
     #[cfg(target_os = "linux")]
-        let _output = Command::new("ip")
-            .args(["-j", "addr", "show"])
-            .output()?;
-    
+    let _output = Command::new("ip").args(["-j", "addr", "show"]).output()?;
+
     #[cfg(target_os = "macos")]
-    let output = Command::new("ifconfig")
-        .output()?;
-    
+    let output = Command::new("ifconfig").output()?;
+
     // Parse output (simplified - in production use a proper parser)
     let interfaces = vec![];
     Ok(interfaces)
@@ -65,8 +62,6 @@ pub fn get_local_ip() -> Option<Ipv4Addr> {
 pub fn calculate_ip_range(start: Ipv4Addr, end: Ipv4Addr) -> Vec<Ipv4Addr> {
     let start_u32 = u32::from(start);
     let end_u32 = u32::from(end);
-    
-    (start_u32..=end_u32)
-        .map(Ipv4Addr::from)
-        .collect()
+
+    (start_u32..=end_u32).map(Ipv4Addr::from).collect()
 }

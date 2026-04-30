@@ -14,11 +14,11 @@ use fltk::{
     text::{TextBuffer, TextDisplay, WrapMode},
 };
 
-use crate::ui_events::{UiEvent, send_event};
+use super::{defaults, Colors, TabComponent};
+use crate::ui_events::{send_event, UiEvent};
 use crate::ui_state::UiState;
 use rabbit_models::config::ConfigValue;
 use rabbit_platform::config::{load_config, save_config};
-use super::{TabComponent, Colors, defaults};
 
 /// Ping Tab Component
 pub struct PingTab;
@@ -28,7 +28,7 @@ impl TabComponent for PingTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "Ping").column();
-        grp.set_margin(0);  // Remove margin to match old version - no extra padding
+        grp.set_margin(0); // Remove margin to match old version - no extra padding
         grp.set_spacing(4);
 
         // Control row - matching old version layout
@@ -81,8 +81,8 @@ impl TabComponent for PingTab {
         let results_buf = TextBuffer::default();
         results_display.set_buffer(Some(results_buf));
         results_display.wrap_mode(WrapMode::AtBounds, 0);
-        results_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border to match old version
-        results_display.set_scrollbar_size(10);  // Smaller scrollbar to save space
+        results_display.set_frame(fltk::enums::FrameType::FlatBox); // Remove border to match old version
+        results_display.set_scrollbar_size(10); // Smaller scrollbar to save space
 
         grp.end();
 
@@ -120,14 +120,26 @@ impl TabComponent for PingTab {
                 let mut interval = 1000i64;
                 let mut count = -1i64;
                 let mut stop_on_loss = false;
-                
+
                 for opt in options.split(';') {
                     let parts: Vec<&str> = opt.splitn(2, '=').collect();
                     if parts.len() == 2 {
                         match parts[0].trim() {
-                            "interval" => { if let Ok(v) = parts[1].parse::<i64>() { interval = v; } }
-                            "count" => { if let Ok(v) = parts[1].parse::<i64>() { count = v; } }
-                            "stoponloss" => { if let Ok(v) = parts[1].parse::<bool>() { stop_on_loss = v; } }
+                            "interval" => {
+                                if let Ok(v) = parts[1].parse::<i64>() {
+                                    interval = v;
+                                }
+                            }
+                            "count" => {
+                                if let Ok(v) = parts[1].parse::<i64>() {
+                                    count = v;
+                                }
+                            }
+                            "stoponloss" => {
+                                if let Ok(v) = parts[1].parse::<bool>() {
+                                    stop_on_loss = v;
+                                }
+                            }
                             _ => {}
                         }
                     }

@@ -24,18 +24,16 @@ fn get_last_saved_cache() -> &'static RwLock<String> {
 
 pub fn get_config_dir() -> Result<PathBuf> {
     let dir = if cfg!(windows) {
-        std::env::var("APPDATA")
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| dirs::config_dir().unwrap_or_else(|| PathBuf::from(".")))
+        std::env::var("APPDATA").map(PathBuf::from).unwrap_or_else(|_| dirs::config_dir().unwrap_or_else(|| PathBuf::from(".")))
     } else {
         dirs::config_dir().unwrap_or_else(|| PathBuf::from("."))
     };
-    
+
     let rabbit_dir = dir.join("rabbit");
     if !rabbit_dir.exists() {
         fs::create_dir_all(&rabbit_dir)?;
     }
-    
+
     Ok(rabbit_dir)
 }
 
@@ -51,21 +49,20 @@ pub fn get_data_dir() -> Result<PathBuf> {
 /// 内部加载函数，不走缓存
 fn load_config_internal() -> Result<AppConfig> {
     let config_path = get_config_dir()?.join(CONFIG_FILE);
-    
+
     if !config_path.exists() {
         return Ok(AppConfig::default());
     }
-    
+
     let content = fs::read_to_string(&config_path)?;
-    
+
     // 初始化上次保存的内容
     if let Ok(mut last) = get_last_saved_cache().write() {
         *last = content.clone();
     }
-    
-    let mut config: AppConfig = toml::from_str(&content)
-        .map_err(|e| PlatformError::Config(format!("Failed to parse config: {}", e)))?;
-    
+
+    let mut config: AppConfig = toml::from_str(&content).map_err(|e| PlatformError::Config(format!("Failed to parse config: {}", e)))?;
+
     config.merge_defaults();
     Ok(config)
 }
@@ -78,9 +75,8 @@ pub fn load_config() -> Result<AppConfig> {
 
 /// 对外接口：保存配置并执行脏检查
 pub fn save_config(config: &AppConfig) -> Result<()> {
-    let content = toml::to_string_pretty(config)
-        .map_err(|e| PlatformError::Config(format!("Failed to serialize config: {}", e)))?;
-    
+    let content = toml::to_string_pretty(config).map_err(|e| PlatformError::Config(format!("Failed to serialize config: {}", e)))?;
+
     // 脏检查：对比上次保存的内容
     {
         let last_saved = get_last_saved_cache().read().map_err(|_| PlatformError::Config("Lock poisoned".into()))?;
@@ -88,10 +84,10 @@ pub fn save_config(config: &AppConfig) -> Result<()> {
             return Ok(());
         }
     }
-    
+
     let config_path = get_config_dir()?.join(CONFIG_FILE);
     fs::write(&config_path, &content)?;
-    
+
     // 更新缓存和脏检查内容
     if let Ok(mut last) = get_last_saved_cache().write() {
         *last = content;
@@ -99,7 +95,7 @@ pub fn save_config(config: &AppConfig) -> Result<()> {
     if let Ok(mut cache) = get_config_cache().write() {
         *cache = config.clone();
     }
-    
+
     Ok(())
 }
 

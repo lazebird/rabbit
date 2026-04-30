@@ -15,9 +15,9 @@ use fltk::{
     text::{TextBuffer, TextDisplay, WrapMode},
 };
 
-use crate::ui_events::{UiEvent, send_event};
+use super::{defaults, Colors, TabComponent};
+use crate::ui_events::{send_event, UiEvent};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors, defaults};
 
 /// Chat Tab Component
 pub struct ChatTab;
@@ -27,7 +27,7 @@ impl TabComponent for ChatTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "CHAT").column();
-        grp.set_margin(0);  // Remove margin to match old version
+        grp.set_margin(0); // Remove margin to match old version
         grp.set_spacing(4);
 
         // Row 1: Name [input] Port [input] [Start button]
@@ -90,7 +90,7 @@ impl TabComponent for ChatTab {
         let users_buf = TextBuffer::default();
         users_display.set_buffer(Some(users_buf));
         users_display.wrap_mode(WrapMode::AtBounds, 0);
-        users_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
+        users_display.set_frame(fltk::enums::FrameType::FlatBox); // Remove border
         users_col.end();
         content_row.fixed(&users_col, 120);
 
@@ -102,7 +102,7 @@ impl TabComponent for ChatTab {
         let msg_buf = TextBuffer::default();
         messages_display.set_buffer(Some(msg_buf));
         messages_display.wrap_mode(WrapMode::AtBounds, 0);
-        messages_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
+        messages_display.set_frame(fltk::enums::FrameType::FlatBox); // Remove border
         msg_col.end();
 
         content_row.end();
@@ -160,21 +160,14 @@ impl TabComponent for ChatTab {
 
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
-                        s.chat_messages = format!(
-                            "[{}] Connected as {} on port {}\n\n",
-                            chrono::Local::now().format("%H:%M:%S"),
-                            username, port
-                        );
+                        s.chat_messages = format!("[{}] Connected as {} on port {}\n\n", chrono::Local::now().format("%H:%M:%S"), username, port);
                         s.updated.insert("chat_messages".to_string(), true);
                     }
                 }
             } else {
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {
-                        s.chat_messages.push_str(&format!(
-                            "[{}] Disconnected from chat\n",
-                            chrono::Local::now().format("%H:%M:%S")
-                        ));
+                        s.chat_messages.push_str(&format!("[{}] Disconnected from chat\n", chrono::Local::now().format("%H:%M:%S")));
                         s.chat_users.clear();
                         s.updated.insert("chat_messages".to_string(), true);
                         s.updated.insert("chat_users".to_string(), true);
@@ -192,10 +185,7 @@ impl TabComponent for ChatTab {
             // Add refresh indicator to UI state
             if let Some(state) = UiState::global() {
                 if let Ok(mut s) = state.lock() {
-                    s.chat_messages.push_str(&format!(
-                        "[{}] Refreshing user list...\n",
-                        chrono::Local::now().format("%H:%M:%S")
-                    ));
+                    s.chat_messages.push_str(&format!("[{}] Refreshing user list...\n", chrono::Local::now().format("%H:%M:%S")));
                     s.updated.insert("chat_messages".to_string(), true);
                 }
             }
@@ -206,10 +196,8 @@ impl TabComponent for ChatTab {
             // Add notification indicator to UI state
             if let Some(state) = UiState::global() {
                 if let Ok(mut s) = state.lock() {
-                    s.chat_messages.push_str(&format!(
-                        "[{}] Sending notification to all users...\n",
-                        chrono::Local::now().format("%H:%M:%S")
-                    ));
+                    s.chat_messages
+                        .push_str(&format!("[{}] Sending notification to all users...\n", chrono::Local::now().format("%H:%M:%S")));
                     s.updated.insert("chat_messages".to_string(), true);
                 }
             }
@@ -242,7 +230,7 @@ impl TabComponent for ChatTab {
         // Register displays with centralized refresh manager
         super::ui_refresh::register_display("chat_users", users_display.clone());
         super::ui_refresh::register_display("chat_messages", messages_display.clone());
-        
+
         // Register send button for Enter key support (primary action)
         super::ui_refresh::register_chat_button(send_btn.clone(), colors.accent);
 

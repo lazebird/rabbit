@@ -1,6 +1,6 @@
 //! LAN Chat Service
 
-use crate::{Result, ServiceError, ServiceUpdateResult, ui_channel::UiData};
+use crate::{ui_channel::UiData, Result, ServiceError, ServiceUpdateResult};
 use rabbit_platform::config::{get_integer, get_string};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -88,8 +88,8 @@ impl ChatService {
         crate::send_ui(&self.tx, data).await;
     }
 
-    /// Start the chat service
-    pub async fn start(&mut self) -> Result<()> {
+    /// 内部启动 Chat 服务
+    async fn start(&mut self) -> Result<()> {
         if self.recv_handle.is_some() {
             return Err(ServiceError::AlreadyRunning);
         }
@@ -99,8 +99,7 @@ impl ChatService {
 
         // Create UDP socket
         let bind_addr = format!("0.0.0.0:{}", config.port);
-        let socket = UdpSocket::bind(&bind_addr).await
-            .map_err(ServiceError::Io)?;
+        let socket = UdpSocket::bind(&bind_addr).await.map_err(ServiceError::Io)?;
 
         socket.set_broadcast(true)?;
 
@@ -128,7 +127,7 @@ impl ChatService {
                                     let mut users_guard = users_arc.write().await;
                                     let is_new_user = !users_guard.values()
                                         .any(|u| u.username == msg.sender);
-                                    
+
                                     users_guard.insert(msg.sender.clone(), ChatUser {
                                         username: msg.sender.clone(),
                                         online: true,
@@ -138,7 +137,7 @@ impl ChatService {
 
                                     if let Some(ref ui_tx) = tx_ui {
                                         let _ = ui_tx.send(UiData::ChatMessage(msg.sender.clone(), msg.content.clone())).await;
-                                        
+
                                         // Only send user list if it changed
                                         if is_new_user {
                                             let user_list = users_guard.values()
@@ -189,6 +188,27 @@ impl ChatService {
         }
     }
 
+    /// 程序退出时调用，销毁资源，不发状态通告
+    pub async fn destroy(&mut self) -> Result<()> {
+        self.send_message("Left the chat", MessageType::Announcement).await.ok();
+
+        if let Some(tx) = self.message_tx.take() {
+            drop(tx);
+        }
+
+        if let Some(handle) = self.recv_handle.take() {
+            handle.abort();
+        }
+
+        if let Some(handle) = self.heartbeat_handle.take() {
+            handle.abort();
+        }
+
+        *self.socket.write().await = None;
+        info!("Chat service destroyed");
+        Ok(())
+    }
+
     async fn stop(&mut self) -> Result<()> {
         self.send_message("Left the chat", MessageType::Announcement).await.ok();
 
@@ -227,8 +247,7 @@ impl ChatService {
         };
 
         if let Some(tx) = &self.message_tx {
-            tx.send(message).await
-                .map_err(|_| ServiceError::Other("Message channel closed".into()))?;
+            tx.send(message).await.map_err(|_| ServiceError::Other("Message channel closed".into()))?;
         }
 
         Ok(())
@@ -243,7 +262,6 @@ impl ChatService {
         Ok(())
     }
 }
-
 
 impl Default for ChatService {
     fn default() -> Self {

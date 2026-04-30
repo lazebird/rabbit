@@ -8,9 +8,7 @@
 pub mod windows {
     use windows_sys::Win32::Foundation::HWND;
     use windows_sys::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED};
-    use windows_sys::Win32::UI::Shell::{
-        TBPF_NOPROGRESS, TBPF_INDETERMINATE, TBPF_NORMAL, TBPF_ERROR, TBPF_PAUSED,
-    };
+    use windows_sys::Win32::UI::Shell::{TBPF_ERROR, TBPF_INDETERMINATE, TBPF_NOPROGRESS, TBPF_NORMAL, TBPF_PAUSED};
 
     const CLSID_TASKBARLIST: windows_sys::core::GUID = windows_sys::core::GUID {
         data1: 0x56FDF344,

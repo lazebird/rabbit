@@ -72,9 +72,12 @@ pub fn format_ping_stats(sent: u32, received: u32, min_ms: f64, max_ms: f64, avg
     format!(
         "{} Tx {} Rx {} Loss {} Min {} Max {} Avg {:.6}",
         now.format("%Y/%m/%d %H:%M:%S"),
-        sent, received, lost,
+        sent,
+        received,
+        lost,
         if min_ms == f64::INFINITY { 0 } else { min_ms as u32 },
-        max_ms as u32, avg_ms
+        max_ms as u32,
+        avg_ms
     )
 }
 

@@ -1,11 +1,11 @@
 //! Application Controller - FLTK UI Implementation
 
-use crate::view_model::AppViewModel;
-use crate::ui::{TabComponent, PingTab, ScanTab, HttpTab, TftpdTab, TftpcTab, PlanTab, ChatTab, SettingsTab};
 use crate::ui::check_version_update;
-use crate::upgrade::{self, VersionsManifest, PlatformInfo};
-use crate::ui_events::{UiEvent, init_event_system, send_event, EventHandler};
+use crate::ui::{ChatTab, HttpTab, PingTab, PlanTab, ScanTab, SettingsTab, TabComponent, TftpcTab, TftpdTab};
+use crate::ui_events::{init_event_system, send_event, EventHandler, UiEvent};
 use crate::ui_state::UiState;
+use crate::upgrade::{self, PlatformInfo, VersionsManifest};
+use crate::view_model::AppViewModel;
 use fltk::{
     app,
     group::Tabs,
@@ -13,16 +13,18 @@ use fltk::{
     prelude::*,
     window::{Window, WindowType},
 };
-use rabbit_core::{ChatService, HttpService, PingService, PlanService, ScanService, TftpdService, TftpcService, ServiceUpdateResult, ui_channel::{UiData, Module}};
+use rabbit_core::{
+    ui_channel::{Module, UiData},
+    ChatService, HttpService, PingService, PlanService, ScanService, ServiceUpdateResult, TftpcService, TftpdService,
+};
 use rabbit_models::AppConfig;
 
+use ctrlc;
 use rabbit_platform::config::{load_config, save_config};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
-use tokio::sync::{RwLock, mpsc};
-use tokio::task::JoinHandle;
-use tracing::{info, warn, error};
-use ctrlc;
+use tokio::sync::{mpsc, RwLock};
+use tracing::{error, info, warn};
 
 /// Main application struct
 pub struct App {
@@ -34,8 +36,6 @@ pub struct App {
     plan_service: Arc<RwLock<PlanService>>,
     chat_service: Arc<RwLock<ChatService>>,
     scan_service: Arc<RwLock<ScanService>>,
-    ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
-    scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
     shutdown_flag: Arc<AtomicBool>,
     http_rx: Option<mpsc::Receiver<UiData>>,
     ping_rx: Option<mpsc::Receiver<UiData>>,
@@ -75,7 +75,7 @@ impl App {
         let http_service = HttpService::with_channel(http_tx);
 
         let tftp_server_service = TftpdService::with_channel(tftpd_tx);
-        
+
         let tftp_client_service = TftpcService::with_channel(tftpc_tx);
 
         let mut plan_service = PlanService::with_channel(plan_tx);
@@ -85,11 +85,10 @@ impl App {
 
         let scan_service = ScanService::with_channel(scan_tx);
 
-
         // Create view model
         let view_model = AppViewModel::new(config);
 
-Ok(Self {
+        Ok(Self {
             view_model: Arc::new(RwLock::new(view_model)),
             ping_service: Arc::new(RwLock::new(ping_service)),
             http_service: Arc::new(RwLock::new(http_service)),
@@ -98,8 +97,6 @@ Ok(Self {
             plan_service: Arc::new(RwLock::new(plan_service)),
             chat_service: Arc::new(RwLock::new(chat_service)),
             scan_service: Arc::new(RwLock::new(scan_service)),
-            ping_task: Arc::new(RwLock::new(None)),
-            scan_task: Arc::new(RwLock::new(None)),
             shutdown_flag: Arc::new(AtomicBool::new(false)),
             http_rx: Some(http_rx),
             ping_rx: Some(ping_rx),
@@ -117,7 +114,7 @@ Ok(Self {
 
         // Initialize UI state and event system
         let _ui_state = UiState::init();
-        
+
         // Restore HTTP and TFTP directories from config
         {
             let config = self.view_model.read().await.get_config();
@@ -142,7 +139,7 @@ Ok(Self {
                 }
             }
         }
-        
+
         let event_receiver = init_event_system();
 
         // Spawn UI channel receivers
@@ -210,9 +207,9 @@ Ok(Self {
         let fltk_app = app::App::default();
 
         // Set application-wide colors (lighter theme - similar to old version)
-        app::background(0xF0, 0xF0, 0xF0);      // Light gray background
-        app::background2(0xFF, 0xFF, 0xFF);     // White for inputs
-        app::foreground(0x00, 0x00, 0x00);       // Black text
+        app::background(0xF0, 0xF0, 0xF0); // Light gray background
+        app::background2(0xFF, 0xFF, 0xFF); // White for inputs
+        app::foreground(0x00, 0x00, 0x00); // Black text
         app::set_visible_focus(true);
 
         // Create main window - load config directly from disk to get window position
@@ -224,19 +221,14 @@ Ok(Self {
         let win_h = modules.get_integer("global", "window_height").unwrap_or(518) as i32;
         info!("Loaded config: window pos=({}, {}), size=({}x{})", win_x, win_y, win_w, win_h);
         drop(disk_config);
-        
-        let last_resize_time = Arc::new(AtomicU64::new(
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_millis() as u64,
-        ));
+
+        let last_resize_time = Arc::new(AtomicU64::new(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64));
         let save_pending = Arc::new(AtomicBool::new(false));
-        
+
         let mut main_win = Window::new(win_x, win_y, win_w, win_h, "Rabbit");
         main_win.set_type(WindowType::Double);
         main_win.make_resizable(true);
-        
+
         info!("Creating window at ({}, {}) size {}x{}", win_x, win_y, win_w, win_h);
 
         if let Ok(icon) = IcoImage::load("crates/rabbit-app/resources/icon.ico") {
@@ -278,10 +270,7 @@ Ok(Self {
             chat_tab.as_widget_ptr() as usize,
             settings_tab.as_widget_ptr() as usize,
         ];
-        let tab_groups: [&fltk::group::Flex; 8] = [
-            &ping_tab, &scan_tab, &http_tab, &tftpd_tab,
-            &tftpc_tab, &plan_tab, &chat_tab, &settings_tab,
-        ];
+        let tab_groups: [&fltk::group::Flex; 8] = [&ping_tab, &scan_tab, &http_tab, &tftpd_tab, &tftpc_tab, &plan_tab, &chat_tab, &settings_tab];
         if last_tab < tab_groups.len() {
             tabs.set_value(tab_groups[last_tab]).ok();
         }
@@ -294,14 +283,12 @@ Ok(Self {
         tabs_for_set_cb.set_callback(move |_| {
             if let Some(current) = tabs_for_closure.value() {
                 let ptr = current.as_widget_ptr() as usize;
-                let idx = tab_ptrs_clone
-                    .iter()
-                    .position(|&p| p == ptr)
-                    .unwrap_or(0);
+                let idx = tab_ptrs_clone.iter().position(|&p| p == ptr).unwrap_or(0);
                 if view_model_for_tab.try_write().is_ok() {
                     rabbit_platform::config::update_config(|cfg| {
                         cfg.modules.insert("global", "last_active_tab", rabbit_models::config::ConfigValue::Integer(idx as i64));
-                    }).ok();
+                    })
+                    .ok();
                 }
             }
         });
@@ -341,10 +328,7 @@ Ok(Self {
                         // Get current tab index
                         if let Some(current) = tabs_for_keys.value() {
                             let ptr = current.as_widget_ptr() as usize;
-                            let idx = tab_ptrs_for_keys
-                                .iter()
-                                .position(|&p| p == ptr)
-                                .unwrap_or(0);
+                            let idx = tab_ptrs_for_keys.iter().position(|&p| p == ptr).unwrap_or(0);
                             // Trigger the button for this tab
                             crate::ui::ui_refresh::trigger_tab_button(idx);
                         }
@@ -353,13 +337,9 @@ Ok(Self {
                     // F1: Open help documentation
                     Key::F1 => {
                         info!("F1 key pressed - opening help");
-                        let _ = std::process::Command::new("xdg-open")
-                            .arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md")
-                            .spawn();
+                        let _ = std::process::Command::new("xdg-open").arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md").spawn();
                         #[cfg(target_os = "macos")]
-                        let _ = std::process::Command::new("open")
-                            .arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md")
-                            .spawn();
+                        let _ = std::process::Command::new("open").arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md").spawn();
                         #[cfg(target_os = "windows")]
                         let _ = std::process::Command::new("cmd")
                             .args(&["/c", "start", "https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md"])
@@ -369,17 +349,11 @@ Ok(Self {
                     // F2: Open project homepage
                     Key::F2 => {
                         info!("F2 key pressed - opening project homepage");
-                        let _ = std::process::Command::new("xdg-open")
-                            .arg("https://github.com/lazebird/rabbit")
-                            .spawn();
+                        let _ = std::process::Command::new("xdg-open").arg("https://github.com/lazebird/rabbit").spawn();
                         #[cfg(target_os = "macos")]
-                        let _ = std::process::Command::new("open")
-                            .arg("https://github.com/lazebird/rabbit")
-                            .spawn();
+                        let _ = std::process::Command::new("open").arg("https://github.com/lazebird/rabbit").spawn();
                         #[cfg(target_os = "windows")]
-                        let _ = std::process::Command::new("cmd")
-                            .args(&["/c", "start", "https://github.com/lazebird/rabbit"])
-                            .spawn();
+                        let _ = std::process::Command::new("cmd").args(&["/c", "start", "https://github.com/lazebird/rabbit"]).spawn();
                         true
                     }
                     // F3: Open config file directory
@@ -388,13 +362,13 @@ Ok(Self {
                         if let Some(config_path) = dirs::config_local_dir() {
                             let rabbit_config = config_path.join("Rabbit");
                             let path_str = rabbit_config.to_string_lossy().to_string();
-                            
+
                             #[cfg(target_os = "linux")]
                             let _ = std::process::Command::new("xdg-open").arg(&path_str).spawn();
-                            
+
                             #[cfg(target_os = "macos")]
                             let _ = std::process::Command::new("open").arg(&path_str).spawn();
-                            
+
                             #[cfg(target_os = "windows")]
                             let _ = std::process::Command::new("explorer").arg(&path_str).spawn();
                         }
@@ -409,19 +383,16 @@ Ok(Self {
 
         // Let tabs fill the window on resize and save window position with debouncing
         let mut tabs_clone = tabs.clone();
-        
+
         let last_resize_for_thread = last_resize_time.clone();
         let save_pending_for_thread = save_pending.clone();
         std::thread::spawn(move || {
             loop {
                 std::thread::sleep(std::time::Duration::from_millis(100));
-                let now = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap()
-                    .as_millis() as u64;
+                let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
                 let last = last_resize_for_thread.load(Ordering::Relaxed);
                 let pending = save_pending_for_thread.load(Ordering::Relaxed);
-                
+
                 if pending && now.saturating_sub(last) >= 500 {
                     // 500ms has passed since last resize, save now
                     save_pending_for_thread.store(false, Ordering::Relaxed);
@@ -444,17 +415,22 @@ Ok(Self {
                                     new_content = new_content
                                         .lines()
                                         .map(|line| {
-                                            if line.starts_with("window_x =") { format!("window_x = {}", win_x) }
-                                            else if line.starts_with("window_y =") { format!("window_y = {}", win_y) }
-                                            else if line.starts_with("window_width =") { format!("window_width = {}", win_w) }
-                                            else if line.starts_with("window_height =") { format!("window_height = {}", win_h) }
-                                            else { line.to_string() }
+                                            if line.starts_with("window_x =") {
+                                                format!("window_x = {}", win_x)
+                                            } else if line.starts_with("window_y =") {
+                                                format!("window_y = {}", win_y)
+                                            } else if line.starts_with("window_width =") {
+                                                format!("window_width = {}", win_w)
+                                            } else if line.starts_with("window_height =") {
+                                                format!("window_height = {}", win_h)
+                                            } else {
+                                                line.to_string()
+                                            }
                                         })
                                         .collect::<Vec<_>>()
                                         .join("\n");
                                 } else {
-                                    new_content = format!("{}\nwindow_x = {}\nwindow_y = {}\nwindow_width = {}\nwindow_height = {}\n",
-                                        new_content, win_x, win_y, win_w, win_h);
+                                    new_content = format!("{}\nwindow_x = {}\nwindow_y = {}\nwindow_width = {}\nwindow_height = {}\n", new_content, win_x, win_y, win_w, win_h);
                                 }
 
                                 std::fs::write(&config_path, new_content).ok();
@@ -465,7 +441,7 @@ Ok(Self {
                 }
             }
         });
-        
+
         main_win.resize_callback({
             let last_resize_time = last_resize_time.clone();
             let save_pending = save_pending.clone();
@@ -475,10 +451,7 @@ Ok(Self {
 
                 info!("resize callback: pos=({},{}) size={}x{}", x, y, nw, nh);
                 info!("Setting save_pending flag");
-                let now = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap()
-                    .as_millis() as u64;
+                let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
                 last_resize_time.store(now, Ordering::Relaxed);
                 save_pending.store(true, Ordering::Relaxed);
             }
@@ -522,18 +495,18 @@ Ok(Self {
             main_win.set_on_top();
             info!("Window topmost enabled (window brought to front)");
         }
-        
+
         // Apply system tray setting
         if systray_requested {
             info!("System tray enabled (note: full system tray integration requires platform-specific setup)");
             // TODO: Implement full system tray integration
         }
-        
+
         // Apply autostart setting
         if let Err(e) = rabbit_platform::autostart::set_autostart(autostart_requested) {
             warn!("Failed to set autostart: {}", e);
         }
-        
+
         // Apply HTTP shell integration at startup
         if let Ok(exe_path) = std::env::current_exe() {
             let exe_path_str = exe_path.to_string_lossy().to_string();
@@ -543,7 +516,7 @@ Ok(Self {
                 info!("HTTP shell integration applied at startup: {}", http_shell_requested);
             }
         }
-        
+
         // Restore business running states from config
         let config_for_restore = self.view_model.read().await.get_config();
         let ping_restore = config_for_restore.modules.get_bool("ping", "running").unwrap_or(false);
@@ -551,16 +524,18 @@ Ok(Self {
         let tftp_restore = config_for_restore.modules.get_bool("tftpd", "running").unwrap_or(false);
         let chat_restore = config_for_restore.modules.get_bool("chat", "running").unwrap_or(false);
         drop(config_for_restore);
-        
-        info!("Business states to restore: ping={}, http={}, tftpd={}, chat={}", 
-              ping_restore, http_restore, tftp_restore, chat_restore);
-        
+
+        info!(
+            "Business states to restore: ping={}, http={}, tftpd={}, chat={}",
+            ping_restore, http_restore, tftp_restore, chat_restore
+        );
+
         // Store restore flags for use after event loop starts
         let ping_restore_flag = ping_restore;
         let http_restore_flag = http_restore;
         let tftp_restore_flag = tftp_restore;
         let chat_restore_flag = chat_restore;
-        
+
         // Handle window close button - use set_callback which fires when the X button is clicked
         let mut win_for_close = main_win.clone();
         main_win.set_callback(move |_| {
@@ -580,7 +555,8 @@ Ok(Self {
                 info!("Executing quit() on UI thread...");
                 fltk::app::quit();
             });
-        }).ok();
+        })
+        .ok();
 
         // Fallback: also catch close events at the app level
         app::add_handler(|ev| {
@@ -606,10 +582,7 @@ Ok(Self {
             plan_service: self.plan_service.clone(),
             chat_service: self.chat_service.clone(),
             scan_service: self.scan_service.clone(),
-            ping_task: self.ping_task.clone(),
-            scan_task: self.scan_task.clone(),
         }));
-
 
         let event_handle = tokio::spawn(async move {
             Self::event_loop(app_clone, event_receiver).await;
@@ -625,17 +598,17 @@ Ok(Self {
             info!("Restoring ping service state");
             send_event(UiEvent::ModuleToggle { module: "ping".into() });
         }
-        
+
         if http_restore_flag {
             info!("Restoring HTTP server state");
             send_event(UiEvent::ModuleToggle { module: "http".into() });
         }
-        
+
         if tftp_restore_flag {
             info!("Restoring TFTP server state");
             send_event(UiEvent::ModuleToggle { module: "tftpd".into() });
         }
-        
+
         if chat_restore_flag {
             info!("Restoring chat state");
             send_event(UiEvent::ModuleToggle { module: "chat".into() });
@@ -654,12 +627,8 @@ Ok(Self {
         std::process::exit(0);
     }
 
-
     /// Event loop for processing UI events
-    async fn event_loop(
-        app: Arc<RwLock<AppHandle>>,
-        receiver: std::sync::mpsc::Receiver<UiEvent>,
-    ) {
+    async fn event_loop(app: Arc<RwLock<AppHandle>>, receiver: std::sync::mpsc::Receiver<UiEvent>) {
         while let Ok(event) = receiver.recv() {
             info!("Processing UI event: {:?}", event);
             let mut handle = app.write().await;
@@ -669,44 +638,18 @@ Ok(Self {
         }
     }
 
-    /// Cleanup resources
+    /// Cleanup resources - 只销毁资源，不做配置更新
     async fn cleanup(&self) -> anyhow::Result<()> {
         info!("Cleaning up resources");
 
-        // Get config for running states (已在配置中持久化)
-        let config = self.view_model.read().await.get_config();
-        let ping_running = config.modules.get_bool("ping", "running").unwrap_or(false);
-        let http_running = config.modules.get_bool("http", "running").unwrap_or(false);
-        let tftp_running = config.modules.get_bool("tftpd", "running").unwrap_or(false);
-        let chat_running = config.modules.get_bool("chat", "running").unwrap_or(false);
+        // 程序退出，调用 destroy 销毁资源，不发状态通告
+        self.ping_service.write().await.destroy().await.ok();
+        self.http_service.write().await.destroy().await.ok();
+        self.tftp_server_service.write().await.destroy().await.ok();
+        self.plan_service.write().await.destroy().await.ok();
+        self.chat_service.write().await.destroy().await.ok();
 
-        // Stop all services
-        self.ping_service.write().await.update().await.ok();
-        self.http_service.write().await.update().await.ok();
-        self.tftp_server_service.write().await.update().await.ok();
-        self.plan_service.write().await.update().await.ok();
-        self.chat_service.write().await.update().await.ok();
-
-        // 已停止，将配置中的 running 设为 false
-        use rabbit_models::config::ConfigValue;
-        let mut config = self.view_model.read().await.get_config();
-        config.modules.insert("ping", "running", ConfigValue::Boolean(false));
-        config.modules.insert("http", "running", ConfigValue::Boolean(false));
-        config.modules.insert("tftpd", "running", ConfigValue::Boolean(false));
-        config.modules.insert("chat", "running", ConfigValue::Boolean(false));
-
-        self.view_model.write().await.update_config(config.clone());
-
-        rabbit_platform::config::update_config(|cfg| {
-            cfg.modules.insert("ping", "running", ConfigValue::Boolean(false));
-            cfg.modules.insert("http", "running", ConfigValue::Boolean(false));
-            cfg.modules.insert("tftpd", "running", ConfigValue::Boolean(false));
-            cfg.modules.insert("chat", "running", ConfigValue::Boolean(chat_running));
-        }).ok();
-        
-        info!("Saved business running states: ping={}, http={}, tftpd={}, chat={}", 
-              ping_running, http_running, tftp_running, chat_running);
-
+        info!("All services destroyed");
         Ok(())
     }
 }
@@ -777,13 +720,13 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
                     return;
                 }
             }
-            
+
             info!("Update available: {}", remote.version);
             // Use format_prompt for consistent display
             let msg = remote.format_prompt();
             crate::ui_state::append_settings_output(&msg);
             crate::ui_state::append_settings_output("");
-            
+
             // Show dialog on main thread
             let remote_clone = remote.clone();
             let platform_clone = platform_info.clone();
@@ -798,7 +741,7 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
                     return;
                 }
             }
-            
+
             info!("Application is up to date");
             crate::ui_state::append_settings_output("Application is up to date");
         }
@@ -809,7 +752,7 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
                     return;
                 }
             }
-            
+
             warn!("Failed to check for updates: {}", e);
             crate::ui_state::append_settings_output(&format!("Update check failed: {}", e));
         }
@@ -819,13 +762,8 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
 /// Show upgrade dialog and handle user choice (reused by both auto-check and manual check)
 fn show_upgrade_dialog(remote: &VersionsManifest, platform_info: &PlatformInfo) {
     let prompt = remote.format_prompt();
-    let choice = fltk::dialog::choice2_default(
-        &prompt,
-        "Update",
-        "Later",
-        "Skip This Version",
-    );
-    
+    let choice = fltk::dialog::choice2_default(&prompt, "Update", "Later", "Skip This Version");
+
     if choice == Some(0) {
         crate::ui_state::append_settings_output("Downloading and installing update...");
         // Spawn background thread for download/install to avoid blocking UI
@@ -851,8 +789,6 @@ struct AppHandle {
     plan_service: Arc<RwLock<PlanService>>,
     chat_service: Arc<RwLock<ChatService>>,
     scan_service: Arc<RwLock<ScanService>>,
-    ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
-    scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
 }
 
 #[async_trait::async_trait]
@@ -863,77 +799,45 @@ impl EventHandler for AppHandle {
             UiEvent::ModuleToggle { module } => {
                 match module.as_str() {
                     "ping" => {
-                        let config = self.view_model.read().await.get_config();
-                        let is_running = config.modules.get_bool("ping", "running").unwrap_or(false);
-                        if is_running {
-                            // Stop ping
-                            info!("Stopping ping service");
-                            if let Some(handle) = self.ping_task.write().await.take() {
-                                handle.abort();
+                        let result = self.ping_service.write().await.update().await;
+                        match result {
+                            ServiceUpdateResult::Started(_) => {
+                                crate::ui_state::set_ping_running(true);
+                                // 保存 running=true 到配置
+                                rabbit_platform::config::update_config(|cfg| {
+                                    cfg.modules.insert("ping", "running", rabbit_models::config::ConfigValue::Boolean(true));
+                                })
+                                .ok();
                             }
-                            let _ = self.ping_service.write().await.update().await;
-                            crate::ui_state::set_ping_running(false);
-                            // Reset window title
-                            if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
-                                fltk::app::awake_callback(move || {
-                                    win.set_label("Rabbit");
-                                });
+                            ServiceUpdateResult::Stopped(_) => {
+                                crate::ui_state::set_ping_running(false);
+                                // 保存 running=false 到配置
+                                rabbit_platform::config::update_config(|cfg| {
+                                    cfg.modules.insert("ping", "running", rabbit_models::config::ConfigValue::Boolean(false));
+                                })
+                                .ok();
                             }
-                        } else {
-                            // Start ping - service reads config internally
-                            info!("Starting ping service");
-
-                            // Cancel any existing ping task
-                            if let Some(handle) = self.ping_task.write().await.take() {
-                                handle.abort();
-                            }
-
-                            // Set window title from config
-                            if let Some(target) = rabbit_platform::config::load_config()
-                                .ok()
-                                .and_then(|c| c.modules.get_string("ping", "target").filter(|s| !s.is_empty()))
-                            {
-                                if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
-                                    fltk::app::awake_callback(move || {
-                                        win.set_label(&target);
-                                    });
-                                }
-                            }
-
-                            // Use unified update interface - service handles start/stop internally
-                            let result = self.ping_service.write().await.update().await;
-                            match result {
-                                ServiceUpdateResult::Started(_) => {
-                                    crate::ui_state::set_ping_running(true);
-                                }
-                                ServiceUpdateResult::Stopped(_) => {
-                                    crate::ui_state::set_ping_running(false);
-                                }
-                                _ => {}
-                            }
+                            _ => {}
                         }
                     }
                     "scan" => {
-                        let config = self.view_model.read().await.get_config();
-                        let is_running = config.modules.get_bool("scan", "running").unwrap_or(false);
-                        if is_running {
-                            info!("Stopping scan service");
-                            self.scan_service.write().await.cancel().await?;
-                            crate::ui_state::set_scan_running(false);
-                        } else {
-// Use unified update interface - service handles start/stop internally
-                            info!("Starting scan service");
-                            let result = self.scan_service.write().await.update().await;
-                            match result {
-                                ServiceUpdateResult::Started(_) => {
-                                    crate::ui_state::set_scan_running(true);
-                                }
-                                ServiceUpdateResult::Stopped(_) => {
-                                    crate::ui_state::set_scan_running(false);
-                                }
-                                _ => {}
+                        let result = self.scan_service.write().await.update().await;
+                        match result {
+                            ServiceUpdateResult::Started(_) => {
+                                crate::ui_state::set_scan_running(true);
+                                rabbit_platform::config::update_config(|cfg| {
+                                    cfg.modules.insert("scan", "running", rabbit_models::config::ConfigValue::Boolean(true));
+                                })
+                                .ok();
                             }
-                            *self.scan_task.write().await = None;
+                            ServiceUpdateResult::Stopped(_) => {
+                                crate::ui_state::set_scan_running(false);
+                                rabbit_platform::config::update_config(|cfg| {
+                                    cfg.modules.insert("scan", "running", rabbit_models::config::ConfigValue::Boolean(false));
+                                })
+                                .ok();
+                            }
+                            _ => {}
                         }
                     }
                     "http" => {
@@ -941,10 +845,17 @@ impl EventHandler for AppHandle {
                         match result {
                             ServiceUpdateResult::Started(_) => {
                                 crate::ui_state::set_http_running(true);
+                                rabbit_platform::config::update_config(|cfg| {
+                                    cfg.modules.insert("http", "running", rabbit_models::config::ConfigValue::Boolean(true));
+                                })
+                                .ok();
                             }
                             ServiceUpdateResult::Stopped(_) => {
                                 crate::ui_state::set_http_running(false);
-                                crate::ui_state::append_http_log("HTTP server stopped.\r\n");
+                                rabbit_platform::config::update_config(|cfg| {
+                                    cfg.modules.insert("http", "running", rabbit_models::config::ConfigValue::Boolean(false));
+                                })
+                                .ok();
                             }
                             _ => {}
                         }
@@ -963,11 +874,10 @@ impl EventHandler for AppHandle {
                         }
                     }
                     "chat" => {
-                        // Use unified update interface
                         let result = self.chat_service.write().await.update().await;
                         match result {
                             ServiceUpdateResult::Started(_) => {
-                                // Chat running state tracked by service
+                                // chat running state tracked by service
                             }
                             ServiceUpdateResult::Stopped(_) => {
                                 crate::ui_state::set_chat_users(&[]);
@@ -975,37 +885,42 @@ impl EventHandler for AppHandle {
                             _ => {}
                         }
                     }
-
                     _ => {}
                 }
             }
             UiEvent::TftpClientPut { server, local, remote, options } => {
                 info!("TFTP put {} -> {}@{} with options: {}", local, remote, server, options);
-                
+
                 // Parse options (for future use)
                 let mut timeout = 200;
                 let mut maxretry = 10;
                 let mut blksize = 1024;
-                
+
                 for opt in options.split(';') {
                     let parts: Vec<&str> = opt.splitn(2, '=').collect();
                     if parts.len() == 2 {
                         match parts[0].trim() {
                             "timeout" => {
-                                if let Ok(val) = parts[1].parse::<i32>() { timeout = val; }
+                                if let Ok(val) = parts[1].parse::<i32>() {
+                                    timeout = val;
+                                }
                             }
                             "retry" => {
-                                if let Ok(val) = parts[1].parse::<i32>() { maxretry = val; }
+                                if let Ok(val) = parts[1].parse::<i32>() {
+                                    maxretry = val;
+                                }
                             }
                             "blksize" => {
-                                if let Ok(val) = parts[1].parse::<i32>() { blksize = val; }
+                                if let Ok(val) = parts[1].parse::<i32>() {
+                                    blksize = val;
+                                }
                             }
                             _ => {}
                         }
                     }
                 }
                 info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, maxretry, blksize);
-                
+
                 let tftp_client_service = self.tftp_client_service.write().await;
                 match tftp_client_service.put(&local, &remote).await {
                     Ok(transfer_id) => {
@@ -1018,31 +933,37 @@ impl EventHandler for AppHandle {
             }
             UiEvent::TftpClientGet { server, local, remote, options } => {
                 info!("TFTP get {}@{} -> {} with options: {}", remote, server, local, options);
-                
+
                 // Parse options (for future use)
                 let mut timeout = 200;
                 let mut maxretry = 10;
                 let mut blksize = 1024;
-                
+
                 for opt in options.split(';') {
                     let parts: Vec<&str> = opt.splitn(2, '=').collect();
                     if parts.len() == 2 {
                         match parts[0].trim() {
                             "timeout" => {
-                                if let Ok(val) = parts[1].parse::<i32>() { timeout = val; }
+                                if let Ok(val) = parts[1].parse::<i32>() {
+                                    timeout = val;
+                                }
                             }
                             "retry" => {
-                                if let Ok(val) = parts[1].parse::<i32>() { maxretry = val; }
+                                if let Ok(val) = parts[1].parse::<i32>() {
+                                    maxretry = val;
+                                }
                             }
                             "blksize" => {
-                                if let Ok(val) = parts[1].parse::<i32>() { blksize = val; }
+                                if let Ok(val) = parts[1].parse::<i32>() {
+                                    blksize = val;
+                                }
                             }
                             _ => {}
                         }
                     }
                 }
                 info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, maxretry, blksize);
-                
+
                 let tftp_client_service = self.tftp_client_service.write().await;
                 match tftp_client_service.get(&remote, &local).await {
                     Ok(transfer_id) => {
@@ -1107,7 +1028,7 @@ impl EventHandler for AppHandle {
                 };
                 // Update view_model with disk config
                 self.view_model.write().await.update_config(disk_config.clone());
-                
+
                 let config = disk_config;
                 let modules = &config.modules;
                 let autostart = modules.get_bool("global", "autostart").unwrap_or(false);
@@ -1115,20 +1036,20 @@ impl EventHandler for AppHandle {
                 let top = modules.get_bool("global", "top").unwrap_or(false);
                 let http_shell = modules.get_bool("http", "shell").unwrap_or(false);
                 let new_ping_interval = modules.get_integer("ping", "interval").unwrap_or(1000);
-                
+
                 // Check if ping is currently running (从配置读取)
                 let ping_was_running = modules.get_bool("ping", "running").unwrap_or(false);
-                
+
                 // Apply autostart setting
                 if let Err(e) = rabbit_platform::autostart::set_autostart(autostart) {
                     warn!("Failed to set autostart: {}", e);
                 }
-                
+
                 // Apply systray setting
                 if systray {
                     info!("System tray enabled (note: full integration requires platform-specific setup)");
                 }
-                
+
                 // Apply window topmost setting
                 if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
                     let top_value = top;
@@ -1138,7 +1059,7 @@ impl EventHandler for AppHandle {
                         }
                     });
                 }
-                
+
                 // Apply HTTP shell integration
                 if let Ok(exe_path) = std::env::current_exe() {
                     let exe_path_str = exe_path.to_string_lossy().to_string();
@@ -1151,9 +1072,9 @@ impl EventHandler for AppHandle {
                         }
                     }
                 }
-                
+
                 save_config(&config)?;
-                
+
                 // If ping was running, restart it with new interval
                 if ping_was_running {
                     info!("Ping was running, restarting with new interval: {}ms", new_ping_interval);
@@ -1170,10 +1091,7 @@ impl EventHandler for AppHandle {
     }
 }
 
-async fn handle_ui_data(
-    data: UiData,
-    _view_model: &Arc<RwLock<AppViewModel>>,
-) {
+async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
     match data {
         UiData::ServiceStatus(module, running) => {
             info!("Received ServiceStatus: {:?} running={}", module, running);
@@ -1255,5 +1173,3 @@ async fn handle_tftp_data(data: UiData) {
         }
     }
 }
-
-

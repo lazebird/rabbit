@@ -1,7 +1,6 @@
 pub fn ensure_elevated() {
     #[cfg(any(debug_assertions, target_os = "android", target_os = "ios"))]
-    {
-    }
+    {}
 
     #[cfg(not(any(debug_assertions, target_os = "android", target_os = "ios")))]
     {
@@ -56,13 +55,8 @@ pub fn ensure_elevated() {
                 use std::time::Duration;
 
                 let path = {
-                    let r = std::env::var("APPIMAGE")
-                        .unwrap_or_else(|_| std::env::args().next().unwrap_or_else(|| "unknown".to_string()));
-                    std::path::Path::new(&r)
-                        .canonicalize()
-                        .unwrap_or_else(|_| std::path::PathBuf::from(&r))
-                        .to_string_lossy()
-                        .into_owned()
+                    let r = std::env::var("APPIMAGE").unwrap_or_else(|_| std::env::args().next().unwrap_or_else(|| "unknown".to_string()));
+                    std::path::Path::new(&r).canonicalize().unwrap_or_else(|_| std::path::PathBuf::from(&r)).to_string_lossy().into_owned()
                 };
 
                 let mut cmd = StdCommand::new(&path);
@@ -85,9 +79,7 @@ pub fn ensure_elevated() {
                         let code = o.status.code().unwrap_or(-1);
 
                         if code == 126 && stderr.contains("Request dismissed") {
-                            let _ = StdCommand::new("zenity")
-                                .args(&["--error", "--title", "elevation failed", "--text", "用户取消授权"])
-                                .spawn();
+                            let _ = StdCommand::new("zenity").args(&["--error", "--title", "elevation failed", "--text", "用户取消授权"]).spawn();
                             std::process::exit(1);
                         }
                         if attempt < max_retries && (code == 127 || stderr.contains("Not authorized")) {
@@ -105,9 +97,7 @@ pub fn ensure_elevated() {
                             thread::sleep(Duration::from_millis(1500));
                             continue;
                         }
-                        let _ = StdCommand::new("zenity")
-                            .args(&["--error", "--title", "elevation failed", "--text", &format!("error: {}", e)])
-                            .spawn();
+                        let _ = StdCommand::new("zenity").args(&["--error", "--title", "elevation failed", "--text", &format!("error: {}", e)]).spawn();
                         std::process::exit(1);
                     }
                 }
@@ -116,21 +106,16 @@ pub fn ensure_elevated() {
             #[cfg(target_os = "windows")]
             {
                 use elevated_command::Command as ElevatedCommand;
+                use std::ffi::OsStr;
+                use std::os::windows::ffi::OsStrExt;
                 use std::process::Command as StdCommand;
                 use std::thread;
                 use std::time::Duration;
-                use std::ffi::OsStr;
-                use std::os::windows::ffi::OsStrExt;
                 use windows_sys::Win32::UI::WindowsAndMessaging::{MessageBoxW, MB_ICONERROR, MB_OK};
 
                 let path = {
-                    let r = std::env::var("APPIMAGE")
-                        .unwrap_or_else(|_| std::env::args().next().unwrap_or_else(|| "unknown".to_string()));
-                    std::path::Path::new(&r)
-                        .canonicalize()
-                        .unwrap_or_else(|_| std::path::PathBuf::from(&r))
-                        .to_string_lossy()
-                        .into_owned()
+                    let r = std::env::var("APPIMAGE").unwrap_or_else(|_| std::env::args().next().unwrap_or_else(|| "unknown".to_string()));
+                    std::path::Path::new(&r).canonicalize().unwrap_or_else(|_| std::path::PathBuf::from(&r)).to_string_lossy().into_owned()
                 };
 
                 let mut cmd = StdCommand::new(&path);
@@ -179,9 +164,7 @@ pub fn ensure_elevated() {
         #[cfg(target_os = "linux")]
         {
             use std::process::Command as StdCommand;
-            let _ = StdCommand::new("zenity")
-                .args(&["--error", "--title", "elevation failed", "--text", "max retries exceeded"])
-                .spawn();
+            let _ = StdCommand::new("zenity").args(&["--error", "--title", "elevation failed", "--text", "max retries exceeded"]).spawn();
         }
         #[cfg(target_os = "windows")]
         {

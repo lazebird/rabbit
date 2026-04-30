@@ -6,18 +6,18 @@
 //! - Access log at bottom
 
 use fltk::{
+    browser::{Browser, BrowserType},
     button::{Button, CheckButton},
     frame::Frame,
     group::Flex,
     input::{Input, IntInput},
     prelude::*,
     text::{TextBuffer, TextDisplay, WrapMode},
-    browser::{Browser, BrowserType},
 };
 
-use crate::ui_events::{UiEvent, send_event};
+use super::{defaults, Colors, TabComponent};
+use crate::ui_events::{send_event, UiEvent};
 use crate::ui_state::UiState;
-use super::{TabComponent, Colors, defaults};
 
 /// HTTP Tab Component
 pub struct HttpTab;
@@ -27,7 +27,7 @@ impl TabComponent for HttpTab {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "HTTPD").column();
-        grp.set_margin(0);  // Remove margin to match old version
+        grp.set_margin(0); // Remove margin to match old version
         grp.set_spacing(4);
 
         // Control row - matching old version layout
@@ -53,9 +53,7 @@ impl TabComponent for HttpTab {
         opt_input.set_value(&defaults::http_options());
 
         // Shell checkbox (fixed width) - load from config
-        let shell_checked = rabbit_platform::config::load_config()
-            .map(|c| c.modules.get_bool("http", "shell").unwrap_or(false))
-            .unwrap_or(false);
+        let shell_checked = rabbit_platform::config::load_config().map(|c| c.modules.get_bool("http", "shell").unwrap_or(false)).unwrap_or(false);
         let shell_check = CheckButton::default().with_label("shell");
         shell_check.set_checked(shell_checked);
         ctrl_row.fixed(&shell_check, 60);
@@ -73,26 +71,26 @@ impl TabComponent for HttpTab {
         // [+] [-] [Explore] file/directory list display
         let mut item_ctrl_row = Flex::default().row();
         item_ctrl_row.set_spacing(5);
-        
+
         // Add button - opens dialog to choose file or directory
         let mut add_btn = Button::default().with_label("+");
         add_btn.set_color(colors.accent);
         add_btn.set_label_color(fltk::enums::Color::White);
         item_ctrl_row.fixed(&add_btn, 28);
-        
+
         // Remove button
         let mut remove_btn = Button::default().with_label("-");
         remove_btn.set_color(fltk::enums::Color::from_hex(0xE57373));
         remove_btn.set_label_color(fltk::enums::Color::White);
         item_ctrl_row.fixed(&remove_btn, 28);
-        
+
         // Explore button - open selected item's parent directory
         let mut explore_btn = Button::default().with_label("  \u{1F4C2}");
         explore_btn.set_label_size(16);
         explore_btn.set_align(fltk::enums::Align::Center);
         explore_btn.set_tooltip("Open containing folder");
         item_ctrl_row.fixed(&explore_btn, 32);
-        
+
         item_ctrl_row.end();
         grp.fixed(&item_ctrl_row, 28);
 
@@ -100,13 +98,13 @@ impl TabComponent for HttpTab {
         let mut item_browser = Browser::default();
         item_browser.set_type(BrowserType::Hold);
         item_browser.set_text_size(14);
-        
+
         // Access log at bottom (smaller area)
         let mut log_display = TextDisplay::default();
         let log_buf = TextBuffer::default();
         log_display.set_buffer(Some(log_buf));
         log_display.wrap_mode(WrapMode::AtBounds, 0);
-        log_display.set_frame(fltk::enums::FrameType::FlatBox);  // Remove border
+        log_display.set_frame(fltk::enums::FrameType::FlatBox); // Remove border
 
         grp.end();
 
@@ -131,7 +129,7 @@ impl TabComponent for HttpTab {
         let item_browser_explore = item_browser.clone();
 
         // Add button callback - choose between file and directory
-add_btn.set_callback(move |_| {
+        add_btn.set_callback(move |_| {
             let choice = fltk::dialog::choice2_default("Add file or directory?", "File", "Directory", "");
             match choice {
                 Some(0) => {
@@ -167,14 +165,14 @@ add_btn.set_callback(move |_| {
                 _ => {} // Cancelled
             }
         });
-        
+
         // Remove button callback
         remove_btn.set_callback(move |_| {
             let selected_idx = item_browser_remove.value();
             if selected_idx <= 0 {
                 return;
             }
-            
+
             if let Some(text) = item_browser_remove.text(selected_idx) {
                 // Strip the selection indicator if present
                 let item_path = text.trim_start_matches("▶ ").trim().to_string();
@@ -186,7 +184,7 @@ add_btn.set_callback(move |_| {
                 }
             }
         });
-        
+
         // Explore button callback - open containing folder of selected item
         explore_btn.set_callback(move |_| {
             let selected_idx = item_browser_explore.value();
@@ -194,20 +192,20 @@ add_btn.set_callback(move |_| {
                 crate::ui_state::append_http_log("No item selected.\r\n");
                 return;
             }
-            
+
             if let Some(text) = item_browser_explore.text(selected_idx) {
                 let item_path = text.trim_start_matches("▶ ").trim().to_string();
                 if item_path.is_empty() {
                     return;
                 }
-                
+
                 let path = std::path::Path::new(&item_path);
                 let parent = if path.is_dir() {
                     path.to_path_buf()
                 } else {
                     path.parent().unwrap_or(std::path::Path::new(".")).to_path_buf()
                 };
-                
+
                 let parent_str = parent.to_string_lossy().to_string();
                 match rabbit_platform::dialog::open_file_manager(&parent_str) {
                     Ok(_) => {
@@ -275,7 +273,7 @@ impl HttpTab {
             }
         }
     }
-    
+
     fn refresh_log(display: &mut TextDisplay) {
         if let Some(state) = UiState::global() {
             if let Ok(s) = state.lock() {

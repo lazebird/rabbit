@@ -78,10 +78,7 @@ mod tests {
 
     #[test]
     fn test_scan_range_serialization() {
-        let range = ScanRange::new(
-            Ipv4Addr::new(10, 0, 0, 1),
-            Ipv4Addr::new(10, 0, 0, 255),
-        );
+        let range = ScanRange::new(Ipv4Addr::new(10, 0, 0, 1), Ipv4Addr::new(10, 0, 0, 255));
         let json = serde_json::to_string(&range).unwrap();
         let parsed: ScanRange = serde_json::from_str(&json).unwrap();
         assert_eq!(range.start, parsed.start);

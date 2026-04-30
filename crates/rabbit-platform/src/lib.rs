@@ -10,20 +10,20 @@
 pub mod autostart;
 pub mod config;
 pub mod dialog;
+pub mod elevation;
 pub mod network;
 pub mod notification;
 pub mod ping;
-pub mod elevation;
 pub mod shell;
 pub mod taskbar;
 
 pub use autostart::*;
 pub use config::*;
 pub use dialog::*;
+pub use elevation::*;
 pub use network::*;
 pub use notification::*;
 pub use ping::*;
-pub use elevation::*;
 pub use shell::*;
 pub use taskbar::*;
 
@@ -34,13 +34,13 @@ use thiserror::Error;
 pub enum PlatformError {
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
-    
+
     #[error("Configuration error: {0}")]
     Config(String),
-    
+
     #[error("Network error: {0}")]
     Network(String),
-    
+
     #[error("Not supported on this platform")]
     NotSupported,
 }
