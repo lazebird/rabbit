@@ -183,21 +183,14 @@ impl TabComponent for PlanTab {
 
             // Generate event ID and update display directly
             let event_id = uuid::Uuid::new_v4().to_string()[..8].to_string();
-            let cycle_str = if cycle > 0 {
-                format!(" (Repeat every {} {})", cycle, unit)
-            } else {
-                " (One-time)".to_string()
-            };
+            let cycle_str = if cycle > 0 { format!(" (Repeat every {} {})", cycle, unit) } else { " (One-time)".to_string() };
             let new_line = format!("[{}] {} {} - {}{}\n", event_id, date, time, msg, cycle_str);
 
             // Update display directly
             if let Some(mut buf) = display_clone.buffer() {
                 let current = buf.text();
                 if current.contains("No scheduled events") || current.is_empty() {
-                    buf.set_text(&format!(
-                        "Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{}",
-                        new_line
-                    ));
+                    buf.set_text(&format!("Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{}", new_line));
                 } else {
                     buf.append(&new_line);
                 }
@@ -207,13 +200,7 @@ impl TabComponent for PlanTab {
 
             // Save config and send event
             crate::ui_state::sync_plan_config(date.clone(), time.clone(), cycle, &unit, msg.clone());
-            send_event(UiEvent::PlanAdd {
-                date,
-                time,
-                cycle,
-                unit,
-                msg,
-            });
+            send_event(UiEvent::PlanAdd { date, time, cycle, unit, msg });
         });
 
         // Remove button callback
@@ -227,9 +214,7 @@ impl TabComponent for PlanTab {
                     if let Some(mut buf) = display_clone2.buffer() {
                         let text = buf.text();
                         let lines: Vec<&str> = text.lines().collect();
-                        let mut new_text = String::from(
-                            "Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
-                        );
+                        let mut new_text = String::from("Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
                         let mut has_events = false;
                         for line in lines {
                             if line.starts_with("Scheduled") || line.starts_with("━") || line.trim().is_empty() {
@@ -267,8 +252,7 @@ impl PlanTab {
 /// Show date picker dialog
 fn show_date_picker(date_input: &mut Input) {
     let current_val = date_input.value();
-    let init_date = NaiveDate::parse_from_str(&current_val, "%Y/%m/%d")
-        .unwrap_or_else(|_| Local::now().naive_local().date());
+    let init_date = NaiveDate::parse_from_str(&current_val, "%Y/%m/%d").unwrap_or_else(|_| Local::now().naive_local().date());
     let today = Local::now().naive_local().date();
     let current_year = today.year();
     let init_year = init_date.year();
@@ -366,8 +350,7 @@ fn show_date_picker(date_input: &mut Input) {
 /// Show time picker dialog
 fn show_time_picker(time_input: &mut Input) {
     let current_val = time_input.value();
-    let init_time = NaiveTime::parse_from_str(&current_val, "%H:%M")
-        .unwrap_or_else(|_| Local::now().naive_local().time());
+    let init_time = NaiveTime::parse_from_str(&current_val, "%H:%M").unwrap_or_else(|_| Local::now().naive_local().time());
 
     let win_w = 200;
     let win_h = 90;
@@ -450,11 +433,7 @@ fn show_time_picker(time_input: &mut Input) {
 
 /// Get days in month
 fn get_days_in_month(year: i32, month: u32) -> u32 {
-    let (next_year, next_month) = if month == 12 {
-        (year + 1, 1)
-    } else {
-        (year, month + 1)
-    };
+    let (next_year, next_month) = if month == 12 { (year + 1, 1) } else { (year, month + 1) };
     let this_month = NaiveDate::from_ymd_opt(year, month, 1).unwrap();
     let next_month = NaiveDate::from_ymd_opt(next_year, next_month, 1).unwrap();
     (next_month - this_month).num_days() as u32

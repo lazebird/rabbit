@@ -284,14 +284,14 @@ impl PingService {
             }
 
             if targets_guard.is_empty() {
-                 *self.state.write().await = PingState::Idle;
-                 if let Some(ref ui_tx) = self.tx {
-                     // 停止原因：count 达到自动停止
-                     let reason = Some("count reached".into());
-                     let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, false, reason)).await;
-                 }
-             }
-             return;
+                *self.state.write().await = PingState::Idle;
+                if let Some(ref ui_tx) = self.tx {
+                    // 停止原因：count 达到自动停止
+                    let reason = Some("count reached".into());
+                    let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, false, reason)).await;
+                }
+            }
+            return;
         }
 
         if let Some(ref client) = self.client {
@@ -364,12 +364,14 @@ impl PingService {
                         (received.min(full_count), "green")
                     };
 
-                    let _ = ui_tx.send(UiData::PingState {
-                        address: address.clone(),
-                        progress,
-                        total: full_count,
-                        color: color.to_string(),
-                    }).await;
+                    let _ = ui_tx
+                        .send(UiData::PingState {
+                            address: address.clone(),
+                            progress,
+                            total: full_count,
+                            color: color.to_string(),
+                        })
+                        .await;
                 }
             }
         }

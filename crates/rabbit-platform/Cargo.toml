@@ -11,8 +11,6 @@ description = "Platform-specific adapters for Rabbit"
 
 [dependencies]
 rabbit-models = { path = "../rabbit-models" }
-elevated-command = "1.1"
-
 tokio = { workspace = true }
 tracing = { workspace = true }
 thiserror = { workspace = true }
@@ -21,9 +19,11 @@ serde = { workspace = true }
 toml = { workspace = true }
 dirs = { workspace = true }
 chrono = { workspace = true }
+xelevate = "0.1.0"
+fltk = { workspace = true }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { workspace = true, features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_UI_Shell", "Win32_System_Com"] }
+windows-sys = { workspace = true, features = ["Win32_Foundation", "Win32_UI_Shell", "Win32_System_Com"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = { workspace = true }

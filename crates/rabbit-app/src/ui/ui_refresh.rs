@@ -267,7 +267,9 @@ pub fn refresh_displays() {
         ("chat_messages", s.chat_messages.clone()),
         ("chat_users", s.chat_users.clone()),
         ("settings_output", s.settings_output.clone()),
-    ].into_iter().collect();
+    ]
+    .into_iter()
+    .collect();
 
     let tftpd_dirs = s.tftpd_dirs.clone();
     let http_items = s.http_items.clone();
@@ -286,11 +288,7 @@ pub fn refresh_displays() {
         if let Some(mut buf) = display.buffer() {
             buf.set_text(value);
             // Auto-scroll for all log-type displays when new content arrives
-            if matches!(
-                *key,
-                "ping_output" | "scan_output" | "http_log" | "tftpd_log" | "tftpc_log"
-                | "chat_messages" | "settings_output"
-            ) {
+            if matches!(*key, "ping_output" | "scan_output" | "http_log" | "tftpd_log" | "tftpc_log" | "chat_messages" | "settings_output") {
                 let lines = buf.count_lines(0, buf.length());
                 display.scroll(lines, 0);
             }

@@ -29,7 +29,7 @@ pub enum UiData {
 
     // ═══ Chat 专用 ═══
     ChatMessage(String, String),
-    ChatUserList(Vec<String>),  // 改为数组，避免逗号分隔问题
+    ChatUserList(Vec<String>), // 改为数组，避免逗号分隔问题
 
     // ═══ 服务状态更新（核心：业务状态通知）
     // 第三个参数：None = 普通停止，Some(reason) = 带原因
