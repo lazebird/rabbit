@@ -21,17 +21,6 @@ impl ScanRange {
     }
 }
 
-/// Scan result for a single host
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScanResult {
-    pub ip: Ipv4Addr,
-    pub online: bool,
-    pub hostname: Option<String>,
-    pub mac_address: Option<String>,
-    pub response_time_ms: Option<f64>,
-    pub open_ports: Vec<u16>,
-}
-
 /// Scanner configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScannerConfig {
@@ -97,20 +86,7 @@ mod tests {
         assert_eq!(config.retry_count, 1);
     }
 
-    #[test]
-    fn test_scan_result() {
-        let result = ScanResult {
-            ip: Ipv4Addr::new(192, 168, 1, 100),
-            online: true,
-            hostname: Some("host.example.com".to_string()),
-            mac_address: None,
-            response_time_ms: Some(5.5),
-            open_ports: vec![80, 443],
-        };
-        assert!(result.online);
-        assert!(result.hostname.is_some());
-        assert_eq!(result.open_ports.len(), 2);
-    }
+    // ScanResult 已移至 rabbit-core 作为私有结构，此处不再测试
 
     #[test]
     fn test_scanner_state() {

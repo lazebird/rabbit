@@ -99,6 +99,11 @@ impl PingService {
         Self { tx: Some(tx), ..Self::default() }
     }
 
+    /// 检查 Ping 服务是否正在运行
+    pub async fn is_running(&self) -> bool {
+        *self.state.read().await == PingState::Running
+    }
+
     /// 公开接口：启停切换，会发状态通告
     pub async fn update(&mut self) -> ServiceUpdateResult {
         if *self.state.read().await == PingState::Running {
@@ -106,7 +111,8 @@ impl PingService {
                 Ok(()) => {
                     // 发状态通告，让 UI 更新配置
                     if let Some(ref ui_tx) = self.tx {
-                        let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, false)).await;
+                        // 停止原因：手动停止
+                        let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, false, None)).await;
                     }
                     ServiceUpdateResult::Stopped("Ping stopped".to_string())
                 }
@@ -116,7 +122,7 @@ impl PingService {
             match self.start().await {
                 Ok(()) => {
                     if let Some(ref ui_tx) = self.tx {
-                        let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, true)).await;
+                        let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, true, None)).await;
                     }
                     ServiceUpdateResult::Started("Ping started".to_string())
                 }
@@ -278,12 +284,14 @@ impl PingService {
             }
 
             if targets_guard.is_empty() {
-                *self.state.write().await = PingState::Idle;
-                if let Some(ref ui_tx) = self.tx {
-                    let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, false)).await;
-                }
-            }
-            return;
+                 *self.state.write().await = PingState::Idle;
+                 if let Some(ref ui_tx) = self.tx {
+                     // 停止原因：count 达到自动停止
+                     let reason = Some("count reached".into());
+                     let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, false, reason)).await;
+                 }
+             }
+             return;
         }
 
         if let Some(ref client) = self.client {

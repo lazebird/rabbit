@@ -198,7 +198,8 @@ impl ScanService {
 
             *state.write().await = ScannerState::Completed;
             if let Some(ref tx) = tx {
-                let _ = tx.send(UiData::ServiceStatus(Module::Scan, false)).await;
+                // 停止原因：扫描完成
+                let _ = tx.send(UiData::ServiceStatus(Module::Scan, false, Some("completed".into()))).await;
                 let _ = tx.send(UiData::Log(Module::Scan, "Scan finished.".to_string())).await;
             }
         });

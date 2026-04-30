@@ -293,8 +293,7 @@ impl App {
             }
         });
 
-        // Start centralized UI refresh loop (100ms interval, replaces 7 per-frame idle callbacks)
-        crate::ui::ui_refresh::start_refresh_loop();
+        // UI refresh now uses event-driven callbacks (no polling loop needed)
 
         // Add global keyboard event handling (after tabs are created)
         let mut main_win_for_keys = main_win.clone();
@@ -540,7 +539,6 @@ impl App {
         let mut win_for_close = main_win.clone();
         main_win.set_callback(move |_| {
             win_for_close.hide();
-            crate::ui::ui_refresh::stop_refresh_loop();
             app::quit();
         });
 
@@ -549,7 +547,6 @@ impl App {
         ctrlc::set_handler(move || {
             info!("Ctrl+C received, initiating shutdown...");
             shutdown_flag.store(true, Ordering::SeqCst);
-            crate::ui::ui_refresh::stop_refresh_loop();
             // Use awake_callback to execute quit() on the UI thread (thread-safe)
             fltk::app::awake_callback(|| {
                 info!("Executing quit() on UI thread...");
@@ -561,8 +558,7 @@ impl App {
         // Fallback: also catch close events at the app level
         app::add_handler(|ev| {
             if ev == fltk::enums::Event::Close {
-                tracing::info!("Close event detected via add_handler, stopping refresh and quitting...");
-                crate::ui::ui_refresh::stop_refresh_loop();
+                tracing::info!("Close event detected via add_handler, quitting...");
                 app::quit();
                 true
             } else {
@@ -1093,30 +1089,58 @@ impl EventHandler for AppHandle {
 
 async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
     match data {
-        UiData::ServiceStatus(module, running) => {
-            info!("Received ServiceStatus: {:?} running={}", module, running);
+        UiData::ServiceStatus(module, running, reason) => {
+            info!("Received ServiceStatus: {:?} running={} reason={:?}", module, running, reason);
             match module {
                 Module::Ping => {
                     crate::ui_state::set_ping_running(running);
-                    if !running {
-                        if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                    if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                        if running {
+                            // 从配置中获取 ping target 并设置窗口标题
+                            let target = rabbit_platform::config::load_config()
+                                .ok()
+                                .and_then(|cfg| cfg.modules.get_string("ping", "target"))
+                                .unwrap_or_else(|| "Ping".to_string());
+                            fltk::app::awake_callback(move || {
+                                win.set_label(&format!("Rabbit - {}", target));
+                            });
+                        } else {
                             fltk::app::awake_callback(move || {
                                 win.set_label("Rabbit");
                             });
                         }
                     }
+                    // 如果有停止原因，记录日志
+                    if !running {
+                        if let Some(ref reason_str) = reason {
+                            info!("Ping stopped: {}", reason_str);
+                        }
+                    }
                 }
                 Module::Scan => {
                     crate::ui_state::set_scan_running(running);
+                    // 如果有停止原因，记录日志
+                    if !running {
+                        if let Some(ref reason_str) = reason {
+                            info!("Scan stopped: {}", reason_str);
+                        }
+                    }
                 }
                 _ => {}
             }
+            // 使用 awake_callback 直接更新按钮状态（替代 ui_refresh 轮询）
+            fltk::app::awake_callback(move || {
+                crate::ui::ui_refresh::update_button_state(module, running);
+            });
             fltk::app::awake();
         }
         UiData::PingStats(stats) => {
             info!("app.rs: Received PingStats={}", stats);
             crate::ui_state::set_ping_stats(&stats);
-            fltk::app::awake();
+            // 事件驱动：直接刷新 UI，无轮询
+            fltk::app::awake_callback(|| {
+                crate::ui::ui_refresh::refresh_displays();
+            });
         }
         UiData::Log(module, msg) => {
             match module {
@@ -1131,23 +1155,32 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
                 Module::Chat => crate::ui_state::append_chat_message(&msg, ""),
                 Module::Plan => {}
             }
-            fltk::app::awake();
+            // 事件驱动：直接刷新 UI，无轮询
+            fltk::app::awake_callback(|| {
+                crate::ui::ui_refresh::refresh_displays();
+            });
         }
 
         UiData::PingState { .. } => {}
         UiData::ScanProgress(msg) => {
             crate::ui_state::append_scan_output(&msg);
+            fltk::app::awake_callback(|| {
+                crate::ui::ui_refresh::refresh_displays();
+            });
         }
         UiData::PlanReminder(_msg) => {}
         UiData::ChatMessage(username, msg) => {
             crate::ui_state::append_chat_message(&username, &msg);
+            fltk::app::awake_callback(|| {
+                crate::ui::ui_refresh::refresh_displays();
+            });
         }
         UiData::ChatUserList(users) => {
-            let user_vec: Vec<String> = users.split(',').map(|s| s.to_string()).collect();
-            crate::ui_state::set_chat_users(&user_vec);
-        }
-        UiData::Error(module, msg) => {
-            error!("[{:?}] {}", module, msg);
+            // users 已经是 Vec<String>，无需再 split
+            crate::ui_state::set_chat_users(&users);
+            fltk::app::awake_callback(|| {
+                crate::ui::ui_refresh::refresh_displays();
+            });
         }
     }
 }

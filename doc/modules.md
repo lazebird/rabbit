@@ -45,7 +45,7 @@ rabbit/
 │   │       │   ├── settings_tab.rs # 设置界面
 │   │       │   ├── defaults.rs  # 默认值
 │   │       │   ├── styles.rs    # 样式定义
-│   │       │   └── ui_refresh.rs # 集中式 UI 刷新
+│   │       │   └── ui_refresh.rs # UI 更新（事件驱动回调）
 │   │       └── upgrade/         # 升级模块
 │   │           ├── mod.rs       # 升级模块入口
 │   │           ├── models.rs   # 版本数据结构
@@ -235,27 +235,69 @@ pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
 
 ### UiData/Module 来源
 
-`UiData` 和 `Module` 枚举定义在 `rabbit-models`，`rabbit-core` 负责 re-export：
+`UiData` 和 `Module` 枚举定义在 `rabbit-models`，`rabbit-core` 通过 `ui_channel.rs` re-export：
 
 ```rust
-// rabbit-core/src/lib.rs
-pub use ui_channel::{UiData, Module};
+// rabbit-models/src/lib.rs - 权威定义
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum UiData {
+    // 通用日志（HTTP/TFTP/Chat/Ping/Scan）
+    Log(Module, String),
+    
+    // Ping 专用
+    PingStats(String),        // "Tx 10 Rx 9 Loss 10%"
+    PingState { address: String, progress: u32, total: u32, color: String },
+    
+    // Scan 专用
+    ScanProgress(String),       // "Progress: 50% - Found 5 hosts"
+    
+    // Plan 专用
+    PlanReminder(String),      // 计划到期提醒
+    
+    // Chat 专用
+    ChatMessage(String, String), // (用户名, 消息)
+    ChatUserList(String),        // 在线用户列表（逗号分隔）
+    
+    // 服务状态更新（核心：业务状态通知）
+    ServiceStatus(Module, bool), // (模块, 是否运行中)
+    
+    // 错误通知
+    Error(Module, String),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Module {
+    Ping, Http, Tftpd, Tftpc, Scan, Chat, Plan,
+}
 ```
+
+> **注意**：`ServiceStatus` 是业务状态更新的核心接口，用于：
+> - Ping count 达到时 → `ServiceStatus(Ping, false)`
+> - Scan 完成时 → `ServiceStatus(Scan, false)`
+> - 手动停止服务 → `ServiceStatus(Module, false)`
 
 ### PingService
 
 | 项目 | 说明 |
 |------|------|
 | 文件 | `src/ping.rs` |
-| 职责 | ICMP Ping 功能 |
+| 职责 | ICMP Ping 功能 + 任务栏状态 |
 | 依赖 | `surge-ping` |
+| Channel | `with_channel(tx)` |
 
 **接口**：
 ```rust
 pub fn new() -> Self
 pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn update(&mut self) -> ServiceUpdateResult
+pub async fn update(&mut self) -> ServiceUpdateResult  // 切换状态 (启动/停止)
+pub async fn is_running(&self) -> bool  // 检查是否运行中
+pub fn send(&self, data: UiData)  // 发送 UI 数据
 ```
+
+**状态更新**：
+- 启动时发送：`UiData::ServiceStatus(Module::Ping, true)`
+- 停止时发送：`UiData::ServiceStatus(Module::Ping, false)`
+- 任务栏标题：通过读取配置中的 `target` 设置窗口标题
 
 ### HttpService
 
@@ -308,13 +350,21 @@ pub async fn get(&self, remote_filename: &str, local_path: &str) -> Result<Strin
 |------|------|
 | 文件 | `src/scan.rs` |
 | 职责 | IP 扫描 |
+| 依赖 | `tokio`, `dns-lookup` |
 
 **接口**：
 ```rust
 pub fn new() -> Self
 pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn update(&mut self) -> ServiceUpdateResult
+pub async fn update(&mut self) -> ServiceUpdateResult  // 切换状态 (启动/停止)
+pub async fn destroy(&mut self) -> Result<()>  // 销毁资源，不发状态通告
+pub fn send(&self, data: UiData)  // 发送 UI 数据
 ```
+
+**状态更新**：
+- 完成时发送：`UiData::ServiceStatus(Module::Scan, false)`（让按钮从 "Stop" → "Start"）
+- 发现主机时发送：`UiData::Log(Module::Scan, "Found online host: ...")`
+- 进度更新：通过 `ScannerState::Scanning { progress }` 内部跟踪
 
 ### ChatService
 
@@ -353,9 +403,17 @@ pub async fn remove_task(&self, id: &str) -> Result<()>
 | 项目 | 说明 |
 |------|------|
 | 文件 | `src/ui_channel.rs` |
-| 职责 | Channel 创建工具 |
+| 职责 | Channel 创建工具 + 统一导出 UiData/Module |
 
 ```rust
+// 发送辅助函数（消除重复实现）
+pub async fn send_ui(tx: &Option<mpsc::Sender<UiData>>, data: UiData) {
+    if let Some(sender) = tx {
+        let _ = sender.send(data).await;
+    }
+}
+
+// Channel 管理器（每个模块独立 channel）
 pub struct UiChannels {
     pub ping_tx: mpsc::Sender<UiData>,
     pub http_tx: mpsc::Sender<UiData>,
@@ -364,6 +422,13 @@ pub struct UiChannels {
     pub tftpc_tx: mpsc::Sender<UiData>,
     pub chat_tx: mpsc::Sender<UiData>,
     pub plan_tx: mpsc::Sender<UiData>,
+}
+
+// 接收端集合
+pub struct UiReceivers {
+    pub ping: mpsc::Receiver<UiData>,
+    pub http: mpsc::Receiver<UiData>,
+    // ... 其他模块
 }
 ```
 
@@ -376,35 +441,37 @@ pub struct UiChannels {
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum UiData {
-    // 通用日志
+    // 通用日志（HTTP/TFTP/Chat/Ping/Scan）
     Log(Module, String),
-    
-    // Ping 专用
-    PingStats(String),
-    PingState { address: String, progress: u32, total: u32, color: String },
-    
-    // Scan 专用
-    ScanProgress(String),
-    
-    // Plan 专用
-    PlanReminder(String),
-    
-    // Chat 专用
-    ChatMessage(String, String),
-    ChatUserList(String),
-    
-    // 错误
-    Error(Module, String),
-    
-    // 通用状态更新
-    ServiceStatus(Module, bool), // (模块, 是否运行中)
-}
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Module {
-    Ping, Http, Tftpd, Tftpc, Scan, Chat, Plan,
+    // Ping 专用
+    PingStats(String),        // "Tx 10 Rx 9 Loss 10% Min 1ms Max 5ms Avg 2ms"
+    PingState { address: String, progress: u32, total: u32, color: String },
+
+    // Scan 专用
+    ScanProgress(String),       // "Progress: 50% - Found 5 hosts"
+
+    // Plan 专用
+    PlanReminder(String),      // 计划到期提醒
+
+    // Chat 专用
+    ChatMessage(String, String), // (用户名, 消息)
+    ChatUserList(Vec<String>), // ⚠️ 待改：从逗号分隔改为数组
+
+    // 服务状态更新（核心：业务状态通知）
+    // ⚠️ 待扩展：增加可选原因字符串
+    ServiceStatus(Module, bool, Option<String>), // (模块, 是否运行中, 原因)
+
+    // 错误通知
+    Error(Module, String),
 }
 ```
+
+> **源码位置**: `rabbit-models/src/lib.rs`（权威定义）
+> 
+> **⚠️ 待修订**（见 `data-flow-design.md` §5.2）：
+> - `ChatUserList` 从逗号分隔改为 `Vec<String>`
+> - `ServiceStatus` 增加可选原因字符串 `Option<String>`
 
 ### 配置模型
 
@@ -458,54 +525,36 @@ pub fn get_data_dir() -> Result<PathBuf>
 
 ## 数据流设计
 
-### Channel 推送模式
+详见 [data-flow-design.md](../doc/data-flow-design.md)（v2.0 已重写）。
 
-```
-┌─────────────┐         Channel          ┌─────────────┐
-│  Service    │ ──────────────────────▶  │   app.rs    │
-│  (tokio)    │    UiData 枚举           │  (receiver) │
-└─────────────┘                          └──────┬──────┘
-                                                │
-                                          handle_ui_data()
-                                                │
-                                                ▼
-                                        ┌──────────────┐
-                                        │  ui_state    │
-                                        │  (状态更新)  │
-                                        └──────┬───────┘
-                                               │
-                                        fltk::app::awake()
-                                               │
-                                               ▼
-                                        ┌──────────────┐
-                                        │ ui_refresh   │
-                                        │ (100ms 刷新) │
-                                        └──────────────┘
-```
+核心机制：
+- **推送代替轮询**：Service 通过 Channel 主动推送数据
+- **ServiceStatus 接口**：统一处理业务状态更新（启动/停止/完成）
+- **线程安全**：Channel 跨线程安全，ui_state 集中处理 UI 更新
 
-### 优势
+### 业务状态更新场景
 
-1. **推送代替轮询**：Service 产生数据后主动推送
-2. **Channel 解耦**：使用 tokio channel 作为中介
-3. **线程安全**：channel 跨线程安全
-4. **实时响应**：数据立即到达 UI
+| 场景 | 服务 | 发送的消息 | UI 更新 |
+|------|------|----------|----------|
+| Ping 启动 | PingService | `ServiceStatus(Ping, true)` | 按钮变 "Stop"，窗口标题设为目标地址 |
+| Ping count 达到 | PingService | `ServiceStatus(Ping, false)` | 按钮变 "Start"，窗口标题重置为 "Rabbit" |
+| Scan 完成 | ScanService | `ServiceStatus(Scan, false)` | 按钮从 "Stop" → "Start" |
+| 手动停止 | 任意 Service | `ServiceStatus(Module, false)` | 对应按钮状态更新 |
 
----
-
-## 模块依赖关系
+### 模块依赖关系
 
 ```
 rabbit-app
-     ├── rabbit_models (UiData, AppConfig)
-     ├── rabbit_core  (服务 + ui_channel)
-     └── rabbit_platform (配置加载)
+    ├── rabbit-models (UiData, AppConfig)
+    ├── rabbit-core  (服务 + ui_channel)
+    └── rabbit-platform (配置加载)
 
 rabbit-core
-     ├── rabbit_models (UiData, Module)
-     └── rabbit_platform (配置加载)
+    ├── rabbit-models (UiData, Module)
+    └── rabbit-platform (配置加载)
 
-rabbit_platform
-     └── rabbit_models (配置模型)
+rabbit-platform
+    └── rabbit-models (配置模型)
 ```
 
 ---
@@ -535,13 +584,13 @@ config.modules.insert("global", "systray", ConfigValue::Boolean(true))
 | tftpd | blksize | Integer | 512 | 块大小 |
 | tftpd | override_conflicts | Boolean | false | 覆盖冲突文件 |
 | tftpd | qsize | Integer | 2000 | 队列大小 |
-| tftpd | qtout | Integer | 1000 | 队列超时(ms) |
+| tftpd | qtimeout | Integer | 1000 | 队列超时(ms) |
 | tftpd | fslog | Boolean | false | 文件服务日志 |
 | tftpc | server_addr | String | "" | 服务器地址 |
 | tftpc | port | Integer | 69 | 服务器端口 |
 
 ---
 
-文档版本：5.0
+文档版本：6.0
 创建日期：2026-04-16
-更新日期：2026-04-28
+更新日期：2026-04-30

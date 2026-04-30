@@ -29,13 +29,11 @@ pub enum UiData {
 
     // ═══ Chat 专用 ═══
     ChatMessage(String, String),
-    ChatUserList(String),
+    ChatUserList(Vec<String>),  // 改为数组，避免逗号分隔问题
 
-    // ═══ 错误 ═══
-    Error(Module, String),
-
-    // ═══ 通用状态更新 ═══
-    ServiceStatus(Module, bool), // (模块, 是否运行中)
+    // ═══ 服务状态更新（核心：业务状态通知）
+    // 第三个参数：None = 普通停止，Some(reason) = 带原因
+    ServiceStatus(Module, bool, Option<String>),
 }
 
 /// 模块索引枚举

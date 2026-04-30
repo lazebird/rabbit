@@ -140,11 +140,10 @@ impl ChatService {
 
                                         // Only send user list if it changed
                                         if is_new_user {
-                                            let user_list = users_guard.values()
-                                                .filter(|u| u.online)
-                                                .map(|u| u.username.clone())
-                                                .collect::<Vec<_>>()
-                                                .join(",");
+                                            let user_list: Vec<String> = users_guard.values()
+                                                    .filter(|u| u.online)
+                                                    .map(|u| u.username.clone())
+                                                    .collect();
                                             let _ = ui_tx.send(UiData::ChatUserList(user_list)).await;
                                         }
                                     }

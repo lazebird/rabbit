@@ -41,10 +41,6 @@ pub enum ServiceUpdateResult {
 }
 
 impl ServiceUpdateResult {
-    pub fn is_running(&self) -> bool {
-        matches!(self, Self::Started(_) | Self::NoChange)
-    }
-
     pub fn message(&self) -> &str {
         match self {
             Self::Started(m) => m,
