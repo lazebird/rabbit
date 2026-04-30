@@ -10,7 +10,6 @@ use axum::{
     Router,
 };
 use rabbit_platform::config::{get_bool, get_integer};
-use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -21,6 +20,20 @@ use tokio::sync::{mpsc, oneshot, RwLock};
 use tokio::task::JoinHandle;
 use tower_http::services::ServeDir;
 use tracing::{error, info};
+
+/// Static MIME types for video files
+const VIDEO_MIME_TYPES: &[(&str, &str)] = &[
+    (".mp4", "video/mp4"),
+    (".webm", "video/webm"),
+    (".ogg", "video/ogg"),
+    (".ogv", "video/ogg"),
+    (".avi", "video/x-msvideo"),
+    (".mov", "video/quicktime"),
+    (".wmv", "video/x-ms-wmv"),
+    (".flv", "video/x-flv"),
+    (".mkv", "video/x-matroska"),
+    (".m4v", "video/x-m4v"),
+];
 
 /// Internal HTTP server state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -241,28 +254,14 @@ impl Default for HttpService {
     }
 }
 
-fn get_mime_types() -> HashMap<&'static str, &'static str> {
-    let mut mimes = HashMap::new();
-    mimes.insert(".mp4", "video/mp4");
-    mimes.insert(".webm", "video/webm");
-    mimes.insert(".ogg", "video/ogg");
-    mimes.insert(".ogv", "video/ogg");
-    mimes.insert(".avi", "video/x-msvideo");
-    mimes.insert(".mov", "video/quicktime");
-    mimes.insert(".wmv", "video/x-ms-wmv");
-    mimes.insert(".flv", "video/x-flv");
-    mimes.insert(".mkv", "video/x-matroska");
-    mimes.insert(".m4v", "video/x-m4v");
-    mimes
-}
-
 fn path2mime(path: &str) -> &'static str {
-    let mimes = get_mime_types();
     if let Some(filename) = path.rsplit('/').next() {
         if let Some(dot_pos) = filename.rfind('.') {
             let ext = &filename[dot_pos..].to_lowercase();
-            if let Some(&mime) = mimes.get(ext.as_str()) {
-                return mime;
+            for &(ext_key, mime) in VIDEO_MIME_TYPES {
+                if ext == ext_key {
+                    return mime;
+                }
             }
         }
     }

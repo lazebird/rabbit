@@ -187,7 +187,7 @@ impl TabComponent for PlanTab {
             }
 
             // Generate event ID and update UI state
-            let event_id = format!("{}", uuid::Uuid::new_v4().to_string()[..8].to_string());
+            let event_id = uuid::Uuid::new_v4().to_string()[..8].to_string();
             if let Some(state) = UiState::global() {
                 if let Ok(mut s) = state.lock() {
                     let cycle_str = if cycle > 0 {
@@ -332,11 +332,11 @@ fn show_date_picker(date_input: &mut Input) {
     let mut year_choice_today = year_choice.clone();
     let mut month_choice_today = month_choice.clone();
     let mut day_choice_today = day_choice.clone();
-    let update_days_today = update_days.clone();
+    let update_days_today = update_days;
     today_btn.set_callback(move |_| {
         let today = Local::now().naive_local().date();
         let base_year = today.year() - 5;
-        year_choice_today.set_value((today.year() - base_year).max(0).min(10));
+        year_choice_today.set_value((today.year() - base_year).clamp(0, 10));
         month_choice_today.set_value((today.month() - 1) as i32);
         update_days_today(&mut day_choice_today, today.year(), today.month(), Some(today.day()));
     });
@@ -344,7 +344,7 @@ fn show_date_picker(date_input: &mut Input) {
     // Year/Month change - update day range
     let mut day_choice_update = day_choice.clone();
     let month_choice_ref = month_choice.clone();
-    let update_days_ref = update_days.clone();
+    let update_days_ref = update_days;
     year_choice.set_callback(move |c: &mut Choice| {
         let base_year = today.year() - 5;
         let yr = base_year + c.value();

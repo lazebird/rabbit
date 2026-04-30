@@ -78,7 +78,7 @@ pub fn open_url(url: &str) -> Result<()> {
         std::process::Command::new("xdg-open")
             .arg(url)
             .spawn()
-            .map_err(|e| PlatformError::Io(e))?;
+            .map_err(PlatformError::Io)?;
         Ok(())
     }
 
@@ -87,7 +87,7 @@ pub fn open_url(url: &str) -> Result<()> {
         std::process::Command::new("cmd")
             .args(["/C", "start", url])
             .spawn()
-            .map_err(|e| PlatformError::Io(e))?;
+            .map_err(PlatformError::Io)?;
         Ok(())
     }
 
@@ -96,7 +96,7 @@ pub fn open_url(url: &str) -> Result<()> {
         std::process::Command::new("open")
             .arg(url)
             .spawn()
-            .map_err(|e| PlatformError::Io(e))?;
+            .map_err(PlatformError::Io)?;
         Ok(())
     }
 
@@ -306,8 +306,6 @@ fn open_folder_dialog_macos(_title: &str, _default_path: Option<&str>) -> Result
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_open_url() {
         // This would actually open a browser, so we just test the function exists

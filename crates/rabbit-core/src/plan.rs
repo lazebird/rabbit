@@ -204,7 +204,9 @@ impl PlanService {
         tx: &Option<mpsc::Sender<UiData>>,
     ) {
         let now = Local::now();
-        let tasks_to_trigger: Vec<(String, Task)> = tasks.read().await
+        
+        // 收集需要触发的任务 ID（只读锁）
+        let task_ids: Vec<String> = tasks.read().await
             .iter()
             .filter(|(_, t)| {
                 t.enabled 
@@ -212,27 +214,33 @@ impl PlanService {
                     && t.state != TaskState::Acknowledged
                     && Self::should_trigger(&t.schedule, now)
             })
-            .map(|(id, t)| (id.clone(), t.clone()))
+            .map(|(id, _)| id.clone())
             .collect();
 
-        for (id, mut task) in tasks_to_trigger {
-            task.trigger();
-            
-            if let Err(e) = rabbit_platform::notification::show_task_reminder(&task.title, None) {
-                error!("Failed to show notification: {}", e);
+        if task_ids.is_empty() {
+            return;
+        }
+
+        // 获取写锁，原地修改任务
+        let mut tasks_guard = tasks.write().await;
+        for id in task_ids {
+            if let Some(task) = tasks_guard.get_mut(&id) {
+                task.trigger();
+                
+                if let Err(e) = rabbit_platform::notification::show_task_reminder(&task.title, None) {
+                    error!("Failed to show notification: {}", e);
+                }
+
+                logs.write().await.push(task.title.clone());
+
+                if let Some(ref tx) = tx {
+                    let _ = tx.send(UiData::PlanReminder(task.title.clone())).await;
+                }
+
+                if let Schedule::Repeating { .. } = task.schedule {
+                    task.reset_for_next_trigger();
+                }
             }
-
-            logs.write().await.push(task.title.clone());
-
-            if let Some(ref tx) = tx {
-                let _ = tx.send(UiData::PlanReminder(task.title.clone())).await;
-            }
-
-            if let Schedule::Repeating { .. } = task.schedule {
-                task.reset_for_next_trigger();
-            }
-
-            tasks.write().await.insert(id, task);
         }
     }
 
@@ -241,7 +249,7 @@ impl PlanService {
         match schedule {
             Schedule::Once { datetime } => {
                 let diff = (*datetime - now).num_seconds();
-                diff >= 0 && diff < 30
+                (0..30).contains(&diff)
             }
             Schedule::Repeating { datetime, cycle, unit } => {
                 let interval_secs = match unit {

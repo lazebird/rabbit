@@ -18,8 +18,8 @@ pub struct UiChannels {
     pub plan_tx: mpsc::Sender<UiData>,
 }
 
-impl UiChannels {
-    pub fn new() -> Self {
+impl Default for UiChannels {
+    fn default() -> Self {
         const BUFFER: usize = 100;
         Self {
             ping_tx: mpsc::channel(BUFFER).0,
@@ -30,6 +30,12 @@ impl UiChannels {
             chat_tx: mpsc::channel(BUFFER).0,
             plan_tx: mpsc::channel(BUFFER).0,
         }
+    }
+}
+
+impl UiChannels {
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 

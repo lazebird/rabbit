@@ -67,7 +67,7 @@ fn show_notification_linux(title: &str, message: &str) -> Result<()> {
     use std::process::Command;
     
     let result = Command::new("notify-send")
-        .args(&[title, message])
+        .args([title, message])
         .output();
     
     match result {

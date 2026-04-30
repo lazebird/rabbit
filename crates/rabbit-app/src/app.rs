@@ -298,7 +298,7 @@ Ok(Self {
                     .iter()
                     .position(|&p| p == ptr)
                     .unwrap_or(0);
-                if let Ok(_) = view_model_for_tab.try_write() {
+                if view_model_for_tab.try_write().is_ok() {
                     rabbit_platform::config::update_config(|cfg| {
                         cfg.modules.insert("global", "last_active_tab", rabbit_models::config::ConfigValue::Integer(idx as i64));
                     }).ok();

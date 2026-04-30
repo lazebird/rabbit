@@ -33,9 +33,9 @@ async fn get_interfaces_unix() -> Result<Vec<NetworkInterface>> {
     
     // Use ip command on Linux, ifconfig on macOS
     #[cfg(target_os = "linux")]
-    let _output = Command::new("ip")
-        .args(&["-j", "addr", "show"])
-        .output()?;
+        let _output = Command::new("ip")
+            .args(["-j", "addr", "show"])
+            .output()?;
     
     #[cfg(target_os = "macos")]
     let output = Command::new("ifconfig")
@@ -67,6 +67,6 @@ pub fn calculate_ip_range(start: Ipv4Addr, end: Ipv4Addr) -> Vec<Ipv4Addr> {
     let end_u32 = u32::from(end);
     
     (start_u32..=end_u32)
-        .map(|ip| Ipv4Addr::from(ip))
+        .map(Ipv4Addr::from)
         .collect()
 }

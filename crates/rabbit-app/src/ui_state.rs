@@ -474,7 +474,7 @@ pub fn add_chat_user(user: &str) {
             if s.chat_users.contains("(no users)") {
                 s.chat_users = "Online Users:\n───────────\n".to_string();
             }
-            if !s.chat_users.contains(&format!("\n{}\n", user)) && !s.chat_users.ends_with(&format!("{}", user)) {
+            if !s.chat_users.contains(&format!("\n{}\n", user)) && !s.chat_users.ends_with(&user.to_string()) {
                 s.chat_users.push_str(user);
                 s.chat_users.push('\n');
                 s.updated.insert("chat_users".to_string(), true);
@@ -487,7 +487,7 @@ pub fn remove_chat_user(user: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
             s.chat_users = s.chat_users.replace(&format!("{}\n", user), "");
-            s.chat_users = s.chat_users.replace(&format!("{}", user), "");
+            s.chat_users = s.chat_users.replace(&user.to_string(), "");
             if s.chat_users.trim() == "Online Users:\n───────────" {
                 s.chat_users = "Online Users:\n───────────\n(no users)\n".to_string();
             }

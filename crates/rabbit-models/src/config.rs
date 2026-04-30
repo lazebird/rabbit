@@ -52,17 +52,9 @@ impl ConfigValue {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AppConfig {
     pub modules: ModuleConfigs,
-}
-
-impl Default for AppConfig {
-    fn default() -> Self {
-        Self {
-            modules: ModuleConfigs::default(),
-        }
-    }
 }
 
 impl AppConfig {

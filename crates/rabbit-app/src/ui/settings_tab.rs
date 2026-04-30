@@ -136,11 +136,7 @@ impl TabComponent for SettingsTab {
         lang_row.fixed(&lang_label, 70);
 
         // Load current config state for all settings
-        let initial_config = if let Ok(config) = rabbit_platform::config::load_config() {
-            config
-        } else {
-            rabbit_models::config::AppConfig::default()
-        };
+        let initial_config = rabbit_platform::config::load_config().unwrap_or_default();
         let modules = &initial_config.modules;
 
         let lang_str = modules.get_string("global", "language").unwrap_or_else(|| "System".to_string());

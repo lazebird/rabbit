@@ -261,8 +261,6 @@ impl Default for ScanService {
 
 /// Scan a single host with parallel port probing
 async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
-    let _start = tokio::time::Instant::now();
-
     // If specific port given, try TCP connect
     // If port == 0, do parallel ping (ICMP-like via multi-port TCP)
     let online = if port == 0 {
@@ -283,9 +281,11 @@ async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
         None
     };
 
-    // Try to get MAC address from ARP table
+    // Try to get MAC address from ARP table (use spawn_blocking for sync file I/O)
     let mac_address = if online {
-        get_mac_from_arp(ip)
+        tokio::task::spawn_blocking(move || get_mac_from_arp(ip))
+            .await
+            .unwrap_or_default()
     } else {
         None
     };

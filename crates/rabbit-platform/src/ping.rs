@@ -7,6 +7,12 @@ use std::net::IpAddr;
 /// Platform ping capability
 pub struct PlatformPing;
 
+impl Default for PlatformPing {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PlatformPing {
     /// Create a new ping instance
     pub fn new() -> Self {

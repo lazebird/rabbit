@@ -53,6 +53,7 @@ enum PingState {
 }
 
 /// Ping service for managing ping operations
+#[derive(Clone)]
 pub struct PingService {
     state: Arc<RwLock<PingState>>,
     targets: Arc<RwLock<Vec<PingTarget>>>,
@@ -70,8 +71,8 @@ enum PingCommand {
     Stop,
 }
 
-impl PingService {
-    pub fn new() -> Self {
+impl Default for PingService {
+    fn default() -> Self {
         Self {
             state: Arc::new(RwLock::new(PingState::Idle)),
             targets: Arc::new(RwLock::new(Vec::new())),
@@ -84,18 +85,17 @@ impl PingService {
             tx: None,
         }
     }
+}
+
+impl PingService {
+    pub fn new() -> Self {
+        Self::default()
+    }
 
     pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self {
         Self {
-            state: Arc::new(RwLock::new(PingState::Idle)),
-            targets: Arc::new(RwLock::new(Vec::new())),
-            results: Arc::new(RwLock::new(HashMap::new())),
-            command_tx: None,
-            sequence: Arc::new(AtomicU16::new(0)),
-            client: None,
-            sent_count: Arc::new(AtomicU32::new(0)),
-            sent_per_target: Arc::new(RwLock::new(HashMap::new())),
             tx: Some(tx),
+            ..Self::default()
         }
     }
 
@@ -122,7 +122,7 @@ impl PingService {
         let (tx, mut rx) = mpsc::channel(32);
         self.command_tx = Some(tx);
 
-        let service = self.clone_for_task();
+        let service = self.clone();
 
         tokio::spawn(async move {
             info!("Ping task started");
@@ -168,20 +168,6 @@ impl PingService {
         Ok(())
     }
 
-    fn clone_for_task(&self) -> Self {
-        Self {
-            state: Arc::clone(&self.state),
-            targets: Arc::clone(&self.targets),
-            results: Arc::clone(&self.results),
-            command_tx: self.command_tx.clone(),
-            sequence: Arc::clone(&self.sequence),
-            client: self.client.clone(),
-            sent_count: Arc::clone(&self.sent_count),
-            sent_per_target: Arc::clone(&self.sent_per_target),
-            tx: self.tx.clone(),
-        }
-    }
-
     pub async fn update(&mut self) -> ServiceUpdateResult {
         if self.is_running().await {
             match self.stop().await {
@@ -197,7 +183,7 @@ impl PingService {
     }
 
     async fn is_running(&self) -> bool {
-        self.state.read().await.clone() == PingState::Running
+        *self.state.read().await == PingState::Running
     }
 
     pub async fn send(&self, data: UiData) {
@@ -244,36 +230,66 @@ impl PingService {
     }
 
     async fn ping_all(&self) {
-        let mut targets_guard = self.targets.write().await;
-        let mut sent_per_target = self.sent_per_target.write().await;
-        let mut targets_to_remove = Vec::new();
+        // 收集需要 ping 的目标（短时间持有锁）
+        let targets_to_ping: Vec<(PingTarget, u32)> = {
+            let targets_guard = self.targets.read().await;
+            let sent_per_target = self.sent_per_target.read().await;
+            
+            targets_guard.iter()
+                .filter_map(|target| {
+                    let address = target.address.clone();
+                    let current_sent = *sent_per_target.get(&address).unwrap_or(&0);
+                    
+                    if target.count > 0 && current_sent >= target.count {
+                        None
+                    } else {
+                        Some((target.clone(), current_sent))
+                    }
+                })
+                .collect()
+        };
 
-        info!("ping_all: targets.len()={}", targets_guard.len());
-        for t in targets_guard.iter() {
-            info!("ping_all: target={}", t.address);
-        }
-
-        if targets_guard.is_empty() {
+        if targets_to_ping.is_empty() {
+            // 检查是否需要清理已完成的目标
+            let mut targets_guard = self.targets.write().await;
+            let sent_per_target = self.sent_per_target.read().await;
+            let mut targets_to_remove = Vec::new();
+            
+            for target in targets_guard.iter() {
+                let address = target.address.clone();
+                let current_sent = *sent_per_target.get(&address).unwrap_or(&0);
+                if target.count > 0 && current_sent >= target.count {
+                    targets_to_remove.push(address);
+                }
+            }
+            
+            for addr in &targets_to_remove {
+                targets_guard.retain(|t| t.address != *addr);
+            }
+            
+            if targets_guard.is_empty() {
+                *self.state.write().await = PingState::Idle;
+                if let Some(ref ui_tx) = self.tx {
+                    let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, false)).await;
+                }
+            }
             return;
         }
 
         if let Some(ref client) = self.client {
-            for target in targets_guard.iter_mut() {
+            for (target, current_sent) in targets_to_ping {
                 let address = target.address.clone();
-                let current_sent = *sent_per_target.get(&address).unwrap_or(&0);
-                info!("Checking target {}: sent={} limit={}", address, current_sent, target.count);
-
-                if target.count > 0 && current_sent >= target.count {
-                    info!("Target {} reached count limit, removing", address);
-                    targets_to_remove.push(address);
-                    continue;
-                }
                 
-                *sent_per_target.entry(address.clone()).or_insert(0) += 1;
+                // 更新计数（短时间持有锁）
+                {
+                    let mut sent_per_target = self.sent_per_target.write().await;
+                    *sent_per_target.entry(address.clone()).or_insert(0) += 1;
+                }
                 self.sent_count.fetch_add(1, Ordering::SeqCst);
                 let seq = self.sequence.fetch_add(1, Ordering::SeqCst);
 
-                let result = match PingService::do_ping(client, target, seq).await {
+                // 执行 ping（不持有锁）
+                let result = match PingService::do_ping(client, &target, seq).await {
                     Ok(res) => res,
                     Err(_) => PingResult {
                         success: false,
@@ -282,12 +298,15 @@ impl PingService {
                     },
                 };
 
-                let mut results_guard = self.results.write().await;
-                let target_results = results_guard.entry(address.clone()).or_insert(Vec::new());
-                target_results.push(result.clone());
+                // 更新结果（短时间持有锁）
+                let target_results = {
+                    let mut results_guard = self.results.write().await;
+                    let tr = results_guard.entry(address.clone()).or_insert(Vec::new());
+                    tr.push(result.clone());
+                    tr.clone() // 克隆用于统计计算
+                };
 
                 if let Some(ref ui_tx) = self.tx {
-                    info!("ping_all: Sending UiData to channel, tx is available");
                     let msg = if result.success {
                         let ttl_str = result.ttl.map(|t| format!(" TTL={}", t)).unwrap_or_default();
                         format!("Reply from {}: time={:.2}ms{}", 
@@ -296,12 +315,9 @@ impl PingService {
                         format!("Request to {} timed out", address)
                     };
                     
-                    match ui_tx.send(UiData::Log(Module::Ping, msg)).await {
-                        Ok(_) => info!("ping_all: Log message sent successfully"),
-                        Err(e) => error!("ping_all: Failed to send Log: {}", e),
-                    }
+                    let _ = ui_tx.send(UiData::Log(Module::Ping, msg)).await;
                     
-                    let total_sent = current_sent;
+                    let total_sent = current_sent + 1;
                     let received = target_results.iter().filter(|r| r.success).count() as u32;
                     let loss_count = total_sent.saturating_sub(received);
                     let loss = (loss_count as f32 / total_sent as f32) * 100.0;
@@ -323,24 +339,8 @@ impl PingService {
                         total_sent, received, loss, min, max, avg
                     );
                     
-                    match ui_tx.send(UiData::PingStats(stats)).await {
-                        Ok(_) => info!("ping_all: Stats message sent successfully"),
-                        Err(e) => error!("ping_all: Failed to send Stats: {}", e),
-                    }
-                } else {
-                    error!("ping_all: PingService tx is None, cannot send UI updates");
+                    let _ = ui_tx.send(UiData::PingStats(stats)).await;
                 }
-            }
-        }
-
-        for addr in targets_to_remove {
-            targets_guard.retain(|t| t.address != addr);
-        }
-
-        if targets_guard.is_empty() {
-            *self.state.write().await = PingState::Idle;
-            if let Some(ref ui_tx) = self.tx {
-                let _ = ui_tx.send(UiData::ServiceStatus(Module::Ping, false)).await;
             }
         }
     }

@@ -113,15 +113,15 @@ impl TftpdService {
                             .bind(addr)
                             .timeout(std::time::Duration::from_secs(timeout_secs))
                             .block_size_limit(block_size as u16)
-                            .window_size_limit(window_size as u16)
+                            .window_size_limit(window_size)
                             .max_send_retries(100);
 
                         match builder.build().await {
-                            Ok(server) => {
-                                info!("TFTP server started successfully");
-                                if let Some(ref tx) = tx_ui {
-                                    let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server started".to_string()));
-                                }
+                             Ok(server) => {
+                                 info!("TFTP server started successfully");
+                                 if let Some(ref tx) = tx_ui {
+                                     let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server started".to_string())).await;
+                                 }
 
                                 let server_fut = server.serve();
                                 tokio::select! {
@@ -166,7 +166,7 @@ impl TftpdService {
         }
 
         if let Some(ref tx) = self.tx {
-            let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server stopped".to_string()));
+            let _ = tx.send(UiData::Log(Module::Tftpd, "TFTP server stopped".to_string())).await;
         }
 
         info!("TFTP server stopped");

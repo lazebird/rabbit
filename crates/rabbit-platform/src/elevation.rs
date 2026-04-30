@@ -1,7 +1,6 @@
 pub fn ensure_elevated() {
     #[cfg(any(debug_assertions, target_os = "android", target_os = "ios"))]
     {
-        return;
     }
 
     #[cfg(not(any(debug_assertions, target_os = "android", target_os = "ios")))]

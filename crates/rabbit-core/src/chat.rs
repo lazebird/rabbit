@@ -100,7 +100,7 @@ impl ChatService {
         // Create UDP socket
         let bind_addr = format!("0.0.0.0:{}", config.port);
         let socket = UdpSocket::bind(&bind_addr).await
-            .map_err(|e| ServiceError::Io(e))?;
+            .map_err(ServiceError::Io)?;
 
         socket.set_broadcast(true)?;
 
@@ -124,8 +124,11 @@ impl ChatService {
                         match result {
                             Ok((len, _addr)) => {
                                 if let Ok(msg) = serde_json::from_slice::<ChatMessage>(&buf[..len]) {
-                                    // Add user if not exists
+                                    // Add user if not exists, track if list changed
                                     let mut users_guard = users_arc.write().await;
+                                    let is_new_user = !users_guard.values()
+                                        .any(|u| u.username == msg.sender);
+                                    
                                     users_guard.insert(msg.sender.clone(), ChatUser {
                                         username: msg.sender.clone(),
                                         online: true,
@@ -136,12 +139,15 @@ impl ChatService {
                                     if let Some(ref ui_tx) = tx_ui {
                                         let _ = ui_tx.send(UiData::ChatMessage(msg.sender.clone(), msg.content.clone())).await;
                                         
-                                        let user_list = users_guard.values()
-                                            .filter(|u| u.online)
-                                            .map(|u| u.username.clone())
-                                            .collect::<Vec<_>>()
-                                            .join(",");
-                                        let _ = ui_tx.send(UiData::ChatUserList(user_list)).await;
+                                        // Only send user list if it changed
+                                        if is_new_user {
+                                            let user_list = users_guard.values()
+                                                .filter(|u| u.online)
+                                                .map(|u| u.username.clone())
+                                                .collect::<Vec<_>>()
+                                                .join(",");
+                                            let _ = ui_tx.send(UiData::ChatUserList(user_list)).await;
+                                        }
                                     }
                                 }
                             }
@@ -149,12 +155,18 @@ impl ChatService {
                                 error!("UDP receive error: {}", e);
                             }
                         }
-                    }
+                    },
                     Some(msg) = rx.recv() => {
-                        let data = serde_json::to_vec(&msg).unwrap_or_default();
-                        let broadcast_addr = format!("255.255.255.255:{}", port);
-                        let _ = socket_arc.send_to(&data, broadcast_addr).await;
-                    }
+                        match serde_json::to_vec(&msg) {
+                            Ok(data) => {
+                                let broadcast_addr = format!("255.255.255.255:{}", port);
+                                let _ = socket_arc.send_to(&data, broadcast_addr).await;
+                            }
+                            Err(e) => {
+                                error!("Failed to serialize chat message: {}", e);
+                            }
+                        }
+                    },
                 }
             }
         });
