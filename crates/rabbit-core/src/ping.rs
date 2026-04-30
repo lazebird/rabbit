@@ -352,6 +352,24 @@ impl PingService {
                     let stats = format!("Tx: {} Rx: {} Loss: {:.1}% Min: {:.1}ms Max: {:.1}ms Avg: {:.1}ms", total_sent, received, loss, min, max, avg);
 
                     let _ = ui_tx.send(UiData::PingStats(stats)).await;
+
+                    // 计算任务栏状态并发送（需求文档规则）
+                    // progress = 成功次数或失败次数，total = 5，由接收方计算百分比
+                    let full_count = 5u32;
+                    let (progress, color) = if loss_count > 0 {
+                        // 有失败：红色，progress = 失败次数
+                        (loss_count.min(full_count), "red")
+                    } else {
+                        // 全成功：绿色，progress = 成功次数
+                        (received.min(full_count), "green")
+                    };
+
+                    let _ = ui_tx.send(UiData::PingState {
+                        address: address.clone(),
+                        progress,
+                        total: full_count,
+                        color: color.to_string(),
+                    }).await;
                 }
             }
         }

@@ -1161,7 +1161,20 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
             });
         }
 
-        UiData::PingState { .. } => {}
+        UiData::PingState { progress, total, color, .. } => {
+            // 任务栏由 PingState 数据驱动：直接使用预计算的数据更新任务栏
+            if let Some(win) = crate::ui_state::UiState::get_main_window() {
+                let hwnd = win.raw_handle() as usize;
+                #[cfg(target_os = "windows")]
+                {
+                    rabbit_platform::taskbar::windows::update_taskbar_from_state(hwnd, progress, total, &color);
+                }
+                #[cfg(not(target_os = "windows"))]
+                {
+                    let _ = (hwnd, progress, total, color);
+                }
+            }
+        }
         UiData::ScanProgress(msg) => {
             crate::ui_state::append_scan_output(&msg);
             fltk::app::awake_callback(|| {

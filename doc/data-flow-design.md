@@ -19,7 +19,7 @@
 | **HTTP** | ✅ 完成 | Channel 推送日志 + `awake_callback` 刷新 |
 | **TFTP** | ✅ 完成 | Channel 推送日志 + `awake_callback` 刷新 |
 | **Chat** | ✅ 完成 | Channel 推送消息 + `ChatUserList(Vec<String>)` + `awake_callback` 刷新 |
-| **Plan** | ⚠️ 待重构 | 仍使用旧模式，需内部化业务模型 |
+| **Plan** | ✅ 完成 | Channel 推送提醒 + `PlanReminder` 事件驱动 |
 
 ### 1.2 核心架构（已实现）
 
@@ -397,15 +397,23 @@ enum ServiceStatusType {
 4. ✅ 改为事件驱动：直接操作 UI 组件，无需通过 `ui_state` 维护 `plan_list`
 5. ✅ `app.rs` 中正确处理 `PlanReminder`（显示通知 + 刷新 UI）
 
-### 8.2 任务栏进度优化（待完成）
+### 8.2 ✅ 任务栏进度（已完成）
 
-当前实现（`rabbit-platform/src/taskbar.rs`）：
-- 使用最近 5 次结果计算进度
-- 全成功 → 绿色，有失败 → 红色
+**实现规则**（遵循需求文档 2.1.4）：
+- 全成功 → 绿色（Normal），进度 = 成功次数/5
+- 有失败 → 红色（Error），进度 = 失败次数/5
+- 取最近 5 次结果，不足 5 次则取实际次数
+- 始终显示任务栏进度（无配置开关）
 
-**待优化**：
-- 添加黄色状态（部分成功）
-- 支持配置是否显示任务栏进度
+**数据流**：
+1. `ping.rs` 计算任务栏状态（progress, total, color）并发送 `UiData::PingState`
+2. `app.rs` 接收 `PingState`，调用 `update_taskbar_from_state()` 更新任务栏
+3. `taskbar.rs` 仅负责呈现，不计算逻辑
+
+**实现位置**：
+- `rabbit-core/src/ping.rs:356-372`：计算并发送 `PingState`
+- `rabbit-app/src/app.rs:1164-1177`：处理 `PingState` 并更新任务栏
+- `rabbit-platform/src/taskbar.rs:121-145`：`update_taskbar_from_state()` 呈现函数
 
 ---
 

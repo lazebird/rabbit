@@ -1,8 +1,8 @@
 //! Windows Taskbar progress bar support
 //!
-//! Implements the taskbar integration for Ping status:
-//! - Green: Last 5 pings all successful
-//! - Red: Any failures in last 5 pings
+//! 任务栏状态由 PingState 数据驱动：
+//! - ping 模块计算好进度和颜色，通过 UiData::PingState 发送
+//! - 本模块只负责使用预计算的数据呈现任务栏状态
 
 #[cfg(target_os = "windows")]
 pub mod windows {
@@ -57,7 +57,7 @@ pub mod windows {
         Indeterminate,
     }
 
-    pub fn set_taskbar_state(hwnd: usize, state: TaskbarState, progress: u32) -> Result<(), String> {
+    fn set_taskbar_state(hwnd: usize, state: TaskbarState, progress: u32) -> Result<(), String> {
         unsafe {
             let _ = CoInitializeEx(std::ptr::null(), COINIT_APARTMENTTHREADED as u32);
 
@@ -118,29 +118,27 @@ pub mod windows {
         }
     }
 
-    pub fn update_taskbar_for_ping(hwnd: usize, success_count: u32, total_count: u32) {
-        if total_count == 0 {
+    /// 直接使用 PingState 预计算的数据更新任务栏
+    /// progress: 当前进度值 (0-100 的百分比)
+    /// color: "green" | "red"
+    pub fn update_taskbar_from_state(hwnd: usize, progress: u32, total: u32, color: &str) {
+        if progress == 0 && total == 0 {
             let _ = set_taskbar_state(hwnd, TaskbarState::None, 0);
             return;
         }
 
-        let failure_count = total_count.saturating_sub(success_count);
-        let full_count = 5u32;
+        let state = match color {
+            "green" => TaskbarState::Normal,
+            "red" => TaskbarState::Error,
+            _ => TaskbarState::Normal,
+        };
 
-        // 旧方案规则: 有任何失败显示红色
-        if failure_count > 0 {
-            // Error state: 进度 = failure_count/5
-            let progress = (failure_count * 100) / full_count;
-            let _ = set_taskbar_state(hwnd, TaskbarState::Error, progress);
-        } else {
-            // Normal state: 进度 = success_count/5
-            let progress = (success_count * 100) / full_count;
-            let _ = set_taskbar_state(hwnd, TaskbarState::Normal, progress);
-        }
+        // progress 已经是百分比 (0-100)，直接使用
+        let _ = set_taskbar_state(hwnd, state, progress);
     }
 }
 
 #[cfg(not(target_os = "windows"))]
 pub mod non_windows {
-    pub fn update_taskbar_for_ping(_hwnd: usize, _success_count: u32, _total_count: u32) {}
+    pub fn update_taskbar_from_state(_hwnd: usize, _progress: u32, _total: u32, _color: &str) {}
 }

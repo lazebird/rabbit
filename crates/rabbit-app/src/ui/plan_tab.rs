@@ -287,7 +287,7 @@ fn show_date_picker(date_input: &mut Input) {
     for y in (current_year - 5)..=(current_year + 5) {
         year_choice.add_choice(&y.to_string());
         if y == init_year {
-            year_choice.set_value((y - (current_year - 5)) as i32);
+            year_choice.set_value(y - (current_year - 5));
         }
     }
     ymd_row.fixed(&year_choice, 80);
@@ -344,7 +344,7 @@ fn show_date_picker(date_input: &mut Input) {
     let mut win_ok = win.clone();
     let mut date_input_ok = date_input.clone();
     ok_btn.set_callback(move |_| {
-        let y = year_choice.value() as i32 + (current_year - 5);
+        let y = year_choice.value() + (current_year - 5);
         let m = month_choice.value() as u32 + 1;
         let d = day_choice.value() as u32;
         let selected = NaiveDate::from_ymd_opt(y, m, d).unwrap_or_else(|| Local::now().naive_local().date());
