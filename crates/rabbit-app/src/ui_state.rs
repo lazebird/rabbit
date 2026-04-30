@@ -49,7 +49,6 @@ pub struct UiState {
     pub tftpd_dirs: Vec<String>,
     pub tftpd_selected_idx: Option<i32>,
     pub tftpc_log: String,
-    pub plan_list: String,
     pub chat_messages: String,
     pub chat_users: String,
     pub settings_output: String,
@@ -69,7 +68,6 @@ impl UiState {
             tftpd_dirs: Vec::new(),
             tftpd_selected_idx: None,
             tftpc_log: String::new(),
-            plan_list: String::new(),
             chat_messages: String::new(),
             chat_users: String::new(),
             settings_output: String::new(),
@@ -396,52 +394,7 @@ pub fn append_tftpc_log(line: &str) {
     }
 }
 
-pub fn set_plan_list(list: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.plan_list = format!("Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{}", list);
-            s.updated.insert("plan_list".to_string(), true);
-        }
-    }
-}
-
-pub fn append_plan_event(id: &str, date: &str, time: &str, cycle: i32, unit: &str, msg: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            let cycle_str = if cycle > 0 { format!(" (Repeat every {} {})", cycle, unit) } else { " (One-time)".to_string() };
-            if s.plan_list.contains("No scheduled events") {
-                s.plan_list = "Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n".to_string();
-            }
-            s.plan_list.push_str(&format!("[{}] {} {} - {}{}\n", id, date, time, msg, cycle_str));
-            s.updated.insert("plan_list".to_string(), true);
-        }
-    }
-}
-
-pub fn remove_plan_event(id: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            let lines: Vec<&str> = s.plan_list.lines().collect();
-            let mut new_list = String::from("Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-            let mut has_events = false;
-            for line in lines {
-                if line.starts_with("Scheduled") || line.starts_with("━") {
-                    continue;
-                }
-                if !line.starts_with(&format!("[{}]", id)) {
-                    new_list.push_str(line);
-                    new_list.push('\n');
-                    has_events = true;
-                }
-            }
-            if !has_events {
-                new_list.push_str("No scheduled events.\n\nUse + button to add a new reminder.\n");
-            }
-            s.plan_list = new_list;
-            s.updated.insert("plan_list".to_string(), true);
-        }
-    }
-}
+// plan_list 已移除，改用事件驱动模式
 
 pub fn set_chat_users(users: &[String]) {
     if let Some(state) = UiState::global() {

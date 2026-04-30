@@ -386,16 +386,18 @@ enum ServiceStatusType {
 
 ---
 
-## 8. 待完成工作
+## 8. 已完成工作（补充）
 
-### 8.1 Plan 模块重构
+### 8.1 ✅ Plan 模块重构（已完成）
 
-当前 Plan 模块仍使用旧模式（直接调用 ui_state），需重构为：
-1. PlanService 内部维护 `InternalTask` 私有结构
-2. 到期提醒通过 `UiData::PlanReminder` 发送
-3. 删除公共的 `Task`, `Schedule` 定义
+按照 §8.1 的要求，已完成 Plan 模块重构：
+1. ✅ PlanService 内部维护 `Task`/`Schedule` 私有结构（plan.rs:14-73）
+2. ✅ 到期提醒通过 `UiData::PlanReminder` 发送（plan.rs:230）
+3. ✅ 删除公共的 `Task`, `Schedule` 定义（已私有化）
+4. ✅ 改为事件驱动：直接操作 UI 组件，无需通过 `ui_state` 维护 `plan_list`
+5. ✅ `app.rs` 中正确处理 `PlanReminder`（显示通知 + 刷新 UI）
 
-### 8.2 任务栏进度优化
+### 8.2 任务栏进度优化（待完成）
 
 当前实现（`rabbit-platform/src/taskbar.rs`）：
 - 使用最近 5 次结果计算进度

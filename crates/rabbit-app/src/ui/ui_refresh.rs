@@ -264,7 +264,6 @@ pub fn refresh_displays() {
         ("http_log", s.http_log.clone()),
         ("tftpd_log", s.tftpd_log.clone()),
         ("tftpc_log", s.tftpc_log.clone()),
-        ("plan_list", s.plan_list.clone()),
         ("chat_messages", s.chat_messages.clone()),
         ("chat_users", s.chat_users.clone()),
         ("settings_output", s.settings_output.clone()),
@@ -290,7 +289,7 @@ pub fn refresh_displays() {
             if matches!(
                 *key,
                 "ping_output" | "scan_output" | "http_log" | "tftpd_log" | "tftpc_log"
-                | "plan_list" | "chat_messages" | "settings_output"
+                | "chat_messages" | "settings_output"
             ) {
                 let lines = buf.count_lines(0, buf.length());
                 display.scroll(lines, 0);

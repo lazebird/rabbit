@@ -1168,7 +1168,17 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
                 crate::ui::ui_refresh::refresh_displays();
             });
         }
-        UiData::PlanReminder(_msg) => {}
+        UiData::PlanReminder(msg) => {
+            info!("Plan reminder received: {}", msg);
+            // 事件驱动：直接刷新 UI，无轮询
+            fltk::app::awake_callback(move || {
+                crate::ui::ui_refresh::refresh_displays();
+                // 可选：显示系统通知或弹窗
+                if let Err(e) = rabbit_platform::notification::show_task_reminder(&msg, None) {
+                    tracing::error!("Failed to show notification: {}", e);
+                }
+            });
+        }
         UiData::ChatMessage(username, msg) => {
             crate::ui_state::append_chat_message(&username, &msg);
             fltk::app::awake_callback(|| {
@@ -1185,10 +1195,8 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
     }
 }
 
-async fn handle_plan_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
-    if let UiData::PlanReminder(msg) = data {
-        info!("Plan reminder: {}", msg);
-    }
+async fn handle_plan_data(_data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
+    // Plan reminder now handled in handle_ui_data with awake_callback
 }
 
 async fn handle_http_data(data: UiData) {
