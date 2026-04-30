@@ -87,9 +87,7 @@ impl HttpService {
     }
 
     pub async fn send(&self, data: UiData) {
-        if let Some(tx) = &self.tx {
-            let _ = tx.send(data).await;
-        }
+        crate::send_ui(&self.tx, data).await;
     }
 
     /// Start the HTTP server

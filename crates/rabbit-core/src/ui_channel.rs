@@ -1,6 +1,13 @@
 use tokio::sync::mpsc;
 pub use rabbit_models::{UiData, Module};
 
+/// Helper to send data through UI channel (eliminates duplicate send() implementations)
+pub async fn send_ui(tx: &Option<mpsc::Sender<UiData>>, data: UiData) {
+    if let Some(sender) = tx {
+        let _ = sender.send(data).await;
+    }
+}
+
 pub struct UiChannels {
     pub ping_tx: mpsc::Sender<UiData>,
     pub http_tx: mpsc::Sender<UiData>,

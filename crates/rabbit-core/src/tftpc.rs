@@ -55,9 +55,7 @@ impl TftpcService {
     }
 
     pub async fn send(&self, data: UiData) {
-        if let Some(tx) = &self.tx {
-            let _ = tx.send(data).await;
-        }
+        crate::send_ui(&self.tx, data).await;
     }
 
     pub async fn put(&self, local_path: &str, remote_filename: &str) -> Result<String> {

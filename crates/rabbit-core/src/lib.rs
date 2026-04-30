@@ -26,7 +26,7 @@ pub use plan::PlanService;
 pub use chat::ChatService;
 pub use scan::ScanService;
 
-pub use ui_channel::{UiData, Module};
+pub use ui_channel::{UiData, Module, send_ui};
 
 pub type TftpService = TftpdService;
 

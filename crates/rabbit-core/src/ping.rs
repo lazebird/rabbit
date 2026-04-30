@@ -200,6 +200,10 @@ impl PingService {
         self.state.read().await.clone() == PingState::Running
     }
 
+    pub async fn send(&self, data: UiData) {
+        crate::send_ui(&self.tx, data).await;
+    }
+
     async fn stop(&mut self) -> Result<()> {
         if let Some(tx) = self.command_tx.take() {
             let _ = tx.send(PingCommand::Stop).await;
