@@ -127,6 +127,7 @@ impl ScanService {
         drop(state);
 
         if let Some(ref tx) = self.tx {
+            let _ = tx.send(UiData::ServiceStatus(Module::Scan, true, None)).await;
             let _ = tx.send(UiData::ScanProgress("Starting scan...".to_string())).await;
         }
 

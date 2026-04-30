@@ -585,13 +585,9 @@ impl App {
         });
 
         // Restore business states after event loop is ready
-        let config = rabbit_platform::config::load_config().unwrap_or_default();
-        if config.modules.get_bool("ping", "auto_start").unwrap_or(false) {
-            info!("Auto-starting ping service");
-            send_event(UiEvent::ModuleToggle { module: "ping".into() });
-        }
+        // 根据配置中的 running 状态恢复
         if ping_restore_flag {
-            info!("Restoring ping service state");
+            info!("Restoring ping service state (running=true)");
             send_event(UiEvent::ModuleToggle { module: "ping".into() });
         }
 
@@ -1031,10 +1027,6 @@ impl EventHandler for AppHandle {
                 let systray = modules.get_bool("global", "systray").unwrap_or(true);
                 let top = modules.get_bool("global", "top").unwrap_or(false);
                 let http_shell = modules.get_bool("http", "shell").unwrap_or(false);
-                let new_ping_interval = modules.get_integer("ping", "interval").unwrap_or(1000);
-
-                // Check if ping is currently running (从配置读取)
-                let ping_was_running = modules.get_bool("ping", "running").unwrap_or(false);
 
                 // Apply autostart setting
                 if let Err(e) = rabbit_platform::autostart::set_autostart(autostart) {
@@ -1070,12 +1062,8 @@ impl EventHandler for AppHandle {
                 }
 
                 save_config(&config)?;
-
-                // If ping was running, restart it with new interval
-                if ping_was_running {
-                    info!("Ping was running, restarting with new interval: {}ms", new_ping_interval);
-                    send_event(UiEvent::ModuleToggle { module: "ping".into() });
-                }
+                // 配置已保存，新配置在下次启动时生效
+                // 不触碰当前运行状态（配置保存与业务运行完全分离）
             }
 
             // Version Check
