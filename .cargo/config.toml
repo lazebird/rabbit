@@ -1,2 +1,5 @@
-[build]
-target-dir = "target"
+[source.crates-io]
+registry = "https://github.com/rust-lang/crates.io-index"
+
+[net]
+git-fetch-with-cli = true
