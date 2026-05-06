@@ -73,11 +73,19 @@ impl TabComponent for HttpTab {
         let mut item_ctrl_row = Flex::default().row();
         item_ctrl_row.set_spacing(5);
 
-        // Add button - opens dialog to choose file or directory
-        let mut add_btn = Button::default().with_label("+");
-        add_btn.set_color(colors.accent);
-        add_btn.set_label_color(fltk::enums::Color::White);
-        item_ctrl_row.fixed(&add_btn, 28);
+        // Add file button
+        let mut add_file_btn = Button::default().with_label("+F");
+        add_file_btn.set_color(colors.accent);
+        add_file_btn.set_label_color(fltk::enums::Color::White);
+        add_file_btn.set_tooltip("Add file");
+        item_ctrl_row.fixed(&add_file_btn, 28);
+
+        // Add directory button
+        let mut add_dir_btn = Button::default().with_label("+D");
+        add_dir_btn.set_color(colors.accent);
+        add_dir_btn.set_label_color(fltk::enums::Color::White);
+        add_dir_btn.set_tooltip("Add directory");
+        item_ctrl_row.fixed(&add_dir_btn, 28);
 
         // Remove button
         let mut remove_btn = Button::default().with_label("-");
@@ -126,44 +134,39 @@ impl TabComponent for HttpTab {
         let toggle_btn_clone = toggle_btn.clone();
         let mut log_display_clone = log_display.clone();
         let mut item_browser_add = item_browser.clone();
+        let mut item_browser_add_dir = item_browser.clone();
         let mut item_browser_remove = item_browser.clone();
         let item_browser_explore = item_browser.clone();
 
-        // Add button callback - choose between file and directory
-        add_btn.set_callback(move |_| {
-            let choice = fltk::dialog::choice2_default("Add file or directory?", "File", "Directory", "");
-            match choice {
-                Some(0) => {
-                    // User chose File - open file picker
-                    use fltk::dialog::NativeFileChooser;
-                    let mut dialog = NativeFileChooser::new(fltk::dialog::NativeFileChooserType::BrowseFile);
-                    dialog.set_title("Select HTTP File");
-                    dialog.show();
-                    if let Some(path) = dialog.filename().to_str() {
-                        if !path.is_empty() {
-                            crate::ui_state::add_http_item(path);
-                            crate::ui_state::append_http_log(&format!("Added file: {}\r\n", path));
-                            Self::refresh_items(&mut item_browser_add);
-                            crate::ui_state::sync_http_config();
-                        }
-                    }
+        // Add file button callback
+        add_file_btn.set_callback(move |_| {
+            use fltk::dialog::NativeFileChooser;
+            let mut dialog = NativeFileChooser::new(fltk::dialog::NativeFileChooserType::BrowseFile);
+            dialog.set_title("Select HTTP File");
+            dialog.show();
+            if let Some(path) = dialog.filename().to_str() {
+                if !path.is_empty() {
+                    crate::ui_state::add_http_item(path);
+                    crate::ui_state::append_http_log(&format!("Added file: {}\r\n", path));
+                    Self::refresh_items(&mut item_browser_add);
+                    crate::ui_state::sync_http_config();
                 }
-                Some(1) => {
-                    // User chose Directory - open folder picker
-                    use fltk::dialog::NativeFileChooser;
-                    let mut dialog = NativeFileChooser::new(fltk::dialog::NativeFileChooserType::BrowseDir);
-                    dialog.set_title("Select HTTP Directory");
-                    dialog.show();
-                    if let Some(path) = dialog.filename().to_str() {
-                        if !path.is_empty() {
-                            crate::ui_state::add_http_item(path);
-                            crate::ui_state::append_http_log(&format!("Added directory: {}\r\n", path));
-                            Self::refresh_items(&mut item_browser_add);
-                            crate::ui_state::sync_http_config();
-                        }
-                    }
+            }
+        });
+
+        // Add directory button callback
+        add_dir_btn.set_callback(move |_| {
+            use fltk::dialog::NativeFileChooser;
+            let mut dialog = NativeFileChooser::new(fltk::dialog::NativeFileChooserType::BrowseDir);
+            dialog.set_title("Select HTTP Directory");
+            dialog.show();
+            if let Some(path) = dialog.filename().to_str() {
+                if !path.is_empty() {
+                    crate::ui_state::add_http_item(path);
+                    crate::ui_state::append_http_log(&format!("Added directory: {}\r\n", path));
+                    Self::refresh_items(&mut item_browser_add_dir);
+                    crate::ui_state::sync_http_config();
                 }
-                _ => {} // Cancelled
             }
         });
 

@@ -49,7 +49,7 @@ enum HttpServerState {
 #[derive(Debug, Clone, Default)]
 struct ServerConfig {
     pub port: u16,
-    pub root_path: String,
+    pub dirs: Vec<String>,
     pub auto_index: bool,
     pub video_play: bool,
     pub log_path: Option<String>,
@@ -59,7 +59,7 @@ impl ServerConfig {
     fn from_platform() -> Self {
         Self {
             port: get_integer("http", "port").unwrap_or(8000) as u16,
-            root_path: get_array_first("http", "dirs").unwrap_or_else(|| ".".to_string()),
+            dirs: rabbit_platform::config::get_array("http", "dirs").unwrap_or_default(),
             auto_index: get_bool("http", "autoindex").unwrap_or(true),
             video_play: get_bool("http", "videoplay").unwrap_or(true),
             log_path: rabbit_platform::config::get_string("http", "log"),
@@ -67,77 +67,153 @@ impl ServerConfig {
     }
 }
 
-fn get_array_first(module: &str, key: &str) -> Option<String> {
-    rabbit_platform::config::get_array(module, key).and_then(|arr| arr.first().cloned())
-}
-
 #[derive(Clone)]
 struct HttpFallbackConfig {
+    dirs: Vec<PathBuf>,
     auto_index: bool,
 }
 
+const PATH_ENCODE_SET: &percent_encoding::AsciiSet = &percent_encoding::NON_ALPHANUMERIC
+    .remove(b'/')
+    .remove(b'.')
+    .remove(b'-')
+    .remove(b'_')
+    .remove(b'~');
+
 async fn file_fallback(
     uri: axum::http::Uri,
-    axum::extract::Extension(root): axum::extract::Extension<PathBuf>,
     axum::extract::Extension(config): axum::extract::Extension<HttpFallbackConfig>,
 ) -> axum::response::Response {
     use percent_encoding::percent_decode_str;
 
     let relative = uri.path().trim_start_matches('/');
     let decoded = percent_decode_str(relative).decode_utf8_lossy();
-    let full_path = root.join(&*decoded);
 
-    if full_path.is_dir() {
+    // Root path: show listing of all configured dirs
+    if relative.is_empty() {
+        if !config.auto_index {
+            return axum::response::Response::builder()
+                .status(axum::http::StatusCode::NOT_FOUND)
+                .body(axum::body::Body::empty())
+                .unwrap();
+        }
+
+        let mut items = Vec::new();
+        for dir_path in &config.dirs {
+            let name = dir_path.file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_else(|| dir_path.to_string_lossy().to_string());
+
+            if dir_path.is_dir() {
+                let encoded = percent_encoding::utf8_percent_encode(&name, PATH_ENCODE_SET);
+                items.push(format!(
+                    "<tr><td><a href=\"{}/\">{}/</a></td><td></td></tr>",
+                    encoded, name
+                ));
+            } else if dir_path.is_file() {
+                let size = std::fs::metadata(dir_path)
+                    .map(|m| format_size(m.len()))
+                    .unwrap_or_default();
+                let encoded = percent_encoding::utf8_percent_encode(&name, PATH_ENCODE_SET);
+                items.push(format!(
+                    "<tr><td><a href=\"{}\">{}</a></td><td>{}</td></tr>",
+                    encoded, name, size
+                ));
+            }
+        }
+
+        let html = format!(
+            "<!DOCTYPE html><html><head><title>Index of /</title></head><body><h1>Index of /</h1><table><tr><th>Name</th><th>Size</th></tr>{}</table></body></html>",
+            items.join("")
+        );
+        return axum::response::Response::builder()
+            .header("Content-Type", "text/html; charset=utf-8")
+            .body(axum::body::Body::from(html))
+            .unwrap();
+    }
+
+    // Sub-path: find which configured dir matches
+    let first_segment = decoded.split('/').next().unwrap_or("");
+    let matched_dir = config.dirs.iter().find(|d| {
+        d.file_name()
+            .map(|n| n.to_string_lossy() == first_segment)
+            .unwrap_or(false)
+    });
+
+    let Some(base_dir) = matched_dir else {
+        return axum::response::Response::builder()
+            .status(axum::http::StatusCode::NOT_FOUND)
+            .body(axum::body::Body::empty())
+            .unwrap();
+    };
+
+    // If matched item is a file and path is exactly that file, serve it
+    if base_dir.is_file() && decoded == first_segment {
+        match tokio::fs::read(base_dir).await {
+            Ok(content) => {
+                let mime = path2mime(first_segment);
+                return axum::response::Response::builder()
+                    .header("Content-Type", mime)
+                    .body(axum::body::Body::from(content))
+                    .unwrap();
+            }
+            Err(_) => {
+                return axum::response::Response::builder()
+                    .status(axum::http::StatusCode::NOT_FOUND)
+                    .body(axum::body::Body::empty())
+                    .unwrap();
+            }
+        }
+    }
+
+    // If matched item is a directory, serve from it
+    if base_dir.is_dir() {
+        let sub_path = decoded.strip_prefix(first_segment).unwrap_or(&decoded);
+        let sub_path = sub_path.trim_start_matches('/');
+        let full_path = base_dir.join(sub_path);
+
         // Try index.html first
-        let index_path = full_path.join("index.html");
-        if index_path.exists() {
-            match tokio::fs::read(&index_path).await {
-                Ok(content) => {
+        let index_path = if full_path.is_dir() {
+            full_path.join("index.html")
+        } else {
+            full_path.with_file_name("index.html")
+        };
+
+        if full_path.is_dir() {
+            if index_path.exists() {
+                if let Ok(content) = tokio::fs::read(&index_path).await {
                     return axum::response::Response::builder()
                         .header("Content-Type", "text/html; charset=utf-8")
                         .body(axum::body::Body::from(content))
                         .unwrap();
                 }
-                Err(_) => {}
             }
-        }
 
-        // Directory listing
-        if config.auto_index {
-            match tokio::fs::read_dir(&full_path).await {
-                Ok(mut entries) => {
+            // Directory listing
+            if config.auto_index {
+                if let Ok(mut entries) = tokio::fs::read_dir(&full_path).await {
+                    let display_path = format!("/{}/", decoded.trim_end_matches('/'));
                     let mut items = Vec::new();
-                    let display_path = if relative.is_empty() { "/" } else { relative };
-                    // Ensure trailing slash for display
-                    let display_path = if display_path.ends_with('/') {
-                        display_path.to_string()
-                    } else {
-                        format!("{}/", display_path)
-                    };
 
-                    items.push(format!(
-                        "<tr><td><a href=\"..\">..</a></td><td></td></tr>"
-                    ));
+                    if !sub_path.is_empty() {
+                        items.push("<tr><td><a href=\"..\">..</a></td><td></td></tr>".to_string());
+                    }
 
                     while let Ok(Some(entry)) = entries.next_entry().await {
                         let name = entry.file_name().to_string_lossy().to_string();
                         let metadata = entry.metadata().await;
                         let (size, is_dir) = match metadata {
                             Ok(m) => {
-                                if m.is_dir() {
-                                    (String::new(), true)
-                                } else {
-                                    (format_size(m.len()), false)
-                                }
+                                if m.is_dir() { (String::new(), true) }
+                                else { (format_size(m.len()), false) }
                             }
                             Err(_) => (String::new(), false),
                         };
                         let trailing = if is_dir { "/" } else { "" };
-                        let encoded_name =
-                            percent_encoding::utf8_percent_encode(&name, percent_encoding::NON_ALPHANUMERIC);
+                        let encoded = percent_encoding::utf8_percent_encode(&name, PATH_ENCODE_SET);
                         items.push(format!(
                             "<tr><td><a href=\"{}{}{}\">{}{}</a></td><td>{}</td></tr>",
-                            display_path, encoded_name, trailing, name, trailing, size
+                            display_path, encoded, trailing, name, trailing, size
                         ));
                     }
 
@@ -145,37 +221,35 @@ async fn file_fallback(
                         "<!DOCTYPE html><html><head><title>Index of {}</title></head><body><h1>Index of {}</h1><table><tr><th>Name</th><th>Size</th></tr>{}</table></body></html>",
                         display_path, display_path, items.join("")
                     );
-
                     return axum::response::Response::builder()
                         .header("Content-Type", "text/html; charset=utf-8")
                         .body(axum::body::Body::from(html))
                         .unwrap();
                 }
-                Err(_) => {}
+            }
+
+            return axum::response::Response::builder()
+                .status(axum::http::StatusCode::NOT_FOUND)
+                .body(axum::body::Body::empty())
+                .unwrap();
+        }
+
+        // Serve file
+        if full_path.is_file() {
+            if let Ok(content) = tokio::fs::read(&full_path).await {
+                let mime = path2mime(&decoded);
+                return axum::response::Response::builder()
+                    .header("Content-Type", mime)
+                    .body(axum::body::Body::from(content))
+                    .unwrap();
             }
         }
-
-        // No listing
-        return axum::response::Response::builder()
-            .status(axum::http::StatusCode::NOT_FOUND)
-            .body(axum::body::Body::empty())
-            .unwrap();
     }
 
-    // Serve file
-    match tokio::fs::read(&full_path).await {
-        Ok(content) => {
-            let mime = path2mime(uri.path());
-            axum::response::Response::builder()
-                .header("Content-Type", mime)
-                .body(axum::body::Body::from(content))
-                .unwrap()
-        }
-        Err(_) => axum::response::Response::builder()
-            .status(axum::http::StatusCode::NOT_FOUND)
-            .body(axum::body::Body::empty())
-            .unwrap(),
-    }
+    axum::response::Response::builder()
+        .status(axum::http::StatusCode::NOT_FOUND)
+        .body(axum::body::Body::empty())
+        .unwrap()
 }
 
 fn format_size(bytes: u64) -> String {
@@ -238,9 +312,12 @@ impl HttpService {
 
         let addr: SocketAddr = format!("0.0.0.0:{}", config.port).parse().map_err(|e| ServiceError::Config(format!("Invalid address: {}", e)))?;
 
-        let root = PathBuf::from(&config.root_path);
-        if !root.exists() {
-            return Err(ServiceError::Config(format!("Root path does not exist: {}", config.root_path)));
+        // Validate all dirs exist
+        let dirs: Vec<PathBuf> = config.dirs.iter().map(PathBuf::from).collect();
+        for d in &dirs {
+            if !d.exists() {
+                return Err(ServiceError::Config(format!("Path does not exist: {}", d.display())));
+            }
         }
 
         let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
@@ -261,8 +338,7 @@ impl HttpService {
             let app = Router::new()
                 .route("/upload", post(upload_handler))
                 .fallback(file_fallback)
-                .layer(axum::extract::Extension(root.clone()))
-                .layer(axum::extract::Extension(HttpFallbackConfig { auto_index }))
+                .layer(axum::extract::Extension(HttpFallbackConfig { dirs, auto_index }))
                 .layer(axum::middleware::from_fn(move |req: Request, next: Next| {
                     let ui_tx = tx_middleware.clone();
                     async move {
@@ -440,12 +516,13 @@ async fn access_log_middleware(request: Request, next: Next, ui_tx: Option<mpsc:
     response
 }
 
-async fn upload_handler(axum::extract::Extension(root): axum::extract::Extension<PathBuf>, mut multipart: Multipart) -> Html<String> {
+async fn upload_handler(axum::extract::Extension(config): axum::extract::Extension<HttpFallbackConfig>, mut multipart: Multipart) -> Html<String> {
+    let upload_dir = config.dirs.first().cloned().unwrap_or_else(|| PathBuf::from("."));
     while let Ok(Some(mut field)) = multipart.next_field().await {
         let name = field.name().unwrap_or("unknown").to_string();
         let file_name = field.file_name().unwrap_or("unnamed").to_string();
         if name == "file" {
-            let file_path = root.join(&file_name);
+            let file_path = upload_dir.join(&file_name);
             match File::create(&file_path).await {
                 Ok(mut file) => {
                     let mut success = true;
