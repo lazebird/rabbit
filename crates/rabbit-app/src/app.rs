@@ -777,9 +777,15 @@ impl EventHandler for AppHandle {
                         match result {
                             ServiceUpdateResult::Started(_) => {
                                 crate::ui_state::update_module_running("http", true);
+                                fltk::app::awake_callback(|| {
+                                    crate::ui::ui_refresh::update_button_state(Module::Http, true);
+                                });
                             }
                             ServiceUpdateResult::Stopped(_) => {
                                 crate::ui_state::update_module_running("http", false);
+                                fltk::app::awake_callback(|| {
+                                    crate::ui::ui_refresh::update_button_state(Module::Http, false);
+                                });
                             }
                             _ => {}
                         }

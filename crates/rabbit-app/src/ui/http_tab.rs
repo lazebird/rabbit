@@ -223,8 +223,15 @@ impl TabComponent for HttpTab {
         toggle_btn.set_callback(move |_| {
             let label = toggle_btn_clone.label();
             let port = port_input_clone.value().parse::<u16>().unwrap_or(8000);
-            let _options = opt_input_clone.value();
-            let _shell = shell_check_clone.is_checked();
+            let options = opt_input_clone.value();
+            let shell = shell_check_clone.is_checked();
+
+            // Parse options string (format: "autoindex=true;videoplay=true;")
+            let autoindex = options.contains("autoindex=true");
+            let videoplay = options.contains("videoplay=true");
+
+            // Always sync config on button click
+            crate::ui_state::sync_http_start_config(port, shell, autoindex, videoplay);
 
             if label == "Start" {
                 if let Some(state) = UiState::global() {

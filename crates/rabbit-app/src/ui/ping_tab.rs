@@ -108,51 +108,51 @@ impl TabComponent for PingTab {
         // Add button callback
         start_btn.set_callback(move |_| {
             let label = start_btn_clone.label();
-            if label == "Start" {
-                let target = addr_input_clone.value();
-                let options = opt_input_clone.value();
+            let target = addr_input_clone.value();
+            let options = opt_input_clone.value();
 
+            // Parse options
+            let mut interval = 1000i64;
+            let mut count = -1i64;
+            let mut stop_on_loss = false;
+
+            for opt in options.split(';') {
+                let parts: Vec<&str> = opt.splitn(2, '=').collect();
+                if parts.len() == 2 {
+                    match parts[0].trim() {
+                        "interval" => {
+                            if let Ok(v) = parts[1].parse::<i64>() {
+                                interval = v;
+                            }
+                        }
+                        "count" => {
+                            if let Ok(v) = parts[1].parse::<i64>() {
+                                count = v;
+                            }
+                        }
+                        "stoponloss" => {
+                            if let Ok(v) = parts[1].parse::<bool>() {
+                                stop_on_loss = v;
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+
+            // Always save config on button click
+            if let Ok(mut config) = load_config() {
+                config.modules.insert("ping", "interval", ConfigValue::Integer(interval));
+                config.modules.insert("ping", "count", ConfigValue::Integer(count));
+                config.modules.insert("ping", "stoponloss", ConfigValue::Boolean(stop_on_loss));
+                config.modules.insert("ping", "target", ConfigValue::String(target.clone()));
+                let _ = save_config(&config);
+            }
+
+            if label == "Start" {
                 if target.is_empty() {
                     fltk::dialog::alert_default("Please enter a target address!");
                     return;
-                }
-
-                // Parse options and save to config BEFORE sending event
-                let mut interval = 1000i64;
-                let mut count = -1i64;
-                let mut stop_on_loss = false;
-
-                for opt in options.split(';') {
-                    let parts: Vec<&str> = opt.splitn(2, '=').collect();
-                    if parts.len() == 2 {
-                        match parts[0].trim() {
-                            "interval" => {
-                                if let Ok(v) = parts[1].parse::<i64>() {
-                                    interval = v;
-                                }
-                            }
-                            "count" => {
-                                if let Ok(v) = parts[1].parse::<i64>() {
-                                    count = v;
-                                }
-                            }
-                            "stoponloss" => {
-                                if let Ok(v) = parts[1].parse::<bool>() {
-                                    stop_on_loss = v;
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-
-                // Save parsed options to config
-                if let Ok(mut config) = load_config() {
-                    config.modules.insert("ping", "interval", ConfigValue::Integer(interval));
-                    config.modules.insert("ping", "count", ConfigValue::Integer(count));
-                    config.modules.insert("ping", "stoponloss", ConfigValue::Boolean(stop_on_loss));
-                    config.modules.insert("ping", "target", ConfigValue::String(target));
-                    let _ = save_config(&config);
                 }
 
                 // Clear previous output

@@ -615,13 +615,21 @@ pub fn sync_http_start_config(port: u16, shell: bool, autoindex: bool, videoplay
     use rabbit_models::config::ConfigValue;
     use rabbit_platform::config::{load_config, save_config};
 
+    tracing::info!("sync_http_start_config: port={}, shell={}, autoindex={}, videoplay={}", port, shell, autoindex, videoplay);
+
     if let Ok(mut config) = load_config() {
+        let old_port = config.modules.get_integer("http", "port");
+        tracing::info!("sync_http_start_config: old port from cache = {:?}", old_port);
+
         config.modules.http.insert("port".into(), ConfigValue::Integer(port as i64));
         config.modules.http.insert("shell".into(), ConfigValue::Boolean(shell));
         config.modules.http.insert("autoindex".into(), ConfigValue::Boolean(autoindex));
         config.modules.http.insert("videoplay".into(), ConfigValue::Boolean(videoplay));
-        if let Err(e) = save_config(&config) {
-            tracing::warn!("Failed to save HTTP config: {}", e);
+        match save_config(&config) {
+            Ok(()) => tracing::info!("sync_http_start_config: config saved successfully"),
+            Err(e) => tracing::warn!("sync_http_start_config: Failed to save HTTP config: {}", e),
         }
+    } else {
+        tracing::warn!("sync_http_start_config: load_config failed");
     }
 }

@@ -150,14 +150,22 @@ impl TabComponent for ChatTab {
         // Add button callbacks
         toggle_btn.set_callback(move |_| {
             let label = toggle_btn_clone.label();
+            let username = username_input_clone.value();
+            let port = port_input_clone.value().parse::<u16>().unwrap_or(1314);
+
+            // Always save config on button click
+            if let Ok(mut config) = rabbit_platform::config::load_config() {
+                use rabbit_models::config::ConfigValue;
+                config.modules.insert("chat", "username", ConfigValue::String(username.clone()));
+                config.modules.insert("chat", "port", ConfigValue::Integer(port as i64));
+                let _ = rabbit_platform::config::save_config(&config);
+            }
 
             if label == "Start" {
-                let username = username_input_clone.value();
                 if username.is_empty() {
                     fltk::dialog::alert_default("Please enter a username!");
                     return;
                 }
-                let port = port_input_clone.value().parse::<u16>().unwrap_or(1314);
 
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {

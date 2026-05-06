@@ -95,32 +95,33 @@ impl TabComponent for ScanTab {
         // Add button callback - just send event, refresh loop updates button
         start_btn.set_callback(move |_| {
             let label = start_btn_for_cb.label();
-            if label == "Start" {
-                let start_ip = start_ip_input_clone.value();
-                let end_suffix = end_input_clone.value();
+            let start_ip = start_ip_input_clone.value();
+            let end_suffix = end_input_clone.value();
 
+            // Build end_ip for config save
+            let end_ip = if end_suffix.is_empty() || end_suffix.parse::<u8>().is_ok() {
+                let parts: Vec<&str> = start_ip.splitn(5, '.').collect();
+                if parts.len() == 4 {
+                    if end_suffix.is_empty() {
+                        parts[3].to_string()
+                    } else {
+                        format!("{}.{}.{}.{}", parts[0], parts[1], parts[2], end_suffix)
+                    }
+                } else {
+                    end_suffix.to_string()
+                }
+            } else {
+                end_suffix.to_string()
+            };
+
+            // Always save config on button click
+            crate::ui_state::sync_scan_config(start_ip.clone(), end_ip.clone(), false);
+
+            if label == "Start" {
                 if start_ip.is_empty() {
                     fltk::dialog::alert_default("Please enter a start IP address!");
                     return;
                 }
-
-                let end_ip = if end_suffix.is_empty() || end_suffix.parse::<u8>().is_ok() {
-                    let parts: Vec<&str> = start_ip.splitn(5, '.').collect();
-                    if parts.len() == 4 {
-                        if end_suffix.is_empty() {
-                            parts[3].to_string()
-                        } else {
-                            format!("{}.{}.{}.{}", parts[0], parts[1], parts[2], end_suffix)
-                        }
-                    } else {
-                        fltk::dialog::alert_default("Invalid start IP address format! (expected x.x.x.x)");
-                        return;
-                    }
-                } else {
-                    end_suffix.to_string()
-                };
-
-                crate::ui_state::sync_scan_config(start_ip.clone(), end_ip.clone(), false);
 
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {

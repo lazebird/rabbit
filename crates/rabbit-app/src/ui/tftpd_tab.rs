@@ -186,6 +186,9 @@ impl TabComponent for TftpdTab {
             let label = toggle_btn_clone.label();
             let options = opt_input_clone.value();
 
+            // Always sync config on button click
+            crate::ui_state::sync_tftpd_config();
+
             if label == "Start" {
                 if let Some(state) = UiState::global() {
                     if let Ok(mut s) = state.lock() {

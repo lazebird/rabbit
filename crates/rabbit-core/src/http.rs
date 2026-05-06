@@ -21,7 +21,6 @@ use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::{mpsc, oneshot, RwLock};
 use tokio::task::JoinHandle;
-use tower_http::services::ServeDir;
 use tracing::{error, info};
 
 /// Static MIME types for video files
@@ -70,6 +69,125 @@ impl ServerConfig {
 
 fn get_array_first(module: &str, key: &str) -> Option<String> {
     rabbit_platform::config::get_array(module, key).and_then(|arr| arr.first().cloned())
+}
+
+#[derive(Clone)]
+struct HttpFallbackConfig {
+    auto_index: bool,
+}
+
+async fn file_fallback(
+    uri: axum::http::Uri,
+    axum::extract::Extension(root): axum::extract::Extension<PathBuf>,
+    axum::extract::Extension(config): axum::extract::Extension<HttpFallbackConfig>,
+) -> axum::response::Response {
+    use percent_encoding::percent_decode_str;
+
+    let relative = uri.path().trim_start_matches('/');
+    let decoded = percent_decode_str(relative).decode_utf8_lossy();
+    let full_path = root.join(&*decoded);
+
+    if full_path.is_dir() {
+        // Try index.html first
+        let index_path = full_path.join("index.html");
+        if index_path.exists() {
+            match tokio::fs::read(&index_path).await {
+                Ok(content) => {
+                    return axum::response::Response::builder()
+                        .header("Content-Type", "text/html; charset=utf-8")
+                        .body(axum::body::Body::from(content))
+                        .unwrap();
+                }
+                Err(_) => {}
+            }
+        }
+
+        // Directory listing
+        if config.auto_index {
+            match tokio::fs::read_dir(&full_path).await {
+                Ok(mut entries) => {
+                    let mut items = Vec::new();
+                    let display_path = if relative.is_empty() { "/" } else { relative };
+                    // Ensure trailing slash for display
+                    let display_path = if display_path.ends_with('/') {
+                        display_path.to_string()
+                    } else {
+                        format!("{}/", display_path)
+                    };
+
+                    items.push(format!(
+                        "<tr><td><a href=\"..\">..</a></td><td></td></tr>"
+                    ));
+
+                    while let Ok(Some(entry)) = entries.next_entry().await {
+                        let name = entry.file_name().to_string_lossy().to_string();
+                        let metadata = entry.metadata().await;
+                        let (size, is_dir) = match metadata {
+                            Ok(m) => {
+                                if m.is_dir() {
+                                    (String::new(), true)
+                                } else {
+                                    (format_size(m.len()), false)
+                                }
+                            }
+                            Err(_) => (String::new(), false),
+                        };
+                        let trailing = if is_dir { "/" } else { "" };
+                        let encoded_name =
+                            percent_encoding::utf8_percent_encode(&name, percent_encoding::NON_ALPHANUMERIC);
+                        items.push(format!(
+                            "<tr><td><a href=\"{}{}{}\">{}{}</a></td><td>{}</td></tr>",
+                            display_path, encoded_name, trailing, name, trailing, size
+                        ));
+                    }
+
+                    let html = format!(
+                        "<!DOCTYPE html><html><head><title>Index of {}</title></head><body><h1>Index of {}</h1><table><tr><th>Name</th><th>Size</th></tr>{}</table></body></html>",
+                        display_path, display_path, items.join("")
+                    );
+
+                    return axum::response::Response::builder()
+                        .header("Content-Type", "text/html; charset=utf-8")
+                        .body(axum::body::Body::from(html))
+                        .unwrap();
+                }
+                Err(_) => {}
+            }
+        }
+
+        // No listing
+        return axum::response::Response::builder()
+            .status(axum::http::StatusCode::NOT_FOUND)
+            .body(axum::body::Body::empty())
+            .unwrap();
+    }
+
+    // Serve file
+    match tokio::fs::read(&full_path).await {
+        Ok(content) => {
+            let mime = path2mime(uri.path());
+            axum::response::Response::builder()
+                .header("Content-Type", mime)
+                .body(axum::body::Body::from(content))
+                .unwrap()
+        }
+        Err(_) => axum::response::Response::builder()
+            .status(axum::http::StatusCode::NOT_FOUND)
+            .body(axum::body::Body::empty())
+            .unwrap(),
+    }
+}
+
+fn format_size(bytes: u64) -> String {
+    if bytes < 1024 {
+        format!("{} B", bytes)
+    } else if bytes < 1024 * 1024 {
+        format!("{:.1} KB", bytes as f64 / 1024.0)
+    } else if bytes < 1024 * 1024 * 1024 {
+        format!("{:.1} MB", bytes as f64 / (1024.0 * 1024.0))
+    } else {
+        format!("{:.1} GB", bytes as f64 / (1024.0 * 1024.0 * 1024.0))
+    }
 }
 
 /// HTTP server service
@@ -142,8 +260,9 @@ impl HttpService {
 
             let app = Router::new()
                 .route("/upload", post(upload_handler))
-                .fallback_service(ServeDir::new(&root).append_index_html_on_directories(auto_index))
+                .fallback(file_fallback)
                 .layer(axum::extract::Extension(root.clone()))
+                .layer(axum::extract::Extension(HttpFallbackConfig { auto_index }))
                 .layer(axum::middleware::from_fn(move |req: Request, next: Next| {
                     let ui_tx = tx_middleware.clone();
                     async move {
