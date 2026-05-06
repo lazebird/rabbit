@@ -12,6 +12,7 @@ use std::sync::atomic::{AtomicU16, AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 use surge_ping::{Client, Config, PingIdentifier, PingSequence};
+use socket2::Type as SockType;
 use tokio::sync::{mpsc, RwLock};
 use tokio::time::interval;
 use tracing::{error, info};
@@ -151,7 +152,9 @@ impl PingService {
     /// 内部启动 Ping 服务
     async fn start(&mut self) -> Result<()> {
         if self.client.is_none() {
-            let config = Config::builder().build();
+            let config = Config::builder()
+                .sock_type_hint(SockType::RAW)
+                .build();
             let client = Client::new(&config).map_err(|e| ServiceError::Other(format!("Failed to create ping client: {}", e)))?;
             self.client = Some(Arc::new(client));
         }
