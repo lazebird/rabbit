@@ -526,13 +526,17 @@ impl App {
         // Store main window for title updates
         crate::ui_state::UiState::set_main_window(main_win.clone());
 
-        // Apply window topmost setting BEFORE show if possible (handled by OS during mapping)
+        // Show window
+        main_win.show();
+
+        // After show(), we can get the valid OS handle (HWND on Windows)
+        // Store hwnd for taskbar progress
+        rabbit_platform::taskbar::set_main_window_hwnd(main_win.raw_handle() as usize);
+
+        // Apply window topmost setting AFTER show (safer on Windows)
         if top_requested {
             main_win.set_on_top();
         }
-
-        // Show window AT THE LAST MOMENT
-        main_win.show();
 
         // Startup version check if autoupdate is enabled
         if autoupdate {
@@ -748,20 +752,10 @@ impl EventHandler for AppHandle {
                         let result = self.ping_service.write().await.update().await;
                         match result {
                             ServiceUpdateResult::Started(_) => {
-                                crate::ui_state::set_ping_running(true);
-                                // 保存 running=true 到配置
-                                rabbit_platform::config::update_config(|cfg| {
-                                    cfg.modules.insert("ping", "running", rabbit_models::config::ConfigValue::Boolean(true));
-                                })
-                                .ok();
+                                crate::ui_state::update_module_running("ping", true);
                             }
                             ServiceUpdateResult::Stopped(_) => {
-                                crate::ui_state::set_ping_running(false);
-                                // 保存 running=false 到配置
-                                rabbit_platform::config::update_config(|cfg| {
-                                    cfg.modules.insert("ping", "running", rabbit_models::config::ConfigValue::Boolean(false));
-                                })
-                                .ok();
+                                crate::ui_state::update_module_running("ping", false);
                             }
                             _ => {}
                         }
@@ -770,18 +764,10 @@ impl EventHandler for AppHandle {
                         let result = self.scan_service.write().await.update().await;
                         match result {
                             ServiceUpdateResult::Started(_) => {
-                                crate::ui_state::set_scan_running(true);
-                                rabbit_platform::config::update_config(|cfg| {
-                                    cfg.modules.insert("scan", "running", rabbit_models::config::ConfigValue::Boolean(true));
-                                })
-                                .ok();
+                                crate::ui_state::update_module_running("scan", true);
                             }
                             ServiceUpdateResult::Stopped(_) => {
-                                crate::ui_state::set_scan_running(false);
-                                rabbit_platform::config::update_config(|cfg| {
-                                    cfg.modules.insert("scan", "running", rabbit_models::config::ConfigValue::Boolean(false));
-                                })
-                                .ok();
+                                crate::ui_state::update_module_running("scan", false);
                             }
                             _ => {}
                         }
@@ -790,18 +776,10 @@ impl EventHandler for AppHandle {
                         let result = self.http_service.write().await.update().await;
                         match result {
                             ServiceUpdateResult::Started(_) => {
-                                crate::ui_state::set_http_running(true);
-                                rabbit_platform::config::update_config(|cfg| {
-                                    cfg.modules.insert("http", "running", rabbit_models::config::ConfigValue::Boolean(true));
-                                })
-                                .ok();
+                                crate::ui_state::update_module_running("http", true);
                             }
                             ServiceUpdateResult::Stopped(_) => {
-                                crate::ui_state::set_http_running(false);
-                                rabbit_platform::config::update_config(|cfg| {
-                                    cfg.modules.insert("http", "running", rabbit_models::config::ConfigValue::Boolean(false));
-                                })
-                                .ok();
+                                crate::ui_state::update_module_running("http", false);
                             }
                             _ => {}
                         }
@@ -810,10 +788,10 @@ impl EventHandler for AppHandle {
                         let result = self.tftp_server_service.write().await.update().await;
                         match result {
                             ServiceUpdateResult::Started(_) => {
-                                crate::ui_state::set_http_running(true);
+                                crate::ui_state::update_module_running("tftpd", true);
                             }
                             ServiceUpdateResult::Stopped(_) => {
-                                crate::ui_state::set_http_running(false);
+                                crate::ui_state::update_module_running("tftpd", false);
                                 crate::ui_state::append_tftpd_log("TFTP server stopped.\r\n");
                             }
                             _ => {}
@@ -1033,17 +1011,19 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
     match data {
         UiData::ServiceStatus(module, running, reason) => {
             info!("Received ServiceStatus: {:?} running={} reason={:?}", module, running, reason);
+            let module_name = match module {
+                Module::Ping => "ping",
+                Module::Scan => "scan",
+                Module::Http => "http",
+                _ => "",
+            };
+            if !module_name.is_empty() {
+                crate::ui_state::update_module_running(module_name, running);
+            }
             match module {
                 Module::Ping => {
-                    crate::ui_state::set_ping_running(running);
-                    // 更新配置文件中的运行状态
-                    rabbit_platform::config::update_config(|cfg| {
-                        cfg.modules.insert("ping", "running", rabbit_models::config::ConfigValue::Boolean(running));
-                    })
-                    .ok();
                     if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
                         if running {
-                            // 从配置中获取 ping target 并设置窗口标题
                             let target = rabbit_platform::config::load_config()
                                 .ok()
                                 .and_then(|cfg| cfg.modules.get_string("ping", "target"))
@@ -1052,41 +1032,22 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
                                 win.set_label(&format!("Ping {}", target));
                             });
                         } else {
-                            // 清除任务栏进度
-                            #[cfg(target_os = "windows")]
-                            {
-                                let hwnd = win.raw_handle() as usize;
-                                rabbit_platform::taskbar::windows::update_taskbar_from_state(hwnd, 0, 0, "");
-                            }
+                            rabbit_platform::taskbar::TaskbarProgress::clear();
                             fltk::app::awake_callback(move || {
                                 win.set_label("Rabbit");
                             });
                         }
                     }
-                    // 如果有停止原因，记录日志
-                    if !running {
-                        if let Some(ref reason_str) = reason {
-                            info!("Ping stopped: {}", reason_str);
-                        }
-                    }
-                }
-                Module::Scan => {
-                    crate::ui_state::set_scan_running(running);
-                    // 更新配置文件中的运行状态
-                    rabbit_platform::config::update_config(|cfg| {
-                        cfg.modules.insert("scan", "running", rabbit_models::config::ConfigValue::Boolean(running));
-                    })
-                    .ok();
-                    // 如果有停止原因，记录日志
-                    if !running {
-                        if let Some(ref reason_str) = reason {
-                            info!("Scan stopped: {}", reason_str);
-                        }
-                    }
                 }
                 _ => {}
             }
-            // 使用 awake_callback 直接更新按钮状态（替代 ui_refresh 轮询）
+            // 记录停止原因
+            if !running {
+                if let Some(ref reason_str) = reason {
+                    info!("{:?} stopped: {}", module, reason_str);
+                }
+            }
+            // 使用 awake_callback 直接更新按钮状态
             fltk::app::awake_callback(move || {
                 crate::ui::ui_refresh::update_button_state(module, running);
             });
@@ -1121,17 +1082,7 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
 
         UiData::PingState { progress, total, color, .. } => {
             // 任务栏由 PingState 数据驱动：直接使用预计算的数据更新任务栏
-            if let Some(win) = crate::ui_state::UiState::get_main_window() {
-                let hwnd = win.raw_handle() as usize;
-                #[cfg(target_os = "windows")]
-                {
-                    rabbit_platform::taskbar::windows::update_taskbar_from_state(hwnd, progress, total, &color);
-                }
-                #[cfg(not(target_os = "windows"))]
-                {
-                    let _ = (hwnd, progress, total, color);
-                }
-            }
+            rabbit_platform::taskbar::TaskbarProgress::update(progress, total, &color);
         }
         UiData::ScanProgress(msg) => {
             crate::ui_state::append_scan_output(&msg);

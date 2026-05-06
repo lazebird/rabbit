@@ -1,8 +1,71 @@
 //! Windows Taskbar progress bar support
 //!
-//! 任务栏状态由 PingState 数据驱动：
-//! - ping 模块计算好进度和颜色，通过 UiData::PingState 发送
-//! - 本模块只负责使用预计算的数据呈现任务栏状态
+//! 提供统一的任务栏进度管理接口，内部处理平台差异。
+//! 调用方无需关心 Windows API 细节和条件编译。
+
+/// 任务栏进度管理器
+pub struct TaskbarProgress;
+
+impl TaskbarProgress {
+    /// 清除任务栏进度显示
+    pub fn clear() {
+        if let Some(hwnd) = get_main_window_hwnd() {
+            platform::update_taskbar(hwnd, 0, 0, "");
+        }
+    }
+
+    /// 更新任务栏进度
+    /// - progress: 当前进度值
+    /// - total: 总值
+    /// - color: "green" | "red"
+    pub fn update(progress: u32, total: u32, color: &str) {
+        if let Some(hwnd) = get_main_window_hwnd() {
+            platform::update_taskbar(hwnd, progress, total, color);
+        }
+    }
+}
+
+/// 获取主窗口句柄
+fn get_main_window_hwnd() -> Option<usize> {
+    get_stored_hwnd()
+}
+
+/// 设置主窗口句柄（由 app 层调用）
+pub fn set_main_window_hwnd(_hwnd: usize) {
+    #[cfg(target_os = "windows")]
+    {
+        MAIN_HWND.store(_hwnd, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
+/// 获取已存储的主窗口句柄
+fn get_stored_hwnd() -> Option<usize> {
+    #[cfg(target_os = "windows")]
+    {
+        let hwnd = MAIN_HWND.load(std::sync::atomic::Ordering::Relaxed);
+        if hwnd != 0 { Some(hwnd) } else { None }
+    }
+    #[cfg(not(target_os = "windows"))]
+    None
+}
+
+#[cfg(target_os = "windows")]
+static MAIN_HWND: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+/// 平台相关的任务栏操作
+mod platform {
+    /// 更新任务栏进度（平台特定实现）
+    pub fn update_taskbar(hwnd: usize, progress: u32, total: u32, color: &str) {
+        #[cfg(target_os = "windows")]
+        {
+            super::windows::update_taskbar_from_state(hwnd, progress, total, color);
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            let _ = (hwnd, progress, total, color);
+        }
+    }
+}
 
 #[cfg(target_os = "windows")]
 pub mod windows {
@@ -25,11 +88,13 @@ pub mod windows {
     };
 
     #[repr(C)]
+    #[allow(non_snake_case)]
     struct ITaskbarList3 {
         lpVtbl: *const ITaskbarList3Vtbl,
     }
 
     #[repr(C)]
+    #[allow(non_snake_case)]
     struct ITaskbarList3Vtbl {
         QueryInterface: Option<unsafe extern "system" fn(*mut ITaskbarList3, *const windows_sys::core::GUID, *mut *mut std::ffi::c_void) -> i32>,
         AddRef: Option<unsafe extern "system" fn(*mut ITaskbarList3) -> u32>,

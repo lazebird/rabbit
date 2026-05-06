@@ -212,6 +212,24 @@ pub fn set_http_log(text: &str) {
     }
 }
 
+/// 通用模块状态更新：同时更新UI状态和配置
+pub fn update_module_running(module: &str, running: bool) {
+    // 更新UI状态
+    match module {
+        "ping" => set_ping_running(running),
+        "scan" => set_scan_running(running),
+        "http" => set_http_running(running),
+        "tftpd" => set_tftpd_running(running),
+        "chat" => set_chat_running(running),
+        _ => {}
+    }
+    // 更新配置
+    rabbit_platform::config::update_config(|cfg| {
+        cfg.modules.insert(module, "running", rabbit_models::config::ConfigValue::Boolean(running));
+    })
+    .ok();
+}
+
 pub fn set_scan_running(running: bool) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
@@ -232,6 +250,22 @@ pub fn set_http_running(running: bool) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
             s.updated.insert("http_running".to_string(), running);
+        }
+    }
+}
+
+pub fn set_tftpd_running(running: bool) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.updated.insert("tftpd_running".to_string(), running);
+        }
+    }
+}
+
+pub fn set_chat_running(running: bool) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.updated.insert("chat_running".to_string(), running);
         }
     }
 }

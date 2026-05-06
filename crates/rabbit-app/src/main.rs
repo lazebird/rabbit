@@ -9,6 +9,7 @@ use tracing::info;
 
 fn main() -> anyhow::Result<()> {
     // Ensure elevated privileges FIRST to avoid redundant initialization if restarting
+    #[cfg(not(debug_assertions))]
     rabbit_platform::elevation::ensure_elevated();
 
     // Initialize logging
