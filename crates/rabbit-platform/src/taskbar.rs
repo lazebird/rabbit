@@ -119,10 +119,11 @@ pub mod windows {
     }
 
     /// 直接使用 PingState 预计算的数据更新任务栏
-    /// progress: 当前进度值 (0-100 的百分比)
+    /// progress: 当前进度值 (相对于 total)
+    /// total: 总值
     /// color: "green" | "red"
     pub fn update_taskbar_from_state(hwnd: usize, progress: u32, total: u32, color: &str) {
-        if progress == 0 && total == 0 {
+        if total == 0 {
             let _ = set_taskbar_state(hwnd, TaskbarState::None, 0);
             return;
         }
@@ -133,8 +134,9 @@ pub mod windows {
             _ => TaskbarState::Normal,
         };
 
-        // progress 已经是百分比 (0-100)，直接使用
-        let _ = set_taskbar_state(hwnd, state, progress);
+        // 计算百分比 (0-100)
+        let percentage = (progress as f64 / total as f64 * 100.0) as u32;
+        let _ = set_taskbar_state(hwnd, state, percentage);
     }
 }
 

@@ -353,15 +353,24 @@ impl PingService {
 
                     let _ = ui_tx.send(UiData::PingStats(stats)).await;
 
-                    // 计算任务栏状态并发送（需求文档规则）
-                    // progress = 成功次数或失败次数，total = 5，由接收方计算百分比
-                    let full_count = 5u32;
-                    let (progress, color) = if loss_count > 0 {
-                        // 有失败：红色，progress = 失败次数
-                        (loss_count.min(full_count), "red")
+                    // 计算任务栏状态并发送（根据最新需求文档规则：滑动窗口 5 次）
+                    // 1. 截取最近 5 次结果
+                    let recent_results = if target_results.len() > 5 {
+                        &target_results[target_results.len() - 5..]
                     } else {
-                        // 全成功：绿色，progress = 成功次数
-                        (received.min(full_count), "green")
+                        &target_results[..]
+                    };
+
+                    let recent_success = recent_results.iter().filter(|r| r.success).count() as u32;
+                    let recent_fail = recent_results.len() as u32 - recent_success;
+                    
+                    let full_count = 5u32;
+                    let (progress, color) = if recent_fail > 0 {
+                        // 只要有失败：红色，progress = 失败次数
+                        (recent_fail, "red")
+                    } else {
+                        // 全部成功：绿色，progress = 成功次数
+                        (recent_success, "green")
                     };
 
                     let _ = ui_tx
