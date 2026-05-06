@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "crates/rabbit-models",
-    "crates/rabbit-platform",
-    "crates/rabbit-core",
-    "crates/rabbit-app",
+    "crates/schema",
+    "crates/adapter",
+    "crates/service",
+    "crates/app",
 ]
 resolver = "2"
 
