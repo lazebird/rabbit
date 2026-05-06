@@ -212,11 +212,13 @@ impl ScanService {
     pub async fn update(&mut self) -> ServiceUpdateResult {
         let state = *self.state.read().await;
         match state {
-            ScannerState::Idle => match self.start().await {
-                Ok(()) => ServiceUpdateResult::Started("Scan started".to_string()),
-                Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
-            },
-            _ => match self.cancel().await {
+            ScannerState::Idle | ScannerState::Completed | ScannerState::Cancelled => {
+                match self.start().await {
+                    Ok(()) => ServiceUpdateResult::Started("Scan started".to_string()),
+                    Err(e) => ServiceUpdateResult::Error(format!("Failed to start: {}", e)),
+                }
+            }
+            ScannerState::Scanning { .. } => match self.cancel().await {
                 Ok(()) => ServiceUpdateResult::Stopped("Scan cancelled".to_string()),
                 Err(e) => ServiceUpdateResult::Error(format!("Failed to cancel: {}", e)),
             },

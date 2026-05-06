@@ -1036,6 +1036,11 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
             match module {
                 Module::Ping => {
                     crate::ui_state::set_ping_running(running);
+                    // 更新配置文件中的运行状态
+                    rabbit_platform::config::update_config(|cfg| {
+                        cfg.modules.insert("ping", "running", rabbit_models::config::ConfigValue::Boolean(running));
+                    })
+                    .ok();
                     if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
                         if running {
                             // 从配置中获取 ping target 并设置窗口标题
@@ -1044,9 +1049,15 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
                                 .and_then(|cfg| cfg.modules.get_string("ping", "target"))
                                 .unwrap_or_else(|| "Ping".to_string());
                             fltk::app::awake_callback(move || {
-                                win.set_label(&format!("Rabbit - {}", target));
+                                win.set_label(&format!("Ping {}", target));
                             });
                         } else {
+                            // 清除任务栏进度
+                            #[cfg(target_os = "windows")]
+                            {
+                                let hwnd = win.raw_handle() as usize;
+                                rabbit_platform::taskbar::windows::update_taskbar_from_state(hwnd, 0, 0, "");
+                            }
                             fltk::app::awake_callback(move || {
                                 win.set_label("Rabbit");
                             });
@@ -1061,6 +1072,11 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
                 }
                 Module::Scan => {
                     crate::ui_state::set_scan_running(running);
+                    // 更新配置文件中的运行状态
+                    rabbit_platform::config::update_config(|cfg| {
+                        cfg.modules.insert("scan", "running", rabbit_models::config::ConfigValue::Boolean(running));
+                    })
+                    .ok();
                     // 如果有停止原因，记录日志
                     if !running {
                         if let Some(ref reason_str) = reason {

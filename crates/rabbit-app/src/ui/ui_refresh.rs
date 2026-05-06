@@ -254,7 +254,7 @@ pub fn refresh_displays() {
     use crate::ui_state::UiState;
 
     let Some(state) = UiState::global() else { return };
-    let Ok(s) = state.lock() else { return };
+    let Ok(mut s) = state.lock() else { return };
 
     // 准备数据快照
     let data: Vec<(&str, String)> = [
@@ -276,6 +276,18 @@ pub fn refresh_displays() {
     let http_selected_idx = s.http_selected_idx;
     let tftpd_selected_idx = s.tftpd_selected_idx;
 
+    // Collect all keys that have been updated
+    let all_keys = ["ping_output", "ping_stats", "scan_output", "http_log", "tftpd_log", "tftpc_log", "chat_messages", "chat_users", "settings_output"];
+    let updated_keys: Vec<String> = all_keys.iter()
+        .filter(|k| s.is_updated(k))
+        .map(|k| k.to_string())
+        .collect();
+
+    // Clear updated flags after collecting
+    for key in &updated_keys {
+        s.clear_updated(key);
+    }
+
     drop(s);
 
     // 更新文本显示器
@@ -286,11 +298,14 @@ pub fn refresh_displays() {
     for (key, value) in &data {
         let Some(display) = map.get_mut(key) else { continue };
         if let Some(mut buf) = display.buffer() {
-            buf.set_text(value);
-            // Auto-scroll for all log-type displays when new content arrives
-            if matches!(*key, "ping_output" | "scan_output" | "http_log" | "tftpd_log" | "tftpc_log" | "chat_messages" | "settings_output") {
-                let lines = buf.count_lines(0, buf.length());
-                display.scroll(lines, 0);
+            // Only update text when content actually changed to preserve selection
+            if updated_keys.contains(&key.to_string()) {
+                buf.set_text(value);
+                // Auto-scroll for log-type displays
+                if matches!(*key, "ping_output" | "scan_output" | "http_log" | "tftpd_log" | "tftpc_log" | "chat_messages" | "settings_output") {
+                    let lines = buf.count_lines(0, buf.length());
+                    display.scroll(lines, 0);
+                }
             }
         }
     }
