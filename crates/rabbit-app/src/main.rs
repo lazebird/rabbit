@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 //! Rabbit Main Application
 //!
 //! Entry point for the Rabbit application.
@@ -5,25 +7,14 @@
 use rabbit_app::App;
 use tracing::info;
 
-#[cfg(windows)]
-fn hide_console() {
-    unsafe {
-        windows_sys::Win32::System::Console::FreeConsole();
-    }
-}
-
-#[cfg(not(windows))]
-fn hide_console() {}
-
 fn main() -> anyhow::Result<()> {
-    hide_console();
+    // Ensure elevated privileges FIRST to avoid redundant initialization if restarting
+    rabbit_platform::elevation::ensure_elevated();
+
     // Initialize logging
     tracing_subscriber::fmt().with_env_filter("info").init();
 
     info!("Starting Rabbit application");
-
-    // Ensure elevated privileges for privileged operations
-    rabbit_platform::elevation::ensure_elevated();
 
     // Build a custom Tokio runtime with reduced thread stack size and worker count.
     // Default stack per thread is 8MB; with FLTK/Pango font threads also consuming

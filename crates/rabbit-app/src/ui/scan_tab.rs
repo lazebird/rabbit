@@ -21,7 +21,7 @@ use crate::ui_state::UiState;
 pub struct ScanTab;
 
 impl TabComponent for ScanTab {
-    fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
+    fn build(x: i32, y: i32, w: i32, h: i32, config: &rabbit_models::AppConfig) -> Flex {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "Scan").column();
@@ -60,8 +60,9 @@ impl TabComponent for ScanTab {
         opt_input.set_value(&defaults::scan_options());
 
         // Start/Stop button (fixed width, right aligned)
-        let mut start_btn = Button::default().with_label("Start");
-        start_btn.set_color(colors.accent);
+        let is_running = config.modules.get_bool("scan", "running").unwrap_or(false);
+        let mut start_btn = Button::default().with_label(if is_running { "Stop" } else { "Start" });
+        start_btn.set_color(if is_running { fltk::enums::Color::from_hex(super::ui_refresh::HTTP_STOP_COLOR) } else { colors.accent });
         start_btn.set_label_color(fltk::enums::Color::White);
         ctrl_row.fixed(&start_btn, 70);
 

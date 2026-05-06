@@ -220,7 +220,6 @@ impl App {
         let win_w = modules.get_integer("global", "window_width").unwrap_or(748) as i32;
         let win_h = modules.get_integer("global", "window_height").unwrap_or(518) as i32;
         info!("Loaded config: window pos=({}, {}), size=({}x{})", win_x, win_y, win_w, win_h);
-        drop(disk_config);
 
         let last_resize_time = Arc::new(AtomicU64::new(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64));
         let save_pending = Arc::new(AtomicBool::new(false));
@@ -236,17 +235,17 @@ impl App {
         }
 
         // Create Tabs widget - positioned to leave room for tab labels
-        let mut tabs = Tabs::new(5, 5, 738, 508, "");
+        let mut tabs = Tabs::new(5, 5, win_w - 10, win_h - 10, "");
 
         // Build each tab - y=25 leaves room for tab labels at top
-        let ping_tab = PingTab::build(5, 30, 730, 475);
-        let scan_tab = ScanTab::build(5, 30, 730, 475);
-        let http_tab = HttpTab::build(5, 30, 730, 475);
-        let tftpd_tab = TftpdTab::build(5, 30, 730, 475);
-        let tftpc_tab = TftpcTab::build(5, 30, 730, 475);
-        let plan_tab = PlanTab::build(5, 30, 730, 475);
-        let chat_tab = ChatTab::build(5, 30, 730, 475);
-        let settings_tab = SettingsTab::build(5, 30, 730, 475);
+        let ping_tab = PingTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
+        let scan_tab = ScanTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
+        let http_tab = HttpTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
+        let tftpd_tab = TftpdTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
+        let tftpc_tab = TftpcTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
+        let plan_tab = PlanTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
+        let chat_tab = ChatTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
+        let settings_tab = SettingsTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
 
         tabs.end();
 
@@ -456,51 +455,6 @@ impl App {
             }
         });
 
-        main_win.end();
-        main_win.show();
-        std::thread::sleep(std::time::Duration::from_millis(100));
-        main_win.set_pos(win_x, win_y);
-
-        // Store main window for title updates
-        crate::ui_state::UiState::set_main_window(main_win.clone());
-
-        // Startup version check if autoupdate is enabled
-        if autoupdate {
-            info!("Auto-update enabled, checking for updates...");
-            let shutdown_flag = self.shutdown_flag.clone();
-            std::thread::spawn(move || {
-                // Wait a bit for UI to be ready, but check shutdown flag
-                for _ in 0..20 {
-                    if shutdown_flag.load(Ordering::SeqCst) {
-                        info!("Shutdown requested, aborting version check");
-                        return;
-                    }
-                    std::thread::sleep(std::time::Duration::from_millis(100));
-                }
-
-                if shutdown_flag.load(Ordering::SeqCst) {
-                    info!("Shutdown requested, aborting version check");
-                    return;
-                }
-
-                crate::ui_state::append_settings_output("Checking for updates...");
-                handle_version_check_result(Some(&shutdown_flag));
-            });
-        }
-
-        // Apply window topmost setting
-        if top_requested {
-            // Use set_on_top to bring window to front initially
-            main_win.set_on_top();
-            info!("Window topmost enabled (window brought to front)");
-        }
-
-        // Apply system tray setting
-        if systray_requested {
-            info!("System tray enabled (note: full system tray integration requires platform-specific setup)");
-            // TODO: Implement full system tray integration
-        }
-
         // Apply autostart setting
         if let Err(e) = rabbit_platform::autostart::set_autostart(autostart_requested) {
             warn!("Failed to set autostart: {}", e);
@@ -524,30 +478,19 @@ impl App {
         let chat_restore = config_for_restore.modules.get_bool("chat", "running").unwrap_or(false);
         drop(config_for_restore);
 
-        info!(
-            "Business states to restore: ping={}, http={}, tftpd={}, chat={}",
-            ping_restore, http_restore, tftp_restore, chat_restore
-        );
-
-        // Store restore flags for use after event loop starts
-        let ping_restore_flag = ping_restore;
-        let http_restore_flag = http_restore;
-        let tftp_restore_flag = tftp_restore;
-        let chat_restore_flag = chat_restore;
-
         // Handle window close button - use set_callback which fires when the X button is clicked
         let mut win_for_close = main_win.clone();
         main_win.set_callback(move |_| {
+            info!("Close button clicked - exiting program");
             win_for_close.hide();
             app::quit();
         });
 
-        // Handle Ctrl+C: use awake_callback to safely quit from UI thread
+        // Handle Ctrl+C
         let shutdown_flag = self.shutdown_flag.clone();
         ctrlc::set_handler(move || {
             info!("Ctrl+C received, initiating shutdown...");
             shutdown_flag.store(true, Ordering::SeqCst);
-            // Use awake_callback to execute quit() on the UI thread (thread-safe)
             fltk::app::awake_callback(|| {
                 info!("Executing quit() on UI thread...");
                 fltk::app::quit();
@@ -555,20 +498,7 @@ impl App {
         })
         .ok();
 
-        // Fallback: also catch close events at the app level
-        app::add_handler(|ev| {
-            if ev == fltk::enums::Event::Close {
-                tracing::info!("Close event detected via add_handler, quitting...");
-                app::quit();
-                true
-            } else {
-                false
-            }
-        });
-
         // Spawn event handler task
-        let _config = self.view_model.read().await.get_config();
-
         let app_clone = Arc::new(RwLock::new(AppHandle {
             view_model: self.view_model.clone(),
             ping_service: self.ping_service.clone(),
@@ -585,25 +515,35 @@ impl App {
         });
 
         // Restore business states after event loop is ready
-        // 根据配置中的 running 状态恢复
-        if ping_restore_flag {
-            info!("Restoring ping service state (running=true)");
-            send_event(UiEvent::ModuleToggle { module: "ping".into() });
+        if ping_restore { send_event(UiEvent::ModuleToggle { module: "ping".into() }); }
+        if http_restore { send_event(UiEvent::ModuleToggle { module: "http".into() }); }
+        if tftp_restore { send_event(UiEvent::ModuleToggle { module: "tftpd".into() }); }
+        if chat_restore { send_event(UiEvent::ModuleToggle { module: "chat".into() }); }
+
+        // FINAL WINDOW PREPARATION AND SHOW
+        main_win.end();
+        
+        // Store main window for title updates
+        crate::ui_state::UiState::set_main_window(main_win.clone());
+
+        // Apply window topmost setting BEFORE show if possible (handled by OS during mapping)
+        if top_requested {
+            main_win.set_on_top();
         }
 
-        if http_restore_flag {
-            info!("Restoring HTTP server state");
-            send_event(UiEvent::ModuleToggle { module: "http".into() });
-        }
+        // Show window AT THE LAST MOMENT
+        main_win.show();
 
-        if tftp_restore_flag {
-            info!("Restoring TFTP server state");
-            send_event(UiEvent::ModuleToggle { module: "tftpd".into() });
-        }
-
-        if chat_restore_flag {
-            info!("Restoring chat state");
-            send_event(UiEvent::ModuleToggle { module: "chat".into() });
+        // Startup version check if autoupdate is enabled
+        if autoupdate {
+            info!("Auto-update enabled, checking for updates...");
+            let shutdown_flag_check = self.shutdown_flag.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_millis(1000));
+                if !shutdown_flag_check.load(Ordering::SeqCst) {
+                    handle_version_check_result(Some(&shutdown_flag_check));
+                }
+            });
         }
 
         // Run FLTK event loop
@@ -612,10 +552,24 @@ impl App {
         // Abort the event loop task (it's blocked on receiver.recv() which will never return)
         event_handle.abort();
 
-        // Cleanup
-        self.cleanup().await?;
+        // Cleanup with timeout to prevent hanging on exit
+        info!("Starting cleanup process...");
+        let cleanup_future = self.cleanup();
+        match tokio::time::timeout(std::time::Duration::from_secs(3), cleanup_future).await {
+            Ok(result) => {
+                if let Err(e) = result {
+                    error!("Cleanup failed: {}", e);
+                } else {
+                    info!("Cleanup completed successfully");
+                }
+            }
+            Err(_) => {
+                warn!("Cleanup timed out after 3 seconds, forcing exit");
+            }
+        }
 
         // Force exit - FLTK may leave internal threads running
+        info!("Final exit via std::process::exit(0)");
         std::process::exit(0);
     }
 

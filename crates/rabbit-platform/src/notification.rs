@@ -23,6 +23,7 @@ pub fn show_notification(title: &str, message: &str) -> Result<()> {
 #[cfg(target_os = "windows")]
 fn show_notification_windows(title: &str, message: &str) -> Result<()> {
     // Use PowerShell to show a Windows 10+ toast notification
+    use std::os::windows::process::CommandExt;
     use std::process::Command;
 
     // Escape strings for PowerShell
@@ -46,7 +47,10 @@ fn show_notification_windows(title: &str, message: &str) -> Result<()> {
         ps_title, ps_message
     );
 
-    let result = Command::new("powershell").args(&["-NoProfile", "-WindowStyle", "Hidden", "-Command", &script]).output();
+    let result = Command::new("powershell")
+        .creation_flags(0x08000000) // CREATE_NO_WINDOW
+        .args(&["-NoProfile", "-WindowStyle", "Hidden", "-Command", &script])
+        .output();
 
     match result {
         Ok(_) => Ok(()),

@@ -129,11 +129,11 @@ fn get_config_folder() -> String {
 pub struct SettingsTab;
 
 impl TabComponent for SettingsTab {
-    fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
+    fn build(x: i32, y: i32, w: i32, h: i32, config: &rabbit_models::AppConfig) -> Flex {
         let colors = Colors::new();
         let spacing = Spacing::new();
 
-        let mut grp = Flex::new(x, y, w, h, "Setting").column();
+        let mut grp = Flex::new(x, y, w, h, "Settings").column();
         grp.set_margin(spacing.margin);
         grp.set_spacing(spacing.padding);
 
@@ -145,9 +145,8 @@ impl TabComponent for SettingsTab {
         lang_label.set_align(Align::Left | Align::Inside);
         lang_row.fixed(&lang_label, 70);
 
-        // Load current config state for all settings
-        let initial_config = rabbit_platform::config::load_config().unwrap_or_default();
-        let modules = &initial_config.modules;
+        // Use the passed config reference
+        let modules = &config.modules;
 
         let lang_str = modules.get_string("global", "language").unwrap_or_else(|| "System".to_string());
         let lang_idx = match lang_str.as_str() {

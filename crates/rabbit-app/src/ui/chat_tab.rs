@@ -23,7 +23,7 @@ use crate::ui_state::UiState;
 pub struct ChatTab;
 
 impl TabComponent for ChatTab {
-    fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
+    fn build(x: i32, y: i32, w: i32, h: i32, config: &rabbit_models::AppConfig) -> Flex {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "CHAT").column();
@@ -51,8 +51,9 @@ impl TabComponent for ChatTab {
         // Spacer
         Frame::default();
 
-        let mut toggle_btn = Button::default().with_label("Start");
-        toggle_btn.set_color(colors.accent);
+        let is_running = config.modules.get_bool("chat", "running").unwrap_or(false);
+        let mut toggle_btn = Button::default().with_label(if is_running { "Stop" } else { "Start" });
+        toggle_btn.set_color(if is_running { fltk::enums::Color::from_hex(super::ui_refresh::HTTP_STOP_COLOR) } else { colors.accent });
         toggle_btn.set_label_color(fltk::enums::Color::White);
         row1.fixed(&toggle_btn, 70);
 

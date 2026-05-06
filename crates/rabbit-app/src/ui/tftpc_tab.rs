@@ -23,7 +23,7 @@ use crate::ui_state::UiState;
 pub struct TftpcTab;
 
 impl TabComponent for TftpcTab {
-    fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
+    fn build(x: i32, y: i32, w: i32, h: i32, _config: &rabbit_models::AppConfig) -> Flex {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "TFTPC").column();

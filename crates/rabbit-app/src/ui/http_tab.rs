@@ -23,7 +23,7 @@ use crate::ui_state::UiState;
 pub struct HttpTab;
 
 impl TabComponent for HttpTab {
-    fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
+    fn build(x: i32, y: i32, w: i32, h: i32, config: &rabbit_models::AppConfig) -> Flex {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "HTTPD").column();
@@ -59,8 +59,9 @@ impl TabComponent for HttpTab {
         ctrl_row.fixed(&shell_check, 60);
 
         // Start/Stop button (fixed width, right aligned)
-        let mut toggle_btn = Button::default().with_label("Start");
-        toggle_btn.set_color(colors.accent);
+        let is_running = config.modules.get_bool("http", "running").unwrap_or(false);
+        let mut toggle_btn = Button::default().with_label(if is_running { "Stop" } else { "Start" });
+        toggle_btn.set_color(if is_running { fltk::enums::Color::from_hex(super::ui_refresh::HTTP_STOP_COLOR) } else { colors.accent });
         toggle_btn.set_label_color(fltk::enums::Color::White);
         ctrl_row.fixed(&toggle_btn, 70);
 

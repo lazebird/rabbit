@@ -23,7 +23,10 @@ pub fn set_autostart(enabled: bool) -> Result<()> {
 
 #[cfg(target_os = "windows")]
 fn set_autostart_windows(enabled: bool) -> Result<()> {
+    use std::os::windows::process::CommandExt;
     use std::process::Command;
+
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
 
     if enabled {
         // Add to Windows Run registry key
@@ -31,6 +34,7 @@ fn set_autostart_windows(enabled: bool) -> Result<()> {
         let exe_path_str = exe_path.to_string_lossy();
 
         let result = Command::new("reg")
+            .creation_flags(CREATE_NO_WINDOW)
             .args(&[
                 "add",
                 r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
@@ -51,6 +55,7 @@ fn set_autostart_windows(enabled: bool) -> Result<()> {
     } else {
         // Remove from Windows Run registry key
         let result = Command::new("reg")
+            .creation_flags(CREATE_NO_WINDOW)
             .args(&["delete", r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "/v", "Rabbit", "/f"])
             .output();
 

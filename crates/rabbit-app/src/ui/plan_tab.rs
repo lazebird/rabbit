@@ -24,7 +24,7 @@ use chrono::{Datelike, Local, NaiveDate, NaiveTime, Timelike};
 pub struct PlanTab;
 
 impl TabComponent for PlanTab {
-    fn build(x: i32, y: i32, w: i32, h: i32) -> Flex {
+    fn build(x: i32, y: i32, w: i32, h: i32, _config: &rabbit_models::AppConfig) -> Flex {
         let colors = Colors::new();
 
         let mut grp = Flex::new(x, y, w, h, "PLAN").column();

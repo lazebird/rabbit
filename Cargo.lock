@@ -2671,9 +2671,9 @@ checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
 
 [[package]]
 name = "xelevate"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "514f5d5a72a40699de64476c01a5f056d4a71dc1fd3617f281b54690ba027559"
+checksum = "b63ed4b8fc60045561731268ac61ed28c19d955e59b7bc7883389048fc49d1f5"
 dependencies = [
  "fltk",
  "libc",

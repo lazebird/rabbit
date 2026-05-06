@@ -34,5 +34,5 @@ pub trait TabComponent {
     /// Build the tab UI and return the container
     /// x, y, w, h are the position and size within the parent Tabs widget
     /// The label will be used as the tab title
-    fn build(x: i32, y: i32, w: i32, h: i32) -> Flex;
+    fn build(x: i32, y: i32, w: i32, h: i32, config: &rabbit_models::AppConfig) -> Flex;
 }
