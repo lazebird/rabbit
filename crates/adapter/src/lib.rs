@@ -16,6 +16,7 @@ pub mod notification;
 pub mod ping;
 pub mod shell;
 pub mod taskbar;
+pub mod window;
 
 pub use autostart::*;
 pub use config::*;
@@ -26,6 +27,7 @@ pub use notification::*;
 pub use ping::*;
 pub use shell::*;
 pub use taskbar::*;
+pub use window::*;
 
 use std::path::PathBuf;
 use thiserror::Error;

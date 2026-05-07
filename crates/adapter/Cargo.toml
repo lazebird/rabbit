@@ -23,7 +23,7 @@ xelevate = { version = "0.1.2", registry = "crates-io" }
 fltk = { workspace = true }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { workspace = true, features = ["Win32_Foundation", "Win32_UI_Shell", "Win32_System_Com"] }
+windows-sys = { workspace = true, features = ["Win32_Foundation", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging", "Win32_System_Com"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = { workspace = true }

@@ -2,6 +2,7 @@
 //!
 //! Main application logic including UI integration.
 
+pub mod systray;
 pub mod app;
 pub mod ui;
 pub mod ui_events;

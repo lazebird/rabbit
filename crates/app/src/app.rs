@@ -6,6 +6,7 @@ use crate::ui_events::{init_event_system, send_event, EventHandler, UiEvent};
 use crate::ui_state::UiState;
 use crate::upgrade::{self, PlatformInfo, VersionsManifest};
 use crate::view_model::AppViewModel;
+use crate::systray;
 use fltk::{
     app,
     group::Tabs,
@@ -231,8 +232,40 @@ impl App {
 
         info!("Creating window at ({}, {}) size {}x{}", win_x, win_y, win_w, win_h);
 
-        if let Ok(icon) = IcoImage::load("crates/rabbit-app/resources/icon.ico") {
-            main_win.set_icon(Some(icon));
+        // Load icon - use exe directory to find it reliably
+        let mut icon_loaded = false;
+        let mut tried = Vec::new();
+
+        // Try next to executable first (most reliable)
+        if let Ok(mut exe_path) = std::env::current_exe() {
+            exe_path.pop(); // Remove exe name
+            exe_path.push("resources");
+            exe_path.push("icon.ico");
+            if let Some(s) = exe_path.to_str() {
+                tried.push(s.to_string());
+                if let Ok(icon) = IcoImage::load(s) {
+                    main_win.set_icon(Some(icon));
+                    icon_loaded = true;
+                    info!("Loaded window icon from: {}", s);
+                }
+            }
+        }
+
+        // Fallback to relative paths (development)
+        if !icon_loaded {
+            for path in &["crates/app/resources/icon.ico", "resources/icon.ico"] {
+                tried.push(path.to_string());
+                if let Ok(icon) = IcoImage::load(path) {
+                    main_win.set_icon(Some(icon));
+                    icon_loaded = true;
+                    info!("Loaded window icon from: {}", path);
+                    break;
+                }
+            }
+        }
+
+        if !icon_loaded {
+            warn!("Could not load icon from any of: {:?}", tried);
         }
 
         // Create Tabs widget - positioned to leave room for tab labels
@@ -459,14 +492,6 @@ impl App {
         let chat_restore = config_for_restore.modules.get_bool("chat", "running").unwrap_or(false);
         drop(config_for_restore);
 
-        // Handle window close button - use set_callback which fires when the X button is clicked
-        let mut win_for_close = main_win.clone();
-        main_win.set_callback(move |_| {
-            info!("Close button clicked - exiting program");
-            win_for_close.hide();
-            app::quit();
-        });
-
         // Handle Ctrl+C
         let shutdown_flag = self.shutdown_flag.clone();
         ctrlc::set_handler(move || {
@@ -507,16 +532,36 @@ impl App {
         // Store main window for title updates
         crate::ui_state::UiState::set_main_window(main_win.clone());
 
-        // Show window
+        // Show window first (needed before getting raw_handle on some platforms)
         main_win.show();
 
         // After show(), we can get the valid OS handle (HWND on Windows)
-        // Store hwnd for taskbar progress
-        adapter::taskbar::set_main_window_hwnd(main_win.raw_handle() as usize);
+        let hwnd = main_win.raw_handle() as usize;
+
+        // Store main window reference for systray show/hide operations (cross-platform)
+        systray::set_main_window(main_win.clone());
+
+        // Store hwnd for taskbar progress (Windows only)
+        adapter::taskbar::set_main_window_hwnd(hwnd);
 
         // Apply window topmost setting AFTER show (safer on Windows)
         if top_requested {
-            main_win.set_on_top();
+            adapter::window::set_window_on_top(hwnd, true);
+        }
+
+        // Handle window close button - use set_callback which fires when the X button is clicked
+        // Always quit when X is clicked (user requirement: only tray Hide should hide)
+        main_win.set_callback(move |_| {
+            info!("Close button clicked - exiting program");
+            let _ = crate::systray::remove_systray();
+            fltk::app::quit();
+        });
+
+        // Initialize systray if enabled
+        if systray_requested {
+            if let Err(e) = systray::init_systray() {
+                warn!("Failed to initialize systray: {}", e);
+            }
         }
 
         // Startup version check if autoupdate is enabled
@@ -539,6 +584,8 @@ impl App {
 
         // Cleanup with timeout to prevent hanging on exit
         info!("Starting cleanup process...");
+        // Remove systray icon before exit
+        systray::remove_systray();
         let cleanup_future = self.cleanup();
         match tokio::time::timeout(std::time::Duration::from_secs(3), cleanup_future).await {
             Ok(result) => {
@@ -963,18 +1010,20 @@ impl EventHandler for AppHandle {
                     warn!("Failed to set autostart: {}", e);
                 }
 
-                // Apply systray setting
-                if systray {
-                    info!("System tray enabled (note: full integration requires platform-specific setup)");
+                // Apply systray setting - only if changed
+                let old_systray = crate::systray::is_active();
+                if old_systray != systray {
+                    fltk::app::awake_callback(move || {
+                        crate::systray::update_systray(systray);
+                    });
                 }
 
                 // Apply window topmost setting
-                if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+                if let Some(win) = crate::ui_state::UiState::get_main_window() {
                     let top_value = top;
+                    let hwnd = win.raw_handle() as usize;
                     fltk::app::awake_callback(move || {
-                        if top_value {
-                            win.set_on_top();
-                        }
+                        adapter::window::set_window_on_top(hwnd, top_value);
                     });
                 }
 

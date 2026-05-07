@@ -44,5 +44,9 @@ ureq = { version = "2", features = ["tls"] }
 sha2 = "0.10"
 semver = "1"
 
+# System tray
+tray-icon = "0.23"
+image = "0.25"
+
 windows-sys = { version = "0.59", features = ["Win32_System_Console"] }
 ctrlc = "3.2"
