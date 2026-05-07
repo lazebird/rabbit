@@ -21,7 +21,7 @@ pub enum UiEvent {
 
     // Plan
     PlanAdd { date: String, time: String, cycle: i32, unit: String, msg: String },
-    PlanRemove { id: String },
+    PlanRemove { msg: String },
 
     // Chat
     ChatSend { message: String },

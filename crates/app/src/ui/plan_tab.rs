@@ -1,10 +1,12 @@
 //! Plan Tab UI Component
 //!
-//! Layout matching old version:
-//! - Single row: Date [input] Time [input] Repeat/ [input] [unit dropdown] Opt. [input] [+] [-]
-//! - Event list fills remaining space
+//! Layout:
+//! - Row 1: Date [input] Time [input] Repeat/ [input] [unit dropdown] [msg input] Opt [input] [+][-]
+//! - Row 2: Task list browser (fixed height, scrollable, double-click to fill config)
+//! - Row 3: Log output (fills remaining space)
 
 use fltk::{
+    browser::{Browser, BrowserType},
     button::Button,
     enums::{Color, Event},
     frame::Frame,
@@ -18,6 +20,7 @@ use fltk::{
 
 use super::{defaults, Colors, TabComponent};
 use crate::ui_events::{send_event, UiEvent};
+use schema::config::PlanTask;
 use chrono::{Datelike, Local, NaiveDate, NaiveTime, Timelike};
 
 /// Plan Tab Component
@@ -31,7 +34,7 @@ impl TabComponent for PlanTab {
         grp.set_margin(0);
         grp.set_spacing(4);
 
-        // Control row
+        // ===== Row 1: Config bar =====
         let mut ctrl_row = Flex::default().row();
         ctrl_row.set_spacing(5);
 
@@ -41,20 +44,15 @@ impl TabComponent for PlanTab {
 
         // Date input
         let mut date_input = Input::default();
-        let plan_date_val = defaults::plan_date();
-        if plan_date_val.is_empty() {
-            let now = Local::now();
-            date_input.set_value(&now.format("%Y/%m/%d").to_string());
-        } else {
-            date_input.set_value(&plan_date_val);
-        }
+        let now = Local::now();
+        date_input.set_value(&now.format("%Y/%m/%d").to_string());
         ctrl_row.fixed(&date_input, 85);
 
         // Date picker
         let mut date_input_clone = date_input.clone();
         date_input.handle(move |_, ev| {
             if ev == Event::Push {
-                show_date_picker(&mut date_input_clone);
+                show_date_picker(&mut date_input_clone, fltk::app::event_x_root(), fltk::app::event_y_root());
                 true
             } else {
                 false
@@ -67,37 +65,19 @@ impl TabComponent for PlanTab {
 
         // Time input
         let mut time_input = Input::default();
-        let plan_time_val = defaults::plan_time();
-        if plan_time_val.is_empty() {
-            let now = Local::now();
-            time_input.set_value(&now.format("%H:%M").to_string());
-        } else {
-            time_input.set_value(&plan_time_val);
-        }
+        let now = Local::now();
+        time_input.set_value(&now.format("%H:%M").to_string());
         ctrl_row.fixed(&time_input, 45);
 
         // Time picker
         let mut time_input_clone = time_input.clone();
         time_input.handle(move |_, ev| {
             if ev == Event::Push {
-                show_time_picker(&mut time_input_clone);
+                show_time_picker(&mut time_input_clone, fltk::app::event_x_root(), fltk::app::event_y_root());
                 true
             } else {
                 false
             }
-        });
-
-        // Now button
-        let mut now_btn = Button::default().with_label("Now");
-        ctrl_row.fixed(&now_btn, 35);
-
-        // Now button action
-        let mut date_now = date_input.clone();
-        let mut time_now = time_input.clone();
-        now_btn.set_callback(move |_| {
-            let now = Local::now();
-            date_now.set_value(&now.format("%Y/%m/%d").to_string());
-            time_now.set_value(&now.format("%H:%M").to_string());
         });
 
         // Repeat label
@@ -106,20 +86,22 @@ impl TabComponent for PlanTab {
 
         // Cycle input
         let mut cycle_input = Input::default();
-        cycle_input.set_value(&defaults::plan_cycle());
+        cycle_input.set_value("0");
         ctrl_row.fixed(&cycle_input, 30);
 
         // Unit dropdown
         let mut unit_choice = Choice::default();
-        unit_choice.add_choice("minute");
-        unit_choice.add_choice("hour");
-        unit_choice.add_choice("day");
-        unit_choice.set_value(defaults::plan_unit());
+        unit_choice.add_choice("minute|hour|day");
+        unit_choice.set_value(0);
         ctrl_row.fixed(&unit_choice, 70);
 
-        // Opt. label
-        let _opt_label = Frame::default().with_label("Opt.");
-        ctrl_row.fixed(&_opt_label, 30);
+        // Message input (no label)
+        let mut msg_input = Input::default();
+        msg_input.set_value("");
+
+        // Opt label
+        let _opt_label = Frame::default().with_label("Opt");
+        ctrl_row.fixed(&_opt_label, 25);
 
         // Options input
         let mut opt_input = Input::default();
@@ -140,27 +122,51 @@ impl TabComponent for PlanTab {
         ctrl_row.end();
         grp.fixed(&ctrl_row, 28);
 
-        // Event list
-        let mut event_display = TextDisplay::default();
-        let event_buf = TextBuffer::default();
-        event_display.set_buffer(Some(event_buf));
-        event_display.wrap_mode(WrapMode::AtBounds, 0);
-        event_display.set_frame(fltk::enums::FrameType::FlatBox);
+        // ===== Row 2: Task list browser (fixed height) =====
+        let mut task_browser = Browser::default();
+        task_browser.set_type(BrowserType::Hold);
+        task_browser.set_text_size(13);
+        task_browser.set_color(colors.input_bg);
+        grp.fixed(&task_browser, 300);
 
-        // Apply styling
-        grp.set_color(colors.background);
-        event_display.set_color(colors.input_bg);
-        event_display.set_text_color(colors.text);
+        // ===== Row 3: Log output (fills remaining space) =====
+        let mut log_display = TextDisplay::default();
+        let log_buf = TextBuffer::default();
+        log_display.set_buffer(Some(log_buf));
+        log_display.wrap_mode(WrapMode::AtBounds, 0);
+        log_display.set_frame(fltk::enums::FrameType::FlatBox);
+        log_display.set_color(colors.input_bg);
+        log_display.set_text_color(colors.text);
 
         grp.end();
 
-        // Clone values for callbacks
+        // Apply styling
+        grp.set_color(colors.background);
+
+        // Load saved tasks from config (structured storage)
+        let saved_tasks: Vec<PlanTask> = crate::ui_state::load_plan_tasks();
+        for task in &saved_tasks {
+            // Display format: "msg (Repeat every X unit)\t@date time"
+            let cycle_str = if task.cycle > 0 {
+                format!(" (Repeat every {} {})", task.cycle, task.unit)
+            } else {
+                String::new()
+            };
+            let entry = format!("{}{}\t@{} {}", task.msg, cycle_str, task.date, task.time);
+            task_browser.add(&entry);
+        }
+
+        // ===== Callbacks =====
+
+        // Clone values for add callback
         let date_clone = date_input.clone();
         let time_clone = time_input.clone();
         let cycle_clone = cycle_input.clone();
         let unit_clone = unit_choice.clone();
         let opt_clone = opt_input.clone();
-        let mut display_clone = event_display.clone();
+        let msg_clone = msg_input.clone();
+        let mut browser_add = task_browser.clone();
+        let log_add = log_display.clone();
 
         // Add button callback
         add_btn.set_callback(move |_| {
@@ -174,67 +180,235 @@ impl TabComponent for PlanTab {
                 _ => "minute",
             }
             .to_string();
-            let msg = opt_clone.value();
+            let _opt = opt_clone.value();
+            let msg = msg_clone.value();
 
-            if date.is_empty() || time.is_empty() {
-                fltk::dialog::alert_default("Please enter date and time!");
+            if msg.is_empty() {
+                if let Some(mut buf) = log_add.buffer() {
+                    buf.append(&format!("[{}] Error: Msg is empty\n", chrono::Local::now().format("%H:%M:%S")));
+                }
                 return;
             }
 
-            // Generate event ID and update display directly
-            let event_id = uuid::Uuid::new_v4().to_string()[..8].to_string();
-            let cycle_str = if cycle > 0 { format!(" (Repeat every {} {})", cycle, unit) } else { " (One-time)".to_string() };
-            let new_line = format!("[{}] {} {} - {}{}\n", event_id, date, time, msg, cycle_str);
-
-            // Update display directly
-            if let Some(mut buf) = display_clone.buffer() {
-                let current = buf.text();
-                if current.contains("No scheduled events") || current.is_empty() {
-                    buf.set_text(&format!("Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{}", new_line));
-                } else {
-                    buf.append(&new_line);
+            if date.is_empty() || time.is_empty() {
+                if let Some(mut buf) = log_add.buffer() {
+                    buf.append(&format!("[{}] Error: Date or time is empty\n", chrono::Local::now().format("%H:%M:%S")));
                 }
-                let lines = buf.count_lines(0, buf.length());
-                display_clone.scroll(lines, 0);
+                return;
             }
 
-            // Save config and send event
-            crate::ui_state::sync_plan_config(date.clone(), time.clone(), cycle, &unit, msg.clone());
+            // Format: "[Msg] \t @[date] [time]"
+            let cycle_str = if cycle > 0 { format!(" (Repeat every {} {})", cycle, unit) } else { String::new() };
+            let entry = format!("{}{}\t@{} {}", msg, cycle_str, date, time);
+
+            // Check if already exists, update or add
+            let mut found = false;
+            for i in 1..=browser_add.size() {
+                if let Some(text) = browser_add.text(i) {
+                    // Match by msg part (before \t)
+                    if let Some(tab_pos) = text.find('\t') {
+                        let existing_msg = &text[..tab_pos];
+                        // Check if msg matches (handle repeat suffix)
+                        if existing_msg == msg || existing_msg.starts_with(&format!("{} (", msg)) {
+                            browser_add.remove(i);
+                            browser_add.insert(i, &entry);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if !found {
+                browser_add.add(&entry);
+            }
+
+            // Log
+            if let Some(mut buf) = log_add.buffer() {
+                buf.append(&format!("[{}] Added: {}\n", chrono::Local::now().format("%H:%M:%S"), entry));
+            }
+
+            // Save tasks to config (structured)
+            let mut plan_tasks: Vec<PlanTask> = Vec::new();
+            for i in 1..=browser_add.size() {
+                if let Some(text) = browser_add.text(i) {
+                    // Parse display format: "msg (Repeat every X unit)\t@date time"
+                    let parts: Vec<&str> = text.split('\t').collect();
+                    if parts.len() >= 2 {
+                        let msg_part = parts[0];
+                        let datetime_part = parts[1].trim_start_matches('@');
+
+                        let mut msg = msg_part.to_string();
+                        let mut cycle = 0;
+                        let mut unit = "minute".to_string();
+
+                        // Parse repeat info from msg_part
+                        if let Some(idx) = msg_part.find(" (Repeat every ") {
+                            msg = msg_part[..idx].to_string();
+                            let repeat_str = &msg_part[idx + 15..]; // Skip " (Repeat every "
+                            let repeat_parts: Vec<&str> = repeat_str.trim_end_matches(')').splitn(2, ' ').collect();
+                            if repeat_parts.len() == 2 {
+                                cycle = repeat_parts[0].parse().unwrap_or(0);
+                                unit = repeat_parts[1].to_string();
+                            }
+                        }
+
+                        // Parse date and time
+                        let dt_parts: Vec<&str> = datetime_part.splitn(2, ' ').collect();
+                        if dt_parts.len() == 2 {
+                            let date = dt_parts[0].to_string();
+                            let time = dt_parts[1].to_string();
+                            plan_tasks.push(PlanTask {
+                                msg,
+                                date,
+                                time,
+                                cycle,
+                                unit,
+                            });
+                        }
+                    }
+                }
+            }
+            crate::ui_state::save_plan_tasks(&plan_tasks);
+
+            // Send event
             send_event(UiEvent::PlanAdd { date, time, cycle, unit, msg });
         });
 
+        // Clone values for remove callback
+        let msg_remove = msg_input.clone();
+        let mut browser_remove = task_browser.clone();
+        let log_remove = log_display.clone();
+
         // Remove button callback
-        let mut display_clone2 = event_display.clone();
         remove_btn.set_callback(move |_| {
-            let remove_id = fltk::dialog::input_default("Enter event ID to remove:", "");
-            if let Some(id) = remove_id {
-                let id = id.trim();
-                if !id.is_empty() {
-                    // Remove from display directly
-                    if let Some(mut buf) = display_clone2.buffer() {
-                        let text = buf.text();
-                        let lines: Vec<&str> = text.lines().collect();
-                        let mut new_text = String::from("Scheduled Events:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-                        let mut has_events = false;
-                        for line in lines {
-                            if line.starts_with("Scheduled") || line.starts_with("━") || line.trim().is_empty() {
-                                continue;
-                            }
-                            if !line.starts_with(&format!("[{}]", id)) {
-                                new_text.push_str(line);
-                                new_text.push('\n');
-                                has_events = true;
-                            }
-                        }
-                        if !has_events {
-                            new_text.push_str("No scheduled events.\n\nUse + button to add a new reminder.\n");
-                        }
-                        buf.set_text(&new_text);
-                        let lines = buf.count_lines(0, buf.length());
-                        display_clone2.scroll(lines, 0);
-                    }
-                    send_event(UiEvent::PlanRemove { id: id.to_string() });
+            let msg = msg_remove.value();
+
+            if msg.is_empty() {
+                if let Some(mut buf) = log_remove.buffer() {
+                    buf.append(&format!("[{}] Error: Msg is empty\n", chrono::Local::now().format("%H:%M:%S")));
                 }
+                return;
+            }
+
+            // Find and remove from browser by msg (before \t)
+            let mut removed = false;
+            for i in 1..=browser_remove.size() {
+                if let Some(text) = browser_remove.text(i) {
+                    if let Some(tab_pos) = text.find('\t') {
+                        let existing_msg = &text[..tab_pos];
+                        if existing_msg == msg || existing_msg.starts_with(&format!("{} (", msg)) {
+                            browser_remove.remove(i);
+                            removed = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Log
+            if let Some(mut buf) = log_remove.buffer() {
+                if removed {
+                    buf.append(&format!("[{}] Removed: {}\n", chrono::Local::now().format("%H:%M:%S"), msg));
+                } else {
+                    buf.append(&format!("[{}] Not found: {}\n", chrono::Local::now().format("%H:%M:%S"), msg));
+                }
+            }
+
+            // Save tasks to config (structured)
+            if removed {
+                let mut plan_tasks: Vec<PlanTask> = Vec::new();
+                for i in 1..=browser_remove.size() {
+                    if let Some(text) = browser_remove.text(i) {
+                        // Parse display format: "msg (Repeat every X unit)\t@date time"
+                        let parts: Vec<&str> = text.split('\t').collect();
+                        if parts.len() >= 2 {
+                            let msg_part = parts[0];
+                            let datetime_part = parts[1].trim_start_matches('@');
+
+                            let mut msg = msg_part.to_string();
+                            let mut cycle = 0;
+                            let mut unit = "minute".to_string();
+
+                            // Parse repeat info from msg_part
+                            if let Some(idx) = msg_part.find(" (Repeat every ") {
+                                msg = msg_part[..idx].to_string();
+                                let repeat_str = &msg_part[idx + 15..]; // Skip " (Repeat every "
+                                let repeat_parts: Vec<&str> = repeat_str.trim_end_matches(')').splitn(2, ' ').collect();
+                                if repeat_parts.len() == 2 {
+                                    cycle = repeat_parts[0].parse().unwrap_or(0);
+                                    unit = repeat_parts[1].to_string();
+                                }
+                            }
+
+                            // Parse date and time
+                            let dt_parts: Vec<&str> = datetime_part.splitn(2, ' ').collect();
+                            if dt_parts.len() == 2 {
+                                let date = dt_parts[0].to_string();
+                                let time = dt_parts[1].to_string();
+                                plan_tasks.push(PlanTask {
+                                    msg,
+                                    date,
+                                    time,
+                                    cycle,
+                                    unit,
+                                });
+                            }
+                        }
+                    }
+                }
+                crate::ui_state::save_plan_tasks(&plan_tasks);
+            }
+
+            send_event(UiEvent::PlanRemove { msg });
+        });
+
+        // Double-click on task browser to fill config fields
+        let mut date_fill = date_input.clone();
+        let mut time_fill = time_input.clone();
+        let mut cycle_fill = cycle_input.clone();
+        let mut unit_fill = unit_choice.clone();
+        let mut msg_fill = msg_input.clone();
+
+        task_browser.handle(move |browser, ev| {
+            if ev == Event::Push && fltk::app::event_clicks() {
+                if let Some(text) = browser.text(browser.value()) {
+                    // Format: "[Msg] (Repeat every X unit)\t@[date] [time]"
+                    let parts: Vec<&str> = text.split('\t').collect();
+                    if parts.len() >= 2 {
+                        // Parse date/time from right part: "@2026/05/06 12:00"
+                        let datetime_part = parts[1].trim_start_matches('@');
+                        let dt_parts: Vec<&str> = datetime_part.splitn(2, ' ').collect();
+                        if dt_parts.len() == 2 {
+                            date_fill.set_value(dt_parts[0]);
+                            time_fill.set_value(dt_parts[1]);
+                        }
+
+                        // Parse msg and repeat from left part
+                        let left = parts[0];
+                        if let Some(idx) = left.find(" (Repeat every ") {
+                            let msg_part = &left[..idx];
+                            let repeat_part = &left[idx + 15..]; // Skip " (Repeat every "
+                            let repeat_parts: Vec<&str> = repeat_part.trim_end_matches(')').splitn(2, ' ').collect();
+                            if repeat_parts.len() == 2 {
+                                cycle_fill.set_value(repeat_parts[0]);
+                                let unit_val = match repeat_parts[1] {
+                                    "minute" => 0,
+                                    "hour" => 1,
+                                    "day" => 2,
+                                    _ => 0,
+                                };
+                                unit_fill.set_value(unit_val);
+                            }
+                            msg_fill.set_value(msg_part);
+                        } else {
+                            msg_fill.set_value(left);
+                            cycle_fill.set_value("0");
+                        }
+                    }
+                }
+                true
+            } else {
+                false
             }
         });
 
@@ -245,12 +419,8 @@ impl TabComponent for PlanTab {
     }
 }
 
-impl PlanTab {
-    // Plan list now updated directly in callbacks (event-driven)
-}
-
 /// Show date picker dialog
-fn show_date_picker(date_input: &mut Input) {
+fn show_date_picker(date_input: &mut Input, px: i32, py: i32) {
     let current_val = date_input.value();
     let init_date = NaiveDate::parse_from_str(&current_val, "%Y/%m/%d").unwrap_or_else(|_| Local::now().naive_local().date());
     let today = Local::now().naive_local().date();
@@ -260,7 +430,7 @@ fn show_date_picker(date_input: &mut Input) {
 
     let win_w = 280;
     let win_h = 90;
-    let mut win = Window::new(0, 0, win_w, win_h, "Select Date");
+    let mut win = Window::new(px, py, win_w, win_h, "Select Date");
     win.make_modal(true);
 
     // Year/Month/Day row
@@ -297,21 +467,22 @@ fn show_date_picker(date_input: &mut Input) {
     ymd_row.end();
 
     // Button row
+    let btn_w = (win_w - 32) / 3;
     let mut btn_row = Flex::default().row().with_pos(8, 52).with_size(win_w - 16, 28);
     btn_row.set_spacing(6);
 
     let mut today_btn = Button::default().with_label("Today");
-    btn_row.fixed(&today_btn, 80);
+    btn_row.fixed(&today_btn, btn_w);
 
     let mut ok_btn = Button::default().with_label("OK");
     ok_btn.set_color(Color::from_rgb(76, 175, 80));
     ok_btn.set_label_color(Color::White);
-    btn_row.fixed(&ok_btn, 80);
+    btn_row.fixed(&ok_btn, btn_w);
 
     let mut cancel_btn = Button::default().with_label("Cancel");
     cancel_btn.set_color(Color::from_rgb(229, 115, 115));
     cancel_btn.set_label_color(Color::White);
-    btn_row.fixed(&cancel_btn, 80);
+    btn_row.fixed(&cancel_btn, btn_w);
 
     btn_row.end();
     win.end();
@@ -348,13 +519,13 @@ fn show_date_picker(date_input: &mut Input) {
 }
 
 /// Show time picker dialog
-fn show_time_picker(time_input: &mut Input) {
+fn show_time_picker(time_input: &mut Input, px: i32, py: i32) {
     let current_val = time_input.value();
     let init_time = NaiveTime::parse_from_str(&current_val, "%H:%M").unwrap_or_else(|_| Local::now().naive_local().time());
 
-    let win_w = 200;
+    let win_w = 270;
     let win_h = 90;
-    let mut win = Window::new(0, 0, win_w, win_h, "Select Time");
+    let mut win = Window::new(px, py, win_w, win_h, "Select Time");
     win.make_modal(true);
 
     // Hour/Minute row
@@ -368,7 +539,7 @@ fn show_time_picker(time_input: &mut Input) {
             hour_choice.set_value(h as i32);
         }
     }
-    hm_row.fixed(&hour_choice, 60);
+    hm_row.fixed(&hour_choice, 80);
 
     let mut minute_choice = Choice::default();
     for m in 0..60 {
@@ -377,26 +548,27 @@ fn show_time_picker(time_input: &mut Input) {
             minute_choice.set_value(m as i32);
         }
     }
-    hm_row.fixed(&minute_choice, 60);
+    hm_row.fixed(&minute_choice, 80);
 
     hm_row.end();
 
     // Button row
+    let btn_w = (win_w - 32) / 3;
     let mut btn_row = Flex::default().row().with_pos(8, 52).with_size(win_w - 16, 28);
     btn_row.set_spacing(6);
 
     let mut now_btn = Button::default().with_label("Now");
-    btn_row.fixed(&now_btn, 80);
+    btn_row.fixed(&now_btn, btn_w);
 
     let mut ok_btn = Button::default().with_label("OK");
     ok_btn.set_color(Color::from_rgb(76, 175, 80));
     ok_btn.set_label_color(Color::White);
-    btn_row.fixed(&ok_btn, 80);
+    btn_row.fixed(&ok_btn, btn_w);
 
     let mut cancel_btn = Button::default().with_label("Cancel");
     cancel_btn.set_color(Color::from_rgb(229, 115, 115));
     cancel_btn.set_label_color(Color::White);
-    btn_row.fixed(&cancel_btn, 80);
+    btn_row.fixed(&cancel_btn, btn_w);
 
     btn_row.end();
     win.end();

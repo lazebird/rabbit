@@ -12,6 +12,16 @@ pub enum ConfigValue {
     Array(Vec<ConfigValue>),
 }
 
+/// 计划任务结构化数据
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlanTask {
+    pub msg: String,
+    pub date: String,
+    pub time: String,
+    pub cycle: i32,
+    pub unit: String,
+}
+
 impl ConfigValue {
     pub fn as_str(&self) -> Option<&str> {
         match self {
@@ -236,7 +246,7 @@ impl ModuleConfigs {
             ("blksize".into(), ConfigValue::Integer(512)),
             ("qsize".into(), ConfigValue::Integer(2000)),
             ("qtout".into(), ConfigValue::Integer(1000)),
-            ("override_conflicts".into(), ConfigValue::Boolean(false)),
+            ("override".into(), ConfigValue::Boolean(false)),
             ("fslog".into(), ConfigValue::Boolean(false)),
             ("work_dirs".into(), ConfigValue::Array(Vec::new())),
             ("working_dir_index".into(), ConfigValue::Integer(0)),
@@ -258,12 +268,8 @@ impl ModuleConfigs {
 
     fn default_plan() -> HashMap<String, ConfigValue> {
         HashMap::from([
-            ("date".into(), ConfigValue::String(String::new())),
-            ("time".into(), ConfigValue::String(String::new())),
-            ("cycle".into(), ConfigValue::Integer(0)),
-            ("unit".into(), ConfigValue::String("minute".into())),
-            ("msg".into(), ConfigValue::String(String::new())),
-            ("override_conflicts".into(), ConfigValue::Boolean(false)),
+            ("tasks".into(), ConfigValue::Array(Vec::new())),
+            ("override".into(), ConfigValue::Boolean(false)),
         ])
     }
 

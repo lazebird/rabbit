@@ -574,21 +574,33 @@ pub fn set_language(value: &str) {
     }
 }
 
-/// Sync plan configuration when adding a new event
-pub fn sync_plan_config(date: String, time: String, cycle: i32, unit: &str, msg: String) {
+/// Save plan tasks to config (structured storage)
+pub fn save_plan_tasks(tasks: &[schema::config::PlanTask]) {
     use schema::config::ConfigValue;
     use adapter::config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
-        config.modules.insert("plan", "date", ConfigValue::String(date));
-        config.modules.insert("plan", "time", ConfigValue::String(time));
-        config.modules.insert("plan", "cycle", ConfigValue::Integer(cycle as i64));
-        config.modules.insert("plan", "unit", ConfigValue::String(unit.to_string()));
-        config.modules.insert("plan", "msg", ConfigValue::String(msg));
+        let json = serde_json::to_string(tasks).unwrap_or_default();
+        config.modules.insert("plan", "tasks", ConfigValue::String(json));
         if let Err(e) = save_config(&config) {
-            tracing::warn!("Failed to save plan config: {}", e);
+            tracing::warn!("Failed to save plan tasks: {}", e);
         }
     }
+}
+
+/// Load plan tasks from config (structured storage)
+pub fn load_plan_tasks() -> Vec<schema::config::PlanTask> {
+    use schema::config::PlanTask;
+    use adapter::config::load_config;
+
+    if let Ok(config) = load_config() {
+        if let Some(json_str) = config.modules.get_string("plan", "tasks") {
+            if let Ok(tasks) = serde_json::from_str::<Vec<PlanTask>>(&json_str) {
+                return tasks;
+            }
+        }
+    }
+    Vec::new()
 }
 
 /// Sync scan configuration when starting a scan

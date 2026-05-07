@@ -86,8 +86,8 @@ pub fn tftpd_options() -> String {
     } else {
         512
     };
-    let override_conflicts = if let Ok(c) = load_config() {
-        c.modules.get_bool("tftpd", "override_conflicts").unwrap_or(false)
+    let override_opt = if let Ok(c) = load_config() {
+        c.modules.get_bool("tftpd", "override").unwrap_or(false)
     } else {
         false
     };
@@ -108,7 +108,7 @@ pub fn tftpd_options() -> String {
     };
     format!(
         "timeout={};retry={};blksize={};override={};qsize={};qtout={};fslog={};",
-        timeout, retry, blksize, override_conflicts, qsize, qtout, fslog
+        timeout, retry, blksize, override_opt, qsize, qtout, fslog
     )
 }
 
@@ -167,52 +167,11 @@ pub fn chat_broadcast() -> String {
     "255.255.255.255".to_string()
 }
 
-pub fn plan_date() -> String {
-    if let Ok(c) = load_config() {
-        if let Some(v) = c.modules.get_string("plan", "date") {
-            return v;
-        }
-    }
-    String::new()
-}
-
-pub fn plan_time() -> String {
-    if let Ok(c) = load_config() {
-        if let Some(v) = c.modules.get_string("plan", "time") {
-            return v;
-        }
-    }
-    String::new()
-}
-
-pub fn plan_cycle() -> String {
-    if let Ok(c) = load_config() {
-        if let Some(v) = c.modules.get_integer("plan", "cycle") {
-            return v.to_string();
-        }
-    }
-    "0".to_string()
-}
-
-pub fn plan_unit() -> i32 {
-    let unit = if let Ok(c) = load_config() {
-        c.modules.get_string("plan", "unit").unwrap_or_else(|| "minute".to_string())
-    } else {
-        "minute".to_string()
-    };
-    match unit.as_str() {
-        "minutes" | "minute" => 0,
-        "hours" | "hour" => 1,
-        "days" | "day" => 2,
-        _ => 0,
-    }
-}
-
 pub fn plan_options() -> String {
-    let override_conflicts = if let Ok(c) = load_config() {
-        c.modules.get_bool("plan", "override_conflicts").unwrap_or(false)
+    let override_opt = if let Ok(c) = load_config() {
+        c.modules.get_bool("plan", "override").unwrap_or(false)
     } else {
         false
     };
-    format!("override={}", override_conflicts)
+    format!("override={}", override_opt)
 }

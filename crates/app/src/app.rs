@@ -908,12 +908,23 @@ impl EventHandler for AppHandle {
             // Plan
             UiEvent::PlanAdd { date, time, cycle, unit, msg } => {
                 info!("Adding plan for {} {}: {} (cycle={}, unit={})", date, time, msg, cycle, unit);
-                self.plan_service.write().await.add_task(&date, &time, cycle, &unit, &msg).await?;
+                let override_conflict = adapter::config::get_bool("plan", "override").unwrap_or(false);
+                match self.plan_service.write().await.add_task(&date, &time, cycle, &unit, &msg, override_conflict).await {
+                    Ok(true) => info!("Plan '{}' overridden", msg),
+                    Ok(false) => info!("Plan '{}' added", msg),
+                    Err(e) => {
+                        let err_msg = format!("{}", e);
+                        warn!("Plan add error: {}", err_msg);
+                        fltk::app::awake_callback(move || {
+                            fltk::dialog::alert_default(&err_msg);
+                        });
+                    }
+                }
             }
 
-            UiEvent::PlanRemove { id } => {
-                info!("Removing plan {}", id);
-                self.plan_service.write().await.remove_task(&id).await?;
+            UiEvent::PlanRemove { msg } => {
+                info!("Removing plan '{}'", msg);
+                self.plan_service.write().await.remove_task(&msg).await?;
             }
 
             UiEvent::ChatSend { message } => {

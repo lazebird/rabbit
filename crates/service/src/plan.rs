@@ -163,7 +163,12 @@ impl PlanService {
     }
 
     /// Add a new task with simple parameters
-    pub async fn add_task(&self, date: &str, time: &str, cycle: i32, unit: &str, msg: &str) -> Result<()> {
+    /// Returns Ok(true) if added, Ok(false) if overridden, Err if conflict
+    pub async fn add_task(&self, date: &str, time: &str, cycle: i32, unit: &str, msg: &str, override_conflict: bool) -> Result<bool> {
+        if msg.is_empty() {
+            return Err(ServiceError::Config("Message cannot be empty".into()));
+        }
+
         // Parse datetime
         let datetime = if let (Ok(d), Ok(t)) = (NaiveDate::parse_from_str(date, "%Y/%m/%d"), NaiveTime::parse_from_str(time, "%H:%M")) {
             NaiveDateTime::new(d, t).and_local_timezone(Local).unwrap()
@@ -182,18 +187,26 @@ impl PlanService {
             Schedule::Once { datetime }
         };
 
-        let id = format!("task-{}", uuid::Uuid::new_v4());
-        let task = Task::new(msg.to_string(), schedule);
+        let mut tasks = self.tasks.write().await;
+        let existed = tasks.contains_key(msg);
 
-        self.tasks.write().await.insert(id.clone(), task);
-        info!("Added task: {}", id);
-        Ok(())
+        if existed && !override_conflict {
+            return Err(ServiceError::Config(format!("Task '{}' already exists", msg)));
+        }
+
+        let task = Task::new(msg.to_string(), schedule);
+        tasks.insert(msg.to_string(), task);
+        info!("Added task: {}", msg);
+        Ok(existed)
     }
 
-    /// Remove a task
-    pub async fn remove_task(&self, id: &str) -> Result<()> {
-        self.tasks.write().await.remove(id);
-        info!("Removed task: {}", id);
+    /// Remove a task by message
+    pub async fn remove_task(&self, msg: &str) -> Result<()> {
+        if msg.is_empty() {
+            return Err(ServiceError::Config("Message cannot be empty".into()));
+        }
+        self.tasks.write().await.remove(msg);
+        info!("Removed task: {}", msg);
         Ok(())
     }
 
