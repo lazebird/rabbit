@@ -17,7 +17,7 @@ use service::{
     ui_channel::{Module, UiData},
     ChatService, HttpService, PingService, PlanService, ScanService, ServiceUpdateResult, TftpcService, TftpdService,
 };
-use schema::AppConfig;
+use schema::{config::ConfigValue, AppConfig};
 
 use ctrlc;
 use adapter::config::{load_config, save_config};
@@ -215,10 +215,11 @@ impl App {
         // Create main window - load config directly from disk to get window position
         let disk_config = load_config().unwrap_or_else(|_| AppConfig::default());
         let modules = &disk_config.modules;
-        let win_x = modules.get_integer("global", "window_x").unwrap_or(100) as i32;
-        let win_y = modules.get_integer("global", "window_y").unwrap_or(100) as i32;
-        let win_w = modules.get_integer("global", "window_width").unwrap_or(748) as i32;
-        let win_h = modules.get_integer("global", "window_height").unwrap_or(518) as i32;
+        let (win_x, win_y, win_w, win_h) = modules
+            .get_string("global", "window")
+            .and_then(|s| serde_json::from_str::<schema::config::WindowConfig>(&s).ok())
+            .map(|w| (w.x, w.y, w.width, w.height))
+            .unwrap_or((100, 100, 748, 518));
         info!("Loaded config: window pos=({}, {}), size=({}x{})", win_x, win_y, win_w, win_h);
 
         let last_resize_time = Arc::new(AtomicU64::new(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64));
@@ -403,37 +404,17 @@ impl App {
                         let win_h = win.h();
                         info!("Window position: x={}, y={}, w={}, h={}", win_x, win_y, win_w, win_h);
 
-                        if let Ok(config_dir) = adapter::config::get_config_dir() {
-                            let config_path = config_dir.join("rabbit.toml");
-                            info!("Config path: {:?}", config_path);
-                            if let Ok(content) = std::fs::read_to_string(&config_path) {
-                                let mut new_content = content;
-
-                                if new_content.contains("window_x =") {
-                                    new_content = new_content
-                                        .lines()
-                                        .map(|line| {
-                                            if line.starts_with("window_x =") {
-                                                format!("window_x = {}", win_x)
-                                            } else if line.starts_with("window_y =") {
-                                                format!("window_y = {}", win_y)
-                                            } else if line.starts_with("window_width =") {
-                                                format!("window_width = {}", win_w)
-                                            } else if line.starts_with("window_height =") {
-                                                format!("window_height = {}", win_h)
-                                            } else {
-                                                line.to_string()
-                                            }
-                                        })
-                                        .collect::<Vec<_>>()
-                                        .join("\n");
-                                } else {
-                                    new_content = format!("{}\nwindow_x = {}\nwindow_y = {}\nwindow_width = {}\nwindow_height = {}\n", new_content, win_x, win_y, win_w, win_h);
-                                }
-
-                                std::fs::write(&config_path, new_content).ok();
-                                info!("Window position saved to config");
-                            }
+                        if let Ok(mut config) = adapter::config::load_config() {
+                            let window_config = schema::config::WindowConfig {
+                                x: win_x,
+                                y: win_y,
+                                width: win_w,
+                                height: win_h,
+                            };
+                            let json = serde_json::to_string(&window_config).unwrap_or_default();
+                            config.modules.insert("global", "window", ConfigValue::String(json));
+                            let _ = adapter::config::save_config(&config);
+                            info!("Window position saved to config");
                         }
                     }
                 }

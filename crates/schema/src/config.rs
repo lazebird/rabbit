@@ -22,6 +22,15 @@ pub struct PlanTask {
     pub unit: String,
 }
 
+/// 窗口位置和大小配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WindowConfig {
+    pub x: i32,
+    pub y: i32,
+    pub width: i32,
+    pub height: i32,
+}
+
 impl ConfigValue {
     pub fn as_str(&self) -> Option<&str> {
         match self {
@@ -200,10 +209,7 @@ impl ModuleConfigs {
             ("autostart".into(), ConfigValue::Boolean(false)),
             ("autoupdate".into(), ConfigValue::Boolean(true)),
             ("last_active_tab".into(), ConfigValue::Integer(0)),
-            ("window_x".into(), ConfigValue::Integer(100)),
-            ("window_y".into(), ConfigValue::Integer(100)),
-            ("window_width".into(), ConfigValue::Integer(800)),
-            ("window_height".into(), ConfigValue::Integer(600)),
+            ("window".into(), ConfigValue::String(r#"{"x":100,"y":100,"width":800,"height":600}"#.into())),
         ])
     }
 
