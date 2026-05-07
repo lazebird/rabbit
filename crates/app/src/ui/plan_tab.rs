@@ -137,6 +137,7 @@ impl TabComponent for PlanTab {
         log_display.set_frame(fltk::enums::FrameType::FlatBox);
         log_display.set_color(colors.input_bg);
         log_display.set_text_color(colors.text);
+        crate::ui::ui_refresh::register_display("plan_output", log_display.clone());
 
         grp.end();
 
@@ -440,28 +441,22 @@ fn show_date_picker(date_input: &mut Input, px: i32, py: i32) {
     let mut year_choice = Choice::default();
     for y in (current_year - 5)..=(current_year + 5) {
         year_choice.add_choice(&y.to_string());
-        if y == init_year {
-            year_choice.set_value(y - (current_year - 5));
-        }
     }
+    year_choice.set_value(init_year - (current_year - 5));
     ymd_row.fixed(&year_choice, 80);
 
     let mut month_choice = Choice::default();
     for m in 1..=12 {
         month_choice.add_choice(&m.to_string());
-        if m == init_date.month() {
-            month_choice.set_value((m - 1) as i32);
-        }
     }
+    month_choice.set_value((init_date.month() as i32) - 1);
     ymd_row.fixed(&month_choice, 60);
 
     let mut day_choice = Choice::default();
     for d in 1..=days_in_month {
         day_choice.add_choice(&d.to_string());
-        if d == init_date.day() {
-            day_choice.set_value((d - 1) as i32);
-        }
     }
+    day_choice.set_value((init_date.day() as i32) - 1);
     ymd_row.fixed(&day_choice, 60);
 
     ymd_row.end();
@@ -488,11 +483,22 @@ fn show_date_picker(date_input: &mut Input, px: i32, py: i32) {
     win.end();
     win.show();
 
-    // Today button action
-    let mut date_input_today = date_input.clone();
+    // Today button action - only update dropdowns inside the picker window
+    let mut year_choice_today = year_choice.clone();
+    let mut month_choice_today = month_choice.clone();
+    let mut day_choice_today = day_choice.clone();
     today_btn.set_callback(move |_| {
-        let now = Local::now().naive_local().date();
-        date_input_today.set_value(&now.format("%Y/%m/%d").to_string());
+        let now = Local::now();
+        let today = now.naive_local().date();
+        year_choice_today.set_value(today.year() - (current_year - 5));
+        month_choice_today.set_value((today.month() as i32) - 1);
+        // Refresh day_choice items for the correct month
+        day_choice_today.clear();
+        let days = get_days_in_month(today.year(), today.month());
+        for d in 1..=days {
+            day_choice_today.add_choice(&d.to_string());
+        }
+        day_choice_today.set_value((today.day() as i32) - 1);
     });
 
     // OK button action
@@ -501,7 +507,7 @@ fn show_date_picker(date_input: &mut Input, px: i32, py: i32) {
     ok_btn.set_callback(move |_| {
         let y = year_choice.value() + (current_year - 5);
         let m = month_choice.value() as u32 + 1;
-        let d = day_choice.value() as u32;
+        let d = day_choice.value() as u32 + 1; // day_choice.value() is 0-based index
         let selected = NaiveDate::from_ymd_opt(y, m, d).unwrap_or_else(|| Local::now().naive_local().date());
         date_input_ok.set_value(&selected.format("%Y/%m/%d").to_string());
         win_ok.hide();
@@ -535,19 +541,15 @@ fn show_time_picker(time_input: &mut Input, px: i32, py: i32) {
     let mut hour_choice = Choice::default();
     for h in 0..24 {
         hour_choice.add_choice(&h.to_string());
-        if h == init_time.hour() {
-            hour_choice.set_value(h as i32);
-        }
     }
+    hour_choice.set_value(init_time.hour() as i32);
     hm_row.fixed(&hour_choice, 80);
 
     let mut minute_choice = Choice::default();
     for m in 0..60 {
         minute_choice.add_choice(&m.to_string());
-        if m == init_time.minute() {
-            minute_choice.set_value(m as i32);
-        }
     }
+    minute_choice.set_value(init_time.minute() as i32);
     hm_row.fixed(&minute_choice, 80);
 
     hm_row.end();
@@ -574,11 +576,13 @@ fn show_time_picker(time_input: &mut Input, px: i32, py: i32) {
     win.end();
     win.show();
 
-    // Now button action
-    let mut time_input_now = time_input.clone();
+    // Now button action - only update dropdowns inside the picker window
+    let mut hour_choice_now = hour_choice.clone();
+    let mut minute_choice_now = minute_choice.clone();
     now_btn.set_callback(move |_| {
-        let now = Local::now().naive_local().time();
-        time_input_now.set_value(&now.format("%H:%M").to_string());
+        let now = Local::now();
+        hour_choice_now.set_value(now.hour() as i32);
+        minute_choice_now.set_value(now.minute() as i32);
     });
 
     // OK button action

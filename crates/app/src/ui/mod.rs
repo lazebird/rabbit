@@ -13,6 +13,7 @@ pub mod settings_tab;
 pub mod styles;
 pub mod tftpc_tab;
 pub mod tftpd_tab;
+pub mod reminder_window;
 pub mod ui_refresh;
 
 pub use chat_tab::ChatTab;

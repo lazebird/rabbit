@@ -1,75 +1,46 @@
 //! Task Planner Service
+//!
+//! Uses per-task tokio timers for precise trigger, no polling.
 
-use crate::{ui_channel::UiData, Result, ServiceError, ServiceUpdateResult};
+use crate::{ui_channel::UiData, Module, Result, ServiceError, ServiceUpdateResult};
 
-use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime};
+use chrono::{DateTime, Duration, Local, NaiveDate, NaiveDateTime, NaiveTime};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
-use tokio::time::{interval, Duration};
-use tracing::{error, info};
+use tokio::time::sleep_until;
+use tracing::info;
 
 /// Internal Task model
-#[derive(Debug, Clone)]
 struct Task {
     pub title: String,
     pub schedule: Schedule,
     pub enabled: bool,
-    pub state: TaskState,
-    pub snooze_until: Option<DateTime<Local>>,
-    pub last_triggered: Option<DateTime<Local>>,
+    pub handle: Option<tokio::task::AbortHandle>,
 }
 
 impl Task {
-    pub fn new(title: String, schedule: Schedule) -> Self {
+    fn new(title: String, schedule: Schedule) -> Self {
         Self {
             title,
             schedule,
             enabled: true,
-            state: TaskState::Pending,
-            snooze_until: None,
-            last_triggered: None,
+            handle: None,
         }
-    }
-
-    pub fn is_snoozed(&self) -> bool {
-        if let Some(snooze_until) = self.snooze_until {
-            Local::now() < snooze_until
-        } else {
-            false
-        }
-    }
-
-    pub fn trigger(&mut self) {
-        self.state = TaskState::Triggered;
-        self.last_triggered = Some(Local::now());
-    }
-
-    pub fn reset_for_next_trigger(&mut self) {
-        self.state = TaskState::Pending;
-        self.snooze_until = None;
-        self.last_triggered = Some(Local::now());
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 enum Schedule {
     Once { datetime: DateTime<Local> },
     Repeating { datetime: DateTime<Local>, cycle: i32, unit: RepeatUnit },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy)]
 enum RepeatUnit {
     Minute,
     Hour,
     Day,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum TaskState {
-    Pending,
-    Triggered,
-    Acknowledged,
 }
 
 type TaskLog = String;
@@ -107,7 +78,7 @@ impl PlanService {
         }
     }
 
-    /// 内部启动 Plan 服务
+    /// Start the Plan service (starts timers for all existing tasks)
     async fn start(&mut self) -> Result<()> {
         let mut running = self.running.write().await;
         if *running {
@@ -116,19 +87,12 @@ impl PlanService {
         *running = true;
         drop(running);
 
+        // Re-launch timers for all loaded tasks
         let tasks = Arc::clone(&self.tasks);
-        let logs = Arc::clone(&self.logs);
-        let running = Arc::clone(&self.running);
-        let tx = self.tx.clone();
-
-        tokio::spawn(async move {
-            let mut check_interval = interval(Duration::from_secs(30));
-
-            while *running.read().await {
-                check_interval.tick().await;
-                Self::check_tasks(&tasks, &logs, &tx).await;
-            }
-        });
+        let mut guard = tasks.write().await;
+        for (_, task) in guard.iter_mut() {
+            Self::spawn_timer(task, Arc::clone(&self.logs), self.tx.clone());
+        }
 
         info!("Plan service started");
         Ok(())
@@ -149,27 +113,36 @@ impl PlanService {
         }
     }
 
-    /// 程序退出时调用，销毁资源，不发状态通告
+    /// Stop all task timers
     pub async fn destroy(&mut self) -> Result<()> {
         *self.running.write().await = false;
+        Self::abort_all(&self.tasks).await;
         info!("Plan service destroyed");
         Ok(())
     }
 
     async fn stop(&mut self) -> Result<()> {
         *self.running.write().await = false;
+        Self::abort_all(&self.tasks).await;
         info!("Plan service stopped");
         Ok(())
     }
 
-    /// Add a new task with simple parameters
-    /// Returns Ok(true) if added, Ok(false) if overridden, Err if conflict
+    async fn abort_all(tasks: &Arc<RwLock<HashMap<String, Task>>>) {
+        let mut guard = tasks.write().await;
+        for (_, task) in guard.iter_mut() {
+            if let Some(h) = task.handle.take() {
+                h.abort();
+            }
+        }
+    }
+
+    /// Add a new task
     pub async fn add_task(&self, date: &str, time: &str, cycle: i32, unit: &str, msg: &str, override_conflict: bool) -> Result<bool> {
         if msg.is_empty() {
             return Err(ServiceError::Config("Message cannot be empty".into()));
         }
 
-        // Parse datetime
         let datetime = if let (Ok(d), Ok(t)) = (NaiveDate::parse_from_str(date, "%Y/%m/%d"), NaiveTime::parse_from_str(time, "%H:%M")) {
             NaiveDateTime::new(d, t).and_local_timezone(Local).unwrap()
         } else {
@@ -194,7 +167,13 @@ impl PlanService {
             return Err(ServiceError::Config(format!("Task '{}' already exists", msg)));
         }
 
-        let task = Task::new(msg.to_string(), schedule);
+        let mut task = Task::new(msg.to_string(), schedule);
+
+        // Spawn timer if service is running
+        if *self.running.read().await {
+            Self::spawn_timer(&mut task, Arc::clone(&self.logs), self.tx.clone());
+        }
+
         tasks.insert(msg.to_string(), task);
         info!("Added task: {}", msg);
         Ok(existed)
@@ -205,73 +184,82 @@ impl PlanService {
         if msg.is_empty() {
             return Err(ServiceError::Config("Message cannot be empty".into()));
         }
-        self.tasks.write().await.remove(msg);
-        info!("Removed task: {}", msg);
+        let mut tasks = self.tasks.write().await;
+        if let Some(task) = tasks.remove(msg) {
+            if let Some(h) = task.handle {
+                h.abort();
+            }
+            info!("Removed task: {}", msg);
+        }
         Ok(())
     }
 
-    /// Check and trigger tasks
-    async fn check_tasks(tasks: &Arc<RwLock<HashMap<String, Task>>>, logs: &Arc<RwLock<Vec<TaskLog>>>, tx: &Option<mpsc::Sender<UiData>>) {
-        let now = Local::now();
+    /// Spawn a timer for a task
+    fn spawn_timer(task: &mut Task, logs: Arc<RwLock<Vec<TaskLog>>>, tx: Option<mpsc::Sender<UiData>>) {
+        let title = task.title.clone();
+        let schedule = task.schedule.clone();
 
-        // 收集需要触发的任务 ID（只读锁）
-        let task_ids: Vec<String> = tasks
-            .read()
-            .await
-            .iter()
-            .filter(|(_, t)| t.enabled && !t.is_snoozed() && t.state != TaskState::Acknowledged && Self::should_trigger(&t.schedule, now))
-            .map(|(id, _)| id.clone())
-            .collect();
+        let logs = Arc::clone(&logs);
 
-        if task_ids.is_empty() {
-            return;
-        }
-
-        // 获取写锁，原地修改任务
-        let mut tasks_guard = tasks.write().await;
-        for id in task_ids {
-            if let Some(task) = tasks_guard.get_mut(&id) {
-                task.trigger();
-
-                if let Err(e) = adapter::notification::show_task_reminder(&task.title, None) {
-                    error!("Failed to show notification: {}", e);
+        let handle = tokio::spawn(async move {
+            match schedule {
+                Schedule::Once { datetime } => {
+                    // Sleep until the scheduled time
+                    let now = Local::now();
+                    let delay = if datetime > now {
+                        (datetime - now).to_std().unwrap_or(std::time::Duration::from_secs(0))
+                    } else {
+                        // Already past, trigger immediately
+                        std::time::Duration::from_secs(0)
+                    };
+                    sleep_until(tokio::time::Instant::now() + delay).await;
+                    trigger_task(&title, &logs, &tx).await;
                 }
+                Schedule::Repeating { datetime, cycle, unit } => {
+                    let interval = match unit {
+                        RepeatUnit::Minute => Duration::minutes(cycle as i64),
+                        RepeatUnit::Hour => Duration::minutes((cycle as i64) * 60),
+                        RepeatUnit::Day => Duration::days(cycle as i64),
+                    };
 
-                logs.write().await.push(task.title.clone());
+                    // Calculate first trigger delay
+                    let now = Local::now();
+                    let mut next = datetime;
 
-                if let Some(ref tx) = tx {
-                    let _ = tx.send(UiData::PlanReminder(task.title.clone())).await;
-                }
+                    // If datetime is in the past, fast-forward to next future trigger
+                    if next <= now {
+                        let elapsed = now - next;
+                        let intervals_passed = (elapsed.num_seconds() / interval.num_seconds()).max(0) + 1;
+                        next = next + interval * intervals_passed as i32;
+                    }
 
-                if let Schedule::Repeating { .. } = task.schedule {
-                    task.reset_for_next_trigger();
+                    loop {
+                        let delay = if next > now {
+                            (next - now).to_std().unwrap_or(std::time::Duration::from_secs(0))
+                        } else {
+                            std::time::Duration::from_secs(0)
+                        };
+                        sleep_until(tokio::time::Instant::now() + delay).await;
+                        trigger_task(&title, &logs, &tx).await;
+                        next = next + interval;
+                    }
                 }
             }
-        }
+        });
+
+        task.handle = Some(handle.abort_handle());
     }
+}
 
-    /// Check if a schedule should trigger at given time
-    fn should_trigger(schedule: &Schedule, now: chrono::DateTime<chrono::Local>) -> bool {
-        match schedule {
-            Schedule::Once { datetime } => {
-                let diff = (*datetime - now).num_seconds();
-                (0..30).contains(&diff)
-            }
-            Schedule::Repeating { datetime, cycle, unit } => {
-                let interval_secs = match unit {
-                    RepeatUnit::Minute => *cycle as i64 * 60,
-                    RepeatUnit::Hour => *cycle as i64 * 3600,
-                    RepeatUnit::Day => *cycle as i64 * 86400,
-                };
-                let elapsed = (now - *datetime).num_seconds();
-                if elapsed < 0 {
-                    false
-                } else {
-                    let remainder = elapsed % interval_secs;
-                    remainder < 30
-                }
-            }
-        }
+/// Trigger a task: send log + reminder
+async fn trigger_task(title: &str, logs: &Arc<RwLock<Vec<TaskLog>>>, tx: &Option<mpsc::Sender<UiData>>) {
+    let log_msg = format!("[{}] Task triggered: {}", Local::now().format("%H:%M:%S"), title);
+    logs.write().await.push(log_msg.clone());
+    info!("Task triggered: {}", title);
+
+    if let Some(tx) = tx {
+        let _ = tx.send(UiData::Log(Module::Plan, log_msg)).await;
+        let _ = tx.send(UiData::PlanReminder(title.to_string())).await;
     }
 }
 

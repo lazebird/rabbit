@@ -1070,7 +1070,7 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
                 Module::Tftpd => crate::ui_state::append_tftpd_log(&msg),
                 Module::Tftpc => crate::ui_state::append_tftpc_log(&msg),
                 Module::Chat => crate::ui_state::append_chat_message(&msg, ""),
-                Module::Plan => {}
+                Module::Plan => crate::ui_state::append_plan_output(&msg),
             }
             // 事件驱动：直接刷新 UI，无轮询
             fltk::app::awake_callback(|| {
@@ -1090,13 +1090,10 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
         }
         UiData::PlanReminder(msg) => {
             info!("Plan reminder received: {}", msg);
-            // 事件驱动：直接刷新 UI，无轮询
+            let msg_clone = msg.clone();
             fltk::app::awake_callback(move || {
-                crate::ui::ui_refresh::refresh_displays();
-                // 可选：显示系统通知或弹窗
-                if let Err(e) = adapter::notification::show_task_reminder(&msg, None) {
-                    tracing::error!("Failed to show notification: {}", e);
-                }
+                // 显示全屏黑屏提醒
+                crate::ui::reminder_window::show_reminder(&msg_clone);
             });
         }
         UiData::ChatMessage(username, msg) => {

@@ -267,6 +267,7 @@ pub fn refresh_displays() {
         ("chat_messages", s.chat_messages.clone()),
         ("chat_users", s.chat_users.clone()),
         ("settings_output", s.settings_output.clone()),
+        ("plan_output", s.plan_output.clone()),
     ]
     .into_iter()
     .collect();
@@ -277,7 +278,7 @@ pub fn refresh_displays() {
     let tftpd_selected_idx = s.tftpd_selected_idx;
 
     // Collect all keys that have been updated
-    let all_keys = ["ping_output", "ping_stats", "scan_output", "http_log", "tftpd_log", "tftpc_log", "chat_messages", "chat_users", "settings_output"];
+    let all_keys = ["ping_output", "ping_stats", "scan_output", "http_log", "tftpd_log", "tftpc_log", "chat_messages", "chat_users", "settings_output", "plan_output"];
     let updated_keys: Vec<String> = all_keys.iter()
         .filter(|k| s.is_updated(k))
         .map(|k| k.to_string())

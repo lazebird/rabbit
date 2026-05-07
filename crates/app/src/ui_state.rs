@@ -52,6 +52,7 @@ pub struct UiState {
     pub chat_messages: String,
     pub chat_users: String,
     pub settings_output: String,
+    pub plan_output: String,
     pub updated: HashMap<String, bool>,
 }
 
@@ -71,6 +72,7 @@ impl UiState {
             chat_messages: String::new(),
             chat_users: String::new(),
             settings_output: String::new(),
+            plan_output: String::new(),
             updated: HashMap::new(),
         }
     }
@@ -131,6 +133,13 @@ impl UiState {
         self.tftpc_log.push('\n');
         trim_lines(&mut self.tftpc_log, 1000);
         self.updated.insert("tftpc_log".to_string(), true);
+    }
+
+    pub fn append_plan_log(&mut self, line: &str) {
+        self.plan_output.push_str(line);
+        self.plan_output.push('\n');
+        trim_lines(&mut self.plan_output, 1000);
+        self.updated.insert("plan_output".to_string(), true);
     }
 
     pub fn append_chat(&mut self, sender: &str, message: &str) {
@@ -424,6 +433,14 @@ pub fn append_tftpc_log(line: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
             s.append_tftpc_log(line);
+        }
+    }
+}
+
+pub fn append_plan_output(line: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.append_plan_log(line);
         }
     }
 }
