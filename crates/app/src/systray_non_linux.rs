@@ -3,11 +3,20 @@ use std::sync::Mutex;
 use tracing::warn;
 
 use crate::lifecycle::Lifecycle;
+#[cfg(target_os = "windows")]
+use fltk::prelude::WindowExt;
+#[cfg(not(target_os = "windows"))]
 use fltk::prelude::WidgetExt;
 use tray_icon::{
     menu::{Menu, MenuItem},
     TrayIcon, TrayIconBuilder, TrayIconEvent,
 };
+
+// Fixed menu item IDs so the OnceCell-based event handler matches
+// across tray re-initialization (see register_event_handlers_once).
+const MENU_ID_SHOW: &str = "show";
+const MENU_ID_HIDE: &str = "hide";
+const MENU_ID_QUIT: &str = "quit";
 
 static SYSTRAY_ENABLED: AtomicBool = AtomicBool::new(false);
 
@@ -36,9 +45,11 @@ pub fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
 
     let tray_menu = Menu::new();
 
-    let show_item = MenuItem::new("Show", true, None);
-    let hide_item = MenuItem::new("Hide", true, None);
-    let quit_item = MenuItem::new("Quit", true, None);
+    // Use fixed IDs so the once-only event handler (register_event_handlers_once)
+    // always matches regardless of how many times the tray is re-initialized.
+    let show_item = MenuItem::with_id(MENU_ID_SHOW, "Show", true, None);
+    let hide_item = MenuItem::with_id(MENU_ID_HIDE, "Hide", true, None);
+    let quit_item = MenuItem::with_id(MENU_ID_QUIT, "Quit", true, None);
 
     tray_menu
         .append_items(&[&show_item, &hide_item, &quit_item])
@@ -58,37 +69,50 @@ pub fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
         SYSTRAY_ENABLED.store(true, Ordering::SeqCst);
     }
 
-    TrayIconEvent::set_event_handler(Some(move |event| {
-        if let TrayIconEvent::DoubleClick { .. } = event {
-            show_main_window();
-        }
-    }));
-
-    let show_id = show_item.id().to_owned();
-    let hide_id = hide_item.id().to_owned();
-    let quit_id = quit_item.id().to_owned();
-
-    // Capture lifecycle from the LIFECYCLE static before the closures run
-    let lc = LIFECYCLE.lock().ok().and_then(|g| g.clone());
-
-    tray_icon::menu::MenuEvent::set_event_handler(Some(move |event: tray_icon::menu::MenuEvent| {
-        if event.id == quit_id {
-            if let Some(ref lifecycle) = lc {
-                lifecycle.request_shutdown();
-            }
-            // Must use awake_callback: fltk::app::quit() calls hide() which
-            // asserts is_ui_thread() — the menu event handler may be on any thread.
-            fltk::app::awake_callback(|| {
-                fltk::app::quit();
-            });
-        } else if event.id == show_id {
-            show_main_window();
-        } else if event.id == hide_id {
-            hide_main_window();
-        }
-    }));
+    register_event_handlers_once();
 
     Ok(())
+}
+
+/// Register global tray and menu event handlers.
+///
+/// SAFETY: Must be safe to call multiple times — both `TrayIconEvent::set_event_handler`
+/// and `MenuEvent::set_event_handler` use `OnceCell` internally and **silently discard**
+/// all calls after the first. The handlers use fixed string IDs (see `MENU_ID_*` constants)
+/// and read `Lifecycle` from the `LIFECYCLE` static on each invocation, so they remain
+/// correct across tray re-initializations.
+fn register_event_handlers_once() {
+    use std::sync::Once;
+    static ONCE: Once = Once::new();
+
+    ONCE.call_once(|| {
+        TrayIconEvent::set_event_handler(Some(move |event| {
+            if let TrayIconEvent::DoubleClick { .. } = event {
+                show_main_window();
+            }
+        }));
+
+        tray_icon::menu::MenuEvent::set_event_handler(Some(
+            move |event: tray_icon::menu::MenuEvent| {
+                // Read lifecycle from static each time (handler is set only once).
+                let lc = LIFECYCLE.lock().ok().and_then(|g| g.clone());
+                if event.id == MENU_ID_QUIT {
+                    if let Some(ref lifecycle) = lc {
+                        lifecycle.request_shutdown();
+                    }
+                    // Must use awake_callback: fltk::app::quit() calls hide() which
+                    // asserts is_ui_thread() — the menu event handler may be on any thread.
+                    fltk::app::awake_callback(|| {
+                        fltk::app::quit();
+                    });
+                } else if event.id == MENU_ID_SHOW {
+                    show_main_window();
+                } else if event.id == MENU_ID_HIDE {
+                    hide_main_window();
+                }
+            },
+        ));
+    });
 }
 
 pub fn remove_systray() {
@@ -173,7 +197,7 @@ fn load_icon() -> Result<tray_icon::Icon, String> {
 fn show_main_window() {
     if let Ok(store) = MAIN_WIN.lock() {
         if let Some(win) = &*store {
-            let mut win = win.clone();
+            let win = win.clone();
             fltk::app::awake_callback(move || {
                 #[cfg(target_os = "windows")]
                 {
@@ -182,6 +206,7 @@ fn show_main_window() {
                 }
                 #[cfg(not(target_os = "windows"))]
                 {
+                    let mut win = win;
                     win.show();
                 }
             });
@@ -192,7 +217,7 @@ fn show_main_window() {
 fn hide_main_window() {
     if let Ok(store) = MAIN_WIN.lock() {
         if let Some(win) = &*store {
-            let mut win = win.clone();
+            let win = win.clone();
             fltk::app::awake_callback(move || {
                 #[cfg(target_os = "windows")]
                 {
@@ -201,6 +226,7 @@ fn hide_main_window() {
                 }
                 #[cfg(not(target_os = "windows"))]
                 {
+                    let mut win = win;
                     win.hide();
                 }
             });

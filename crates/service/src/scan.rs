@@ -164,7 +164,7 @@ impl ScanService {
                     if result.online {
                         if let Some(ref tx) = tx_clone {
                             let ip = result.ip;
-                            let mac = result.mac_address.clone().or_else(|| get_mac_from_arp(ip));
+                            let mac = result.mac_address.clone().or_else(|| adapter::network::get_mac_from_arp(ip));
                             let mac_info = mac.as_ref().map(|m| format!(" [MAC: {}]", m)).unwrap_or_default();
                             let msg = format!(
                                 "Found online host: {}{}{}",
@@ -282,7 +282,7 @@ async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
 
     // Try to get MAC address from ARP table (use spawn_blocking for sync file I/O)
     let mac_address = if online {
-        tokio::task::spawn_blocking(move || get_mac_from_arp(ip)).await.unwrap_or_default()
+        tokio::task::spawn_blocking(move || adapter::network::get_mac_from_arp(ip)).await.unwrap_or_default()
     } else {
         None
     };
@@ -337,30 +337,6 @@ async fn resolve_hostname(ip: Ipv4Addr) -> Option<String> {
     .await
     .ok()
     .flatten()
-}
-
-/// Get MAC address from ARP table (Linux: /proc/net/arp)
-fn get_mac_from_arp(ip: Ipv4Addr) -> Option<String> {
-    #[cfg(target_os = "linux")]
-    {
-        let ip_str = ip.to_string();
-        if let Ok(content) = std::fs::read_to_string("/proc/net/arp") {
-            for line in content.lines().skip(1) {
-                let parts: Vec<&str> = line.split_whitespace().collect();
-                if parts.len() >= 6 && parts[0] == ip_str {
-                    // parts[3] is the HW type, parts[4] is flags, parts[5] is MAC
-                    // Actually on Linux /proc/net/arp: IP address HW type Flags HW address Device
-                    if parts.len() >= 4 {
-                        let mac = parts[3].to_string();
-                        if mac != "00:00:00:00:00:00" {
-                            return Some(mac);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    None
 }
 
 /// Calculate IP range
