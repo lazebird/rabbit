@@ -40,9 +40,9 @@ enum RepeatUnit {
 impl RepeatUnit {
     fn to_duration(self, cycle: i32) -> Duration {
         match self {
-            RepeatUnit::Minute => Duration::minutes(cycle as i64),
-            RepeatUnit::Hour => Duration::minutes((cycle as i64) * 60),
-            RepeatUnit::Day => Duration::days(cycle as i64),
+            Self::Minute => Duration::minutes(cycle as i64),
+            Self::Hour => Duration::minutes((cycle as i64) * 60),
+            Self::Day => Duration::days(cycle as i64),
         }
     }
 }
@@ -174,7 +174,7 @@ impl PlanService {
                                                     if *datetime <= now {
                                                         let elapsed = now - *datetime;
                                                         let intervals = (elapsed.num_seconds() / interval.num_seconds()).max(0) as i32;
-                                                        *datetime = *datetime + interval * (intervals + 1);
+                                                        *datetime += interval * (intervals + 1);
                                                     }
                                                 }
                                             }

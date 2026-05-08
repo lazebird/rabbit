@@ -135,7 +135,7 @@ impl TabComponent for ChatTab {
         messages_display.set_text_color(colors.text);
 
         // Set initial content from global state
-        Self::refresh_users(&mut users_display);
+        Self::refresh_users(&users_display);
         Self::refresh_messages(&mut messages_display);
 
         // Clone inputs for callbacks
@@ -144,7 +144,7 @@ impl TabComponent for ChatTab {
         let _broadcast_input_clone = broadcast_input.clone();
         let mut toggle_btn_clone = toggle_btn.clone();
 
-        let mut msg_input_clone = msg_input.clone();
+        let mut msg_input_clone = msg_input;
         let username_for_send = username_input.clone();
 
         // Add button callbacks
@@ -248,7 +248,7 @@ impl TabComponent for ChatTab {
 }
 
 impl ChatTab {
-    fn refresh_users(display: &mut TextDisplay) {
+    fn refresh_users(display: &TextDisplay) {
         if let Some(state) = crate::ui_state::UiState::global() {
             if let Ok(s) = state.lock() {
                 if let Some(mut buf) = display.buffer() {

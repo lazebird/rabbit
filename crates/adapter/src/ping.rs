@@ -22,8 +22,7 @@ impl PlatformPing {
     pub async fn resolve(&self, hostname: &str) -> Result<Option<IpAddr>> {
         use tokio::net::lookup_host;
 
-        let addrs: Vec<_> = lookup_host(hostname).await?.collect();
-        Ok(addrs.into_iter().next().map(|addr| addr.ip()))
+        Ok(lookup_host(hostname).await?.next().map(|addr| addr.ip()))
     }
 }
 

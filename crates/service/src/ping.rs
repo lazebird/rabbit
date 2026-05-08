@@ -185,10 +185,11 @@ impl PingService {
             }
 
             // 确保任务启动时立即检查 targets
-            let mut current_interval_ms = 1000;
-            if let Some(first) = service.targets.read().await.first() {
-                current_interval_ms = first.interval_ms;
-            }
+            let current_interval_ms = if let Some(first) = service.targets.read().await.first() {
+                first.interval_ms
+            } else {
+                1000
+            };
             let mut ping_interval = interval(Duration::from_millis(current_interval_ms));
 
             loop {
@@ -310,7 +311,7 @@ impl PingService {
                 let seq = self.sequence.fetch_add(1, Ordering::SeqCst);
 
                 // 执行 ping（不持有锁）
-                let result = match PingService::do_ping(client, &target, seq).await {
+                let result = match Self::do_ping(client, &target, seq).await {
                     Ok(res) => res,
                     Err(_) => PingResult {
                         success: false,

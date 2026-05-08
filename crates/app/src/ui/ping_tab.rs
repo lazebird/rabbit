@@ -95,15 +95,15 @@ impl TabComponent for PingTab {
         stats_editor.set_text_color(colors.text);
 
         // Set initial content from global state
-        Self::refresh_display(&mut results_display, &mut stats_editor);
+        Self::refresh_display(&results_display, &stats_editor);
 
         // Clone for callbacks
         let addr_input_clone = addr_input.clone();
         let opt_input_clone = opt_input.clone();
         let mut start_btn_clone = start_btn.clone();
-        let colors_clone = colors.clone();
-        let mut results_display_clone = results_display.clone();
-        let mut stats_editor_clone = stats_editor.clone();
+        let colors_clone = colors;
+        let results_display_clone = results_display.clone();
+        let stats_editor_clone = stats_editor.clone();
 
         // Add button callback
         start_btn.set_callback(move |_| {
@@ -162,7 +162,7 @@ impl TabComponent for PingTab {
                         s.ping_stats.clear();
                     }
                 }
-                Self::refresh_display(&mut results_display_clone, &mut stats_editor_clone);
+                Self::refresh_display(&results_display_clone, &stats_editor_clone);
 
                 send_event(UiEvent::ModuleToggle { module: "ping".into() });
 
@@ -185,7 +185,7 @@ impl TabComponent for PingTab {
 
 impl PingTab {
     /// Called once during startup from global state (not from idle loop).
-    fn refresh_display(display: &mut TextDisplay, stats: &mut TextDisplay) {
+    fn refresh_display(display: &TextDisplay, stats: &TextDisplay) {
         if let Some(state) = crate::ui_state::UiState::global() {
             if let Ok(s) = state.lock() {
                 if let Some(mut buf) = display.buffer() {

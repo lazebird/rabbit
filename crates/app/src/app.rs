@@ -79,7 +79,7 @@ impl App {
 
         let tftp_client_service = TftpcService::with_channel(tftpc_tx);
 
-        let mut plan_service = PlanService::with_channel(plan_tx);
+        let plan_service = PlanService::with_channel(plan_tx);
 
         let chat_service = ChatService::with_channel(chat_tx);
 
@@ -565,7 +565,7 @@ impl App {
         // Always quit when X is clicked (user requirement: only tray Hide should hide)
         main_win.set_callback(move |_| {
             info!("Close button clicked - exiting program");
-            let _ = crate::systray::remove_systray();
+            crate::systray::remove_systray();
             fltk::app::quit();
         });
 
@@ -718,10 +718,12 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
             crate::ui_state::write_to("settings_output", &crate::ui_state::raw_log(""));
 
             // Show dialog on main thread
-            let remote_clone = remote.clone();
-            let platform_clone = platform_info.clone();
-            fltk::app::awake_callback(move || {
-                show_upgrade_dialog(&remote_clone, &platform_clone);
+            fltk::app::awake_callback({
+                let remote = remote.clone();
+                let platform_info = platform_info.clone();
+                move || {
+                    show_upgrade_dialog(&remote, &platform_info);
+                }
             });
         }
         upgrade::UpdateStatus::UpToDate => {
@@ -1079,9 +1081,8 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
             if !module_name.is_empty() {
                 crate::ui_state::update_module_running(module_name, running);
             }
-            match module {
-                Module::Ping => {
-                    if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
+            if let Module::Ping = module {
+                if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
                         if running {
                             let target = adapter::config::load_config()
                                 .ok()
@@ -1098,8 +1099,6 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
                         }
                     }
                 }
-                _ => {}
-            }
             // 记录停止原因
             if !running {
                 if let Some(ref reason_str) = reason {
@@ -1151,10 +1150,9 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
         }
         UiData::PlanReminder(msg) => {
             info!("Plan reminder received: {}", msg);
-            let msg_clone = msg.clone();
             fltk::app::awake_callback(move || {
                 // 显示全屏黑屏提醒
-                crate::ui::reminder_window::show_reminder(&msg_clone);
+                crate::ui::reminder_window::show_reminder(&msg);
             });
         }
         UiData::ChatMessage(username, msg) => {
@@ -1171,10 +1169,6 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
             });
         }
     }
-}
-
-async fn handle_plan_data(_data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
-    // Plan reminder now handled in handle_ui_data with awake_callback
 }
 
 async fn handle_http_data(data: UiData) {

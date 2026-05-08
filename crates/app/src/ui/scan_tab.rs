@@ -108,10 +108,10 @@ impl TabComponent for ScanTab {
                         format!("{}.{}.{}.{}", parts[0], parts[1], parts[2], end_suffix)
                     }
                 } else {
-                    end_suffix.to_string()
+                    end_suffix
                 }
             } else {
-                end_suffix.to_string()
+                end_suffix
             };
 
             // Always save config on button click

@@ -38,16 +38,16 @@ pub fn show_reminder(message: &str) {
     let cd_h = 40;
     let gap = 10;
     let total_h = msg_h + gap + cd_h;
-    let start_y = (sh as i32 - total_h) / 2;
+    let start_y = (sh - total_h) / 2;
 
-    let mut msg_frame = Frame::new(0, start_y, sw as i32, msg_h, message);
+    let mut msg_frame = Frame::new(0, start_y, sw, msg_h, message);
     msg_frame.set_color(Color::Black);
     msg_frame.set_label_color(Color::White);
     msg_frame.set_label_font(Font::HelveticaBold);
     msg_frame.set_label_size(48);
 
     // Countdown frame (below message)
-    let mut cd_frame = Frame::new(0, start_y + msg_h + gap, sw as i32, cd_h, "03:00");
+    let mut cd_frame = Frame::new(0, start_y + msg_h + gap, sw, cd_h, "03:00");
     cd_frame.set_color(Color::Black);
     cd_frame.set_label_color(Color::White);
     cd_frame.set_label_font(Font::Helvetica);

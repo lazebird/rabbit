@@ -31,11 +31,19 @@ pub fn is_active() -> bool {
     SYSTRAY_ENABLED.load(Ordering::SeqCst)
 }
 
+#[cfg(target_os = "linux")]
+fn ensure_gtk_init() {
+    gtk::init().expect("Failed to initialize GTK for system tray");
+}
+
 /// Initialize the system tray.
 /// Removes any existing icon first to avoid duplicates.
 pub fn init_systray() -> Result<(), String> {
     // Remove old icon first (if any) to prevent duplicates
     remove_systray();
+
+    #[cfg(target_os = "linux")]
+    ensure_gtk_init();
 
     let tray_menu = Menu::new();
 
@@ -148,7 +156,7 @@ fn load_icon() -> Result<tray_icon::Icon, String> {
 fn show_main_window() {
     if let Ok(store) = MAIN_WIN.lock() {
         if let Some(win) = &*store {
-            let win = win.clone();
+            let mut win = win.clone();
             fltk::app::awake_callback(move || {
                 #[cfg(target_os = "windows")]
                 {
@@ -168,7 +176,7 @@ fn show_main_window() {
 fn hide_main_window() {
     if let Ok(store) = MAIN_WIN.lock() {
         if let Some(win) = &*store {
-            let win = win.clone();
+            let mut win = win.clone();
             fltk::app::awake_callback(move || {
                 #[cfg(target_os = "windows")]
                 {

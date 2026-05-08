@@ -49,10 +49,10 @@ impl TabComponent for PlanTab {
         ctrl_row.fixed(&date_input, 85);
 
         // Date picker
-        let mut date_input_clone = date_input.clone();
+        let date_input_clone = date_input.clone();
         date_input.handle(move |_, ev| {
             if ev == Event::Push {
-                show_date_picker(&mut date_input_clone, fltk::app::event_x_root(), fltk::app::event_y_root());
+                show_date_picker(&date_input_clone, fltk::app::event_x_root(), fltk::app::event_y_root());
                 true
             } else {
                 false
@@ -70,10 +70,10 @@ impl TabComponent for PlanTab {
         ctrl_row.fixed(&time_input, 45);
 
         // Time picker
-        let mut time_input_clone = time_input.clone();
+        let time_input_clone = time_input.clone();
         time_input.handle(move |_, ev| {
             if ev == Event::Push {
-                show_time_picker(&mut time_input_clone, fltk::app::event_x_root(), fltk::app::event_y_root());
+                show_time_picker(&time_input_clone, fltk::app::event_x_root(), fltk::app::event_y_root());
                 true
             } else {
                 false
@@ -421,7 +421,7 @@ impl TabComponent for PlanTab {
 }
 
 /// Show date picker dialog
-fn show_date_picker(date_input: &mut Input, px: i32, py: i32) {
+fn show_date_picker(date_input: &Input, px: i32, py: i32) {
     let current_val = date_input.value();
     let init_date = NaiveDate::parse_from_str(&current_val, "%Y/%m/%d").unwrap_or_else(|_| Local::now().naive_local().date());
     let today = Local::now().naive_local().date();
@@ -525,7 +525,7 @@ fn show_date_picker(date_input: &mut Input, px: i32, py: i32) {
 }
 
 /// Show time picker dialog
-fn show_time_picker(time_input: &mut Input, px: i32, py: i32) {
+fn show_time_picker(time_input: &Input, px: i32, py: i32) {
     let current_val = time_input.value();
     let init_time = NaiveTime::parse_from_str(&current_val, "%H:%M").unwrap_or_else(|_| Local::now().naive_local().time());
 

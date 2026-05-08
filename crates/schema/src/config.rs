@@ -34,14 +34,14 @@ pub struct WindowConfig {
 impl ConfigValue {
     pub fn as_str(&self) -> Option<&str> {
         match self {
-            ConfigValue::String(s) => Some(s),
+            Self::String(s) => Some(s),
             _ => None,
         }
     }
 
     pub fn as_i64(&self) -> Option<i64> {
         match self {
-            ConfigValue::Integer(n) => Some(*n),
+            Self::Integer(n) => Some(*n),
             _ => None,
         }
     }
@@ -52,14 +52,14 @@ impl ConfigValue {
 
     pub fn as_bool(&self) -> Option<bool> {
         match self {
-            ConfigValue::Boolean(b) => Some(*b),
+            Self::Boolean(b) => Some(*b),
             _ => None,
         }
     }
 
-    pub fn as_array(&self) -> Option<&Vec<ConfigValue>> {
+    pub fn as_array(&self) -> Option<&Vec<Self>> {
         match self {
-            ConfigValue::Array(arr) => Some(arr),
+            Self::Array(arr) => Some(arr),
             _ => None,
         }
     }

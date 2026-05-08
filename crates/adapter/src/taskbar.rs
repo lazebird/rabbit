@@ -88,29 +88,27 @@ pub mod windows {
     };
 
     #[repr(C)]
-    #[allow(non_snake_case)]
     struct ITaskbarList3 {
-        lpVtbl: *const ITaskbarList3Vtbl,
+        lp_vtbl: *const ITaskbarList3Vtbl,
     }
 
     #[repr(C)]
-    #[allow(non_snake_case)]
     struct ITaskbarList3Vtbl {
-        QueryInterface: Option<unsafe extern "system" fn(*mut ITaskbarList3, *const windows_sys::core::GUID, *mut *mut std::ffi::c_void) -> i32>,
-        AddRef: Option<unsafe extern "system" fn(*mut ITaskbarList3) -> u32>,
-        Release: Option<unsafe extern "system" fn(*mut ITaskbarList3) -> u32>,
-        HrInit: Option<unsafe extern "system" fn(*mut ITaskbarList3) -> i32>,
-        AddTab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
-        DeleteTab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
-        ActivateTab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
-        SetActiveTab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
-        MarkFullscreenWindow: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, i32) -> i32>,
-        SetProgressValue: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, u64, u64) -> i32>,
-        SetProgressState: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, u32) -> i32>,
-        RegisterTab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, HWND) -> i32>,
-        UnregisterTab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
-        SetTabOrder: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, u32) -> i32>,
-        SetTabActive: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, HWND, u32) -> i32>,
+        query_interface: Option<unsafe extern "system" fn(*mut ITaskbarList3, *const windows_sys::core::GUID, *mut *mut std::ffi::c_void) -> i32>,
+        add_ref: Option<unsafe extern "system" fn(*mut ITaskbarList3) -> u32>,
+        release: Option<unsafe extern "system" fn(*mut ITaskbarList3) -> u32>,
+        hr_init: Option<unsafe extern "system" fn(*mut ITaskbarList3) -> i32>,
+        add_tab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
+        delete_tab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
+        activate_tab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
+        set_active_tab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
+        mark_fullscreen_window: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, i32) -> i32>,
+        set_progress_value: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, u64, u64) -> i32>,
+        set_progress_state: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, u32) -> i32>,
+        register_tab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, HWND) -> i32>,
+        unregister_tab: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND) -> i32>,
+        set_tab_order: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, u32) -> i32>,
+        set_tab_active: Option<unsafe extern "system" fn(*mut ITaskbarList3, HWND, HWND, u32) -> i32>,
     }
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -141,7 +139,7 @@ pub mod windows {
 
             let taskbar = &mut *taskbar;
 
-            if let Some(init) = (*taskbar).lpVtbl.as_ref().and_then(|v| v.HrInit) {
+            if let Some(init) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.hr_init) {
                 let _ = init(taskbar);
             }
 
@@ -153,10 +151,10 @@ pub mod windows {
                 TaskbarState::Indeterminate => TBPF_INDETERMINATE as u32,
             };
 
-            if let Some(set_state) = (*taskbar).lpVtbl.as_ref().and_then(|v| v.SetProgressState) {
+            if let Some(set_state) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.set_progress_state) {
                 let hr = set_state(taskbar, hwnd as isize as HWND, tbpflag);
                 if hr != 0 {
-                    if let Some(release) = (*taskbar).lpVtbl.as_ref().and_then(|v| v.Release) {
+                    if let Some(release) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.release) {
                         let _ = release(taskbar);
                     }
                     return Err(format!("SetProgressState failed: HRESULT={}", hr));
@@ -164,10 +162,10 @@ pub mod windows {
             }
 
             if state != TaskbarState::None {
-                if let Some(set_value) = (*taskbar).lpVtbl.as_ref().and_then(|v| v.SetProgressValue) {
+                if let Some(set_value) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.set_progress_value) {
                     let hr = set_value(taskbar, hwnd as isize as HWND, progress as u64, 100);
                     if hr != 0 {
-                        if let Some(release) = (*taskbar).lpVtbl.as_ref().and_then(|v| v.Release) {
+                        if let Some(release) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.release) {
                             let _ = release(taskbar);
                         }
                         return Err(format!("SetProgressValue failed: HRESULT={}", hr));
@@ -175,7 +173,7 @@ pub mod windows {
                 }
             }
 
-            if let Some(release) = (*taskbar).lpVtbl.as_ref().and_then(|v| v.Release) {
+            if let Some(release) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.release) {
                 let _ = release(taskbar);
             }
 

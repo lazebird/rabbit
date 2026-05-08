@@ -81,6 +81,7 @@ dependencies = [
  "dirs",
  "embed-resource",
  "fltk",
+ "gtk",
  "image",
  "parking_lot",
  "schema",
