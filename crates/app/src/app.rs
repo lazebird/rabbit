@@ -20,8 +20,8 @@ use service::{
 };
 use schema::{config::ConfigValue, AppConfig};
 
-use ctrlc;
 use adapter::config::{load_config, save_config};
+use crate::lifecycle::Lifecycle;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
@@ -37,7 +37,7 @@ pub struct App {
     plan_service: Arc<RwLock<PlanService>>,
     chat_service: Arc<RwLock<ChatService>>,
     scan_service: Arc<RwLock<ScanService>>,
-    shutdown_flag: Arc<AtomicBool>,
+    lifecycle: Lifecycle,
     http_rx: Option<mpsc::Receiver<UiData>>,
     ping_rx: Option<mpsc::Receiver<UiData>>,
     scan_rx: Option<mpsc::Receiver<UiData>>,
@@ -97,7 +97,7 @@ impl App {
             plan_service: Arc::new(RwLock::new(plan_service)),
             chat_service: Arc::new(RwLock::new(chat_service)),
             scan_service: Arc::new(RwLock::new(scan_service)),
-            shutdown_flag: Arc::new(AtomicBool::new(false)),
+            lifecycle: Lifecycle::new(),
             http_rx: Some(http_rx),
             ping_rx: Some(ping_rx),
             scan_rx: Some(scan_rx),
@@ -353,7 +353,7 @@ impl App {
             chat_tab.as_widget_ptr() as usize,
             settings_tab.as_widget_ptr() as usize,
         ];
-        let esc_done = self.shutdown_flag.clone();
+        let esc_lc = self.lifecycle.clone();
         main_win_for_keys.handle(move |win, ev| {
             use fltk::enums::Event;
             use fltk::enums::Key;
@@ -363,7 +363,7 @@ impl App {
                     // Esc: Exit the program
                     Key::Escape => {
                         info!("Esc key pressed - exiting program");
-                        esc_done.store(true, Ordering::SeqCst);
+                        esc_lc.request_shutdown();
                         win.hide();
                         app::quit();
                         true
@@ -507,10 +507,10 @@ impl App {
         drop(config_for_restore);
 
         // Handle Ctrl+C
-        let shutdown_flag = self.shutdown_flag.clone();
+        let ctrlc_lc = self.lifecycle.clone();
         ctrlc::set_handler(move || {
             info!("Ctrl+C received, initiating shutdown...");
-            shutdown_flag.store(true, Ordering::SeqCst);
+            ctrlc_lc.request_shutdown();
             fltk::app::awake_callback(|| {
                 info!("Executing quit() on UI thread...");
                 fltk::app::quit();
@@ -565,16 +565,16 @@ impl App {
 
         // Handle window close button - use set_callback which fires when the X button is clicked
         // Always quit when X is clicked (user requirement: only tray Hide should hide)
-        let cb_shutdown_flag = self.shutdown_flag.clone();
+        let cb_lc = self.lifecycle.clone();
         main_win.set_callback(move |_| {
             info!("Close button clicked - exiting program");
-            cb_shutdown_flag.store(true, Ordering::SeqCst);
+            cb_lc.request_shutdown();
             fltk::app::quit();
         });
 
         // Initialize systray if enabled
         if systray_requested {
-            if let Err(e) = systray::init_systray() {
+            if let Err(e) = systray::init_systray(self.lifecycle.clone()) {
                 warn!("Failed to initialize systray: {}", e);
             }
         }
@@ -582,34 +582,22 @@ impl App {
         // Startup version check if autoupdate is enabled
         if autoupdate {
             info!("Auto-update enabled, checking for updates...");
-            let shutdown_flag_check = self.shutdown_flag.clone();
+            let lc_for_check = self.lifecycle.clone();
             std::thread::spawn(move || {
                 std::thread::sleep(std::time::Duration::from_millis(1000));
-                if !shutdown_flag_check.load(Ordering::SeqCst) {
-                    handle_version_check_result(Some(&shutdown_flag_check));
+                if !lc_for_check.is_shutdown_requested() {
+                    handle_version_check_result(Some(&lc_for_check));
                 }
             });
         }
 
         // Custom event loop — stays alive even when all windows are hidden,
         // which is required for systray "Hide" (app runs in background).
-        // wait_for() blocks for up to 50ms waiting for events (user input,
-        // awake_callback from tray, etc.) — unlike plain wait() which returns
-        // immediately when no windows are visible.
-        // Exit triggers: Ctrl+C / ESC / close button (set shutdown_flag),
-        // tray Quit (sets systray::QUIT_REQUESTED).
-        loop {
-            match fltk::app::wait_for(0.05) {
-                Ok(_) => {}      // event processed or timeout
-                Err(e) => {
-                    warn!("FLTK event loop interrupted: {e}");
-                    break;
-                }
-            }
-            if self.shutdown_flag.load(Ordering::SeqCst) || crate::systray::is_shutdown_requested() {
-                break;
-            }
-        }
+        // Uses Lifecycle::run_event_loop() which wraps fltk::app::wait_for(0.05)
+        // and checks the unified shutdown flag.
+        // Exit triggers: Ctrl+C / ESC / close button / tray Quit — all set the
+        // same Lifecycle::shutdown_requested flag.
+        self.lifecycle.run_event_loop();
 
         // Abort the event loop task (it's blocked on receiver.recv() which will never return)
         event_handle.abort();
@@ -720,12 +708,12 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
 }
 
 /// Handle version check result and show dialog (reused by both auto-check and manual check)
-pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::AtomicBool>) {
+pub fn handle_version_check_result(lifecycle: Option<&Lifecycle>) {
     match check_version_update() {
         upgrade::UpdateStatus::UpdateAvailable(remote, platform_info) => {
             // Check shutdown flag before outputting
-            if let Some(flag) = shutdown_flag {
-                if flag.load(Ordering::SeqCst) {
+                if let Some(lc) = lifecycle {
+                if lc.is_shutdown_requested() {
                     info!("Shutdown requested, skipping version update output");
                     return;
                 }
@@ -748,8 +736,8 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
         }
         upgrade::UpdateStatus::UpToDate => {
             // Check shutdown flag before outputting
-            if let Some(flag) = shutdown_flag {
-                if flag.load(Ordering::SeqCst) {
+                if let Some(lc) = lifecycle {
+                if lc.is_shutdown_requested() {
                     return;
                 }
             }
@@ -759,8 +747,8 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
         }
         upgrade::UpdateStatus::CheckError(e) => {
             // Check shutdown flag before outputting
-            if let Some(flag) = shutdown_flag {
-                if flag.load(Ordering::SeqCst) {
+                if let Some(lc) = lifecycle {
+                if lc.is_shutdown_requested() {
                     return;
                 }
             }

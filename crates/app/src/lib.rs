@@ -2,6 +2,7 @@
 //!
 //! Main application logic including UI integration.
 
+pub mod lifecycle;
 pub mod systray;
 pub mod app;
 pub mod ui;

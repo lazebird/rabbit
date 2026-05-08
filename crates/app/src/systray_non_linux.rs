@@ -2,6 +2,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tracing::warn;
 
+use crate::lifecycle::Lifecycle;
 use fltk::prelude::WidgetExt;
 use tray_icon::{
     menu::{Menu, MenuItem},
@@ -13,6 +14,7 @@ static SYSTRAY_ENABLED: AtomicBool = AtomicBool::new(false);
 static mut TRAY_PTR: *mut TrayIcon = std::ptr::null_mut();
 
 static MAIN_WIN: Mutex<Option<fltk::window::Window>> = Mutex::new(None);
+static LIFECYCLE: Mutex<Option<Lifecycle>> = Mutex::new(None);
 
 pub fn set_main_window(win: fltk::window::Window) {
     if let Ok(mut store) = MAIN_WIN.lock() {
@@ -24,8 +26,13 @@ pub fn is_active() -> bool {
     SYSTRAY_ENABLED.load(Ordering::SeqCst)
 }
 
-pub fn init_systray() -> Result<(), String> {
+pub fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
     remove_systray();
+
+    // Store lifecycle for later init_systray calls (e.g. from update_systray)
+    if let Ok(mut guard) = LIFECYCLE.lock() {
+        *guard = Some(lifecycle);
+    }
 
     let tray_menu = Menu::new();
 
@@ -61,9 +68,19 @@ pub fn init_systray() -> Result<(), String> {
     let hide_id = hide_item.id().to_owned();
     let quit_id = quit_item.id().to_owned();
 
+    // Capture lifecycle from the LIFECYCLE static before the closures run
+    let lc = LIFECYCLE.lock().ok().and_then(|g| g.clone());
+
     tray_icon::menu::MenuEvent::set_event_handler(Some(move |event: tray_icon::menu::MenuEvent| {
         if event.id == quit_id {
-            fltk::app::quit();
+            if let Some(ref lifecycle) = lc {
+                lifecycle.request_shutdown();
+            }
+            // Must use awake_callback: fltk::app::quit() calls hide() which
+            // asserts is_ui_thread() — the menu event handler may be on any thread.
+            fltk::app::awake_callback(|| {
+                fltk::app::quit();
+            });
         } else if event.id == show_id {
             show_main_window();
         } else if event.id == hide_id {
@@ -88,8 +105,14 @@ pub fn update_systray(enabled: bool) {
     let currently_active = is_active();
 
     if enabled && !currently_active {
-        if let Err(e) = init_systray() {
-            warn!("Failed to init system tray: {}", e);
+        let lifecycle = LIFECYCLE.lock().ok().and_then(|g| g.clone());
+        match lifecycle {
+            Some(lc) => {
+                if let Err(e) = init_systray(lc) {
+                    warn!("Failed to init system tray: {}", e);
+                }
+            }
+            None => warn!("Cannot init systray: no Lifecycle set"),
         }
     } else if !enabled && currently_active {
         remove_systray();

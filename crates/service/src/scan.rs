@@ -340,7 +340,7 @@ async fn resolve_hostname(ip: Ipv4Addr) -> Option<String> {
 }
 
 /// Get MAC address from ARP table (Linux: /proc/net/arp)
-fn get_mac_from_arp(_ip: Ipv4Addr) -> Option<String> {
+fn get_mac_from_arp(ip: Ipv4Addr) -> Option<String> {
     #[cfg(target_os = "linux")]
     {
         let ip_str = ip.to_string();
