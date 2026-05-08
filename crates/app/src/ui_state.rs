@@ -3,6 +3,7 @@
 //! This module provides thread-safe access to UI text buffers
 //! so services can update the display without direct FLTK access.
 
+use chrono::Local;
 use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex as StdMutex};
@@ -95,51 +96,9 @@ impl UiState {
         GLOBAL_UI_STATE.lock().clone()
     }
 
-    pub fn append_ping(&mut self, line: &str) {
-        self.ping_output.push_str(line);
-        self.ping_output.push('\n');
-        trim_lines(&mut self.ping_output, 1000);
-        self.updated.insert("ping_output".to_string(), true);
-    }
-
     pub fn set_ping_stats(&mut self, stats: &str) {
         self.ping_stats = stats.to_string();
         self.updated.insert("ping_stats".to_string(), true);
-    }
-
-    pub fn append_scan(&mut self, line: &str) {
-        self.scan_output.push_str(line);
-        self.scan_output.push('\n');
-        trim_lines(&mut self.scan_output, 1000);
-        self.updated.insert("scan_output".to_string(), true);
-    }
-
-    pub fn append_http_log(&mut self, line: &str) {
-        self.http_log.push_str(line);
-        self.http_log.push('\n');
-        trim_lines(&mut self.http_log, 1000);
-        self.updated.insert("http_log".to_string(), true);
-    }
-
-    pub fn append_tftpd_log(&mut self, line: &str) {
-        self.tftpd_log.push_str(line);
-        self.tftpd_log.push('\n');
-        trim_lines(&mut self.tftpd_log, 1000);
-        self.updated.insert("tftpd_log".to_string(), true);
-    }
-
-    pub fn append_tftpc_log(&mut self, line: &str) {
-        self.tftpc_log.push_str(line);
-        self.tftpc_log.push('\n');
-        trim_lines(&mut self.tftpc_log, 1000);
-        self.updated.insert("tftpc_log".to_string(), true);
-    }
-
-    pub fn append_plan_log(&mut self, line: &str) {
-        self.plan_output.push_str(line);
-        self.plan_output.push('\n');
-        trim_lines(&mut self.plan_output, 1000);
-        self.updated.insert("plan_output".to_string(), true);
     }
 
     pub fn append_chat(&mut self, sender: &str, message: &str) {
@@ -152,6 +111,25 @@ impl UiState {
         self.updated.insert("chat_messages".to_string(), true);
     }
 
+    /// Write content to a named output field, appending '\n' and trimming.
+    pub fn write_to_field(&mut self, target: &str, content: &str) {
+        let field: &mut String = match target {
+            "ping_output" => &mut self.ping_output,
+            "scan_output" => &mut self.scan_output,
+            "http_log" => &mut self.http_log,
+            "tftpd_log" => &mut self.tftpd_log,
+            "tftpc_log" => &mut self.tftpc_log,
+            "chat_messages" => &mut self.chat_messages,
+            "settings_output" => &mut self.settings_output,
+            "plan_output" => &mut self.plan_output,
+            _ => return,
+        };
+        field.push_str(content);
+        field.push('\n');
+        trim_lines(field, 1000);
+        self.updated.insert(target.to_string(), true);
+    }
+
     pub fn is_updated(&self, key: &str) -> bool {
         self.updated.get(key).copied().unwrap_or(false)
     }
@@ -161,62 +139,32 @@ impl UiState {
     }
 }
 
+/// Format a message with a [HH:MM:SS] timestamp prefix.
+pub fn fmt_log(msg: &str) -> String {
+    format!("[{}] {}", Local::now().format("%H:%M:%S"), msg)
+}
+
+/// Pass-through for raw (unformatted) messages.
+pub fn raw_log(msg: &str) -> String {
+    msg.to_string()
+}
+
+/// Write a pre-formatted message to a named output field.
+/// This is an internal helper; external code should use fmt_log/raw_log
+/// to prepare the message before calling this.
+pub fn write_to(target: &str, msg: &str) {
+    if let Some(state) = UiState::global() {
+        if let Ok(mut s) = state.lock() {
+            s.write_to_field(target, msg);
+        }
+    }
+}
+
 /// Helper functions for services to update UI
-pub fn append_ping_output(line: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.append_ping(line);
-        }
-    }
-}
-
-pub fn set_ping_output(text: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.ping_output = text.to_string();
-            s.updated.insert("ping_output".to_string(), true);
-        }
-    }
-}
-
 pub fn set_ping_stats(stats: &str) {
     if let Some(state) = UiState::global() {
         if let Ok(mut s) = state.lock() {
             s.set_ping_stats(stats);
-        }
-    }
-}
-
-pub fn append_scan_output(line: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.append_scan(line);
-        }
-    }
-}
-
-pub fn set_scan_output(text: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.scan_output = text.to_string();
-            s.updated.insert("scan_output".to_string(), true);
-        }
-    }
-}
-
-pub fn append_http_log(line: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.append_http_log(line);
-        }
-    }
-}
-
-pub fn set_http_log(text: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.http_log = text.to_string();
-            s.updated.insert("http_log".to_string(), true);
         }
     }
 }
@@ -320,14 +268,6 @@ pub fn set_tftpd_selected_idx(idx: i32) {
     }
 }
 
-pub fn append_tftpd_log(line: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.append_tftpd_log(line);
-        }
-    }
-}
-
 // HTTP file/directory management
 pub fn add_http_item(path: &str) {
     if let Some(state) = UiState::global() {
@@ -421,30 +361,6 @@ pub fn set_tftpd_selected(idx: i32) {
     }
 }
 
-pub fn append_chat_message(sender: &str, message: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.append_chat(sender, message);
-        }
-    }
-}
-
-pub fn append_tftpc_log(line: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.append_tftpc_log(line);
-        }
-    }
-}
-
-pub fn append_plan_output(line: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.append_plan_log(line);
-        }
-    }
-}
-
 // plan_list 已移除，改用事件驱动模式
 
 pub fn set_chat_users(users: &[String]) {
@@ -493,15 +409,6 @@ pub fn remove_chat_user(user: &str) {
 // Settings Output
 // ============================================================
 
-pub fn set_settings_output(text: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.settings_output = text.to_string();
-            s.updated.insert("settings_output".to_string(), true);
-        }
-    }
-}
-
 /// Update a single line in settings output (replaces instead of appending)
 /// Useful for progress bars that need to refresh in place
 pub fn update_settings_line(line_index: i32, text: &str) {
@@ -523,16 +430,6 @@ pub fn update_settings_line(line_index: i32, text: &str) {
             }
 
             s.settings_output = lines.join("\n");
-            s.updated.insert("settings_output".to_string(), true);
-        }
-    }
-}
-
-pub fn append_settings_output(text: &str) {
-    if let Some(state) = UiState::global() {
-        if let Ok(mut s) = state.lock() {
-            s.settings_output.push_str(text);
-            s.settings_output.push('\n');
             s.updated.insert("settings_output".to_string(), true);
         }
     }

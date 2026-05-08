@@ -500,8 +500,7 @@ async fn access_log_middleware(request: Request, next: Next, ui_tx: Option<mpsc:
     let bytes_sent = response.body().size_hint().lower();
 
     let log_msg = format!(
-        "[{}] {} {} {} - {} bytes ({}ms)",
-        chrono::Local::now().format("%H:%M:%S"),
+        "{} {} {} - {} bytes ({}ms)",
         method,
         uri.path(),
         status.as_u16(),

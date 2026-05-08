@@ -147,7 +147,7 @@ impl TabComponent for HttpTab {
             if let Some(path) = dialog.filename().to_str() {
                 if !path.is_empty() {
                     crate::ui_state::add_http_item(path);
-                    crate::ui_state::append_http_log(&format!("Added file: {}\r\n", path));
+                    crate::ui_state::write_to("http_log", &crate::ui_state::fmt_log(&format!("Added file: {}", path)));
                     Self::refresh_items(&mut item_browser_add);
                     crate::ui_state::sync_http_config();
                 }
@@ -163,7 +163,7 @@ impl TabComponent for HttpTab {
             if let Some(path) = dialog.filename().to_str() {
                 if !path.is_empty() {
                     crate::ui_state::add_http_item(path);
-                    crate::ui_state::append_http_log(&format!("Added directory: {}\r\n", path));
+                    crate::ui_state::write_to("http_log", &crate::ui_state::fmt_log(&format!("Added directory: {}", path)));
                     Self::refresh_items(&mut item_browser_add_dir);
                     crate::ui_state::sync_http_config();
                 }
@@ -182,7 +182,7 @@ impl TabComponent for HttpTab {
                 let item_path = text.trim_start_matches("▶ ").trim().to_string();
                 if !item_path.is_empty() {
                     crate::ui_state::remove_http_item(&item_path);
-                    crate::ui_state::append_http_log(&format!("Removed: {}\r\n", item_path));
+                    crate::ui_state::write_to("http_log", &crate::ui_state::fmt_log(&format!("Removed: {}", item_path)));
                     Self::refresh_items(&mut item_browser_remove);
                     crate::ui_state::sync_http_config();
                 }
@@ -193,7 +193,7 @@ impl TabComponent for HttpTab {
         explore_btn.set_callback(move |_| {
             let selected_idx = item_browser_explore.value();
             if selected_idx <= 0 {
-                crate::ui_state::append_http_log("No item selected.\r\n");
+                crate::ui_state::write_to("http_log", &crate::ui_state::fmt_log("No item selected."));
                 return;
             }
 
@@ -213,10 +213,10 @@ impl TabComponent for HttpTab {
                 let parent_str = parent.to_string_lossy().to_string();
                 match adapter::dialog::open_file_manager(&parent_str) {
                     Ok(_) => {
-                        crate::ui_state::append_http_log(&format!("Opened: {}\r\n", parent_str));
+                        crate::ui_state::write_to("http_log", &crate::ui_state::fmt_log(&format!("Opened: {}", parent_str)));
                     }
                     Err(e) => {
-                        crate::ui_state::append_http_log(&format!("Failed to open folder: {}\r\n", e));
+                        crate::ui_state::write_to("http_log", &crate::ui_state::fmt_log(&format!("Failed to open folder: {}", e)));
                     }
                 }
             }

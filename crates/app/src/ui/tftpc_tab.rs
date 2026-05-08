@@ -127,7 +127,7 @@ impl TabComponent for TftpcTab {
             // Update log
             if let Some(state) = UiState::global() {
                 if let Ok(mut s) = state.lock() {
-                    s.tftpc_log.push_str(&format!("Uploading {} to {} as {}\n", local, server, remote));
+                    s.write_to_field("tftpc_log", &crate::ui_state::fmt_log(&format!("Uploading {} to {} as {}", local, server, remote)));
                 }
             }
             Self::refresh_log(&mut log_display_clone);
@@ -150,7 +150,7 @@ impl TabComponent for TftpcTab {
             // Update log
             if let Some(state) = UiState::global() {
                 if let Ok(mut s) = state.lock() {
-                    s.tftpc_log.push_str(&format!("Downloading {} from {} to {}\n", remote, server, local));
+                    s.write_to_field("tftpc_log", &crate::ui_state::fmt_log(&format!("Downloading {} from {} to {}", remote, server, local)));
                 }
             }
 

@@ -80,7 +80,6 @@ impl App {
         let tftp_client_service = TftpcService::with_channel(tftpc_tx);
 
         let mut plan_service = PlanService::with_channel(plan_tx);
-        let _ = plan_service.update().await;
 
         let chat_service = ChatService::with_channel(chat_tx);
 
@@ -175,9 +174,22 @@ impl App {
             let view_model = Arc::clone(&self.view_model);
             tokio::spawn(async move {
                 while let Some(data) = rx.recv().await {
-                    handle_plan_data(data, &view_model).await;
+                    handle_ui_data(data, &view_model).await;
                 }
             });
+        }
+
+        // Load saved tasks into PlanService and start service
+        {
+            let saved_tasks = crate::ui_state::load_plan_tasks();
+            let mut plan_service = self.plan_service.write().await;
+            for task in &saved_tasks {
+                let _ = plan_service.add_task(
+                    &task.date, &task.time, task.cycle, &task.unit, &task.msg, true
+                ).await;
+            }
+            // Start the plan service (starts timer for all loaded tasks)
+            let _ = plan_service.start().await;
         }
 
         if let Some(mut rx) = self.http_rx.take() {
@@ -649,7 +661,7 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
 
     let temp_exe = temp_dir.join(format!("rabbit-{}", remote.version));
 
-    crate::ui_state::append_settings_output(&format!("Downloading: {:.1} MB", platform_info.size as f64 / 1024.0 / 1024.0));
+    crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Downloading: {:.1} MB", platform_info.size as f64 / 1024.0 / 1024.0)));
 
     // Download with progress
     let result = upgrade::download_update(
@@ -668,7 +680,7 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
     match result {
         Ok(_) => {
             info!("Download complete. Verifying and installing...");
-            crate::ui_state::append_settings_output("Download complete. Verifying and installing...");
+            crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Download complete. Verifying and installing..."));
             // Install (includes verification)
             match upgrade::install_update(&temp_exe, &platform_info.sha256) {
                 Ok(_) => {
@@ -676,13 +688,13 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
                 }
                 Err(e) => {
                     error!("Installation failed: {}", e);
-                    crate::ui_state::append_settings_output(&format!("Installation failed: {}", e));
+                    crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Installation failed: {}", e)));
                 }
             }
         }
         Err(e) => {
             error!("Download failed: {}", e);
-            crate::ui_state::append_settings_output(&format!("Download failed: {}", e));
+            crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Download failed: {}", e)));
         }
     }
 }
@@ -702,8 +714,8 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
             info!("Update available: {}", remote.version);
             // Use format_prompt for consistent display
             let msg = remote.format_prompt();
-            crate::ui_state::append_settings_output(&msg);
-            crate::ui_state::append_settings_output("");
+            crate::ui_state::write_to("settings_output", &crate::ui_state::raw_log(&msg));
+            crate::ui_state::write_to("settings_output", &crate::ui_state::raw_log(""));
 
             // Show dialog on main thread
             let remote_clone = remote.clone();
@@ -721,7 +733,7 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
             }
 
             info!("Application is up to date");
-            crate::ui_state::append_settings_output("Application is up to date");
+            crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Application is up to date"));
         }
         upgrade::UpdateStatus::CheckError(e) => {
             // Check shutdown flag before outputting
@@ -732,7 +744,7 @@ pub fn handle_version_check_result(shutdown_flag: Option<&std::sync::atomic::Ato
             }
 
             warn!("Failed to check for updates: {}", e);
-            crate::ui_state::append_settings_output(&format!("Update check failed: {}", e));
+            crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Update check failed: {}", e)));
         }
     }
 }
@@ -743,7 +755,7 @@ fn show_upgrade_dialog(remote: &VersionsManifest, platform_info: &PlatformInfo) 
     let choice = fltk::dialog::choice2_default(&prompt, "Update", "Later", "Skip This Version");
 
     if choice == Some(0) {
-        crate::ui_state::append_settings_output("Downloading and installing update...");
+        crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Downloading and installing update..."));
         // Spawn background thread for download/install to avoid blocking UI
         let remote = remote.clone();
         let platform_info = platform_info.clone();
@@ -751,9 +763,9 @@ fn show_upgrade_dialog(remote: &VersionsManifest, platform_info: &PlatformInfo) 
             perform_startup_upgrade(&remote, &platform_info);
         });
     } else if choice == Some(1) {
-        crate::ui_state::append_settings_output("Update deferred");
+        crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Update deferred"));
     } else if choice == Some(2) {
-        crate::ui_state::append_settings_output(&format!("Version {} skipped", remote.version));
+        crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Version {} skipped", remote.version)));
     }
 }
 
@@ -826,7 +838,7 @@ impl EventHandler for AppHandle {
                             }
                             ServiceUpdateResult::Stopped(_) => {
                                 crate::ui_state::update_module_running("tftpd", false);
-                                crate::ui_state::append_tftpd_log("TFTP server stopped.\r\n");
+                                crate::ui_state::write_to("tftpd_log", &crate::ui_state::fmt_log("TFTP server stopped"));
                             }
                             _ => {}
                         }
@@ -1112,14 +1124,14 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
             match module {
                 Module::Ping => {
                     info!("app.rs: Received PingLog={}", msg);
-                    crate::ui_state::append_ping_output(&msg);
+                    crate::ui_state::write_to("ping_output", &msg);
                 }
-                Module::Http => crate::ui_state::append_http_log(&msg),
-                Module::Scan => crate::ui_state::append_scan_output(&msg),
-                Module::Tftpd => crate::ui_state::append_tftpd_log(&msg),
-                Module::Tftpc => crate::ui_state::append_tftpc_log(&msg),
-                Module::Chat => crate::ui_state::append_chat_message(&msg, ""),
-                Module::Plan => crate::ui_state::append_plan_output(&msg),
+                Module::Http => crate::ui_state::write_to("http_log", &crate::ui_state::fmt_log(&msg)),
+                Module::Scan => crate::ui_state::write_to("scan_output", &msg),
+                Module::Tftpd => crate::ui_state::write_to("tftpd_log", &crate::ui_state::fmt_log(&msg)),
+                Module::Tftpc => crate::ui_state::write_to("tftpc_log", &crate::ui_state::fmt_log(&msg)),
+                Module::Chat => crate::ui_state::write_to("chat_messages", &format!("[{}]", msg)),
+                Module::Plan => crate::ui_state::write_to("plan_output", &crate::ui_state::fmt_log(&msg)),
             }
             // 事件驱动：直接刷新 UI，无轮询
             fltk::app::awake_callback(|| {
@@ -1132,7 +1144,7 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
             adapter::taskbar::TaskbarProgress::update(progress, total, &color);
         }
         UiData::ScanProgress(msg) => {
-            crate::ui_state::append_scan_output(&msg);
+            crate::ui_state::write_to("scan_output", &msg);
             fltk::app::awake_callback(|| {
                 crate::ui::ui_refresh::refresh_displays();
             });
@@ -1146,7 +1158,7 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
             });
         }
         UiData::ChatMessage(username, msg) => {
-            crate::ui_state::append_chat_message(&username, &msg);
+            crate::ui_state::write_to("chat_messages", &format!("[{}] {}", username, msg));
             fltk::app::awake_callback(|| {
                 crate::ui::ui_refresh::refresh_displays();
             });
@@ -1167,15 +1179,15 @@ async fn handle_plan_data(_data: UiData, _view_model: &Arc<RwLock<AppViewModel>>
 
 async fn handle_http_data(data: UiData) {
     if let UiData::Log(_, msg) = data {
-        crate::ui_state::append_http_log(&msg);
+        crate::ui_state::write_to("http_log", &crate::ui_state::fmt_log(&msg));
     }
 }
 
 async fn handle_tftp_data(data: UiData) {
     if let UiData::Log(module, msg) = data {
         match module {
-            Module::Tftpd => crate::ui_state::append_tftpd_log(&msg),
-            Module::Tftpc => crate::ui_state::append_tftpc_log(&msg),
+            Module::Tftpd => crate::ui_state::write_to("tftpd_log", &crate::ui_state::fmt_log(&msg)),
+            Module::Tftpc => crate::ui_state::write_to("tftpc_log", &crate::ui_state::fmt_log(&msg)),
             _ => {}
         }
     }

@@ -116,7 +116,7 @@ impl TabComponent for TftpdTab {
             if let Some(path) = dialog.filename().to_str() {
                 if !path.is_empty() {
                     crate::ui_state::add_tftpd_dir(path);
-                    crate::ui_state::append_tftpd_log(&format!("Added directory: {}\r\n", path));
+                    crate::ui_state::write_to("tftpd_log", &crate::ui_state::fmt_log(&format!("Added directory: {}", path)));
                     Self::refresh_dirs(&mut dir_browser_add);
                     crate::ui_state::sync_tftpd_config();
                 }
@@ -136,7 +136,7 @@ impl TabComponent for TftpdTab {
                 let remove_path = text.trim().to_string();
                 if !remove_path.is_empty() {
                     crate::ui_state::remove_tftpd_dir(&remove_path);
-                    crate::ui_state::append_tftpd_log(&format!("Removed directory: {}\r\n", remove_path));
+                    crate::ui_state::write_to("tftpd_log", &crate::ui_state::fmt_log(&format!("Removed directory: {}", remove_path)));
                     Self::refresh_dirs(&mut dir_browser_remove);
                     crate::ui_state::sync_tftpd_config();
                 }
@@ -147,7 +147,7 @@ impl TabComponent for TftpdTab {
         explore_btn.set_callback(move |_| {
             let selected_idx = dir_browser_explore.value();
             if selected_idx <= 0 {
-                crate::ui_state::append_tftpd_log("No directory selected.\r\n");
+                crate::ui_state::write_to("tftpd_log", &crate::ui_state::fmt_log("No directory selected."));
                 return;
             }
 
@@ -157,10 +157,10 @@ impl TabComponent for TftpdTab {
                     // Open directory in system file explorer
                     match adapter::dialog::open_file_manager(&dir_path) {
                         Ok(_) => {
-                            crate::ui_state::append_tftpd_log(&format!("Opened directory: {}\r\n", dir_path));
+                            crate::ui_state::write_to("tftpd_log", &crate::ui_state::fmt_log(&format!("Opened directory: {}", dir_path)));
                         }
                         Err(e) => {
-                            crate::ui_state::append_tftpd_log(&format!("Failed to open: {}\r\n", e));
+                            crate::ui_state::write_to("tftpd_log", &crate::ui_state::fmt_log(&format!("Failed to open: {}", e)));
                         }
                     }
                 }
@@ -175,7 +175,7 @@ impl TabComponent for TftpdTab {
             if selected_idx > 0 {
                 if let Some(text) = dir_browser_select.text(selected_idx) {
                     let dir_path = text.trim_start_matches("▶ ").trim().to_string();
-                    crate::ui_state::append_tftpd_log(&format!("Working directory set to: {}\r\n", dir_path));
+                    crate::ui_state::write_to("tftpd_log", &crate::ui_state::fmt_log(&format!("Working directory set to: {}", dir_path)));
                 }
             }
             crate::ui_state::sync_tftpd_config();

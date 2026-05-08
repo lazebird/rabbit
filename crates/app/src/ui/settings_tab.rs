@@ -16,7 +16,6 @@ use fltk::{
 
 use super::{Colors, Spacing, TabComponent};
 use crate::ui_events::{send_event, UiEvent};
-use crate::ui_state::append_settings_output;
 use crate::upgrade::{self, VersionsManifest};
 
 // ============================================================
@@ -268,8 +267,8 @@ impl TabComponent for SettingsTab {
             if ev == fltk::enums::Event::Push {
                 fltk::app::copy(&format!("sRabbit {}", CURRENT_VERSION));
 
-                append_settings_output("");
-                append_settings_output("Checking for updates...");
+                crate::ui_state::write_to("settings_output", &crate::ui_state::raw_log(""));
+                crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Checking for updates..."));
 
                 std::thread::spawn(|| {
                     crate::app::handle_version_check_result(None);
