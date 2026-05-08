@@ -20,7 +20,7 @@ mod windows {
         // Set display name for the menu item
         Command::new("reg")
             .creation_flags(CREATE_NO_WINDOW)
-            .args(&["add", reg_path, "/ve", "/d", "Open with Rabbit HTTP Server", "/f"])
+            .args(["add", reg_path, "/ve", "/d", "Open with Rabbit HTTP Server", "/f"])
             .output()
             .map_err(|e| format!("Failed to register context menu: {}", e))?;
 
@@ -28,7 +28,7 @@ mod windows {
         let cmd_path = format!("{}\\command", reg_path);
         Command::new("reg")
             .creation_flags(CREATE_NO_WINDOW)
-            .args(&["add", &cmd_path, "/ve", "/d", &format!("\"{}\" --http-server \"%1\"", exe_path), "/f"])
+            .args(["add", &cmd_path, "/ve", "/d", &format!("\"{}\" --http-server \"%1\"", exe_path), "/f"])
             .output()
             .map_err(|e| format!("Failed to register command: {}", e))?;
 
@@ -41,7 +41,7 @@ mod windows {
 
         Command::new("reg")
             .creation_flags(CREATE_NO_WINDOW)
-            .args(&["delete", reg_path, "/f"])
+            .args(["delete", reg_path, "/f"])
             .output()
             .map(|_| ())
             .map_err(|e| format!("Failed to unregister context menu: {}", e))
@@ -53,14 +53,14 @@ mod windows {
 
         Command::new("reg")
             .creation_flags(CREATE_NO_WINDOW)
-            .args(&["add", reg_path, "/ve", "/d", "Open with Rabbit HTTP Server", "/f"])
+            .args(["add", reg_path, "/ve", "/d", "Open with Rabbit HTTP Server", "/f"])
             .output()
             .map_err(|e| format!("Failed to register file context menu: {}", e))?;
 
         let cmd_path = format!("{}\\command", reg_path);
         Command::new("reg")
             .creation_flags(CREATE_NO_WINDOW)
-            .args(&["add", &cmd_path, "/ve", "/d", &format!("\"{}\" --http-server \"%1\"", exe_path), "/f"])
+            .args(["add", &cmd_path, "/ve", "/d", &format!("\"{}\" --http-server \"%1\"", exe_path), "/f"])
             .output()
             .map_err(|e| format!("Failed to register file command: {}", e))?;
 
@@ -73,7 +73,7 @@ mod windows {
 
         Command::new("reg")
             .creation_flags(CREATE_NO_WINDOW)
-            .args(&["delete", reg_path, "/f"])
+            .args(["delete", reg_path, "/f"])
             .output()
             .map(|_| ())
             .map_err(|e| format!("Failed to unregister file context menu: {}", e))

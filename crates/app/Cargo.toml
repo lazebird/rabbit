@@ -48,8 +48,11 @@ semver = "1"
 tray-icon = "0.23"
 image = "0.25"
 
+# Signal handling
+ctrlc = "3.2"
+
 [target.'cfg(target_os = "linux")'.dependencies]
 gtk = "0.18"
 
+[target.'cfg(target_os = "windows")'.dependencies]
 windows-sys = { version = "0.59", features = ["Win32_System_Console"] }
-ctrlc = "3.2"

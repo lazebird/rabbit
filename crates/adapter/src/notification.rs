@@ -49,7 +49,7 @@ fn show_notification_windows(title: &str, message: &str) -> Result<()> {
 
     let result = Command::new("powershell")
         .creation_flags(0x08000000) // CREATE_NO_WINDOW
-        .args(&["-NoProfile", "-WindowStyle", "Hidden", "-Command", &script])
+        .args(["-NoProfile", "-WindowStyle", "Hidden", "-Command", &script])
         .output();
 
     match result {
@@ -84,7 +84,7 @@ fn show_notification_macos(title: &str, message: &str) -> Result<()> {
     use std::process::Command;
 
     let result = Command::new("osascript")
-        .args(&["-e", &format!(r#"display notification "{}" with title "{}""#, message, title)])
+        .args(["-e", &format!(r#"display notification "{}" with title "{}""#, message, title)])
         .output();
 
     match result {

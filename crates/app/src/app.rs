@@ -386,7 +386,7 @@ impl App {
                         let _ = std::process::Command::new("open").arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md").spawn();
                         #[cfg(target_os = "windows")]
                         let _ = std::process::Command::new("cmd")
-                            .args(&["/c", "start", "https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md"])
+                            .args(["/c", "start", "https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md"])
                             .spawn();
                         true
                     }
@@ -397,7 +397,7 @@ impl App {
                         #[cfg(target_os = "macos")]
                         let _ = std::process::Command::new("open").arg("https://github.com/lazebird/rabbit").spawn();
                         #[cfg(target_os = "windows")]
-                        let _ = std::process::Command::new("cmd").args(&["/c", "start", "https://github.com/lazebird/rabbit"]).spawn();
+                        let _ = std::process::Command::new("cmd").args(["/c", "start", "https://github.com/lazebird/rabbit"]).spawn();
                         true
                     }
                     // F3: Open config file directory

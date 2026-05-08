@@ -35,7 +35,7 @@ fn set_autostart_windows(enabled: bool) -> Result<()> {
 
         let result = Command::new("reg")
             .creation_flags(CREATE_NO_WINDOW)
-            .args(&[
+            .args([
                 "add",
                 r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
                 "/v",
@@ -56,7 +56,7 @@ fn set_autostart_windows(enabled: bool) -> Result<()> {
         // Remove from Windows Run registry key
         let result = Command::new("reg")
             .creation_flags(CREATE_NO_WINDOW)
-            .args(&["delete", r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "/v", "Rabbit", "/f"])
+            .args(["delete", r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "/v", "Rabbit", "/f"])
             .output();
 
         // Ignore errors if key doesn't exist

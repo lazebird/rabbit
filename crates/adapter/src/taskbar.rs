@@ -139,7 +139,7 @@ pub mod windows {
 
             let taskbar = &mut *taskbar;
 
-            if let Some(init) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.hr_init) {
+            if let Some(init) = taskbar.lp_vtbl.as_ref().and_then(|v| v.hr_init) {
                 let _ = init(taskbar);
             }
 
@@ -151,10 +151,10 @@ pub mod windows {
                 TaskbarState::Indeterminate => TBPF_INDETERMINATE as u32,
             };
 
-            if let Some(set_state) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.set_progress_state) {
+            if let Some(set_state) = taskbar.lp_vtbl.as_ref().and_then(|v| v.set_progress_state) {
                 let hr = set_state(taskbar, hwnd as isize as HWND, tbpflag);
                 if hr != 0 {
-                    if let Some(release) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.release) {
+                    if let Some(release) = taskbar.lp_vtbl.as_ref().and_then(|v| v.release) {
                         let _ = release(taskbar);
                     }
                     return Err(format!("SetProgressState failed: HRESULT={}", hr));
@@ -162,10 +162,10 @@ pub mod windows {
             }
 
             if state != TaskbarState::None {
-                if let Some(set_value) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.set_progress_value) {
+                if let Some(set_value) = taskbar.lp_vtbl.as_ref().and_then(|v| v.set_progress_value) {
                     let hr = set_value(taskbar, hwnd as isize as HWND, progress as u64, 100);
                     if hr != 0 {
-                        if let Some(release) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.release) {
+                        if let Some(release) = taskbar.lp_vtbl.as_ref().and_then(|v| v.release) {
                             let _ = release(taskbar);
                         }
                         return Err(format!("SetProgressValue failed: HRESULT={}", hr));
@@ -173,7 +173,7 @@ pub mod windows {
                 }
             }
 
-            if let Some(release) = (*taskbar).lp_vtbl.as_ref().and_then(|v| v.release) {
+            if let Some(release) = taskbar.lp_vtbl.as_ref().and_then(|v| v.release) {
                 let _ = release(taskbar);
             }
 

@@ -112,7 +112,7 @@ pub fn open_file_manager(path: &str) -> Result<()> {
 
     #[cfg(target_os = "windows")]
     {
-        std::process::Command::new("explorer").arg(path_str).spawn().map_err(|e| PlatformError::Io(e))?;
+        std::process::Command::new("explorer").arg(path_str).spawn().map_err(PlatformError::Io)?;
         Ok(())
     }
 

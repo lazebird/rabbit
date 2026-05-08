@@ -156,7 +156,7 @@ fn load_icon() -> Result<tray_icon::Icon, String> {
 fn show_main_window() {
     if let Ok(store) = MAIN_WIN.lock() {
         if let Some(win) = &*store {
-            let mut win = win.clone();
+            let win = win.clone();
             fltk::app::awake_callback(move || {
                 #[cfg(target_os = "windows")]
                 {
@@ -176,7 +176,7 @@ fn show_main_window() {
 fn hide_main_window() {
     if let Ok(store) = MAIN_WIN.lock() {
         if let Some(win) = &*store {
-            let mut win = win.clone();
+            let win = win.clone();
             fltk::app::awake_callback(move || {
                 #[cfg(target_os = "windows")]
                 {

@@ -51,7 +51,7 @@ fn is_elevated() -> bool {
     use std::process::Command;
 
     // Simple check - try to open a privileged resource
-    Command::new("net").args(&["session"]).output().map(|o| o.status.success()).unwrap_or(false)
+    Command::new("net").args(["session"]).output().map(|o| o.status.success()).unwrap_or(false)
 }
 
 /// Request elevated permissions (platform-specific)

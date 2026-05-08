@@ -54,7 +54,7 @@ pub fn install_update(new_version_path: &Path, expected_sha256: &str) -> Result<
 }
 
 #[cfg(target_os = "windows")]
-fn install_windows(new_version_path: &Path, current_exe: PathBuf, current_dir: &Path) -> Result<(), String> {
+fn install_windows(new_version_path: &Path, current_exe: PathBuf, _current_dir: &Path) -> Result<(), String> {
     use std::fs;
 
     let update_dir = std::env::temp_dir().join("rabbit_update");
