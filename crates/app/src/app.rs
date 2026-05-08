@@ -217,7 +217,7 @@ impl App {
         }
 
         // Create FLTK application
-        let fltk_app = app::App::default();
+        let _fltk_app = app::App::default();
 
         // Set application-wide colors (lighter theme - similar to old version)
         app::background(0xF0, 0xF0, 0xF0); // Light gray background
@@ -353,6 +353,7 @@ impl App {
             chat_tab.as_widget_ptr() as usize,
             settings_tab.as_widget_ptr() as usize,
         ];
+        let esc_done = self.shutdown_flag.clone();
         main_win_for_keys.handle(move |win, ev| {
             use fltk::enums::Event;
             use fltk::enums::Key;
@@ -362,6 +363,7 @@ impl App {
                     // Esc: Exit the program
                     Key::Escape => {
                         info!("Esc key pressed - exiting program");
+                        esc_done.store(true, Ordering::SeqCst);
                         win.hide();
                         app::quit();
                         true
@@ -563,9 +565,10 @@ impl App {
 
         // Handle window close button - use set_callback which fires when the X button is clicked
         // Always quit when X is clicked (user requirement: only tray Hide should hide)
+        let cb_shutdown_flag = self.shutdown_flag.clone();
         main_win.set_callback(move |_| {
             info!("Close button clicked - exiting program");
-            crate::systray::remove_systray();
+            cb_shutdown_flag.store(true, Ordering::SeqCst);
             fltk::app::quit();
         });
 
@@ -588,8 +591,25 @@ impl App {
             });
         }
 
-        // Run FLTK event loop
-        fltk_app.run()?;
+        // Custom event loop — stays alive even when all windows are hidden,
+        // which is required for systray "Hide" (app runs in background).
+        // wait_for() blocks for up to 50ms waiting for events (user input,
+        // awake_callback from tray, etc.) — unlike plain wait() which returns
+        // immediately when no windows are visible.
+        // Exit triggers: Ctrl+C / ESC / close button (set shutdown_flag),
+        // tray Quit (sets systray::QUIT_REQUESTED).
+        loop {
+            match fltk::app::wait_for(0.05) {
+                Ok(_) => {}      // event processed or timeout
+                Err(e) => {
+                    warn!("FLTK event loop interrupted: {e}");
+                    break;
+                }
+            }
+            if self.shutdown_flag.load(Ordering::SeqCst) || crate::systray::is_shutdown_requested() {
+                break;
+            }
+        }
 
         // Abort the event loop task (it's blocked on receiver.recv() which will never return)
         event_handle.abort();

@@ -45,14 +45,16 @@ sha2 = "0.10"
 semver = "1"
 
 # System tray
-tray-icon = "0.23"
 image = "0.25"
+
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+tray-icon = "0.23"
 
 # Signal handling
 ctrlc = "3.2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-gtk = "0.18"
+ksni = { version = "0.3" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-sys = { version = "0.59", features = ["Win32_System_Console"] }
