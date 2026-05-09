@@ -2,12 +2,18 @@
 //!
 //! FLTK runs in a synchronous event loop, while services are async.
 //! This module provides a message passing system to bridge the two.
+//!
+//! Uses `tokio::sync::mpsc::unbounded_channel` instead of `std::sync::mpsc` so
+//! the event-loop consumer can wait via `.recv().await` — a proper async yield
+//! point — rather than a blocking `std::sync::mpsc::Receiver::recv()` that
+//! would permanently stall a tokio worker thread and starve co-located tasks
+//! (e.g. the ksni system-tray service task).
 
 use parking_lot::Mutex;
-use std::sync::mpsc::{channel, Receiver, Sender};
+use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
 /// Global event sender (initialized in App::run)
-static GLOBAL_EVENT_SENDER: Mutex<Option<Sender<UiEvent>>> = Mutex::new(None);
+static GLOBAL_EVENT_SENDER: Mutex<Option<UnboundedSender<UiEvent>>> = Mutex::new(None);
 
 /// UI Events that can be triggered from UI callbacks
 #[derive(Debug, Clone)]
@@ -35,9 +41,12 @@ pub enum UiEvent {
     VersionCheck,
 }
 
-/// Initialize the global event sender
-pub fn init_event_system() -> Receiver<UiEvent> {
-    let (sender, receiver) = channel::<UiEvent>();
+/// Initialize the global event sender.
+///
+/// Returns a `tokio::sync::mpsc::UnboundedReceiver` that the async event loop
+/// task should consume via `.recv().await` (non-blocking yield point).
+pub fn init_event_system() -> UnboundedReceiver<UiEvent> {
+    let (sender, receiver) = unbounded_channel::<UiEvent>();
     *GLOBAL_EVENT_SENDER.lock() = Some(sender);
     receiver
 }

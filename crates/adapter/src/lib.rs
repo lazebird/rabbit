@@ -9,6 +9,7 @@
 
 pub mod autostart;
 pub mod config;
+pub mod diag;
 pub mod dialog;
 pub mod elevation;
 pub mod network;

@@ -23,6 +23,13 @@
 //! lifecycle.run_event_loop();
 //! // Returns when shutdown is requested.
 //! ```
+//!
+// Bypass fltk::app::wait_for() which treats any poll() return value
+// other than 0 or 1 as an error. poll() returns the number of ready
+// fds — when both X11 display + awake pipe are ready, the return is 2.
+extern "C" {
+    fn Fl_wait_for(dur: f64) -> f64;
+}
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -55,6 +62,7 @@ impl Lifecycle {
     /// Safe to call from any thread. After this, `is_shutdown_requested()`
     /// returns `true` and `run_event_loop()` will exit on its next check.
     pub fn request_shutdown(&self) {
+        adapter::diag::log("Lifecycle::request_shutdown() called");
         self.inner.shutdown_requested.store(true, Ordering::SeqCst);
     }
 
@@ -72,19 +80,66 @@ impl Lifecycle {
     ///
     /// Returns when `is_shutdown_requested()` is `true` or the event
     /// loop encounters a fatal error.
+    ///
+    /// # Signal discipline (Linux only)
+    ///
+    /// On Linux, `wait_for()` uses `select()`/`poll()`.  Any signal
+    /// delivered to this thread causes `EINTR`, which FLTK surfaces as
+    /// `Err`.  To prevent this, the function blocks **all signals**
+    /// except those the application explicitly needs (SIGINT, SIGTERM)
+    /// on the calling thread via `pthread_sigmask`.  SIGCHLD is also
+    /// set to `SIG_IGN` so the kernel auto-reaps orphaned children.
     pub fn run_event_loop(&self) {
-        loop {
-            match fltk::app::wait_for(0.05) {
-                Ok(_) => {}
-                Err(e) => {
-                    tracing::warn!("FLTK event loop interrupted: {e}");
+        #[cfg(target_os = "linux")]
+        let exit_reason = unsafe {
+            // Block all signals except SIGINT/SIGTERM to prevent EINTR in poll()
+            let mut block_set: libc::sigset_t = std::mem::zeroed();
+            libc::sigfillset(&mut block_set);
+            libc::sigdelset(&mut block_set, libc::SIGINT);
+            libc::sigdelset(&mut block_set, libc::SIGTERM);
+            libc::pthread_sigmask(libc::SIG_BLOCK, &block_set, std::ptr::null_mut());
+            libc::signal(libc::SIGCHLD, libc::SIG_IGN);
+
+            let reason: &str;
+            loop {
+                // NOTE: uses raw FFI Fl_wait_for() instead of fltk::app::wait_for()
+                // because fltk-rs treats any poll() return value other than 0 or 1
+                // as an error ("interrupted by OS signal").  poll() returns the
+                // number of ready fds — when both X11 display + awake pipe are
+                // ready the return is 2, which is legitimate.
+                let raw: f64 = Fl_wait_for(0.05);
+                let as_i32 = raw as i32;
+                if as_i32 < 0 {
+                    // poll()/select() failed: callbacks not fired, unrecoverable
+                    reason = "wait_for_error";
+                    break;
+                }
+                if self.is_shutdown_requested() {
+                    reason = "shutdown_requested";
                     break;
                 }
             }
-            if self.is_shutdown_requested() {
-                break;
+            reason
+        };
+
+        #[cfg(not(target_os = "linux"))]
+        let exit_reason = {
+            loop {
+                match fltk::app::wait_for(0.05) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        adapter::diag::log(&format!("[lifecycle] FLTK event loop error: {e}"));
+                        break;
+                    }
+                }
+                if self.is_shutdown_requested() {
+                    break;
+                }
             }
-        }
+            "shutdown_or_error"
+        };
+
+        adapter::diag::log(&format!("[lifecycle] event loop exited, reason={exit_reason}"));
     }
 }
 

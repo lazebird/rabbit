@@ -5,6 +5,8 @@
 pub mod icon;
 pub mod lifecycle;
 pub mod systray;
+#[cfg(target_os = "linux")]
+pub mod tray_helper;
 pub mod app;
 pub mod ui;
 pub mod ui_events;

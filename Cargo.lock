@@ -83,6 +83,7 @@ dependencies = [
  "fltk",
  "image",
  "ksni",
+ "libc",
  "parking_lot",
  "schema",
  "semver",

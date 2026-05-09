@@ -27,6 +27,74 @@ use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
 use tracing::{error, info, warn};
 
+// ---------------------------------------------------------------------------
+// X11 error handler – installed before the FLTK event loop to log any
+// X11 protocol errors that may cause the transient FlError::Internal
+// observed during startup.  Chains to FLTK's internal handler so normal
+// error handling is preserved.
+// ---------------------------------------------------------------------------
+#[cfg(target_os = "linux")]
+mod x11_diag {
+    use std::ffi::{c_char, c_int, c_ulong, c_void};
+    use std::sync::OnceLock;
+
+    #[repr(C)]
+    struct XErrorEvent {
+        type_: c_int,
+        display: *mut c_void,
+        serial: c_ulong,
+        error_code: c_char,
+        request_code: c_char,
+        minor_code: c_char,
+        resource_id: c_ulong,
+    }
+
+    type XErrorHandler = unsafe extern "C" fn(*mut c_void, *mut XErrorEvent) -> c_int;
+
+    extern "C" {
+        fn XSetErrorHandler(handler: Option<XErrorHandler>) -> Option<XErrorHandler>;
+        fn XGetErrorText(
+            display: *mut c_void,
+            code: c_int,
+            buf: *mut c_char,
+            len: c_int,
+        ) -> c_int;
+    }
+
+    static PREV: OnceLock<XErrorHandler> = OnceLock::new();
+
+    unsafe extern "C" fn diag_handler(dpy: *mut c_void, ev: *mut XErrorEvent) -> c_int {
+        let e = &*ev;
+
+        // Resolve the error code to a human-readable string via Xlib.
+        let mut buf = [0i8; 512];
+        XGetErrorText(dpy, e.error_code as c_int, buf.as_mut_ptr(), buf.len() as c_int);
+        let desc = std::ffi::CStr::from_ptr(buf.as_ptr()).to_string_lossy();
+
+        adapter::diag::log(&format!(
+            "[X11 Error] {} (code={} opcode={} minor={} serial={} res_id={})",
+            desc, e.error_code, e.request_code, e.minor_code, e.serial, e.resource_id,
+        ));
+        // Chain to FLTK's handler so its internal error tracking still works.
+        if let Some(&prev) = PREV.get() {
+            prev(dpy, ev)
+        } else {
+            0
+        }
+    }
+
+    pub fn install() {
+        unsafe {
+            // XSetErrorHandler never returns NULL per Xlib docs, so the
+            // Option will always be Some (the default or FLTK's handler).
+            if let Some(prev) = XSetErrorHandler(Some(diag_handler)) {
+                let _ = PREV.set(prev);
+                adapter::diag::log("[X11] X11 error handler installed (chained)");
+            }
+        }
+    }
+}
+
 /// Main application struct
 pub struct App {
     view_model: Arc<RwLock<AppViewModel>>,
@@ -50,9 +118,11 @@ pub struct App {
 impl App {
     /// Create a new application instance
     pub async fn new() -> anyhow::Result<Self> {
+        adapter::diag::log("App::new(): entered");
         info!("Initializing Rabbit application");
 
         // Load configuration - use default if load fails (e.g., first run)
+        adapter::diag::log("App::new(): loading config");
         let config = match load_config() {
             Ok(cfg) => cfg,
             Err(e) => {
@@ -62,6 +132,7 @@ impl App {
         };
 
         // Create UI channels
+        adapter::diag::log("App::new(): creating channels");
         let (http_tx, http_rx) = mpsc::channel(100);
         let (ping_tx, ping_rx) = mpsc::channel(100);
         let (scan_tx, scan_rx) = mpsc::channel(100);
@@ -71,23 +142,20 @@ impl App {
         let (plan_tx, plan_rx) = mpsc::channel(100);
 
         // Create services with channels
+        adapter::diag::log("App::new(): creating services");
         let ping_service = PingService::with_channel(ping_tx);
-
         let http_service = HttpService::with_channel(http_tx);
-
         let tftp_server_service = TftpdService::with_channel(tftpd_tx);
-
         let tftp_client_service = TftpcService::with_channel(tftpc_tx);
-
         let plan_service = PlanService::with_channel(plan_tx);
-
         let chat_service = ChatService::with_channel(chat_tx);
-
         let scan_service = ScanService::with_channel(scan_tx);
 
         // Create view model
+        adapter::diag::log("App::new(): creating view model");
         let view_model = AppViewModel::new(config);
 
+        adapter::diag::log("App::new(): returning");
         Ok(Self {
             view_model: Arc::new(RwLock::new(view_model)),
             ping_service: Arc::new(RwLock::new(ping_service)),
@@ -110,6 +178,7 @@ impl App {
 
     /// Run the application
     pub async fn run(&mut self) -> anyhow::Result<()> {
+        adapter::diag::log("App::run(): entered");
         info!("Running Rabbit application with FLTK UI");
 
         // Initialize UI state and event system
@@ -218,6 +287,13 @@ impl App {
 
         // Create FLTK application
         let _fltk_app = app::App::default();
+
+        // Install X11 error handler for diagnostic logging (Linux only).
+        // This must be done AFTER app::App::default() which initialises the
+        // X11 display connection, but BEFORE any window operations that
+        // might trigger asynchronous X11 protocol errors.
+        #[cfg(target_os = "linux")]
+        x11_diag::install();
 
         // Set application-wide colors (lighter theme - similar to old version)
         app::background(0xF0, 0xF0, 0xF0); // Light gray background
@@ -499,12 +575,14 @@ impl App {
         }
 
         // Restore business running states from config
+        adapter::diag::log("app.run(): checking restore states");
         let config_for_restore = self.view_model.read().await.get_config();
         let ping_restore = config_for_restore.modules.get_bool("ping", "running").unwrap_or(false);
         let http_restore = config_for_restore.modules.get_bool("http", "running").unwrap_or(false);
         let tftp_restore = config_for_restore.modules.get_bool("tftpd", "running").unwrap_or(false);
         let chat_restore = config_for_restore.modules.get_bool("chat", "running").unwrap_or(false);
         drop(config_for_restore);
+        adapter::diag::log(&format!("app.run(): restore states ping={ping_restore} http={http_restore} tftp={tftp_restore} chat={chat_restore}"));
 
         // Handle Ctrl+C
         let ctrlc_lc = self.lifecycle.clone();
@@ -519,6 +597,7 @@ impl App {
         .ok();
 
         // Spawn event handler task
+        adapter::diag::log("app.run(): spawning event handler task");
         let app_clone = Arc::new(RwLock::new(AppHandle {
             view_model: self.view_model.clone(),
             ping_service: self.ping_service.clone(),
@@ -533,12 +612,15 @@ impl App {
         let event_handle = tokio::spawn(async move {
             Self::event_loop(app_clone, event_receiver).await;
         });
+        adapter::diag::log("app.run(): event handler spawned");
 
         // Restore business states after event loop is ready
+        adapter::diag::log("app.run(): sending restore events");
         if ping_restore { send_event(UiEvent::ModuleToggle { module: "ping".into() }); }
         if http_restore { send_event(UiEvent::ModuleToggle { module: "http".into() }); }
         if tftp_restore { send_event(UiEvent::ModuleToggle { module: "tftpd".into() }); }
         if chat_restore { send_event(UiEvent::ModuleToggle { module: "chat".into() }); }
+        adapter::diag::log("app.run(): restore events sent");
 
         // FINAL WINDOW PREPARATION AND SHOW
         main_win.end();
@@ -547,7 +629,11 @@ impl App {
         crate::ui_state::UiState::set_main_window(main_win.clone());
 
         // Show window first (needed before getting raw_handle on some platforms)
+        adapter::diag::log(&format!("app.run(): before main_win.show() pos=({},{}) size=({}x{})",
+            win_x, win_y, win_w, win_h));
         main_win.show();
+        adapter::diag::log(&format!("app.run(): after main_win.show() pos=({},{})",
+            main_win.x(), main_win.y()));
 
         // After show(), we can get the valid OS handle (HWND on Windows)
         let hwnd = main_win.raw_handle() as usize;
@@ -572,9 +658,67 @@ impl App {
             fltk::app::quit();
         });
 
-        // Initialize systray if enabled
+        // ── systray / tray helper initialization ──
+        //
+        // Always populate LIFECYCLE (needed by both helper IPC and local
+        // ksni re-enable paths).  Then, on Linux, ALWAYS connect to the
+        // helper if its socket exists — even when systray is disabled in
+        // config — so we have a command channel to hide the helper's
+        // unconditional startup tray icon.
+        crate::systray::set_lifecycle(&self.lifecycle);
+
+        #[cfg(target_os = "linux")]
+        {
+            adapter::diag::log(&format!("systray setup: systray_requested={systray_requested}"));
+
+            let has_sock = crate::tray_helper::has_helper_socket();
+            adapter::diag::log(&format!("systray setup: has_helper_socket={has_sock}"));
+
+            let helper_connected = if has_sock {
+                let win = main_win.clone();
+                let show = move || win.clone().show();
+                let hide = move || main_win.clone().hide();
+                let connected = crate::tray_helper::connect(
+                    self.lifecycle.clone(),
+                    show,
+                    hide,
+                );
+                adapter::diag::log(&format!("systray setup: connect returned {connected}"));
+                connected
+            } else {
+                false
+            };
+
+            if helper_connected {
+                if systray_requested {
+                    adapter::diag::log("systray setup: helper connected + systray enabled → show_tray");
+                    // Config wants tray — tell helper to create it.
+                    // The helper no longer creates a tray at startup;
+                    // it waits for this explicit command so the tray
+                    // never appears during authorization or when
+                    // the user has disabled it in settings.
+                    info!("systray enabled at startup, showing helper tray");
+                    crate::tray_helper::show_tray();
+                } else {
+                    adapter::diag::log("systray setup: helper connected + systray disabled → no tray");
+                }
+            } else if systray_requested {
+                adapter::diag::log("systray setup: no helper, falling back to local ksni");
+                // No helper (non-elevated or helper crashed) but config
+                // wants a tray → use local ksni directly.
+                if let Err(e) = systray::init_systray(self.lifecycle.clone()).await {
+                    warn!("Failed to initialize systray: {}", e);
+                    adapter::diag::log(&format!("systray setup: init_systray failed: {e}"));
+                } else {
+                    adapter::diag::log("systray setup: init_systray succeeded");
+                }
+            } else {
+                adapter::diag::log("systray setup: no helper, systray disabled → nothing");
+            }
+        }
+        #[cfg(not(target_os = "linux"))]
         if systray_requested {
-            if let Err(e) = systray::init_systray(self.lifecycle.clone()) {
+            if let Err(e) = systray::init_systray(self.lifecycle.clone()).await {
                 warn!("Failed to initialize systray: {}", e);
             }
         }
@@ -597,37 +741,63 @@ impl App {
         // and checks the unified shutdown flag.
         // Exit triggers: Ctrl+C / ESC / close button / tray Quit — all set the
         // same Lifecycle::shutdown_requested flag.
+        adapter::diag::log("app.run(): entering FLTK event loop");
         self.lifecycle.run_event_loop();
+        adapter::diag::log("app.run(): FLTK event loop exited");
 
         // Abort the event loop task (it's blocked on receiver.recv() which will never return)
+        adapter::diag::log("app.run(): aborting event handler");
         event_handle.abort();
+        adapter::diag::log("app.run(): event handler aborted");
 
         // Cleanup with timeout to prevent hanging on exit
-        info!("Starting cleanup process...");
-        // Remove systray icon before exit
-        systray::remove_systray();
+        adapter::diag::log("app.run(): starting cleanup");
+        // Remove systray icon before exit.
+        // Always try both: shutdown_helper handles any helper (connected or
+        // orphaned), remove_systray cleans up the local ksni tray.
+        #[cfg(target_os = "linux")]
+        {
+            adapter::diag::log("app.run(): calling shutdown_helper");
+            crate::tray_helper::shutdown_helper();
+            adapter::diag::log("app.run(): calling remove_systray");
+            systray::remove_systray();
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            adapter::diag::log("app.run(): calling remove_systray");
+            systray::remove_systray();
+        }
+        adapter::diag::log("app.run(): calling service cleanup");
         let cleanup_future = self.cleanup();
         match tokio::time::timeout(std::time::Duration::from_secs(3), cleanup_future).await {
             Ok(result) => {
                 if let Err(e) = result {
+                    adapter::diag::log(&format!("app.run(): cleanup FAILED: {e}"));
                     error!("Cleanup failed: {}", e);
                 } else {
+                    adapter::diag::log("app.run(): cleanup OK");
                     info!("Cleanup completed successfully");
                 }
             }
             Err(_) => {
+                adapter::diag::log("app.run(): cleanup timed out, forcing exit");
                 warn!("Cleanup timed out after 3 seconds, forcing exit");
             }
         }
 
         // Force exit - FLTK may leave internal threads running
+        adapter::diag::log("app.run(): calling std::process::exit(0)");
         info!("Final exit via std::process::exit(0)");
         std::process::exit(0);
     }
 
-    /// Event loop for processing UI events
-    async fn event_loop(app: Arc<RwLock<AppHandle>>, receiver: std::sync::mpsc::Receiver<UiEvent>) {
-        while let Ok(event) = receiver.recv() {
+    /// Event loop for processing UI events.
+    ///
+    /// Uses `.recv().await` (a proper async yield point) so the tokio worker
+    /// thread is never blocked — co-located tasks (e.g. the ksni system-tray
+    /// service) can always be polled between events.
+    async fn event_loop(app: Arc<RwLock<AppHandle>>, mut receiver: tokio::sync::mpsc::UnboundedReceiver<UiEvent>) {
+        while let Some(event) = receiver.recv().await {
             info!("Processing UI event: {:?}", event);
             let mut handle = app.write().await;
             if let Err(e) = handle.handle_event(event).await {
@@ -636,17 +806,19 @@ impl App {
         }
     }
 
-    /// Cleanup resources - 只销毁资源，不做配置更新
+    /// Cleanup resources — destroys services without sending status updates.
     async fn cleanup(&self) -> anyhow::Result<()> {
-        info!("Cleaning up resources");
-
-        // 程序退出，调用 destroy 销毁资源，不发状态通告
+        adapter::diag::log("app.cleanup(): started");
         self.ping_service.write().await.destroy().await.ok();
+        adapter::diag::log("app.cleanup(): ping destroyed");
         self.http_service.write().await.destroy().await.ok();
+        adapter::diag::log("app.cleanup(): http destroyed");
         self.tftp_server_service.write().await.destroy().await.ok();
+        adapter::diag::log("app.cleanup(): tftpd destroyed");
         self.plan_service.write().await.destroy().await.ok();
+        adapter::diag::log("app.cleanup(): plan destroyed");
         self.chat_service.write().await.destroy().await.ok();
-
+        adapter::diag::log("app.cleanup(): chat destroyed");
         info!("All services destroyed");
         Ok(())
     }
@@ -1032,12 +1204,27 @@ impl EventHandler for AppHandle {
                     warn!("Failed to set autostart: {}", e);
                 }
 
-                // Apply systray setting - only if changed
+                // Apply systray setting
                 let old_systray = crate::systray::is_active();
                 if old_systray != systray {
-                    fltk::app::awake_callback(move || {
-                        crate::systray::update_systray(systray);
-                    });
+                    #[cfg(target_os = "linux")]
+                    {
+                        if crate::tray_helper::is_connected() {
+                            // Helper manages the tray via IPC — tell it to
+                            // show or hide without killing the process.
+                            if systray {
+                                crate::tray_helper::show_tray();
+                            } else {
+                                crate::tray_helper::hide_tray();
+                            }
+                        } else {
+                            // No helper — use local ksni directly
+                            // (non-elevated run or helper already gone).
+                            crate::systray::update_systray(systray).await;
+                        }
+                    }
+                    #[cfg(not(target_os = "linux"))]
+                    crate::systray::update_systray(systray).await;
                 }
 
                 // Apply window topmost setting

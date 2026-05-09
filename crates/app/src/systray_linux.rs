@@ -11,6 +11,15 @@ use crate::lifecycle::Lifecycle;
 use fltk::prelude::WidgetExt;
 use ksni::{Handle, TrayMethods};
 
+// ---------------------------------------------------------------------------
+// Diag logging helper (writes to /tmp/rabbit-startup-*.log even before tracing)
+// ---------------------------------------------------------------------------
+macro_rules! diag {
+    ($($arg:tt)*) => {
+        adapter::diag::log(&format!("[systray] {}", format_args!($($arg)*)))
+    };
+}
+
 static SYSTRAY_ENABLED: AtomicBool = AtomicBool::new(false);
 static TRAY_HANDLE: Mutex<Option<Handle<RabbitTray>>> = Mutex::new(None);
 static MAIN_WIN: Mutex<Option<fltk::window::Window>> = Mutex::new(None);
@@ -104,6 +113,19 @@ fn load_icon() -> ksni::Icon {
     }
 }
 
+/// Ensure `LIFECYCLE` is populated even when the helper handles the tray at
+/// startup (in which case `init_systray` is never called and `LIFECYCLE` stays
+/// `None`).  Without this, `update_systray(true)` on re-enable silently does
+/// nothing and the tray never reappears.
+pub fn set_lifecycle(lifecycle: &Lifecycle) {
+    if let Ok(mut guard) = LIFECYCLE.lock() {
+        if guard.is_none() {
+            *guard = Some(lifecycle.clone());
+            diag!("set_lifecycle: stored");
+        }
+    }
+}
+
 pub fn set_main_window(win: fltk::window::Window) {
     if let Ok(mut store) = MAIN_WIN.lock() {
         *store = Some(win);
@@ -111,10 +133,18 @@ pub fn set_main_window(win: fltk::window::Window) {
 }
 
 pub fn is_active() -> bool {
-    SYSTRAY_ENABLED.load(Ordering::SeqCst)
+    if crate::tray_helper::is_connected() {
+        // Helper manages the tray — report actual visibility, not just
+        // connection state.  When the tray is hidden via hide_tray() the
+        // helper stays connected but is_tray_visible() returns false.
+        crate::tray_helper::is_tray_visible()
+    } else {
+        SYSTRAY_ENABLED.load(Ordering::SeqCst)
+    }
 }
 
-pub fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
+pub async fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
+    diag!("init_systray: start");
     remove_systray();
 
     // Store lifecycle for later init_systray calls (e.g. from update_systray)
@@ -125,49 +155,68 @@ pub fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
     let icon = load_icon();
     let tray = RabbitTray { icon, lifecycle };
 
-    // block_in_place temporarily exits the runtime so Handle::block_on can
-    // re-enter it safely — required because we're called from sync callbacks
-    // inside Runtime::block_on where direct Handle::block_on would panic.
-    let handle = tokio::task::block_in_place(move || {
-        tokio::runtime::Handle::current().block_on(async {
-            tray.assume_sni_available(true)
-                .spawn()
-                .await
-                .map_err(|e| format!("ksni spawn failed: {e}"))
-        })
-    })?;
+    diag!("init_systray: spawning ksni");
+    let handle = tray
+        .assume_sni_available(true)
+        .spawn()
+        .await
+        .map_err(|e| {
+            diag!("init_systray: spawn error: {e}");
+            format!("ksni spawn failed: {e}")
+        })?;
 
     if let Ok(mut guard) = TRAY_HANDLE.lock() {
         *guard = Some(handle);
     }
     SYSTRAY_ENABLED.store(true, Ordering::SeqCst);
+    diag!("init_systray: done, SYSTRAY_ENABLED=true");
     Ok(())
 }
 
 pub fn remove_systray() {
     if let Ok(mut guard) = TRAY_HANDLE.lock() {
         if let Some(handle) = guard.take() {
-            tokio::task::block_in_place(|| {
-                tokio::runtime::Handle::current().block_on(handle.shutdown());
-            });
+            // Send the shutdown message through the unbounded channel (immediate,
+            // non-blocking) and let the service task process it when it gets
+            // polled by the runtime.  Do NOT await the oneshot — the event-loop
+            // worker thread is about to block on recv() and any task we spawn
+            // here would land on the same thread's local queue and never run.
+            //
+            // Clippy's let_underscore_future is suppressed because the
+            // ShutdownAwaiter must NOT be awaited (see comment above).
+            #[allow(clippy::let_underscore_future)]
+            let _ = handle.shutdown();
         }
     }
     SYSTRAY_ENABLED.store(false, Ordering::SeqCst);
 }
 
-pub fn update_systray(enabled: bool) {
+pub async fn update_systray(enabled: bool) {
+    diag!("update_systray(enabled={enabled})");
+    // When tray helper is active, the helper controls the tray independently.
+    if crate::tray_helper::is_connected() {
+        diag!("update_systray: helper connected, skipping");
+        return;
+    }
     let currently_active = is_active();
+    diag!("update_systray: currently_active={currently_active}, SYSTRAY_ENABLED={}", SYSTRAY_ENABLED.load(Ordering::SeqCst));
     if enabled && !currently_active {
         let lifecycle = LIFECYCLE.lock().ok().and_then(|g| g.clone());
         match lifecycle {
             Some(lc) => {
-                if let Err(e) = init_systray(lc) {
+                diag!("update_systray: calling init_systray");
+                if let Err(e) = init_systray(lc).await {
                     warn!("Failed to init system tray: {e}");
+                    diag!("update_systray: init_systray error: {e}");
                 }
             }
-            None => warn!("Cannot init systray: no Lifecycle set"),
+            None => {
+                warn!("Cannot init systray: no Lifecycle set");
+                diag!("update_systray: LIFECYCLE is None!");
+            }
         }
     } else if !enabled && currently_active {
+        diag!("update_systray: calling remove_systray");
         remove_systray();
     }
 }
