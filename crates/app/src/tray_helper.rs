@@ -447,36 +447,33 @@ fn accept_with_timeout(listener: &UnixListener, timeout: Duration) -> io::Result
     use std::os::unix::io::AsRawFd;
 
     let fd = listener.as_raw_fd();
-    let mut flags = unsafe { libc::fcntl(fd, libc::F_GETFL, 0) };
-    if flags < 0 {
-        flags = 0;
-    }
-    if unsafe { libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK) } < 0 {
-        return Err(io::Error::last_os_error());
-    }
+    let timeout_ms = timeout.as_millis() as libc::c_int;
 
-    let deadline = std::time::Instant::now() + timeout;
-    loop {
-        match listener.accept() {
-            Ok((stream, _)) => {
-                unsafe { libc::fcntl(fd, libc::F_SETFL, flags) };
+    let mut pollfd = libc::pollfd {
+        fd,
+        events: libc::POLLIN,
+        revents: 0,
+    };
+
+    let ret = unsafe { libc::poll(&mut pollfd, 1, timeout_ms) };
+
+    match ret {
+        0 => {
+            Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "timed out waiting for parent",
+            ))
+        }
+        n if n > 0 => {
+            if (pollfd.revents & libc::POLLIN) != 0 {
+                let (stream, _) = listener.accept()?;
                 HELPER_CONNECTED.store(true, Ordering::SeqCst);
-                return Ok(stream);
-            }
-            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                if std::time::Instant::now() > deadline {
-                    return Err(io::Error::new(
-                        io::ErrorKind::TimedOut,
-                        "timed out waiting for parent",
-                    ));
-                }
-                std::thread::sleep(Duration::from_millis(200));
-            }
-            Err(e) => {
-                unsafe { libc::fcntl(fd, libc::F_SETFL, flags) };
-                return Err(e);
+                Ok(stream)
+            } else {
+                Err(io::Error::other("unexpected poll event"))
             }
         }
+        _ => Err(io::Error::last_os_error()),
     }
 }
 

@@ -22,10 +22,44 @@ use schema::{config::ConfigValue, AppConfig};
 
 use adapter::config::{load_config, save_config};
 use crate::lifecycle::Lifecycle;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
 use tracing::{error, info, warn};
+
+// ---------------------------------------------------------------------------
+// Window position save with debounce (event-driven, no polling)
+// ---------------------------------------------------------------------------
+thread_local! {
+    static RESIZE_TIMEOUT: std::cell::Cell<Option<app::TimeoutHandle>> = const { std::cell::Cell::new(None) };
+}
+
+fn save_window_position() {
+    RESIZE_TIMEOUT.with(|cell| {
+        cell.set(None);
+    });
+
+    info!("Attempting to save window position...");
+    if let Some(win) = crate::ui_state::UiState::get_main_window() {
+        let win_x = win.x();
+        let win_y = win.y();
+        let win_w = win.w();
+        let win_h = win.h();
+        info!("Window position: x={}, y={}, w={}, h={}", win_x, win_y, win_w, win_h);
+
+        if let Ok(mut config) = adapter::config::load_config() {
+            let window_config = schema::config::WindowConfig {
+                x: win_x,
+                y: win_y,
+                width: win_w,
+                height: win_h,
+            };
+            let json = serde_json::to_string(&window_config).unwrap_or_default();
+            config.modules.insert("global", "window", ConfigValue::String(json));
+            let _ = adapter::config::save_config(&config);
+            info!("Window position saved to config");
+        }
+    }
+}
 
 // ---------------------------------------------------------------------------
 // X11 error handler – installed before the FLTK event loop to log any
@@ -311,9 +345,6 @@ impl App {
             .unwrap_or((100, 100, 748, 518));
         info!("Loaded config: window pos=({}, {}), size=({}x{})", win_x, win_y, win_w, win_h);
 
-        let last_resize_time = Arc::new(AtomicU64::new(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64));
-        let save_pending = Arc::new(AtomicBool::new(false));
-
         let mut main_win = Window::new(win_x, win_y, win_w, win_h, "Rabbit");
         main_win.set_type(WindowType::Double);
         main_win.make_resizable(true);
@@ -506,57 +537,19 @@ impl App {
         // Let tabs fill the window on resize and save window position with debouncing
         let mut tabs_clone = tabs.clone();
 
-        let last_resize_for_thread = last_resize_time.clone();
-        let save_pending_for_thread = save_pending.clone();
-        std::thread::spawn(move || {
-            loop {
-                std::thread::sleep(std::time::Duration::from_millis(100));
-                let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
-                let last = last_resize_for_thread.load(Ordering::Relaxed);
-                let pending = save_pending_for_thread.load(Ordering::Relaxed);
+        main_win.resize_callback(move |w, x, y, nw, nh| {
+            tabs_clone.resize(5, 5, nw - 10, nh - 10);
+            w.redraw();
 
-                if pending && now.saturating_sub(last) >= 500 {
-                    // 500ms has passed since last resize, save now
-                    save_pending_for_thread.store(false, Ordering::Relaxed);
+            info!("resize callback: pos=({},{}) size={}x{}", x, y, nw, nh);
 
-                    info!("Attempting to save window position...");
-                    if let Some(win) = crate::ui_state::UiState::get_main_window() {
-                        let win_x = win.x();
-                        let win_y = win.y();
-                        let win_w = win.w();
-                        let win_h = win.h();
-                        info!("Window position: x={}, y={}, w={}, h={}", win_x, win_y, win_w, win_h);
-
-                        if let Ok(mut config) = adapter::config::load_config() {
-                            let window_config = schema::config::WindowConfig {
-                                x: win_x,
-                                y: win_y,
-                                width: win_w,
-                                height: win_h,
-                            };
-                            let json = serde_json::to_string(&window_config).unwrap_or_default();
-                            config.modules.insert("global", "window", ConfigValue::String(json));
-                            let _ = adapter::config::save_config(&config);
-                            info!("Window position saved to config");
-                        }
-                    }
+            RESIZE_TIMEOUT.with(|cell| {
+                if let Some(handle) = cell.take() {
+                    app::remove_timeout3(handle);
                 }
-            }
-        });
-
-        main_win.resize_callback({
-            let last_resize_time = last_resize_time.clone();
-            let save_pending = save_pending.clone();
-            move |w, x, y, nw, nh| {
-                tabs_clone.resize(5, 5, nw - 10, nh - 10);
-                w.redraw();
-
-                info!("resize callback: pos=({},{}) size={}x{}", x, y, nw, nh);
-                info!("Setting save_pending flag");
-                let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64;
-                last_resize_time.store(now, Ordering::Relaxed);
-                save_pending.store(true, Ordering::Relaxed);
-            }
+                let new_handle = app::add_timeout3(0.5, |_handle| save_window_position());
+                cell.set(Some(new_handle));
+            });
         });
 
         // Apply autostart setting
