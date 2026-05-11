@@ -77,14 +77,19 @@ async fn scan_complete_should_send_service_status_false() {
     let mut svc = service::ScanService::with_channel(tx);
     let _ = svc.update().await; // 启动 scan
 
-    // 等待 scan 完成（scan 很快，因为只扫描一个地址）
-    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
-
-    // 应该收到 ServiceStatus(Scan, false)
+    // 等待 scan 完成，最多 20 秒（应对并行测试下的资源争抢）
     let mut found = false;
-    while let Ok(data) = rx.try_recv() {
-        if matches!(data, UiData::ServiceStatus(Module::Scan, false, _)) {
-            found = true;
+    let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(20);
+    while tokio::time::Instant::now() < deadline {
+        // 先等一会儿再检查，避免 busy-loop
+        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+        while let Ok(data) = rx.try_recv() {
+            if matches!(data, UiData::ServiceStatus(Module::Scan, false, _)) {
+                found = true;
+                break;
+            }
+        }
+        if found {
             break;
         }
     }

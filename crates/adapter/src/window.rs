@@ -23,9 +23,130 @@ pub fn set_window_on_top(hwnd: usize, on_top: bool) {
         }
     }
 
-    #[cfg(not(target_os = "windows"))]
+    #[cfg(target_os = "linux")]
+    {
+        // Use X11 EWMH _NET_WM_STATE protocol via FLTK's display connection
+        // (avoids opening a separate X11 connection which can cause issues).
+        // hwnd is the X11 Window ID (XID) from FLTK's raw_handle().
+        set_window_on_top_x11(hwnd, on_top);
+    }
+
+    #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     {
         let _ = (hwnd, on_top);
+    }
+}
+
+// ─── Linux: _NET_WM_STATE protocol via FLTK display ─────────────────
+//
+// Uses FLTK's own X11 display connection (fl_display) obtained via
+// fltk::app::display(), so we never open a duplicate connection.
+// X11 FFI declarations mirror the approach used in x11_diag.rs.
+#[cfg(target_os = "linux")]
+mod x11_ffi {
+    #![allow(non_camel_case_types, dead_code)]
+
+    use std::ffi::c_void;
+
+    pub type Display = *mut c_void;
+    pub type Window = u64;
+    pub type Atom = u64;
+    pub type Bool = i32;
+
+    extern "C" {
+        pub fn XInternAtom(display: Display, name: *const i8, only_if_exists: Bool) -> Atom;
+        pub fn XDefaultRootWindow(display: Display) -> Window;
+        pub fn XSendEvent(
+            display: Display,
+            w: Window,
+            propagate: Bool,
+            event_mask: i64,
+            event_send: *mut u8,
+        ) -> i32;
+        pub fn XFlush(display: Display) -> i32;
+    }
+
+    // XClientMessageEvent layout on 64-bit Linux (LP64 data model):
+    //
+    //   ┌──────────────────────┬────────┬──────┐
+    //   │ field                │ offset │ size │
+    //   ├──────────────────────┼────────┼──────┤
+    //   │ type (i32)           │   0    │   4  │
+    //   │ padding              │   4    │   4  │
+    //   │ serial (u64)         │   8    │   8  │
+    //   │ send_event (i32)     │  16    │   4  │
+    //   │ padding              │  20    │   4  │
+    //   │ display (*mut u8)    │  24    │   8  │
+    //   │ window (u64)         │  32    │   8  │
+    //   │ message_type (u64)   │  40    │   8  │
+    //   │ format (i32)         │  48    │   4  │
+    //   │ padding              │  52    │   4  │
+    //   │ data (5 × i64)       │  56    │  40  │
+    //   └──────────────────────┴────────┴──────┘
+    //   Total: 96 bytes
+    #[repr(C)]
+    pub struct XClientMessageEvent {
+        pub type_: i32,
+        _pad0: [u8; 4],
+        serial: u64,
+        send_event: i32,
+        _pad1: [u8; 4],
+        display: *mut u8,
+        pub window: u64,
+        pub message_type: u64,
+        pub format: i32,
+        _pad2: [u8; 4],
+        pub data: [i64; 5],
+    }
+
+    pub const CLIENT_MESSAGE: i32 = 33;
+    pub const SUBSTRUCTURE_REDIRECT_MASK: i64 = 1 << 22;
+    pub const SUBSTRUCTURE_NOTIFY_MASK: i64 = 1 << 19;
+
+    pub const _NET_WM_STATE_REMOVE: i64 = 0;
+    pub const _NET_WM_STATE_ADD: i64 = 1;
+}
+
+#[cfg(target_os = "linux")]
+fn set_window_on_top_x11(x11_window: usize, on_top: bool) {
+    use self::x11_ffi::*;
+
+    unsafe {
+        let display = fltk::app::display();
+        if display.is_null() {
+            return;
+        }
+
+        let wm_state = XInternAtom(display, "_NET_WM_STATE\0".as_ptr() as *const i8, 0);
+        let above = XInternAtom(display, "_NET_WM_STATE_ABOVE\0".as_ptr() as *const i8, 0);
+
+        let root = XDefaultRootWindow(display);
+        let window = x11_window as Window;
+
+        let mut event: XClientMessageEvent = std::mem::zeroed();
+        event.type_ = CLIENT_MESSAGE;
+        event.window = window;
+        event.message_type = wm_state;
+        event.format = 32;
+        event.data[0] = if on_top {
+            _NET_WM_STATE_ADD
+        } else {
+            _NET_WM_STATE_REMOVE
+        };
+        event.data[1] = above as i64;
+        event.data[2] = 0;
+        event.data[3] = 1; // source indication: application
+
+        let event_mask = SUBSTRUCTURE_REDIRECT_MASK | SUBSTRUCTURE_NOTIFY_MASK;
+
+        XSendEvent(
+            display,
+            root,
+            0,
+            event_mask,
+            &mut event as *mut _ as *mut u8,
+        );
+        XFlush(display);
     }
 }
 

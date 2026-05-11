@@ -1,4 +1,4 @@
-//! IP Scanner Service
+//! IP Scanner Service — ICMP-based host discovery
 
 use crate::{
     ui_channel::{Module, UiData},
@@ -6,11 +6,16 @@ use crate::{
 };
 pub use schema::scan::ScanRange;
 use schema::NetworkProvider;
-use std::net::Ipv4Addr;
+use std::collections::HashMap;
+use std::net::{IpAddr, Ipv4Addr};
 use std::sync::Arc;
+use std::time::Instant;
+use surge_ping::{Client, Config, PingIdentifier, PingSequence};
+use socket2::Type as SockType;
+use rand::random;
 use tokio::sync::{mpsc, RwLock, Semaphore};
 use tokio::task::JoinHandle;
-use tokio::time::{timeout, Duration};
+use tokio::time::Duration;
 use tracing::{error, info};
 
 /// Internal Scanner configuration
@@ -22,7 +27,7 @@ struct ScannerConfig {
 
 impl Default for ScannerConfig {
     fn default() -> Self {
-        Self { timeout_ms: 1500, concurrent: 256 }
+        Self { timeout_ms: 500, concurrent: 256 }
     }
 }
 
@@ -39,9 +44,12 @@ enum ScannerState {
 #[derive(Debug, Clone)]
 struct ScanResult {
     pub ip: Ipv4Addr,
+    #[allow(dead_code)]
     pub online: bool,
     pub hostname: Option<String>,
     pub mac_address: Option<String>,
+    /// Diagnostic reason when mac_address is None (shown in scan output)
+    pub mac_unavailable_reason: Option<String>,
 }
 
 /// IP Scanner service
@@ -143,6 +151,28 @@ impl ScanService {
 
         self.results.write().await.clear();
 
+        // Create multiple ICMP clients (raw sockets) to parallelize
+        // kernel-level ICMP packet processing.  A single client/socket
+        // serialises all sends through one kernel queue, creating a
+        // bottleneck on large subnets.  Each additional socket gives the
+        // kernel another parallel path to process route-lookup + ARP +
+        // transmit, making results appear truly concurrent.
+        // (requires CAP_NET_RAW or root on Linux)
+        const POOL_SIZE: usize = 8;
+        let mut icmp_clients = Vec::with_capacity(POOL_SIZE);
+        for _ in 0..POOL_SIZE {
+            match Client::new(
+                &Config::builder().sock_type_hint(SockType::RAW).build()
+            ) {
+                Ok(c) => icmp_clients.push(Arc::new(c)),
+                Err(e) => {
+                    return Err(ServiceError::Other(format!(
+                        "Failed to create ICMP client (need root or CAP_NET_RAW): {}", e
+                    )));
+                }
+            }
+        }
+
         let (cancel_tx, mut cancel_rx) = mpsc::channel(1);
         self.cancel_tx = Some(cancel_tx);
 
@@ -159,8 +189,20 @@ impl ScanService {
             let completed = Arc::new(std::sync::atomic::AtomicUsize::new(0));
             let mut join_set = tokio::task::JoinSet::new();
 
-            for ip in ips {
-                let port = range.port;
+            // Build IP→MAC table for local interfaces so that the
+            // scanner's own IP(s) resolve without ARP table queries.
+            let local_macs = match &network_provider {
+                Some(p) => {
+                    let p = Arc::clone(p);
+                    tokio::task::spawn_blocking(move || p.get_local_mac_table())
+                        .await
+                        .unwrap_or_default()
+                }
+                None => HashMap::new(),
+            };
+            let local_macs = Arc::new(local_macs);
+
+            for (i, ip) in ips.into_iter().enumerate() {
                 let timeout_ms = config.timeout_ms;
                 let permit = semaphore.clone();
                 let completed_count = completed.clone();
@@ -168,28 +210,101 @@ impl ScanService {
                 let state_clone = state.clone();
                 let tx_clone = tx.clone();
                 let provider = network_provider.clone();
+                let client = Arc::clone(&icmp_clients[i % POOL_SIZE]);
+                let local_macs = Arc::clone(&local_macs);
 
                 join_set.spawn(async move {
                     let _permit = permit.acquire().await.unwrap();
-                    let result = scan_host(ip, port, timeout_ms, provider.clone()).await;
 
-                    if result.online {
-                        if let Some(ref tx) = tx_clone {
-                            let mac_info = result.mac_address.as_ref().map(|m| format!(" [MAC: {}]", m)).unwrap_or_default();
-                            let msg = format!(
-                                "Found online host: {}{}{}",
-                                result.ip,
-                                result.hostname.as_ref().map(|h| format!(" ({})", h)).unwrap_or_default(),
-                                mac_info
-                            );
-                            let _ = tx.send(UiData::Log(Module::Scan, msg)).await;
-                        }
-                    }
+                    let online = icmp_ping_host(&client, ip, timeout_ms).await;
+                    let result = ScanResult { ip, online, hostname: None, mac_address: None, mac_unavailable_reason: None };
 
                     results_clone.write().await.push(result);
                     let done = completed_count.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
                     let progress = ((done as f64 / total as f64) * 100.0) as u8;
                     *state_clone.write().await = ScannerState::Scanning { progress };
+
+                    if online {
+                        let bg_results = results_clone.clone();
+                        let bg_tx = tx_clone.clone();
+                        let bg_provider = provider.clone();
+                        let bg_local_macs = local_macs.clone();
+                        tokio::spawn(async move {
+                            let t0 = Instant::now();
+
+                            // ── MAC (near-instant: local table or ioctl) ──
+                            let (mac, reason) = if let Some(m) = bg_local_macs.get(&ip) {
+                                (Some(m.clone()), None)
+                            } else {
+                                match &bg_provider {
+                                    Some(p) => {
+                                        let mac = tokio::task::spawn_blocking({
+                                            let p = Arc::clone(p);
+                                            move || p.get_mac_from_arp(ip)
+                                        })
+                                        .await
+                                        .unwrap_or_default();
+                                        let r = mac.as_ref().map(|_| None)
+                                            .unwrap_or_else(|| Some("MAC not found (no ARP entry)".into()));
+                                        (mac, r)
+                                    }
+                                    None => (None, Some("no ARP provider available".into())),
+                                }
+                            };
+                            let t1 = Instant::now();
+
+                            // ── DNS with 200ms timeout ─────────────────
+                            //
+                            // glibc's getnameinfo() uses the system
+                            // resolver with default 5s per-NS timeout × 2
+                            // retries – can take 10s+ for IPs without PTR.
+                            // We cap it here so scan output is never
+                            // blocked for more than 200ms per host.
+                            let hostname = tokio::time::timeout(
+                                Duration::from_millis(200),
+                                resolve_hostname(ip),
+                            )
+                            .await
+                            .ok()
+                            .flatten();
+                            let t2 = Instant::now();
+
+                            // ── Output ─────────────────────────────────
+                            let host_info = hostname.as_ref()
+                                .map(|h| format!(" ({})", h))
+                                .unwrap_or_default();
+                            let mac_info = mac.as_ref()
+                                .map(|m| format!(" [MAC: {}]", m))
+                                .unwrap_or_default();
+                            let diag = reason.as_ref()
+                                .map(|r| format!(" — MAC: {}", r))
+                                .unwrap_or_default();
+                            let full_msg = format!(
+                                "Found online host: {}{}{}{}",
+                                ip, host_info, mac_info, diag,
+                            );
+                            if let Some(ref tx) = bg_tx {
+                                let _ = tx.send(UiData::Log(Module::Scan, full_msg)).await;
+                            }
+
+                            info!(
+                                "scan_timing: {} mac={}us dns={}us total={}us hostname={}",
+                                ip,
+                                t1.duration_since(t0).as_micros(),
+                                t2.duration_since(t1).as_micros(),
+                                t2.duration_since(t0).as_micros(),
+                                hostname.as_deref().unwrap_or("(none)"),
+                            );
+
+                            // ── Update result entry ────────────────────
+                            let mut r = bg_results.write().await;
+                            if let Some(entry) = r.iter_mut().find(|e| e.ip == ip) {
+                                entry.mac_address = mac;
+                                entry.mac_unavailable_reason = reason;
+                                entry.hostname = hostname;
+                            }
+                        });
+                    }
                 });
             }
 
@@ -275,74 +390,15 @@ impl Default for ScanService {
     }
 }
 
-/// Scan a single host with parallel port probing
-async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64, provider: Option<Arc<dyn NetworkProvider>>) -> ScanResult {
-    // If specific port given, try TCP connect
-    // If port == 0, do parallel ping (ICMP-like via multi-port TCP)
-    let online = if port == 0 {
-        ping_host_parallel(ip, timeout_ms).await.0
-    } else {
-        let addr = format!("{}:{}", ip, port);
-        let tcp_result = timeout(Duration::from_millis(timeout_ms), tokio::net::TcpStream::connect(&addr)).await;
-        matches!(&tcp_result, Ok(Ok(_)))
-    };
-
-    // Try to resolve hostname
-    let hostname = if online { resolve_hostname(ip).await } else { None };
-
-    // Try to get MAC address from ARP table via provider
-    let mac_address = if online {
-        if let Some(provider) = provider {
-            tokio::task::spawn_blocking(move || provider.get_mac_from_arp(ip))
-                .await
-                .unwrap_or_default()
-        } else {
-            None
-        }
-    } else {
-        None
-    };
-
-    ScanResult { ip, online, hostname, mac_address }
-}
-
-/// Ping a host using parallel TCP connect attempts to multiple common ports
-/// Returns (online, response_time_ms) - response_time is from the fastest successful connection
-async fn ping_host_parallel(ip: Ipv4Addr, timeout_ms: u64) -> (bool, Option<f64>) {
-    let start = tokio::time::Instant::now();
-    let common_ports = [80, 443, 22, 3389, 8080, 8443];
-    let overall_timeout = Duration::from_millis(timeout_ms);
-
-    // Create a future for each port connection
-    let mut join_set = tokio::task::JoinSet::new();
-    for port in common_ports {
-        let addr = format!("{}:{}", ip, port);
-        join_set.spawn(async move { tokio::net::TcpStream::connect(&addr).await });
-    }
-
-    // Wait for first success or timeout
-    let result = tokio::time::timeout(overall_timeout, async {
-        while let Some(res) = join_set.join_next().await {
-            if let Ok(Ok(_)) = res {
-                return true;
-            }
-        }
-        false
-    })
-    .await;
-
-    let elapsed = start.elapsed().as_secs_f64() * 1000.0;
-    match result {
-        Ok(true) => (true, Some(elapsed)),
-        _ => (false, None),
-    }
+/// ICMP ping a single host. Returns `true` if echo reply received.
+async fn icmp_ping_host(client: &Client, ip: Ipv4Addr, timeout_ms: u64) -> bool {
+    let mut pinger = client.pinger(IpAddr::V4(ip), PingIdentifier(random())).await;
+    pinger.timeout(Duration::from_millis(timeout_ms));
+    matches!(pinger.ping(PingSequence(0), &[]).await, Ok(_))
 }
 
 /// Resolve hostname from IP
 async fn resolve_hostname(ip: Ipv4Addr) -> Option<String> {
-    // Use DNS reverse lookup via dns-lookup crate
-    use std::net::IpAddr;
-
     let ip_addr = IpAddr::V4(ip);
 
     // Perform reverse DNS lookup (blocking operation)
