@@ -7,12 +7,12 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tracing::warn;
 
-use crate::lifecycle::Lifecycle;
+use crate::Lifecycle;
 use fltk::prelude::WidgetExt;
 use ksni::{Handle, TrayMethods};
 
 // ---------------------------------------------------------------------------
-// Diag logging helper (writes to /tmp/rabbit-startup-*.log even before tracing)
+// Diag logging helper
 // ---------------------------------------------------------------------------
 macro_rules! diag {
     ($($arg:tt)*) => {
@@ -113,10 +113,7 @@ fn load_icon() -> ksni::Icon {
     }
 }
 
-/// Ensure `LIFECYCLE` is populated even when the helper handles the tray at
-/// startup (in which case `init_systray` is never called and `LIFECYCLE` stays
-/// `None`).  Without this, `update_systray(true)` on re-enable silently does
-/// nothing and the tray never reappears.
+/// Ensure LIFECYCLE is populated for re-enable paths.
 pub fn set_lifecycle(lifecycle: &Lifecycle) {
     if let Ok(mut guard) = LIFECYCLE.lock() {
         if guard.is_none() {
@@ -132,11 +129,10 @@ pub fn set_main_window(win: fltk::window::Window) {
     }
 }
 
+/// Reports whether a tray icon is currently visible, considering both the local
+/// ksni tray and the helper-managed tray (elevated runs).
 pub fn is_active() -> bool {
     if crate::tray_helper::is_connected() {
-        // Helper manages the tray — report actual visibility, not just
-        // connection state.  When the tray is hidden via hide_tray() the
-        // helper stays connected but is_tray_visible() returns false.
         crate::tray_helper::is_tray_visible()
     } else {
         SYSTRAY_ENABLED.load(Ordering::SeqCst)
@@ -147,7 +143,6 @@ pub async fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
     diag!("init_systray: start");
     remove_systray();
 
-    // Store lifecycle for later init_systray calls (e.g. from update_systray)
     if let Ok(mut guard) = LIFECYCLE.lock() {
         *guard = Some(lifecycle.clone());
     }
@@ -176,14 +171,6 @@ pub async fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
 pub fn remove_systray() {
     if let Ok(mut guard) = TRAY_HANDLE.lock() {
         if let Some(handle) = guard.take() {
-            // Send the shutdown message through the unbounded channel (immediate,
-            // non-blocking) and let the service task process it when it gets
-            // polled by the runtime.  Do NOT await the oneshot — the event-loop
-            // worker thread is about to block on recv() and any task we spawn
-            // here would land on the same thread's local queue and never run.
-            //
-            // Clippy's let_underscore_future is suppressed because the
-            // ShutdownAwaiter must NOT be awaited (see comment above).
             #[allow(clippy::let_underscore_future)]
             let _ = handle.shutdown();
         }
@@ -191,15 +178,10 @@ pub fn remove_systray() {
     SYSTRAY_ENABLED.store(false, Ordering::SeqCst);
 }
 
+/// Manages only local ksni tray. Helper-connected tray is managed by app layer via IPC.
 pub async fn update_systray(enabled: bool) {
     diag!("update_systray(enabled={enabled})");
-    // When tray helper is active, the helper controls the tray independently.
-    if crate::tray_helper::is_connected() {
-        diag!("update_systray: helper connected, skipping");
-        return;
-    }
     let currently_active = is_active();
-    diag!("update_systray: currently_active={currently_active}, SYSTRAY_ENABLED={}", SYSTRAY_ENABLED.load(Ordering::SeqCst));
     if enabled && !currently_active {
         let lifecycle = LIFECYCLE.lock().ok().and_then(|g| g.clone());
         match lifecycle {

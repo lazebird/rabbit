@@ -59,7 +59,7 @@ const TAG_TRAY_SHOW: u32 = 0x11;
 // Init-once: embed icon bytes so the helper always finds it regardless of cwd
 // ---------------------------------------------------------------------------
 
-static EMBEDDED_ICON: &[u8] = include_bytes!("../resources/icon.ico");
+static EMBEDDED_ICON: &[u8] = include_bytes!("../../../resources/icon.ico");
 
 // ---------------------------------------------------------------------------
 // Socket path helpers
@@ -240,7 +240,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
 /// Returns `true` on success.  The caller should skip `systray::init_systray`
 /// when this returns `true`.
 pub fn connect<F1, F2>(
-    lifecycle: crate::lifecycle::Lifecycle,
+    lifecycle: crate::Lifecycle,
     show_win: F1,
     hide_win: F2,
 ) -> bool
@@ -345,7 +345,7 @@ fn try_connect_inner() -> Option<UnixStream> {
 
 fn start_event_listener<F1, F2>(
     stream: UnixStream,
-    lifecycle: crate::lifecycle::Lifecycle,
+    lifecycle: crate::Lifecycle,
     show_win: F1,
     hide_win: F2,
 ) where

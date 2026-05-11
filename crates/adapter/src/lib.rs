@@ -10,23 +10,31 @@
 pub mod autostart;
 pub mod dialog;
 pub mod elevation;
+pub mod icon;
+pub mod lifecycle;
 pub mod network;
 pub mod notification;
 pub mod ping;
+pub mod platform;
 pub mod shell;
 pub mod taskbar;
+pub mod tray;
+#[cfg(target_os = "linux")]
+pub mod tray_helper;
 pub mod window;
 pub mod x11_diag;
 
 pub use autostart::*;
 pub use dialog::*;
 pub use elevation::*;
+pub use icon::IconData;
+pub use lifecycle::Lifecycle;
 pub use network::*;
 pub use notification::*;
 pub use ping::*;
+pub use platform::*;
 pub use shell::*;
 pub use taskbar::*;
-pub use window::*;
 
 use thiserror::Error;
 

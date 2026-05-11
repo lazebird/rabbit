@@ -12,6 +12,27 @@
 //! that the sudoers policy treats as part of the command invocation and is
 //! NOT subject to `env_keep` / `env_reset` — it always works.
 
+/// Errors that can occur during privilege elevation.
+#[derive(Debug)]
+pub enum ElevationError {
+    /// User cancelled the password dialog.
+    Cancelled,
+    /// sudo process failed with an error.
+    SudoFailed(String),
+    /// Failed to spawn the elevation helper.
+    SpawnFailed(String),
+}
+
+impl std::fmt::Display for ElevationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ElevationError::Cancelled => write!(f, "Elevation cancelled by user"),
+            ElevationError::SudoFailed(msg) => write!(f, "sudo failed: {msg}"),
+            ElevationError::SpawnFailed(msg) => write!(f, "Elevation spawn failed: {msg}"),
+        }
+    }
+}
+
 /// Returns `true` when the current process already has elevated privileges.
 pub fn is_elevated() -> bool {
     #[cfg(any(target_os = "android", target_os = "ios"))]
@@ -26,17 +47,23 @@ pub fn is_elevated() -> bool {
     }
 }
 
-pub fn ensure_elevated() {
+/// Ensure the process has elevated privileges.
+///
+/// - 当已提权时返回 `Ok(())`。
+/// - 需要提权时内部调用 sudo/UAC，成功则 `process::exit(0)` 以 root 身份重启进程，
+///   **不会返回**到调用方。
+/// - 提权失败时返回 `Err(ElevationError)`。
+pub fn ensure_elevated() -> Result<(), ElevationError> {
     // Debug / Android / iOS: skip elevation
     #[cfg(any(debug_assertions, target_os = "android", target_os = "ios"))]
     {
-        // skip
+        return Ok(());
     }
 
     #[cfg(not(any(debug_assertions, target_os = "android", target_os = "ios")))]
     {
         if is_elevated() {
-            return;
+            return Ok(());
         }
 
         let exe_path = std::env::current_exe()
@@ -47,10 +74,10 @@ pub fn ensure_elevated() {
         // Linux: sudo with VAR=value forwarding (preserves DISPLAY etc.)
         // Other:  xelevate native (UAC on Windows)
         #[cfg(target_os = "linux")]
-        elevate_with_sudo(&exe_path);
+        return elevate_with_sudo_inner(&exe_path);
 
         #[cfg(not(target_os = "linux"))]
-        elevate_with_xelevate(&exe_path);
+        return elevate_with_xelevate_inner(&exe_path);
     }
 }
 
@@ -61,38 +88,26 @@ pub fn ensure_elevated() {
 /// Elevate via `sudo -S` using xelevate's password dialog, with critical GUI
 /// environment variables forwarded via `VAR=value` syntax (works even when
 /// `env_reset` is enabled and SETENV is not granted).
+///
+/// 成功时内部 `process::exit(0)`（子进程已启动），失败时返回 `Err`。
 #[cfg(all(
     target_os = "linux",
     not(any(debug_assertions, target_os = "android", target_os = "ios"))
 ))]
-fn elevate_with_sudo(exe_path: &str) -> ! {
+fn elevate_with_sudo_inner(exe_path: &str) -> Result<(), ElevationError> {
     use std::io::{Read, Write};
     use std::process::{Command, Stdio};
 
-    rabbit_diag::log("elevate_with_sudo: requesting password");
+    rabbit_diag::log("elevate_with_sudo_inner: requesting password");
     let password = match xelevate::request_password() {
         Some(p) => p,
         None => {
-            show_elevation_error("Elevation cancelled by user.");
-            std::process::exit(1);
+            rabbit_diag::log("elevate_with_sudo_inner: password cancelled");
+            return Err(ElevationError::Cancelled);
         }
     };
-    rabbit_diag::log("elevate_with_sudo: password obtained");
+    rabbit_diag::log("elevate_with_sudo_inner: password obtained");
 
-    // ── Build sudo command ──────────────────────────────────────────────
-    // sudo -S -k VAR=value1 VAR=value2 ... ./rabbit
-    //
-    // VAR=value placed BEFORE the command path bypasses env_reset even
-    // without the SETENV sudoers tag.  This is the only portable way to
-    // inject environment into the root process.
-    // Forward critical GUI environment variables via sudo's VAR=value
-    // syntax (bypasses env_reset even without SETENV sudoers tag).
-    //
-    // NOTE on XAUTHORITY: if the original environment doesn't explicitly
-    // set XAUTHORITY, the X11 library falls back to $HOME/.Xauthority.
-    // But sudo changes HOME to /root, so the fallback looks for
-    // /root/.Xauthority — which doesn't exist.  We handle this below by
-    // deriving XAUTHORITY from the original HOME when it's missing.
     let gui_vars = ["DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY",
                     "DBUS_SESSION_BUS_ADDRESS", "XDG_RUNTIME_DIR"];
 
@@ -110,9 +125,6 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
         }
     }
 
-    // If XAUTHORITY wasn't in the original environment (or was empty),
-    // derive it from $HOME/.Xauthority.  This prevents the X library's
-    // fallback from looking at /root/.Xauthority after sudo changes HOME.
     if std::env::var("XAUTHORITY").ok().map_or(true, |v| v.is_empty()) {
         if let Ok(home) = std::env::var("HOME") {
             if !home.is_empty() {
@@ -129,20 +141,21 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
     cmd.arg(exe_path);
     cmd.stdin(Stdio::piped());
     cmd.stdout(Stdio::null());
-    cmd.stderr(Stdio::piped());      // Capture errors for diagnostics
+    cmd.stderr(Stdio::piped());
 
-    rabbit_diag::log("elevate_with_sudo: spawning sudo");
-    let mut child = cmd.spawn().unwrap_or_else(|e| {
-        show_elevation_error(&format!("Failed to spawn sudo: {e}"));
-        std::process::exit(1);
-    });
+    rabbit_diag::log("elevate_with_sudo_inner: spawning sudo");
+    let mut child = match cmd.spawn() {
+        Ok(c) => c,
+        Err(e) => {
+            rabbit_diag::log(&format!("elevate_with_sudo_inner: spawn failed: {e}"));
+            return Err(ElevationError::SpawnFailed(format!("Failed to spawn sudo: {e}")));
+        }
+    };
 
-    // Pipe the password to sudo -S
     if let Some(mut stdin) = child.stdin.take() {
         let _ = stdin.write_all(format!("{password}\n").as_bytes());
     }
 
-    // Wait for sudo to finish (with a longer timeout)
     let timeout_ms = 5000u64;
     let deadline = std::time::Instant::now() + std::time::Duration::from_millis(timeout_ms);
 
@@ -151,13 +164,13 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
             Ok(Some(status)) => break Some(status),
             Ok(None) => {
                 if std::time::Instant::now() > deadline {
-                    rabbit_diag::log("elevate_with_sudo: sudo still running after 5s, assuming success");
+                    rabbit_diag::log("elevate_with_sudo_inner: sudo still running after 5s, assuming success");
                     std::process::exit(0);
                 }
                 std::thread::sleep(std::time::Duration::from_millis(200));
             }
             Err(e) => {
-                rabbit_diag::log(&format!("elevate_with_sudo: sudo try_wait error: {e}"));
+                rabbit_diag::log(&format!("elevate_with_sudo_inner: sudo try_wait error: {e}"));
                 break None;
             }
         }
@@ -165,28 +178,23 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
 
     match exit_status {
         Some(status) if status.success() => {
-            rabbit_diag::log("elevate_with_sudo: sudo success, exiting");
+            rabbit_diag::log("elevate_with_sudo_inner: sudo success, exiting");
             std::process::exit(0);
         }
         Some(status) => {
-            // Capture stderr for diagnostics
             let mut stderr_buf = String::new();
             let _ = child.stderr.take().map(|mut s| s.read_to_string(&mut stderr_buf));
             let code = status.code();
-            rabbit_diag::log(&format!("elevate_with_sudo: sudo failed code={code:?} stderr={stderr_buf:?}"));
-
-            show_elevation_error(&format!(
-                "sudo exited with code {code:?}.\n\n\
-                 stderr: {stderr_buf}\n\n\
-                 Make sure you have sudo access and the password is correct.\n\
-                 Try running from a terminal to see the exact error:\n  {exe_path}",
-            ));
-            std::process::exit(1);
+            rabbit_diag::log(&format!("elevate_with_sudo_inner: sudo failed code={code:?} stderr={stderr_buf:?}"));
+            Err(ElevationError::SudoFailed(format!(
+                "sudo exited with code {code:?}.\nstderr: {stderr_buf}",
+            )))
         }
         None => {
-            rabbit_diag::log("elevate_with_sudo: sudo wait error");
-            show_elevation_error("Failed to wait for sudo. Please try running from a terminal.");
-            std::process::exit(1);
+            rabbit_diag::log("elevate_with_sudo_inner: sudo wait error");
+            Err(ElevationError::SudoFailed(
+                "Failed to wait for sudo. Please try running from a terminal.".into(),
+            ))
         }
     }
 }
@@ -201,52 +209,12 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
     target_os = "ios",
     target_os = "linux"
 )))]
-fn elevate_with_xelevate(exe_path: &str) -> ! {
+fn elevate_with_xelevate_inner(exe_path: &str) -> Result<(), ElevationError> {
     match xelevate::elevate(exe_path) {
         Ok(()) => std::process::exit(0),
         Err(e) => {
-            show_elevation_error(&format!("{e}"));
-            std::process::exit(1);
+            rabbit_diag::log(&format!("elevate_with_xelevate_inner: failed: {e}"));
+            Err(ElevationError::SpawnFailed(e.to_string()))
         }
     }
-}
-
-// ---------------------------------------------------------------------------
-// Error dialog (FLTK)
-// ---------------------------------------------------------------------------
-
-/// Show a modal FLTK error dialog and wait for the user to click OK.
-#[cfg(not(any(debug_assertions, target_os = "android", target_os = "ios")))]
-fn show_elevation_error(msg: &str) {
-    rabbit_diag::log("show_elevation_error: creating FLTK dialog");
-    use fltk::prelude::*;
-
-    let app = fltk::app::App::default();
-    let mut wind =
-        fltk::window::Window::default().with_size(400, 180).with_label("Elevation Failed");
-    wind.make_modal(true);
-
-    let mut msg_box =
-        fltk::text::TextDisplay::default().with_pos(20, 20).with_size(360, 100);
-    msg_box.set_buffer(Some(fltk::text::TextBuffer::default()));
-    msg_box.buffer().unwrap().set_text(msg);
-
-    let mut btn =
-        fltk::button::Button::default().with_pos(160, 140).with_size(80, 30).with_label("OK");
-    btn.set_callback({
-        let mut w = wind.clone();
-        move |_| w.hide()
-    });
-
-    wind.end();
-    rabbit_diag::log("show_elevation_error: showing dialog");
-    wind.show();
-    rabbit_diag::log("show_elevation_error: entering FLTK event loop");
-    app.run().unwrap();
-    rabbit_diag::log("show_elevation_error: dialog closed");
-}
-
-#[cfg(test)]
-mod tests {
-    // Keep empty test module to avoid "unused module" warning.
 }

@@ -3,9 +3,31 @@
 //! Provides platform-specific window operations:
 //! - Setting window on top (topmost) or normal state
 //! - Hiding/showing window for tray (Windows only)
+//!
+//! hwnd 统一通过 `set_main_window()` 注册，所有操作从内部静态读取，
+//! 不再暴露 hwnd 到公共 API。
+
+use std::sync::OnceLock;
+
+/// 主窗口平台句柄（hwnd / XID），一次注册全局共享
+static MAIN_HWND: OnceLock<usize> = OnceLock::new();
+
+/// 注册主窗口句柄（窗口创建后调用一次，跨平台）
+pub fn set_main_window(hwnd: usize) {
+    let _ = MAIN_HWND.set(hwnd);
+}
+
+/// 获取已注册的窗口句柄（内部使用）
+fn get_hwnd() -> Option<usize> {
+    MAIN_HWND.get().copied()
+}
 
 /// Set or unset the window on-top state
-pub fn set_window_on_top(hwnd: usize, on_top: bool) {
+///
+/// hwnd 通过 `set_main_window()` 预先注册。
+pub fn set_window_on_top(on_top: bool) {
+    let Some(hwnd) = get_hwnd() else { return };
+
     #[cfg(target_os = "windows")]
     {
         use windows_sys::Win32::UI::WindowsAndMessaging::{
@@ -25,15 +47,12 @@ pub fn set_window_on_top(hwnd: usize, on_top: bool) {
 
     #[cfg(target_os = "linux")]
     {
-        // Use X11 EWMH _NET_WM_STATE protocol via FLTK's display connection
-        // (avoids opening a separate X11 connection which can cause issues).
-        // hwnd is the X11 Window ID (XID) from FLTK's raw_handle().
         set_window_on_top_x11(hwnd, on_top);
     }
 
     #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     {
-        let _ = (hwnd, on_top);
+        let _ = on_top;
     }
 }
 
@@ -151,9 +170,10 @@ fn set_window_on_top_x11(x11_window: usize, on_top: bool) {
 }
 
 /// Hide window (for tray) - Windows only
-/// On Linux, FLTK's hide()/show() are used directly in systray.rs
+/// On Linux, FLTK's hide()/show() are used directly in systray
 #[cfg(target_os = "windows")]
-pub fn hide_window(hwnd: usize) {
+pub fn hide_window() {
+    let Some(hwnd) = get_hwnd() else { return };
     use windows_sys::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_HIDE};
     let hwnd = hwnd as windows_sys::Win32::Foundation::HWND;
     unsafe {
@@ -163,7 +183,8 @@ pub fn hide_window(hwnd: usize) {
 
 /// Show window (restore from tray) - Windows only
 #[cfg(target_os = "windows")]
-pub fn show_window(hwnd: usize) {
+pub fn show_window() {
+    let Some(hwnd) = get_hwnd() else { return };
     use windows_sys::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_SHOWNORMAL};
     let hwnd = hwnd as windows_sys::Win32::Foundation::HWND;
     unsafe {
@@ -172,7 +193,7 @@ pub fn show_window(hwnd: usize) {
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn hide_window(_hwnd: usize) {}
+pub fn hide_window() {}
 
 #[cfg(not(target_os = "windows"))]
-pub fn show_window(_hwnd: usize) {}
+pub fn show_window() {}

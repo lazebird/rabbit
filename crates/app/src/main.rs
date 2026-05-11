@@ -24,7 +24,7 @@ fn main() -> anyhow::Result<()> {
     #[cfg(target_os = "linux")]
     if std::env::args().any(|a| a == "--tray-helper") {
         rabbit_diag::log("starting tray helper mode");
-        return app::tray_helper::run().map_err(|e| anyhow::anyhow!("{e}"));
+        return adapter::tray_helper::run().map_err(|e| anyhow::anyhow!("{e}"));
     }
 
     // Ensure elevated privileges FIRST to avoid redundant initialization if restarting.
@@ -39,13 +39,21 @@ fn main() -> anyhow::Result<()> {
         #[cfg(target_os = "linux")]
         if !adapter::is_elevated() {
             rabbit_diag::log("spawning tray helper");
-            if let Err(e) = app::tray_helper::spawn() {
+            if let Err(e) = adapter::tray_helper::spawn() {
                 eprintln!("Warning: failed to spawn tray helper: {e}");
                 // Continue without helper — tray icon won't be available after elevation.
             }
         }
         rabbit_diag::log("calling ensure_elevated()");
-        adapter::elevation::ensure_elevated();
+        // ensure_elevated 内部在提权成功时 exit(0)，此处只处理 Err
+        if let Err(e) = adapter::ensure_elevated() {
+            eprintln!("Elevation failed: {e}");
+            let msg = format!("Elevation failed: {e}");
+            fltk::dialog::alert_default(&msg);
+            std::process::exit(1);
+        }
+
+        // 如果已提权（直接以 root 运行），ensure_elevated 返回 Ok(()), 继续执行
     }
 
     rabbit_diag::log("post-elevation: continuing in main");

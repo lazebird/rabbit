@@ -6,7 +6,7 @@ use crate::ui_events::{init_event_system, send_event, EventHandler, UiEvent};
 use crate::ui_state::UiState;
 use crate::upgrade::{self, PlatformInfo, VersionsManifest};
 use crate::view_model::AppViewModel;
-use crate::systray;
+use adapter::tray;
 use fltk::{
     app,
     group::Tabs,
@@ -21,7 +21,7 @@ use service::{
 use schema::{config::ConfigValue, AppConfig};
 
 use rabbit_config::{load_config, save_config};
-use crate::lifecycle::Lifecycle;
+use adapter::Lifecycle;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
 use tracing::{error, info, warn};
@@ -288,40 +288,12 @@ impl App {
 
         info!("Creating window at ({}, {}) size {}x{}", win_x, win_y, win_w, win_h);
 
-        // Load icon - use exe directory to find it reliably
-        let mut icon_loaded = false;
-        let mut tried = Vec::new();
-
-        // Try next to executable first (most reliable)
-        if let Ok(mut exe_path) = std::env::current_exe() {
-            exe_path.pop(); // Remove exe name
-            exe_path.push("resources");
-            exe_path.push("icon.ico");
-            if let Some(s) = exe_path.to_str() {
-                tried.push(s.to_string());
-                if let Ok(icon) = IcoImage::load(s) {
-                    main_win.set_icon(Some(icon));
-                    icon_loaded = true;
-                    info!("Loaded window icon from: {}", s);
-                }
-            }
-        }
-
-        // Fallback to relative paths (development)
-        if !icon_loaded {
-            for path in &["crates/app/resources/icon.ico", "resources/icon.ico"] {
-                tried.push(path.to_string());
-                if let Ok(icon) = IcoImage::load(path) {
-                    main_win.set_icon(Some(icon));
-                    icon_loaded = true;
-                    info!("Loaded window icon from: {}", path);
-                    break;
-                }
-            }
-        }
-
-        if !icon_loaded {
-            warn!("Could not load icon from any of: {:?}", tried);
+        // Set window icon from embedded bytes (single source: adapter)
+        if let Ok(icon) = IcoImage::from_data(adapter::icon::ico_bytes()) {
+            main_win.set_icon(Some(icon));
+            info!("Loaded window icon from embedded bytes");
+        } else {
+            warn!("Failed to load window icon from embedded bytes");
         }
 
         // Create Tabs widget - positioned to leave room for tab labels
@@ -551,14 +523,14 @@ impl App {
         let hwnd = main_win.raw_handle() as usize;
 
         // Store main window reference for systray show/hide operations (cross-platform)
-        systray::set_main_window(main_win.clone());
+        tray::set_main_window(main_win.clone());
 
         // Store hwnd for taskbar progress (Windows only)
-        adapter::taskbar::set_main_window_hwnd(hwnd);
+        adapter::set_main_window(hwnd);
 
         // Apply window topmost setting AFTER show (safer on Windows)
         if top_requested {
-            adapter::window::set_window_on_top(hwnd, true);
+            adapter::set_window_on_top(true);
         }
 
         // Handle window close button - use set_callback which fires when the X button is clicked
@@ -577,20 +549,20 @@ impl App {
         // helper if its socket exists — even when systray is disabled in
         // config — so we have a command channel to hide the helper's
         // unconditional startup tray icon.
-        crate::systray::set_lifecycle(&self.lifecycle);
+        adapter::tray::set_lifecycle(&self.lifecycle);
 
         #[cfg(target_os = "linux")]
         {
             rabbit_diag::log(&format!("systray setup: systray_requested={systray_requested}"));
 
-            let has_sock = crate::tray_helper::has_helper_socket();
+            let has_sock = adapter::tray_helper::has_helper_socket();
             rabbit_diag::log(&format!("systray setup: has_helper_socket={has_sock}"));
 
             let helper_connected = if has_sock {
                 let win = main_win.clone();
                 let show = move || win.clone().show();
                 let hide = move || main_win.clone().hide();
-                let connected = crate::tray_helper::connect(
+                let connected = adapter::tray_helper::connect(
                     self.lifecycle.clone(),
                     show,
                     hide,
@@ -610,7 +582,7 @@ impl App {
                     // never appears during authorization or when
                     // the user has disabled it in settings.
                     info!("systray enabled at startup, showing helper tray");
-                    crate::tray_helper::show_tray();
+                    adapter::tray_helper::show_tray();
                 } else {
                     rabbit_diag::log("systray setup: helper connected + systray disabled → no tray");
                 }
@@ -618,7 +590,7 @@ impl App {
                 rabbit_diag::log("systray setup: no helper, falling back to local ksni");
                 // No helper (non-elevated or helper crashed) but config
                 // wants a tray → use local ksni directly.
-                if let Err(e) = systray::init_systray(self.lifecycle.clone()).await {
+                if let Err(e) = tray::init_systray(self.lifecycle.clone()).await {
                     warn!("Failed to initialize systray: {}", e);
                     rabbit_diag::log(&format!("systray setup: init_systray failed: {e}"));
                 } else {
@@ -630,7 +602,7 @@ impl App {
         }
         #[cfg(not(target_os = "linux"))]
         if systray_requested {
-            if let Err(e) = systray::init_systray(self.lifecycle.clone()).await {
+            if let Err(e) = tray::init_systray(self.lifecycle.clone()).await {
                 warn!("Failed to initialize systray: {}", e);
             }
         }
@@ -670,14 +642,14 @@ impl App {
         #[cfg(target_os = "linux")]
         {
             rabbit_diag::log("app.run(): calling shutdown_helper");
-            crate::tray_helper::shutdown_helper();
+            adapter::tray_helper::shutdown_helper();
             rabbit_diag::log("app.run(): calling remove_systray");
-            systray::remove_systray();
+            tray::remove_systray();
         }
         #[cfg(not(target_os = "linux"))]
         {
             rabbit_diag::log("app.run(): calling remove_systray");
-            systray::remove_systray();
+            tray::remove_systray();
         }
         rabbit_diag::log("app.run(): calling service cleanup");
         let cleanup_future = self.cleanup();
@@ -1117,34 +1089,33 @@ impl EventHandler for AppHandle {
                 }
 
                 // Apply systray setting
-                let old_systray = crate::systray::is_active();
+                let old_systray = adapter::tray::is_active();
                 if old_systray != systray {
                     #[cfg(target_os = "linux")]
                     {
-                        if crate::tray_helper::is_connected() {
+                        if adapter::tray_helper::is_connected() {
                             // Helper manages the tray via IPC — tell it to
                             // show or hide without killing the process.
                             if systray {
-                                crate::tray_helper::show_tray();
+                                adapter::tray_helper::show_tray();
                             } else {
-                                crate::tray_helper::hide_tray();
+                                adapter::tray_helper::hide_tray();
                             }
                         } else {
                             // No helper — use local ksni directly
                             // (non-elevated run or helper already gone).
-                            crate::systray::update_systray(systray).await;
+                            adapter::tray::update_systray(systray).await;
                         }
                     }
                     #[cfg(not(target_os = "linux"))]
-                    crate::systray::update_systray(systray).await;
+                    adapter::tray::update_systray(systray).await;
                 }
 
                 // Apply window topmost setting
-                if let Some(win) = crate::ui_state::UiState::get_main_window() {
+                if crate::ui_state::UiState::get_main_window().is_some() {
                     let top_value = top;
-                    let hwnd = win.raw_handle() as usize;
                     fltk::app::awake_callback(move || {
-                        adapter::window::set_window_on_top(hwnd, top_value);
+                        adapter::set_window_on_top(top_value);
                     });
                 }
 

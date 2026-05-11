@@ -19,6 +19,7 @@ serde = { workspace = true }
 dirs = { workspace = true }
 chrono = { workspace = true }
 xelevate = { version = "0.1.2", registry = "crates-io" }
+image = "0.25"
 fltk = { workspace = true }
 rabbit-diag = { path = "../rabbit-diag" }
 
@@ -27,3 +28,9 @@ windows-sys = { workspace = true, features = ["Win32_Foundation", "Win32_UI_Shel
 
 [target.'cfg(unix)'.dependencies]
 libc = { workspace = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+ksni = { version = "0.3" }
+
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+tray-icon = "0.23"

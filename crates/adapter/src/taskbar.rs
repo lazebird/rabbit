@@ -31,11 +31,10 @@ fn get_main_window_hwnd() -> Option<usize> {
 }
 
 /// 设置主窗口句柄（由 app 层调用）
-pub fn set_main_window_hwnd(_hwnd: usize) {
-    #[cfg(target_os = "windows")]
-    {
-        MAIN_HWND.store(_hwnd, std::sync::atomic::Ordering::Relaxed);
-    }
+///
+/// 委托到 `crate::window::set_main_window` 统一存储。
+pub fn set_main_window_hwnd(hwnd: usize) {
+    crate::window::set_main_window(hwnd);
 }
 
 /// 获取已存储的主窗口句柄
