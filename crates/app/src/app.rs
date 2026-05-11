@@ -20,7 +20,7 @@ use service::{
 };
 use schema::{config::ConfigValue, AppConfig};
 
-use adapter::config::{load_config, save_config};
+use rabbit_config::{load_config, save_config};
 use crate::lifecycle::Lifecycle;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
@@ -46,7 +46,7 @@ fn save_window_position() {
         let win_h = win.h();
         info!("Window position: x={}, y={}, w={}, h={}", win_x, win_y, win_w, win_h);
 
-        if let Ok(mut config) = adapter::config::load_config() {
+        if let Ok(mut config) = rabbit_config::load_config() {
             let window_config = schema::config::WindowConfig {
                 x: win_x,
                 y: win_y,
@@ -55,79 +55,15 @@ fn save_window_position() {
             };
             let json = serde_json::to_string(&window_config).unwrap_or_default();
             config.modules.insert("global", "window", ConfigValue::String(json));
-            let _ = adapter::config::save_config(&config);
+            let _ = rabbit_config::save_config(&config);
             info!("Window position saved to config");
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// X11 error handler – installed before the FLTK event loop to log any
-// X11 protocol errors that may cause the transient FlError::Internal
-// observed during startup.  Chains to FLTK's internal handler so normal
-// error handling is preserved.
-// ---------------------------------------------------------------------------
+// X11 error handler now lives in adapter::x11_diag.
 #[cfg(target_os = "linux")]
-mod x11_diag {
-    use std::ffi::{c_char, c_int, c_ulong, c_void};
-    use std::sync::OnceLock;
-
-    #[repr(C)]
-    struct XErrorEvent {
-        type_: c_int,
-        display: *mut c_void,
-        serial: c_ulong,
-        error_code: c_char,
-        request_code: c_char,
-        minor_code: c_char,
-        resource_id: c_ulong,
-    }
-
-    type XErrorHandler = unsafe extern "C" fn(*mut c_void, *mut XErrorEvent) -> c_int;
-
-    extern "C" {
-        fn XSetErrorHandler(handler: Option<XErrorHandler>) -> Option<XErrorHandler>;
-        fn XGetErrorText(
-            display: *mut c_void,
-            code: c_int,
-            buf: *mut c_char,
-            len: c_int,
-        ) -> c_int;
-    }
-
-    static PREV: OnceLock<XErrorHandler> = OnceLock::new();
-
-    unsafe extern "C" fn diag_handler(dpy: *mut c_void, ev: *mut XErrorEvent) -> c_int {
-        let e = &*ev;
-
-        // Resolve the error code to a human-readable string via Xlib.
-        let mut buf = [0i8; 512];
-        XGetErrorText(dpy, e.error_code as c_int, buf.as_mut_ptr(), buf.len() as c_int);
-        let desc = std::ffi::CStr::from_ptr(buf.as_ptr()).to_string_lossy();
-
-        adapter::diag::log(&format!(
-            "[X11 Error] {} (code={} opcode={} minor={} serial={} res_id={})",
-            desc, e.error_code, e.request_code, e.minor_code, e.serial, e.resource_id,
-        ));
-        // Chain to FLTK's handler so its internal error tracking still works.
-        if let Some(&prev) = PREV.get() {
-            prev(dpy, ev)
-        } else {
-            0
-        }
-    }
-
-    pub fn install() {
-        unsafe {
-            // XSetErrorHandler never returns NULL per Xlib docs, so the
-            // Option will always be Some (the default or FLTK's handler).
-            if let Some(prev) = XSetErrorHandler(Some(diag_handler)) {
-                let _ = PREV.set(prev);
-                adapter::diag::log("[X11] X11 error handler installed (chained)");
-            }
-        }
-    }
-}
+use adapter::x11_diag;
 
 /// Main application struct
 pub struct App {
@@ -152,11 +88,11 @@ pub struct App {
 impl App {
     /// Create a new application instance
     pub async fn new() -> anyhow::Result<Self> {
-        adapter::diag::log("App::new(): entered");
+        rabbit_diag::log("App::new(): entered");
         info!("Initializing Rabbit application");
 
         // Load configuration - use default if load fails (e.g., first run)
-        adapter::diag::log("App::new(): loading config");
+        rabbit_diag::log("App::new(): loading config");
         let config = match load_config() {
             Ok(cfg) => cfg,
             Err(e) => {
@@ -166,7 +102,7 @@ impl App {
         };
 
         // Create UI channels
-        adapter::diag::log("App::new(): creating channels");
+        rabbit_diag::log("App::new(): creating channels");
         let (http_tx, http_rx) = mpsc::channel(100);
         let (ping_tx, ping_rx) = mpsc::channel(100);
         let (scan_tx, scan_rx) = mpsc::channel(100);
@@ -176,20 +112,21 @@ impl App {
         let (plan_tx, plan_rx) = mpsc::channel(100);
 
         // Create services with channels
-        adapter::diag::log("App::new(): creating services");
+        rabbit_diag::log("App::new(): creating services");
         let ping_service = PingService::with_channel(ping_tx);
         let http_service = HttpService::with_channel(http_tx);
         let tftp_server_service = TftpdService::with_channel(tftpd_tx);
         let tftp_client_service = TftpcService::with_channel(tftpc_tx);
         let plan_service = PlanService::with_channel(plan_tx);
         let chat_service = ChatService::with_channel(chat_tx);
-        let scan_service = ScanService::with_channel(scan_tx);
+        let scan_service = ScanService::with_channel(scan_tx)
+            .with_network(std::sync::Arc::new(adapter::DefaultNetworkProvider));
 
         // Create view model
-        adapter::diag::log("App::new(): creating view model");
+        rabbit_diag::log("App::new(): creating view model");
         let view_model = AppViewModel::new(config);
 
-        adapter::diag::log("App::new(): returning");
+        rabbit_diag::log("App::new(): returning");
         Ok(Self {
             view_model: Arc::new(RwLock::new(view_model)),
             ping_service: Arc::new(RwLock::new(ping_service)),
@@ -212,7 +149,7 @@ impl App {
 
     /// Run the application
     pub async fn run(&mut self) -> anyhow::Result<()> {
-        adapter::diag::log("App::run(): entered");
+        rabbit_diag::log("App::run(): entered");
         info!("Running Rabbit application with FLTK UI");
 
         // Initialize UI state and event system
@@ -437,7 +374,7 @@ impl App {
                 let ptr = current.as_widget_ptr() as usize;
                 let idx = tab_ptrs_clone.iter().position(|&p| p == ptr).unwrap_or(0);
                 if view_model_for_tab.try_write().is_ok() {
-                    adapter::config::update_config(|cfg| {
+                    rabbit_config::update_config(|cfg| {
                         cfg.modules.insert("global", "last_active_tab", schema::config::ConfigValue::Integer(idx as i64));
                     })
                     .ok();
@@ -490,23 +427,13 @@ impl App {
                     // F1: Open help documentation
                     Key::F1 => {
                         info!("F1 key pressed - opening help");
-                        let _ = std::process::Command::new("xdg-open").arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md").spawn();
-                        #[cfg(target_os = "macos")]
-                        let _ = std::process::Command::new("open").arg("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md").spawn();
-                        #[cfg(target_os = "windows")]
-                        let _ = std::process::Command::new("cmd")
-                            .args(["/c", "start", "https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md"])
-                            .spawn();
+                        let _ = adapter::dialog::open_url("https://github.com/lazebird/rabbit/blob/rewrite/doc/manual.md");
                         true
                     }
                     // F2: Open project homepage
                     Key::F2 => {
                         info!("F2 key pressed - opening project homepage");
-                        let _ = std::process::Command::new("xdg-open").arg("https://github.com/lazebird/rabbit").spawn();
-                        #[cfg(target_os = "macos")]
-                        let _ = std::process::Command::new("open").arg("https://github.com/lazebird/rabbit").spawn();
-                        #[cfg(target_os = "windows")]
-                        let _ = std::process::Command::new("cmd").args(["/c", "start", "https://github.com/lazebird/rabbit"]).spawn();
+                        let _ = adapter::dialog::open_url("https://github.com/lazebird/rabbit");
                         true
                     }
                     // F3: Open config file directory
@@ -515,15 +442,7 @@ impl App {
                         if let Some(config_path) = dirs::config_local_dir() {
                             let rabbit_config = config_path.join("Rabbit");
                             let path_str = rabbit_config.to_string_lossy().to_string();
-
-                            #[cfg(target_os = "linux")]
-                            let _ = std::process::Command::new("xdg-open").arg(&path_str).spawn();
-
-                            #[cfg(target_os = "macos")]
-                            let _ = std::process::Command::new("open").arg(&path_str).spawn();
-
-                            #[cfg(target_os = "windows")]
-                            let _ = std::process::Command::new("explorer").arg(&path_str).spawn();
+                            let _ = adapter::dialog::open_file_manager(&path_str);
                         }
                         true
                     }
@@ -568,14 +487,14 @@ impl App {
         }
 
         // Restore business running states from config
-        adapter::diag::log("app.run(): checking restore states");
+        rabbit_diag::log("app.run(): checking restore states");
         let config_for_restore = self.view_model.read().await.get_config();
         let ping_restore = config_for_restore.modules.get_bool("ping", "running").unwrap_or(false);
         let http_restore = config_for_restore.modules.get_bool("http", "running").unwrap_or(false);
         let tftp_restore = config_for_restore.modules.get_bool("tftpd", "running").unwrap_or(false);
         let chat_restore = config_for_restore.modules.get_bool("chat", "running").unwrap_or(false);
         drop(config_for_restore);
-        adapter::diag::log(&format!("app.run(): restore states ping={ping_restore} http={http_restore} tftp={tftp_restore} chat={chat_restore}"));
+        rabbit_diag::log(&format!("app.run(): restore states ping={ping_restore} http={http_restore} tftp={tftp_restore} chat={chat_restore}"));
 
         // Handle Ctrl+C
         let ctrlc_lc = self.lifecycle.clone();
@@ -590,7 +509,7 @@ impl App {
         .ok();
 
         // Spawn event handler task
-        adapter::diag::log("app.run(): spawning event handler task");
+        rabbit_diag::log("app.run(): spawning event handler task");
         let app_clone = Arc::new(RwLock::new(AppHandle {
             view_model: self.view_model.clone(),
             ping_service: self.ping_service.clone(),
@@ -605,15 +524,15 @@ impl App {
         let event_handle = tokio::spawn(async move {
             Self::event_loop(app_clone, event_receiver).await;
         });
-        adapter::diag::log("app.run(): event handler spawned");
+        rabbit_diag::log("app.run(): event handler spawned");
 
         // Restore business states after event loop is ready
-        adapter::diag::log("app.run(): sending restore events");
+        rabbit_diag::log("app.run(): sending restore events");
         if ping_restore { send_event(UiEvent::ModuleToggle { module: "ping".into() }); }
         if http_restore { send_event(UiEvent::ModuleToggle { module: "http".into() }); }
         if tftp_restore { send_event(UiEvent::ModuleToggle { module: "tftpd".into() }); }
         if chat_restore { send_event(UiEvent::ModuleToggle { module: "chat".into() }); }
-        adapter::diag::log("app.run(): restore events sent");
+        rabbit_diag::log("app.run(): restore events sent");
 
         // FINAL WINDOW PREPARATION AND SHOW
         main_win.end();
@@ -622,10 +541,10 @@ impl App {
         crate::ui_state::UiState::set_main_window(main_win.clone());
 
         // Show window first (needed before getting raw_handle on some platforms)
-        adapter::diag::log(&format!("app.run(): before main_win.show() pos=({},{}) size=({}x{})",
+        rabbit_diag::log(&format!("app.run(): before main_win.show() pos=({},{}) size=({}x{})",
             win_x, win_y, win_w, win_h));
         main_win.show();
-        adapter::diag::log(&format!("app.run(): after main_win.show() pos=({},{})",
+        rabbit_diag::log(&format!("app.run(): after main_win.show() pos=({},{})",
             main_win.x(), main_win.y()));
 
         // After show(), we can get the valid OS handle (HWND on Windows)
@@ -662,10 +581,10 @@ impl App {
 
         #[cfg(target_os = "linux")]
         {
-            adapter::diag::log(&format!("systray setup: systray_requested={systray_requested}"));
+            rabbit_diag::log(&format!("systray setup: systray_requested={systray_requested}"));
 
             let has_sock = crate::tray_helper::has_helper_socket();
-            adapter::diag::log(&format!("systray setup: has_helper_socket={has_sock}"));
+            rabbit_diag::log(&format!("systray setup: has_helper_socket={has_sock}"));
 
             let helper_connected = if has_sock {
                 let win = main_win.clone();
@@ -676,7 +595,7 @@ impl App {
                     show,
                     hide,
                 );
-                adapter::diag::log(&format!("systray setup: connect returned {connected}"));
+                rabbit_diag::log(&format!("systray setup: connect returned {connected}"));
                 connected
             } else {
                 false
@@ -684,7 +603,7 @@ impl App {
 
             if helper_connected {
                 if systray_requested {
-                    adapter::diag::log("systray setup: helper connected + systray enabled → show_tray");
+                    rabbit_diag::log("systray setup: helper connected + systray enabled → show_tray");
                     // Config wants tray — tell helper to create it.
                     // The helper no longer creates a tray at startup;
                     // it waits for this explicit command so the tray
@@ -693,20 +612,20 @@ impl App {
                     info!("systray enabled at startup, showing helper tray");
                     crate::tray_helper::show_tray();
                 } else {
-                    adapter::diag::log("systray setup: helper connected + systray disabled → no tray");
+                    rabbit_diag::log("systray setup: helper connected + systray disabled → no tray");
                 }
             } else if systray_requested {
-                adapter::diag::log("systray setup: no helper, falling back to local ksni");
+                rabbit_diag::log("systray setup: no helper, falling back to local ksni");
                 // No helper (non-elevated or helper crashed) but config
                 // wants a tray → use local ksni directly.
                 if let Err(e) = systray::init_systray(self.lifecycle.clone()).await {
                     warn!("Failed to initialize systray: {}", e);
-                    adapter::diag::log(&format!("systray setup: init_systray failed: {e}"));
+                    rabbit_diag::log(&format!("systray setup: init_systray failed: {e}"));
                 } else {
-                    adapter::diag::log("systray setup: init_systray succeeded");
+                    rabbit_diag::log("systray setup: init_systray succeeded");
                 }
             } else {
-                adapter::diag::log("systray setup: no helper, systray disabled → nothing");
+                rabbit_diag::log("systray setup: no helper, systray disabled → nothing");
             }
         }
         #[cfg(not(target_os = "linux"))]
@@ -734,52 +653,52 @@ impl App {
         // and checks the unified shutdown flag.
         // Exit triggers: Ctrl+C / ESC / close button / tray Quit — all set the
         // same Lifecycle::shutdown_requested flag.
-        adapter::diag::log("app.run(): entering FLTK event loop");
+        rabbit_diag::log("app.run(): entering FLTK event loop");
         self.lifecycle.run_event_loop();
-        adapter::diag::log("app.run(): FLTK event loop exited");
+        rabbit_diag::log("app.run(): FLTK event loop exited");
 
         // Abort the event loop task (it's blocked on receiver.recv() which will never return)
-        adapter::diag::log("app.run(): aborting event handler");
+        rabbit_diag::log("app.run(): aborting event handler");
         event_handle.abort();
-        adapter::diag::log("app.run(): event handler aborted");
+        rabbit_diag::log("app.run(): event handler aborted");
 
         // Cleanup with timeout to prevent hanging on exit
-        adapter::diag::log("app.run(): starting cleanup");
+        rabbit_diag::log("app.run(): starting cleanup");
         // Remove systray icon before exit.
         // Always try both: shutdown_helper handles any helper (connected or
         // orphaned), remove_systray cleans up the local ksni tray.
         #[cfg(target_os = "linux")]
         {
-            adapter::diag::log("app.run(): calling shutdown_helper");
+            rabbit_diag::log("app.run(): calling shutdown_helper");
             crate::tray_helper::shutdown_helper();
-            adapter::diag::log("app.run(): calling remove_systray");
+            rabbit_diag::log("app.run(): calling remove_systray");
             systray::remove_systray();
         }
         #[cfg(not(target_os = "linux"))]
         {
-            adapter::diag::log("app.run(): calling remove_systray");
+            rabbit_diag::log("app.run(): calling remove_systray");
             systray::remove_systray();
         }
-        adapter::diag::log("app.run(): calling service cleanup");
+        rabbit_diag::log("app.run(): calling service cleanup");
         let cleanup_future = self.cleanup();
         match tokio::time::timeout(std::time::Duration::from_secs(3), cleanup_future).await {
             Ok(result) => {
                 if let Err(e) = result {
-                    adapter::diag::log(&format!("app.run(): cleanup FAILED: {e}"));
+                    rabbit_diag::log(&format!("app.run(): cleanup FAILED: {e}"));
                     error!("Cleanup failed: {}", e);
                 } else {
-                    adapter::diag::log("app.run(): cleanup OK");
+                    rabbit_diag::log("app.run(): cleanup OK");
                     info!("Cleanup completed successfully");
                 }
             }
             Err(_) => {
-                adapter::diag::log("app.run(): cleanup timed out, forcing exit");
+                rabbit_diag::log("app.run(): cleanup timed out, forcing exit");
                 warn!("Cleanup timed out after 3 seconds, forcing exit");
             }
         }
 
         // Force exit - FLTK may leave internal threads running
-        adapter::diag::log("app.run(): calling std::process::exit(0)");
+        rabbit_diag::log("app.run(): calling std::process::exit(0)");
         info!("Final exit via std::process::exit(0)");
         std::process::exit(0);
     }
@@ -801,17 +720,17 @@ impl App {
 
     /// Cleanup resources — destroys services without sending status updates.
     async fn cleanup(&self) -> anyhow::Result<()> {
-        adapter::diag::log("app.cleanup(): started");
+        rabbit_diag::log("app.cleanup(): started");
         self.ping_service.write().await.destroy().await.ok();
-        adapter::diag::log("app.cleanup(): ping destroyed");
+        rabbit_diag::log("app.cleanup(): ping destroyed");
         self.http_service.write().await.destroy().await.ok();
-        adapter::diag::log("app.cleanup(): http destroyed");
+        rabbit_diag::log("app.cleanup(): http destroyed");
         self.tftp_server_service.write().await.destroy().await.ok();
-        adapter::diag::log("app.cleanup(): tftpd destroyed");
+        rabbit_diag::log("app.cleanup(): tftpd destroyed");
         self.plan_service.write().await.destroy().await.ok();
-        adapter::diag::log("app.cleanup(): plan destroyed");
+        rabbit_diag::log("app.cleanup(): plan destroyed");
         self.chat_service.write().await.destroy().await.ok();
-        adapter::diag::log("app.cleanup(): chat destroyed");
+        rabbit_diag::log("app.cleanup(): chat destroyed");
         info!("All services destroyed");
         Ok(())
     }
@@ -1123,7 +1042,7 @@ impl EventHandler for AppHandle {
             // Plan
             UiEvent::PlanAdd { date, time, cycle, unit, msg } => {
                 info!("Adding plan for {} {}: {} (cycle={}, unit={})", date, time, msg, cycle, unit);
-                let override_conflict = adapter::config::get_bool("plan", "override").unwrap_or(false);
+                let override_conflict = rabbit_config::get_bool("plan", "override").unwrap_or(false);
                 match self.plan_service.write().await.add_task(&date, &time, cycle, &unit, &msg, override_conflict).await {
                     Ok(true) => info!("Plan '{}' overridden", msg),
                     Ok(false) => info!("Plan '{}' added", msg),
@@ -1175,7 +1094,7 @@ impl EventHandler for AppHandle {
             UiEvent::SettingsSave => {
                 info!("Saving settings");
                 // Reload config from disk first to get any changes from sync_* functions
-                let disk_config = match adapter::config::load_config() {
+                let disk_config = match rabbit_config::load_config() {
                     Ok(cfg) => cfg,
                     Err(e) => {
                         warn!("Failed to load config from disk: {}, using view_model config", e);
@@ -1272,7 +1191,7 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
             if let Module::Ping = module {
                 if let Some(mut win) = crate::ui_state::UiState::get_main_window() {
                         if running {
-                            let target = adapter::config::load_config()
+                            let target = rabbit_config::load_config()
                                 .ok()
                                 .and_then(|cfg| cfg.modules.get_string("ping", "target"))
                                 .unwrap_or_else(|| "Ping".to_string());

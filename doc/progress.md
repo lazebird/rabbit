@@ -32,7 +32,7 @@
 | CI/CD 配置 | ⏳ 待开始 | 0% | GitHub Actions |
 | 文档完善 | ✅ 完成 | 80% | AGENTS.md, 架构文档, 进度文档 |
 
-### 2. 数据层 (rabbit-models)
+### 2. 数据层 (schema — 旧名 rabbit-models)
 
 | 模块 | 状态 | 进度 | 备注 |
 |------|------|------|------|
@@ -44,16 +44,16 @@
 | Chat 模型 | ✅ 完成 | 100% | ChatMessage, ChatConfig, ChatRoom |
 | Scan 模型 | ✅ 完成 | 100% | ScanRange, ScanResult |
 
-### 3. 平台层 (rabbit-platform)
+### 3. 平台层 (adapter — 旧名 rabbit-platform)
 
 | 模块 | 状态 | 进度 | 备注 |
 |------|------|------|------|
-| 配置存储 | ✅ 完成 | 100% | TOML 配置读写 |
+| 配置存储 | ✅ 完成 | 100% | rabbit-config crate |
 | 网络接口 | 🔄 进行中 | 30% | 基础框架，待实现接口枚举 |
 | 通知系统 | ✅ 完成 | 80% | Windows/Linux/macOS 实现 |
 | Ping 平台适配 | 🔄 进行中 | 50% | 权限检查框架完成 |
 
-### 4. 业务层 (rabbit-core)
+### 4. 业务层 (service — 旧名 rabbit-core)
 
 | 模块 | 状态 | 进度 | 备注 |
 |------|------|------|------|
@@ -64,7 +64,7 @@
 | **Chat 服务** | ✅ 完成 | 70% | UDP 框架完成，发送/接收完成 |
 | **Scan 服务** | ✅ 完成 | 70% | 并发扫描框架完成，进度追踪完成 |
 
-### 5. 表现层 (rabbit-app)
+### 5. 表现层 (app — 旧名 rabbit-app)
 
 | 模块 | 状态 | 进度 | 备注 |
 |------|------|------|------|
@@ -351,10 +351,10 @@
 
 | 层级 | 单元测试 | 集成测试 | E2E 测试 |
 |------|----------|----------|----------|
-| rabbit-models | ✅ 16 tests | ✅ 28 tests | ⬜ 0% |
-| rabbit-platform | ⬜ 0% | ⬜ 0% | ⬜ 0% |
-| rabbit-core | ⬜ 0% | ⬜ 0% | ⬜ 0% |
-| rabbit-app | ⬜ 0% | ✅ 28 tests | ⬜ 0% |
+| schema | ✅ 16 tests | ✅ 28 tests | ⬜ 0% |
+| adapter | ⬜ 0% | ⬜ 0% | ⬜ 0% |
+| service | ⬜ 0% | ⬜ 0% | ⬜ 0% |
+| app | ⬜ 0% | ✅ 28 tests | ⬜ 0% |
 
 **总计: 44 tests passed** (16 unit + 28 integration)
 

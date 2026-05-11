@@ -1,8 +1,13 @@
-use super::{PlatformError, Result};
+//! Rabbit Configuration Management
+//!
+//! Provides configuration loading, saving, caching, and type-safe accessors.
+//! Extracted from `adapter::config` as part of platform layer refactoring.
+
 use schema::config::AppConfig;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::{OnceLock, RwLock};
+use thiserror::Error;
 
 const CONFIG_FILE: &str = "rabbit.toml";
 
@@ -10,6 +15,16 @@ const CONFIG_FILE: &str = "rabbit.toml";
 static CONFIG_CACHE: OnceLock<RwLock<AppConfig>> = OnceLock::new();
 /// 上次保存的内容，用于脏检查
 static LAST_SAVED_CONTENT: OnceLock<RwLock<String>> = OnceLock::new();
+
+#[derive(Error, Debug)]
+pub enum ConfigError {
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("Configuration error: {0}")]
+    Config(String),
+}
+
+pub type Result<T> = std::result::Result<T, ConfigError>;
 
 fn get_config_cache() -> &'static RwLock<AppConfig> {
     CONFIG_CACHE.get_or_init(|| {
@@ -24,7 +39,9 @@ fn get_last_saved_cache() -> &'static RwLock<String> {
 
 pub fn get_config_dir() -> Result<PathBuf> {
     let dir = if cfg!(windows) {
-        std::env::var("APPDATA").map(PathBuf::from).unwrap_or_else(|_| dirs::config_dir().unwrap_or_else(|| PathBuf::from(".")))
+        std::env::var("APPDATA")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| dirs::config_dir().unwrap_or_else(|| PathBuf::from(".")))
     } else {
         dirs::config_dir().unwrap_or_else(|| PathBuf::from("."))
     };
@@ -61,7 +78,8 @@ fn load_config_internal() -> Result<AppConfig> {
         *last = content.clone();
     }
 
-    let mut config: AppConfig = toml::from_str(&content).map_err(|e| PlatformError::Config(format!("Failed to parse config: {}", e)))?;
+    let mut config: AppConfig =
+        toml::from_str(&content).map_err(|e| ConfigError::Config(format!("Failed to parse config: {}", e)))?;
 
     config.merge_defaults();
     Ok(config)
@@ -69,17 +87,19 @@ fn load_config_internal() -> Result<AppConfig> {
 
 /// 对外接口：从缓存加载配置
 pub fn load_config() -> Result<AppConfig> {
-    let cache = get_config_cache().read().map_err(|_| PlatformError::Config("Lock poisoned".into()))?;
+    let cache = get_config_cache().read().map_err(|_| ConfigError::Config("Lock poisoned".into()))?;
     Ok(cache.clone())
 }
 
 /// 对外接口：保存配置并执行脏检查
 pub fn save_config(config: &AppConfig) -> Result<()> {
-    let content = toml::to_string_pretty(config).map_err(|e| PlatformError::Config(format!("Failed to serialize config: {}", e)))?;
+    let content = toml::to_string_pretty(config)
+        .map_err(|e| ConfigError::Config(format!("Failed to serialize config: {}", e)))?;
 
     // 脏检查：对比上次保存的内容
     {
-        let last_saved = get_last_saved_cache().read().map_err(|_| PlatformError::Config("Lock poisoned".into()))?;
+        let last_saved =
+            get_last_saved_cache().read().map_err(|_| ConfigError::Config("Lock poisoned".into()))?;
         if *last_saved == content {
             return Ok(());
         }

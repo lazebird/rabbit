@@ -18,7 +18,7 @@ use super::{defaults, Colors, TabComponent};
 use crate::ui_events::{send_event, UiEvent};
 use crate::ui_state::UiState;
 use schema::config::ConfigValue;
-use adapter::config::{load_config, save_config};
+use rabbit_config::{load_config, save_config};
 
 /// Ping Tab Component
 pub struct PingTab;

@@ -8,8 +8,6 @@
 //! - Notifications
 
 pub mod autostart;
-pub mod config;
-pub mod diag;
 pub mod dialog;
 pub mod elevation;
 pub mod network;
@@ -18,9 +16,9 @@ pub mod ping;
 pub mod shell;
 pub mod taskbar;
 pub mod window;
+pub mod x11_diag;
 
 pub use autostart::*;
-pub use config::*;
 pub use dialog::*;
 pub use elevation::*;
 pub use network::*;
@@ -30,7 +28,6 @@ pub use shell::*;
 pub use taskbar::*;
 pub use window::*;
 
-use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -49,13 +46,3 @@ pub enum PlatformError {
 }
 
 pub type Result<T> = std::result::Result<T, PlatformError>;
-
-/// Get the configuration directory for the application
-pub fn config_dir() -> Result<PathBuf> {
-    config::get_config_dir()
-}
-
-/// Get the data directory for the application
-pub fn data_dir() -> Result<PathBuf> {
-    config::get_data_dir()
-}

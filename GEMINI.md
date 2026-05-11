@@ -23,10 +23,12 @@ Rabbit 是一款使用 Rust 语言和 FLTK GUI 框架开发的跨平台（Window
 
 项目作为一个 Rust 工作区组织，包含以下 crate：
 
-- `crates/rabbit-app`：主程序入口和基于 FLTK 的 UI 组件。
-- `crates/rabbit-core`：业务逻辑和服务（Ping、HTTP、TFTP 等）。
-- `crates/rabbit-models`：共享数据结构和配置模型。
-- `crates/rabbit-platform`：平台特定抽象（提权、网络、Shell 集成）。
+- `crates/app`：主程序入口和基于 FLTK 的 UI 组件。
+- `crates/service`：业务逻辑和服务（Ping、HTTP、TFTP 等）。
+- `crates/schema`：共享数据结构和配置模型。
+- `crates/adapter`：平台特定抽象（提权、网络、Shell 集成）。
+- `crates/rabbit-config`：配置持久化（加载/保存/缓存/脏检查）。
+- `crates/rabbit-diag`：启动期诊断日志（/tmp/rabbit-startup-*.log）。
 
 ## 开发指南
 
@@ -53,7 +55,7 @@ Rabbit 是一款使用 Rust 语言和 FLTK GUI 框架开发的跨平台（Window
 - **错误处理**：应用程序级别使用 `anyhow`，库级别使用 `thiserror`。
 - **日志记录**：使用 `tracing` crate。日志在 `main.rs` 中通过 `tracing-subscriber` 初始化。
 - **异步编程**：所有 I/O 和并发操作优先使用 `tokio`。
-- **配置管理**：通过 `rabbit-models/src/config.rs` 管理，使用 `serde` 和 `config` crate。遵循“双层配置模型”，业务模型通过 `From` trait 从持久化模型转换。
+- **配置管理**：通过 `crates/schema/src/config.rs` 定义配置结构，使用 `serde` 序列化，`rabbit-config` crate 负责加载/保存/缓存。遵循“HashMap 统一配置模型”，所有模块配置通过 `modules.{module}.{key}` 接口访问。
 - **UI 设计**：FLTK UI 逻辑分为 `view_model.rs`（状态/逻辑）和 `ui/`（组件/布局）。
 
 ## 已知问题与注意事项

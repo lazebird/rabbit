@@ -5,6 +5,7 @@ use crate::{
     Result, ServiceError, ServiceUpdateResult,
 };
 pub use schema::scan::ScanRange;
+use schema::NetworkProvider;
 use std::net::Ipv4Addr;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock, Semaphore};
@@ -51,6 +52,7 @@ pub struct ScanService {
     cancel_tx: Option<mpsc::Sender<()>>,
     scan_handle: Option<JoinHandle<()>>,
     tx: Option<mpsc::Sender<UiData>>,
+    network_provider: Option<Arc<dyn NetworkProvider>>,
 }
 
 impl ScanService {
@@ -62,6 +64,7 @@ impl ScanService {
             cancel_tx: None,
             scan_handle: None,
             tx: None,
+            network_provider: None,
         }
     }
 
@@ -73,7 +76,14 @@ impl ScanService {
             cancel_tx: None,
             scan_handle: None,
             tx: Some(tx),
+            network_provider: None,
         }
+    }
+
+    /// Attach a [`NetworkProvider`] for MAC address resolution.
+    pub fn with_network(mut self, provider: Arc<dyn NetworkProvider>) -> Self {
+        self.network_provider = Some(provider);
+        self
     }
 
     pub async fn send(&self, data: UiData) {
@@ -81,7 +91,7 @@ impl ScanService {
     }
 
     fn load_range_from_config(&self) -> Option<ScanRange> {
-        let config = adapter::config::load_config().ok()?;
+        let config = rabbit_config::load_config().ok()?;
 
         let start_ip = config.modules.get_string("scan", "start_ip")?;
         let end_ip = config.modules.get_string("scan", "end_ip")?;
@@ -140,6 +150,7 @@ impl ScanService {
         let state = Arc::clone(&self.state);
         let results = Arc::clone(&self.results);
         let tx = self.tx.clone();
+        let network_provider = self.network_provider.clone();
 
         let handle = tokio::spawn(async move {
             let ips = calculate_ip_range(range.start, range.end);
@@ -156,16 +167,15 @@ impl ScanService {
                 let results_clone = results.clone();
                 let state_clone = state.clone();
                 let tx_clone = tx.clone();
+                let provider = network_provider.clone();
 
                 join_set.spawn(async move {
                     let _permit = permit.acquire().await.unwrap();
-                    let result = scan_host(ip, port, timeout_ms).await;
+                    let result = scan_host(ip, port, timeout_ms, provider.clone()).await;
 
                     if result.online {
                         if let Some(ref tx) = tx_clone {
-                            let ip = result.ip;
-                            let mac = result.mac_address.clone().or_else(|| adapter::network::get_mac_from_arp(ip));
-                            let mac_info = mac.as_ref().map(|m| format!(" [MAC: {}]", m)).unwrap_or_default();
+                            let mac_info = result.mac_address.as_ref().map(|m| format!(" [MAC: {}]", m)).unwrap_or_default();
                             let msg = format!(
                                 "Found online host: {}{}{}",
                                 result.ip,
@@ -266,7 +276,7 @@ impl Default for ScanService {
 }
 
 /// Scan a single host with parallel port probing
-async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
+async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64, provider: Option<Arc<dyn NetworkProvider>>) -> ScanResult {
     // If specific port given, try TCP connect
     // If port == 0, do parallel ping (ICMP-like via multi-port TCP)
     let online = if port == 0 {
@@ -280,9 +290,15 @@ async fn scan_host(ip: Ipv4Addr, port: u16, timeout_ms: u64) -> ScanResult {
     // Try to resolve hostname
     let hostname = if online { resolve_hostname(ip).await } else { None };
 
-    // Try to get MAC address from ARP table (use spawn_blocking for sync file I/O)
+    // Try to get MAC address from ARP table via provider
     let mac_address = if online {
-        tokio::task::spawn_blocking(move || adapter::network::get_mac_from_arp(ip)).await.unwrap_or_default()
+        if let Some(provider) = provider {
+            tokio::task::spawn_blocking(move || provider.get_mac_from_arp(ip))
+                .await
+                .unwrap_or_default()
+        } else {
+            None
+        }
     } else {
         None
     };

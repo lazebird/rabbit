@@ -395,7 +395,7 @@ sRabbit 0.1.0                          [Home] [Profile] [Help]
 ## 7. 模块架构
 
 ```
-rabbit-app/
+crates/app/
 ├── src/
 │   ├── upgrade/
 │   │   ├── mod.rs           # 模块入口

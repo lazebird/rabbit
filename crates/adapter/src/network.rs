@@ -1,7 +1,17 @@
 //! Network interface utilities
 
 use super::Result;
+use schema::NetworkProvider;
 use std::net::Ipv4Addr;
+
+/// Default implementation of [`schema::NetworkProvider`].
+pub struct DefaultNetworkProvider;
+
+impl NetworkProvider for DefaultNetworkProvider {
+    fn get_mac_from_arp(&self, ip: Ipv4Addr) -> Option<String> {
+        get_mac_from_arp(ip)
+    }
+}
 
 /// Network interface information
 #[derive(Debug, Clone)]
@@ -56,14 +66,6 @@ pub fn get_local_ip() -> Option<Ipv4Addr> {
     // Try to find a non-loopback interface
     // This is a simplified implementation
     None
-}
-
-/// Calculate IP range from CIDR or start/end
-pub fn calculate_ip_range(start: Ipv4Addr, end: Ipv4Addr) -> Vec<Ipv4Addr> {
-    let start_u32 = u32::from(start);
-    let end_u32 = u32::from(end);
-
-    (start_u32..=end_u32).map(Ipv4Addr::from).collect()
 }
 
 /// Get MAC address from ARP table (Linux: /proc/net/arp, Windows: SendARP)

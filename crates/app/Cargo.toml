@@ -23,6 +23,8 @@ embed-resource = "3.0"
 schema = { path = "../schema" }
 adapter = { path = "../adapter" }
 service = { path = "../service" }
+rabbit-config = { path = "../rabbit-config" }
+rabbit-diag = { path = "../rabbit-diag" }
 
 tokio = { workspace = true }
 tracing = { workspace = true }

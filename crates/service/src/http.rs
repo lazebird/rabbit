@@ -12,7 +12,7 @@ use axum::{
     routing::post,
     Router,
 };
-use adapter::config::{get_bool, get_integer};
+use rabbit_config::{get_bool, get_integer};
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -59,10 +59,10 @@ impl ServerConfig {
     fn from_platform() -> Self {
         Self {
             port: get_integer("http", "port").unwrap_or(8000) as u16,
-            dirs: adapter::config::get_array("http", "dirs").unwrap_or_default(),
+            dirs: rabbit_config::get_array("http", "dirs").unwrap_or_default(),
             auto_index: get_bool("http", "autoindex").unwrap_or(true),
             video_play: get_bool("http", "videoplay").unwrap_or(true),
-            log_path: adapter::config::get_string("http", "log"),
+            log_path: rabbit_config::get_string("http", "log"),
         }
     }
 }

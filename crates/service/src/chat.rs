@@ -1,7 +1,7 @@
 //! LAN Chat Service
 
 use crate::{ui_channel::UiData, Result, ServiceError, ServiceUpdateResult};
-use adapter::config::{get_integer, get_string};
+use rabbit_config::{get_integer, get_string};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;

@@ -14,7 +14,7 @@ async fn setup_ping_with_target(target: &str) -> (service::PingService, mpsc::Re
     let mut config = AppConfig::default();
     config.modules.insert("ping", "target", ConfigValue::String(target.to_string()));
     config.modules.insert("ping", "running", ConfigValue::Boolean(true));
-    let _ = adapter::config::save_config(&config);
+    let _ = rabbit_config::save_config(&config);
 
     let mut svc = service::PingService::with_channel(tx);
     let _ = svc.update().await; // 启动
@@ -72,7 +72,7 @@ async fn scan_complete_should_send_service_status_false() {
     let mut config = AppConfig::default();
     config.modules.insert("scan", "start_ip", ConfigValue::String("127.0.0.1".to_string()));
     config.modules.insert("scan", "end_ip", ConfigValue::String("127.0.0.1".to_string()));
-    let _ = adapter::config::save_config(&config);
+    let _ = rabbit_config::save_config(&config);
 
     let mut svc = service::ScanService::with_channel(tx);
     let _ = svc.update().await; // 启动 scan

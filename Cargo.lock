@@ -11,11 +11,11 @@ dependencies = [
  "dirs",
  "fltk",
  "libc",
+ "rabbit-diag",
  "schema",
  "serde",
  "thiserror 2.0.18",
  "tokio",
- "toml 0.8.2",
  "tracing",
  "windows-sys 0.59.0",
  "xelevate",
@@ -85,6 +85,8 @@ dependencies = [
  "ksni",
  "libc",
  "parking_lot",
+ "rabbit-config",
+ "rabbit-diag",
  "schema",
  "semver",
  "serde",
@@ -2427,6 +2429,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
+name = "rabbit-config"
+version = "0.1.0"
+dependencies = [
+ "dirs",
+ "schema",
+ "serde",
+ "thiserror 2.0.18",
+ "toml 0.8.2",
+]
+
+[[package]]
+name = "rabbit-diag"
+version = "0.1.0"
+
+[[package]]
 name = "rand"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2783,7 +2800,6 @@ dependencies = [
 name = "service"
 version = "0.1.0"
 dependencies = [
- "adapter",
  "anyhow",
  "async-tftp",
  "axum",
@@ -2791,6 +2807,7 @@ dependencies = [
  "chrono",
  "dns-lookup",
  "percent-encoding",
+ "rabbit-config",
  "rand",
  "schema",
  "serde",

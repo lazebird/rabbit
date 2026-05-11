@@ -267,7 +267,7 @@
 | 项目 | 工作量 |
 |------|--------|
 | UI 重写 | 约 70% 代码改动 |
-| 业务层复用 | 100% 复用（rabbit-core/rabbit-models/rabbit-platform） |
+| 业务层复用 | 100% 复用（service/schema/adapter） |
 | 学习曲线 | 中等（API 简单但风格不同） |
 
 #### 备选：保持 Slint + 补充功能
@@ -331,10 +331,12 @@
 ```
 rabbit/
 ├── crates/
-│   ├── rabbit-app/       # 主程序入口 + UI 定义
-│   ├── rabbit-core/      # 业务服务层
-│   ├── rabbit-models/    # 数据模型层（无外部依赖）
-│   └── rabbit-platform/  # 平台适配层
+│   ├── app/              # 主程序入口 + UI 定义
+│   ├── service/          # 业务服务层
+│   ├── schema/           # 数据模型层
+│   ├── adapter/          # 平台适配层
+│   ├── rabbit-config/    # 配置持久化
+│   └── rabbit-diag/      # 诊断日志
 └── tests/
 ```
 
@@ -581,12 +583,12 @@ pub async fn init(&mut self, config: BusinessConfig) -> Result<()> {
 **如果选择迁移到 FLTK：**
 
 1. **复用层级**：
-   - `rabbit-core`: 100% 复用（业务逻辑与 UI 无关）
-   - `rabbit-models`: 100% 复用（纯数据结构）
-   - `rabbit-platform`: 100% 复用（平台适配层）
+   - `service`: 100% 复用（业务逻辑与 UI 无关）
+   - `schema`: 100% 复用（纯数据结构）
+   - `adapter`: 100% 复用（平台适配层）
 
 2. **重写层级**：
-   - `rabbit-app/ui/`: 需要用 FLTK API 重写所有 `.slint` 组件
+   - `app/ui/`: 需要用 FLTK API 重写所有 `.slint` 组件
 
 3. **迁移策略**：
    - 先完成一个核心模块（如 Ping）的 FLTK 版本验证

@@ -1,6 +1,6 @@
 use schema::config::{AppConfig, ConfigValue};
-use adapter::config::save_config;
-use adapter::Result;
+use rabbit_config::save_config;
+use rabbit_config::Result;
 
 pub struct AppViewModel {
     config: AppConfig,

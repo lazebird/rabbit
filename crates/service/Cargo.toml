@@ -11,7 +11,7 @@ description = "Business logic services for Rabbit"
 
 [dependencies]
 schema = { path = "../schema" }
-adapter = { path = "../adapter" }
+rabbit-config = { path = "../rabbit-config" }
 
 tokio = { workspace = true }
 tokio-util = { workspace = true }

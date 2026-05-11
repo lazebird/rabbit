@@ -217,7 +217,7 @@ impl PingService {
     }
 
     fn load_target_from_config(&self) -> Option<PingTarget> {
-        let config = adapter::config::load_config().ok()?;
+        let config = rabbit_config::load_config().ok()?;
         let target = config.modules.get_string("ping", "target")?;
         if target.is_empty() {
             return None;

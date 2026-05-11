@@ -1,0 +1,13 @@
+[package]
+name = "rabbit-diag"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+description = "Diagnostic logging for Rabbit"
+
+[dependencies]
+# Only standard library, no third-party dependencies

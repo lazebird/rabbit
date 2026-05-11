@@ -62,7 +62,7 @@ impl Lifecycle {
     /// Safe to call from any thread. After this, `is_shutdown_requested()`
     /// returns `true` and `run_event_loop()` will exit on its next check.
     pub fn request_shutdown(&self) {
-        adapter::diag::log("Lifecycle::request_shutdown() called");
+        rabbit_diag::log("Lifecycle::request_shutdown() called");
         self.inner.shutdown_requested.store(true, Ordering::SeqCst);
     }
 
@@ -128,7 +128,7 @@ impl Lifecycle {
                 match fltk::app::wait_for(0.05) {
                     Ok(_) => {}
                     Err(e) => {
-                        adapter::diag::log(&format!("[lifecycle] FLTK event loop error: {e}"));
+                        rabbit_diag::log(&format!("[lifecycle] FLTK event loop error: {e}"));
                         break;
                     }
                 }
@@ -139,7 +139,7 @@ impl Lifecycle {
             "shutdown_or_error"
         };
 
-        adapter::diag::log(&format!("[lifecycle] event loop exited, reason={exit_reason}"));
+        rabbit_diag::log(&format!("[lifecycle] event loop exited, reason={exit_reason}"));
     }
 }
 

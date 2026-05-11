@@ -1,125 +1,127 @@
 # AGENTS.md
 
-This file provides guidance to Qoder (qoder.com) when working with code in this repository.
+本文件为 Qoder（qoder.com）在此仓库中处理代码时提供指导。
 
-## Project Overview
+## 项目概述
 
-Rabbit is a cross-platform collection of networking utilities and productivity tools. It integrates multiple utilities (ping, HTTP server, TFTP server/client, IP scanner, LAN chat) and task planning into a single application.
+Rabbit 是一个跨平台的网络工具集和效率工具合集。它将多种实用程序（Ping、HTTP 服务器、TFTP 服务端/客户端、IP 扫描器、局域网聊天）和任务计划功能集成到单一应用程序中。
 
-**Tech Stack:** Rust + FLTK GUI framework
+**技术栈：** Rust + FLTK GUI 框架
 
-## Build Commands
+## 构建命令
 
 ```bash
-# Build (Debug)
+# 构建（调试）
 cargo build
 
-# Build (Release)
+# 构建（发布）
 cargo build --release
 
-# Run
+# 运行
 cargo run
 
-# Run tests
+# 运行测试
 cargo test
 
-# Check without building
+# 检查（不构建）
 cargo check
 
-# Format code
+# 格式化代码
 cargo fmt
 
-# Lint
+# 代码检查
 cargo clippy
 ```
 
-Requirements:
-- Rust 1.75+ (2024 edition)
-- Platform-specific build tools
+要求：
+- Rust 1.75+（2024 edition）
+- 平台相关的构建工具
 
-## Project Architecture
+## 项目架构
 
-### Four-Layer Architecture
+### 四层架构
 
 ```
 ┌─────────────────────────────────────────┐
-│           Presentation Layer             │
-│   View (FLTK UI) ← ViewModel (State)     │
+│             表现层                        │
+│   视图（FLTK UI）← 视图模型（状态）         │
 ├─────────────────────────────────────────┤
-│           Business Layer                 │
+│             业务层                        │
 │   PingService / HttpService / ...       │
 ├─────────────────────────────────────────┤
-│           Data Layer                     │
-│   Models + Repository (Persistence)      │
+│             数据层                        │
+│   模型 + 仓储（持久化）                    │
 ├─────────────────────────────────────────┤
-│        Infrastructure Layer              │
+│             基础设施层                     │
 │   WindowsPlatform / LinuxPlatform       │
 └─────────────────────────────────────────┘
 ```
 
-### Module Structure
+### 模块结构
 
 ```
 rabbit/
 ├── crates/
-│   ├── rabbit-app/       # Main entry + UI
-│   ├── rabbit-core/      # Business services
-│   ├── rabbit-models/    # Data models
-│   └── rabbit-platform/  # Platform adapters
+│   ├── app/              # 主程序入口 + UI
+│   ├── adapter/          # 平台适配层
+│   ├── service/          # 业务服务层
+│   ├── schema/           # 数据模型层
+│   ├── rabbit-config/    # 配置持久化
+│   └── rabbit-diag/      # 诊断日志
 ├── tests/
 ├── doc/
-│   ├── architecture.md       # Architecture design
-│   ├── requirements.md       # Requirements spec
-│   └── tftp-evaluation.md    # TFTP library evaluation
+│   ├── architecture.md       # 架构设计
+│   ├── requirements.md       # 需求规格
+│   └── tftp-evaluation.md    # TFTP 库评估
 └── AGENTS.md
 ```
 
-### Feature Modules
+### 功能模块
 
-| Module | Description |
+| 模块 | 描述 |
 |--------|-------------|
-| Ping | ICMP ping with taskbar status |
-| IP Scanner | Network IP scanning |
-| HTTP Server | Simple HTTP file server |
-| TFTP Server/Client | TFTP file transfer |
-| Task Planner | Scheduled reminders |
-| LAN Chat | UDP broadcast chat |
+| Ping | ICMP Ping，支持任务栏状态显示 |
+| IP 扫描器 | 网络 IP 扫描 |
+| HTTP 服务器 | 简易 HTTP 文件服务器 |
+| TFTP 服务端/客户端 | TFTP 文件传输 |
+| 任务计划器 | 定时提醒 |
+| 局域网聊天 | UDP 广播聊天 |
 
-## Third-Party Libraries
+## 第三方库
 
-| Module | Library | Notes |
+| 模块 | 库 | 备注 |
 |--------|---------|-------|
-| UI Framework | fltk | Cross-platform native UI |
-| Async Runtime | tokio | Async I/O |
-| HTTP Server | axum | Lightweight async HTTP |
-| TFTP | async-tftp | Async TFTP with Handler |
-| Ping | surge-ping | ICMP ping |
-| Serialization | serde | JSON/config |
+| UI 框架 | fltk | 跨平台原生 UI |
+| 异步运行时 | tokio | 异步 I/O |
+| HTTP 服务器 | axum | 轻量异步 HTTP |
+| TFTP | async-tftp | 支持 Handler 的异步 TFTP |
+| Ping | surge-ping | ICMP Ping |
+| 序列化 | serde | JSON/配置 |
 
-## Release Build Optimization
+## 发布构建优化
 
 ```toml
 # Cargo.toml
 [profile.release]
-opt-level = "z"      # Optimize for size
-lto = true           # Link-time optimization
-panic = "abort"      # Reduce binary size
-strip = true         # Strip symbols
+opt-level = "z"      # 按体积优化
+lto = true           # 链接时优化
+panic = "abort"      # 减少二进制体积
+strip = true         # 去除符号表
 ```
 
-## Platform Support
+## 平台支持
 
 - Windows x64
-- Linux x64 (glibc)
+- Linux x64（glibc）
 - Linux arm64
 
-## Documentation
+## 文档
 
-- `doc/architecture.md` - Technical selection and architecture
-- `doc/requirements.md` - Detailed requirements and UI specs
-- `doc/tftp-evaluation.md` - Rust TFTP library evaluation
-- `doc/progress.md` - Development progress tracking
-- `doc/requirements-gap-analysis.md` - Requirements vs implementation gap analysis
-- `doc/version-management.md` - Version and release management
-- `doc/ui-framework-evaluation.md` - UI framework comparison
-- `doc/changelog-solution.md` - Changelog tool comparison
+- `doc/architecture.md` - 技术选型与架构设计
+- `doc/requirements.md` - 详细需求和 UI 规格
+- `doc/tftp-evaluation.md` - Rust TFTP 库评估
+- `doc/progress.md` - 开发进度跟踪
+- `doc/requirements-gap-analysis.md` - 需求与实现差异分析
+- `doc/version-management.md` - 版本与发布管理
+- `doc/ui-framework-evaluation.md` - UI 框架对比
+- `doc/changelog-solution.md` - 更新日志工具对比

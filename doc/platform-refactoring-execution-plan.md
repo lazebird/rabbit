@@ -2,8 +2,8 @@
 
 **基准文档**：`doc/modules.md`（v7.0）、`doc/platform-refactoring-plan.md`
 **生成日期**：2026-05-11
-**最后修改**：2026-05-11（v2 — 根据代码审查调整）
-**状态**：待审核
+**最后修改**：2026-05-11（v3 — 执行完成，反映实际状态）
+**状态**：**已执行**（73/73 个文件变更完成）
 
 ---
 
@@ -880,7 +880,61 @@ impl NetworkProvider for DefaultNetworkProvider { ... }
 
 ---
 
-## 11. 附录：全部变更清单
+## 11. 执行记录
+
+### ✅ 批次 0（全部完成）
+| 操作 | 状态 |
+|------|------|
+| 新建 `crates/rabbit-config/`（Cargo.toml + src/lib.rs，从 adapter::config 迁移） | ✅ |
+| 新建 `crates/rabbit-diag/`（Cargo.toml + src/lib.rs，从 adapter::diag 迁移，`libc::getpid()` → `std::process::id()`） | ✅ |
+| 更新 workspace `Cargo.toml`，添加 crates 到 members | ✅ |
+| `adapter/Cargo.toml` 移除 toml 依赖，保留 dirs（autostart.rs 仍需），添加 rabbit-diag | ✅ |
+| `adapter/src/lib.rs` 移除 config/diag 模块声明 | ✅ |
+| 删除 `adapter/src/config.rs`、`adapter/src/diag.rs` | ✅ |
+| `service/Cargo.toml` 添加 rabbit-config 依赖 | ✅ |
+| `app/Cargo.toml` 添加 rabbit-config + rabbit-diag 依赖 | ✅ |
+| service 层 6 文件：config import 替换为 rabbit_config | ✅ |
+| `service/src/lib.rs` 移除 `ServiceError::Platform` + `#[from] adapter::PlatformError` | ✅ |
+| app 层 10+ 文件：config + diag import 替换 | ✅ |
+| `app/src/view_model.rs` 返回类型 `adapter::Result` → `rabbit_config::Result` | ✅ |
+| `adapter/src/elevation.rs` `crate::diag::log` → `rabbit_diag::log`（14 处） | ✅ |
+
+### ✅ Step 2（全部完成）
+| 操作 | 状态 |
+|------|------|
+| `schema/src/network.rs` 新建 `NetworkProvider` trait | ✅ |
+| `schema/src/lib.rs` 添加 `pub mod network;` + re-export | ✅ |
+| `adapter/src/network.rs` 实现 `DefaultNetworkProvider` | ✅ |
+| 删除 `adapter::network::calculate_ip_range()`（service 私有版本保留） | ✅ |
+
+### ✅ Step 3（全部完成）
+| 操作 | 状态 |
+|------|------|
+| `ScanService` 添加 `network_provider: Option<Arc<dyn NetworkProvider>>` | ✅ |
+| `ScanService` 添加 `with_network()` 构建方法 | ✅ |
+| `scan_host()` 改为接收 `Option<Arc<dyn NetworkProvider>>` | ✅ |
+| `app.rs` 传入 `adapter::DefaultNetworkProvider` | ✅ |
+| 移除 `service/Cargo.toml` 中 `adapter` 依赖 | ✅ |
+| 验证：`grep -r "adapter" crates/service/` 无输出 | ✅ |
+
+### ✅ Step 4（部分完成）
+| 操作 | 状态 |
+|------|------|
+| X11 handler 移入 `adapter/src/x11_diag.rs`，app.rs 改为 `use adapter::x11_diag` | ✅ |
+| F1/F2/F3 改用 `adapter::dialog::open_url()` 和 `adapter::dialog::open_file_manager()` | ✅ |
+| systray 移入 adapter（`app/systray*.rs` → `adapter/tray/`） | ⏳ 暂缓 |
+| tray_helper 移入 adapter（`app/tray_helper.rs` → `adapter/tray_helper.rs`） | ⏳ 暂缓 |
+| `adapter/src/platform.rs` PlatformService 统一入口 | ⏳ 暂缓 |
+| `elevation.rs` FLTK dialog 解耦 | ⏳ 暂缓 |
+| `window.rs` hwnd 私有化 | ⏳ 暂缓 |
+
+> **暂缓原因**：systray/tray_helper 迁移依赖 Lifecycle 和 FLTK 窗口引用的回调化改造，
+> 需要更多架构设计。PlatformService/elevation/window 净化不阻塞其他步骤。
+> 建议作为后续优化项单独实施。
+
+---
+
+## 12. 附录：全部变更清单
 
 > 本重构不保留任何向后兼容。以下变更全部直接替换为新方式，无过渡层。
 

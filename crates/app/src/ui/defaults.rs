@@ -1,4 +1,4 @@
-use adapter::config::load_config;
+use rabbit_config::load_config;
 
 pub fn ping_target() -> String {
     if let Ok(c) = load_config() {

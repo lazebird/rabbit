@@ -72,9 +72,6 @@ pub enum ServiceError {
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 
-    #[error("Platform error: {0}")]
-    Platform(#[from] adapter::PlatformError),
-
     #[error("Other error: {0}")]
     Other(String),
 }

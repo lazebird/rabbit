@@ -33,7 +33,7 @@ use tracing::{error, info, warn};
 // ---------------------------------------------------------------------------
 macro_rules! diag {
     ($($arg:tt)*) => {
-        adapter::diag::log(&format!("[tray-helper] {}", format_args!($($arg)*)))
+        rabbit_diag::log(&format!("[tray-helper] {}", format_args!($($arg)*)))
     };
 }
 

@@ -16,11 +16,11 @@ tracing = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 serde = { workspace = true }
-toml = { workspace = true }
 dirs = { workspace = true }
 chrono = { workspace = true }
 xelevate = { version = "0.1.2", registry = "crates-io" }
 fltk = { workspace = true }
+rabbit-diag = { path = "../rabbit-diag" }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { workspace = true, features = ["Win32_Foundation", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging", "Win32_System_Com", "Win32_NetworkManagement_IpHelper"] }

@@ -4,6 +4,8 @@ members = [
     "crates/adapter",
     "crates/service",
     "crates/app",
+    "crates/rabbit-config",
+    "crates/rabbit-diag",
 ]
 resolver = "2"
 

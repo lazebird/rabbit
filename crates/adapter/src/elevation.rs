@@ -69,7 +69,7 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
     use std::io::{Read, Write};
     use std::process::{Command, Stdio};
 
-    crate::diag::log("elevate_with_sudo: requesting password");
+    rabbit_diag::log("elevate_with_sudo: requesting password");
     let password = match xelevate::request_password() {
         Some(p) => p,
         None => {
@@ -77,7 +77,7 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
             std::process::exit(1);
         }
     };
-    crate::diag::log("elevate_with_sudo: password obtained");
+    rabbit_diag::log("elevate_with_sudo: password obtained");
 
     // ── Build sudo command ──────────────────────────────────────────────
     // sudo -S -k VAR=value1 VAR=value2 ... ./rabbit
@@ -105,7 +105,7 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
             if !val.is_empty() {
                 let pair = format!("{var}={val}");
                 cmd.arg(&pair);
-                crate::diag::log(&format!("  sudo env: {pair}"));
+                rabbit_diag::log(&format!("  sudo env: {pair}"));
             }
         }
     }
@@ -118,7 +118,7 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
             if !home.is_empty() {
                 let default_xauth = format!("{home}/.Xauthority");
                 cmd.arg(format!("XAUTHORITY={default_xauth}"));
-                crate::diag::log(&format!(
+                rabbit_diag::log(&format!(
                     "  sudo env: XAUTHORITY={default_xauth} (derived from HOME)"
                 ));
             }
@@ -131,7 +131,7 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
     cmd.stdout(Stdio::null());
     cmd.stderr(Stdio::piped());      // Capture errors for diagnostics
 
-    crate::diag::log("elevate_with_sudo: spawning sudo");
+    rabbit_diag::log("elevate_with_sudo: spawning sudo");
     let mut child = cmd.spawn().unwrap_or_else(|e| {
         show_elevation_error(&format!("Failed to spawn sudo: {e}"));
         std::process::exit(1);
@@ -151,13 +151,13 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
             Ok(Some(status)) => break Some(status),
             Ok(None) => {
                 if std::time::Instant::now() > deadline {
-                    crate::diag::log("elevate_with_sudo: sudo still running after 5s, assuming success");
+                    rabbit_diag::log("elevate_with_sudo: sudo still running after 5s, assuming success");
                     std::process::exit(0);
                 }
                 std::thread::sleep(std::time::Duration::from_millis(200));
             }
             Err(e) => {
-                crate::diag::log(&format!("elevate_with_sudo: sudo try_wait error: {e}"));
+                rabbit_diag::log(&format!("elevate_with_sudo: sudo try_wait error: {e}"));
                 break None;
             }
         }
@@ -165,7 +165,7 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
 
     match exit_status {
         Some(status) if status.success() => {
-            crate::diag::log("elevate_with_sudo: sudo success, exiting");
+            rabbit_diag::log("elevate_with_sudo: sudo success, exiting");
             std::process::exit(0);
         }
         Some(status) => {
@@ -173,7 +173,7 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
             let mut stderr_buf = String::new();
             let _ = child.stderr.take().map(|mut s| s.read_to_string(&mut stderr_buf));
             let code = status.code();
-            crate::diag::log(&format!("elevate_with_sudo: sudo failed code={code:?} stderr={stderr_buf:?}"));
+            rabbit_diag::log(&format!("elevate_with_sudo: sudo failed code={code:?} stderr={stderr_buf:?}"));
 
             show_elevation_error(&format!(
                 "sudo exited with code {code:?}.\n\n\
@@ -184,7 +184,7 @@ fn elevate_with_sudo(exe_path: &str) -> ! {
             std::process::exit(1);
         }
         None => {
-            crate::diag::log("elevate_with_sudo: sudo wait error");
+            rabbit_diag::log("elevate_with_sudo: sudo wait error");
             show_elevation_error("Failed to wait for sudo. Please try running from a terminal.");
             std::process::exit(1);
         }
@@ -218,7 +218,7 @@ fn elevate_with_xelevate(exe_path: &str) -> ! {
 /// Show a modal FLTK error dialog and wait for the user to click OK.
 #[cfg(not(any(debug_assertions, target_os = "android", target_os = "ios")))]
 fn show_elevation_error(msg: &str) {
-    crate::diag::log("show_elevation_error: creating FLTK dialog");
+    rabbit_diag::log("show_elevation_error: creating FLTK dialog");
     use fltk::prelude::*;
 
     let app = fltk::app::App::default();
@@ -239,11 +239,11 @@ fn show_elevation_error(msg: &str) {
     });
 
     wind.end();
-    crate::diag::log("show_elevation_error: showing dialog");
+    rabbit_diag::log("show_elevation_error: showing dialog");
     wind.show();
-    crate::diag::log("show_elevation_error: entering FLTK event loop");
+    rabbit_diag::log("show_elevation_error: entering FLTK event loop");
     app.run().unwrap();
-    crate::diag::log("show_elevation_error: dialog closed");
+    rabbit_diag::log("show_elevation_error: dialog closed");
 }
 
 #[cfg(test)]

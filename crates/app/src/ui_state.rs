@@ -181,7 +181,7 @@ pub fn update_module_running(module: &str, running: bool) {
         _ => {}
     }
     // 更新配置
-    adapter::config::update_config(|cfg| {
+    rabbit_config::update_config(|cfg| {
         cfg.modules.insert(module, "running", schema::config::ConfigValue::Boolean(running));
     })
     .ok();
@@ -311,7 +311,7 @@ pub fn set_http_selected(idx: i32) {
 /// Sync HTTP items from UI state to config and save
 pub fn sync_http_config() {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     if let Some(state) = UiState::global() {
         if let Ok(s) = state.lock() {
@@ -331,7 +331,7 @@ pub fn sync_http_config() {
 /// Sync TFTP directory from UI state to config and save
 pub fn sync_tftpd_config() {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     if let Some(state) = UiState::global() {
         if let Ok(s) = state.lock() {
@@ -440,7 +440,7 @@ pub fn update_settings_line(line_index: i32, text: &str) {
 
 pub fn set_systray(value: bool) {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "systray", ConfigValue::Boolean(value));
@@ -450,7 +450,7 @@ pub fn set_systray(value: bool) {
 
 pub fn set_top(value: bool) {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "top", ConfigValue::Boolean(value));
@@ -460,7 +460,7 @@ pub fn set_top(value: bool) {
 
 pub fn set_autostart(value: bool) {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "autostart", ConfigValue::Boolean(value));
@@ -470,7 +470,7 @@ pub fn set_autostart(value: bool) {
 
 pub fn set_autoupdate(value: bool) {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "autoupdate", ConfigValue::Boolean(value));
@@ -480,7 +480,7 @@ pub fn set_autoupdate(value: bool) {
 
 pub fn set_language(value: &str) {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         config.modules.insert("global", "language", ConfigValue::String(value.to_string()));
@@ -491,7 +491,7 @@ pub fn set_language(value: &str) {
 /// Save plan tasks to config (structured storage)
 pub fn save_plan_tasks(tasks: &[schema::config::PlanTask]) {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         let json = serde_json::to_string(tasks).unwrap_or_default();
@@ -505,7 +505,7 @@ pub fn save_plan_tasks(tasks: &[schema::config::PlanTask]) {
 /// Load plan tasks from config (structured storage)
 pub fn load_plan_tasks() -> Vec<schema::config::PlanTask> {
     use schema::config::PlanTask;
-    use adapter::config::load_config;
+    use rabbit_config::load_config;
 
     if let Ok(config) = load_config() {
         if let Some(json_str) = config.modules.get_string("plan", "tasks") {
@@ -520,7 +520,7 @@ pub fn load_plan_tasks() -> Vec<schema::config::PlanTask> {
 /// Sync scan configuration when starting a scan
 pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         config.modules.scan.insert("start_ip".into(), ConfigValue::String(start_ip));
@@ -539,7 +539,7 @@ pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
 /// Sync HTTP configuration when starting the server
 pub fn sync_http_start_config(port: u16, shell: bool, autoindex: bool, videoplay: bool) {
     use schema::config::ConfigValue;
-    use adapter::config::{load_config, save_config};
+    use rabbit_config::{load_config, save_config};
 
     tracing::info!("sync_http_start_config: port={}, shell={}, autoindex={}, videoplay={}", port, shell, autoindex, videoplay);
 

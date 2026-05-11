@@ -4,7 +4,7 @@ use crate::{
     ui_channel::{Module, UiData},
     Result, ServiceError, ServiceUpdateResult,
 };
-use adapter::config::get_integer;
+use rabbit_config::get_integer;
 use std::path::PathBuf;
 use tokio::task::JoinHandle;
 use tracing::{error, info};
@@ -33,7 +33,7 @@ impl ServerConfig {
 }
 
 fn get_array_first(module: &str, key: &str) -> Option<String> {
-    adapter::config::get_array(module, key).and_then(|arr| arr.first().cloned())
+    rabbit_config::get_array(module, key).and_then(|arr| arr.first().cloned())
 }
 
 /// TFTP Server Service

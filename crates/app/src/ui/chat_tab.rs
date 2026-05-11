@@ -154,11 +154,11 @@ impl TabComponent for ChatTab {
             let port = port_input_clone.value().parse::<u16>().unwrap_or(1314);
 
             // Always save config on button click
-            if let Ok(mut config) = adapter::config::load_config() {
+            if let Ok(mut config) = rabbit_config::load_config() {
                 use schema::config::ConfigValue;
                 config.modules.insert("chat", "username", ConfigValue::String(username.clone()));
                 config.modules.insert("chat", "port", ConfigValue::Integer(port as i64));
-                let _ = adapter::config::save_config(&config);
+                let _ = rabbit_config::save_config(&config);
             }
 
             if label == "Start" {

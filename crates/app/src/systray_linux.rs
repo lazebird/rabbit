@@ -16,7 +16,7 @@ use ksni::{Handle, TrayMethods};
 // ---------------------------------------------------------------------------
 macro_rules! diag {
     ($($arg:tt)*) => {
-        adapter::diag::log(&format!("[systray] {}", format_args!($($arg)*)))
+        rabbit_diag::log(&format!("[systray] {}", format_args!($($arg)*)))
     };
 }
 

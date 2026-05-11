@@ -6,9 +6,11 @@
 use serde::{Deserialize, Serialize};
 
 pub mod config;
+pub mod network;
 pub mod scan;
 
 pub use config::*;
+pub use network::*;
 pub use scan::*;
 
 /// 统一数据通道消息类型 - 所有模块使用

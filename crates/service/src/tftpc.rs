@@ -4,7 +4,7 @@ use crate::{
     ui_channel::{Module, UiData},
     Result, ServiceError, ServiceUpdateResult,
 };
-use adapter::config::{get_integer, get_string};
+use rabbit_config::{get_integer, get_string};
 use std::path::PathBuf;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::UdpSocket;
