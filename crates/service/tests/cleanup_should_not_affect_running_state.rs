@@ -69,18 +69,17 @@ async fn update_stop_should_send_status() {
     assert!(found, "update() stop should send ServiceStatus(false) so UI can save config");
 }
 
-/// 测试 is_running 在 destroy 后应为 false
 #[tokio::test]
-async fn is_running_after_destroy() {
+async fn can_restart_after_destroy() {
     let (mut svc, _) = make_ping();
 
-    // 启动
-    let _ = svc.update().await;
-    assert!(svc.is_running().await, "should be running after update() start");
+    let r1 = svc.update().await;
+    assert!(matches!(r1, ServiceUpdateResult::Started(_)), "should start after first update");
 
-    // destroy
     let _ = svc.destroy().await;
-    assert!(!svc.is_running().await, "should not be running after destroy()");
+
+    let r2 = svc.update().await;
+    assert!(matches!(r2, ServiceUpdateResult::Started(_)), "should be able to restart after destroy");
 }
 
 /// 测试 HTTP service destroy 不发通告
@@ -137,9 +136,9 @@ async fn cleanup_flow_preserves_running_state() {
 
     // 验证服务正在运行
     assert!(ping_running, "ping should be running after start");
-    assert!(ping.is_running().await, "ping.is_running() should be true after start");
 
-    // 模拟 cleanup：调用 destroy
+    let before_destroy_running = ping_running;
+
     let _ = ping.destroy().await;
     let _ = http.destroy().await;
     let _ = tftpd.destroy().await;
@@ -147,8 +146,7 @@ async fn cleanup_flow_preserves_running_state() {
     let _ = plan.destroy().await;
     let _ = scan.destroy().await;
 
-    // destroy 后，is_running 应该返回 false
-    assert!(!ping.is_running().await, "ping.is_running() should be false after destroy");
-    // 但之前读取的状态（用于保存配置）应该是 true
-    assert!(ping_running, "ping_running should be true (recorded before destroy)");
+    let r = ping.update().await;
+    assert!(matches!(r, ServiceUpdateResult::Started(_)), "ping should be restartable after destroy");
+    assert!(before_destroy_running, "ping_running should be true (recorded before destroy)");
 }

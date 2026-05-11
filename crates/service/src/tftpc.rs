@@ -2,7 +2,7 @@
 
 use crate::{
     ui_channel::{Module, UiData},
-    Result, ServiceError,
+    Result, ServiceError, ServiceUpdateResult,
 };
 use adapter::config::{get_integer, get_string};
 use std::path::PathBuf;
@@ -55,6 +55,16 @@ impl TftpcService {
 
     pub async fn send(&self, data: UiData) {
         crate::send_ui(&self.tx, data).await;
+    }
+
+    /// 统一接口占位：TFTP 客户端无持久状态，不执行启停
+    pub async fn update(&mut self) -> ServiceUpdateResult {
+        ServiceUpdateResult::NoChange
+    }
+
+    /// 统一接口占位：TFTP 客户端无需释放资源
+    pub async fn destroy(&mut self) -> Result<()> {
+        Ok(())
     }
 
     pub async fn put(&self, local_path: &str, remote_filename: &str) -> Result<String> {

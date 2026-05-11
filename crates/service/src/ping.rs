@@ -100,11 +100,6 @@ impl PingService {
         Self { tx: Some(tx), ..Self::default() }
     }
 
-    /// 检查 Ping 服务是否正在运行
-    pub async fn is_running(&self) -> bool {
-        *self.state.read().await == PingState::Running
-    }
-
     /// 公开接口：启停切换，会发状态通告
     pub async fn update(&mut self) -> ServiceUpdateResult {
         if *self.state.read().await == PingState::Running {

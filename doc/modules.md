@@ -3,19 +3,33 @@
 ## 项目架构
 
 ```
-┌─────────────────────────────────────────┐
-│           Presentation Layer             │
-│   View (FLTK UI) ← ViewModel (State)     │
-├─────────────────────────────────────────┤
-│           Business Layer               │
-│   PingService / HttpService / ...        │
-├─────────────────────────────────────────┤
-│           Data Layer                   │
-│   Models + Repository                 │
-├─────────────────────────────────────────┤
-│        Infrastructure Layer           │
-│   Platform / Config / Utils            │
-└─────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│                    表现层 (Presentation)                 │
+│     app (FLTK UI + ViewModel + 事件驱动刷新)              │
+├────────────────────────────────────────────────────────┤
+│                    业务层 (Business)                     │
+│     service (PingService / HttpService / ...)           │
+├────────────────────────────────────────────────────────┤
+│                  基础设施层 (Infrastructure)              │
+│     ┌──────────┬──────────────┬──────────────────┐      │
+│     │  schema   │   config     │    adapter        │      │
+│     │ (数据模型) │ (配置管理)    │  (平台适配层)      │      │
+│     └──────────┴──────────────┴──────────────────┘      │
+└────────────────────────────────────────────────────────┘
+```
+
+### 依赖关系
+
+```
+app ─→ service, config, adapter, schema
+                │
+service ───────→ schema, config     (不依赖 adapter)
+                │
+adapter ───────→ schema              (纯平台适配，零业务逻辑)
+                │
+config ────────→ schema              (配置管理，使用 dirs 获取平台目录)
+                │
+schema ──────── (无外部依赖)
 ```
 
 ---
@@ -25,107 +39,119 @@
 ```
 rabbit/
 ├── crates/
-│   ├── rabbit-app/       # 主入口 + UI
-│   │   └── src/
-│   │       ├── main.rs           # 程序入口
-│   │       ├── lib.rs           # 库入口
-│   │       ├── app.rs           # 主应用、事件处理、生命周期
-│   │       ├── view_model.rs    # 统一配置管理
-│   │       ├── ui_state.rs      # UI 状态管理
-│   │       ├── ui_events.rs     # UI 事件系统
-│   │       ├── ui/              # FLTK 界面组件
-│   │       │   ├── mod.rs       # UI 模块入口
-│   │       │   ├── ping_tab.rs  # Ping 界面
-│   │       │   ├── scan_tab.rs  # Scan 界面
-│   │       │   ├── http_tab.rs  # HTTP 界面
-│   │       │   ├── tftpd_tab.rs # TFTP 服务器界面
-│   │       │   ├── tftpc_tab.rs # TFTP 客户端界面
-│   │       │   ├── plan_tab.rs  # Plan 界面
-│   │       │   ├── chat_tab.rs  # Chat 界面
-│   │       │   ├── settings_tab.rs # 设置界面
-│   │       │   ├── defaults.rs  # 默认值
-│   │       │   ├── styles.rs    # 样式定义
-│   │       │   └── ui_refresh.rs # UI 更新（事件驱动回调）
-│   │       └── upgrade/         # 升级模块
-│   │           ├── mod.rs       # 升级模块入口
-│   │           ├── models.rs   # 版本数据结构
-│   │           ├── downloader.rs # 下载器
-│   │           └── installer.rs   # 安装器
-│   │
-│   ├── rabbit-core/       # 业务服务
-│   │   └── src/
-│   │       ├── lib.rs           # 库入口、ServiceError 定义
-│   │       ├── ping.rs          # Ping 服务
-│   │       ├── scan.rs          # 扫描服务
-│   │       ├── http.rs          # HTTP 服务
-│   │       ├── tftpd.rs         # TFTP 服务器
-│   │       ├── tftpc.rs         # TFTP 客户端
-│   │       ├── chat.rs          # 聊天服务
-│   │       ├── plan.rs          # 计划服务
-│   │       └── ui_channel.rs    # UI 通道管理
-│   │
-│   ├── rabbit-models/    # 数据模型
-│   │   └── src/
-│   │       ├── lib.rs           # UiData、Module 枚举
-│   │       ├── config.rs        # AppConfig 配置模型
-│   │       └── scan.rs          # Scan 数据模型
-│   │
-│   └── rabbit-platform/  # 基础设施
-│       └── src/
-│           ├── lib.rs           # 平台接口
-│           ├── config.rs        # 配置持久化
-│           ├── autostart.rs     # 开机自启
-│           ├── elevation.rs     # 权限提升
-│           ├── notification.rs  # 系统通知
-│           ├── taskbar.rs       # 任务栏集成
-│           ├── shell.rs         # Shell 操作
-│           ├── dialog.rs        # 对话框
-│           ├── network.rs       # 网络工具
-│           └── ping.rs          # 平台级 Ping（Windows）
+│   ├── app/              # 主入口 + FLTK UI（表现层）
+│   ├── service/          # 业务服务（业务层）
+│   ├── schema/           # 数据模型（数据层，无外部依赖）
+│   ├── adapter/          # 平台适配层（基础设施）
+│   └── config/           # 配置管理（基础设施）[待建设]
 │
-├── doc/
-│   ├── architecture.md         # 架构设计
-│   ├── data-flow-design.md    # 数据流设计
-│   ├── config-structure.md    # 配置结构
-│   ├── modules.md             # 模块化结构
-│   └── progress.md            # 开发进度
-│
-└── Cargo.toml
+├── doc/                  # 文档
+├── tests/                # 集成测试
+├── release/              # 发布脚本和配置
+└── Cargo.toml            # workspace 定义
 ```
 
 ---
 
-## rabbit-app (表现层 + 业务层入口)
+## app crate（表现层）
 
-### 主要文件
+**crate 名**: `app`（二进制: `rabbit`）
+**依赖**: `service`, `config`, `adapter`, `schema`, `fltk`, `tokio`, `tracing`
 
-| 文件 | 职责 |
-|------|------|
-| `main.rs` | 程序入口、Tokio 运行时初始化、日志初始化 |
-| `lib.rs` | 库入口、App 导出 |
-| `app.rs` | 主应用、事件处理、生命周期管理、UI channel 接收 |
-| `view_model.rs` | 统一配置管理、运行状态跟踪 |
-| `ui_state.rs` | UI 状态同步（全局状态、刷新标记） |
-| `ui_events.rs` | UI 事件系统（事件发送/接收） |
-| `ui/ui_refresh.rs` | 集中式 UI 刷新（100ms 定时器） |
+**职责**：程序入口、FLTK UI 构建、用户交互处理、UI 状态管理、事件分发、服务生命周期管理、升级管理。
 
-### AppViewModel
+### 文件结构
+
+```
+app/src/
+├── main.rs              # 程序入口：运行时初始化、提权、启动事件循环
+├── lib.rs               # 库入口，导出所有模块
+├── app.rs               # App 主控制器：窗口构建、事件处理、服务编排
+├── view_model.rs        # AppViewModel：配置的缓存/读写代理
+├── ui_state.rs          # UiState：全局 UI 状态（文本缓冲、运行标记）
+├── ui_events.rs         # UiEvent 事件系统（FLTK → async 桥接）
+├── lifecycle.rs         # Lifecycle：生命周期控制（shutdown 信号）
+├── icon.rs              # 应用图标加载（从嵌入 ico 解码）
+├── systray.rs           # 系统托盘平台分派（Linux ksni / 其他 tray-icon）
+├── systray_linux.rs     # Linux 托盘实现（ksni StatusNotifierItem）
+├── systray_non_linux.rs # 非 Linux 托盘实现（tray-icon）
+├── tray_helper.rs       # 提权后托盘助手进程（Unix socket IPC，仅 Linux）
+│
+├── ui/                  # FLTK 界面组件
+│   ├── mod.rs           # UI 模块入口 + TabComponent trait
+│   ├── ping_tab.rs      # Ping 功能标签页
+│   ├── scan_tab.rs      # IP 扫描标签页
+│   ├── http_tab.rs      # HTTP 服务器标签页
+│   ├── tftpd_tab.rs     # TFTP 服务器标签页
+│   ├── tftpc_tab.rs     # TFTP 客户端标签页
+│   ├── plan_tab.rs      # 计划任务标签页
+│   ├── chat_tab.rs      # 局域网聊天标签页
+│   ├── settings_tab.rs  # 设置标签页 + 版本更新检查
+│   ├── reminder_window.rs # 计划提醒弹窗
+│   ├── defaults.rs      # 各模块配置默认值（从 config 读取）
+│   ├── styles.rs        # UI 样式定义（颜色、间距、格式化）
+│   └── ui_refresh.rs    # 集中式 UI 刷新管理器（事件驱动）
+│
+├── upgrade/             # 升级管理
+│   ├── mod.rs           # 模块入口，导出公共类型
+│   ├── models.rs        # 版本/平台数据模型 + 平台检测
+│   ├── downloader.rs    # 版本清单下载 + 更新包下载
+│   └── installer.rs     # 更新安装（平台特定路径/权限处理）
+│
+├── resources/
+│   └── icon.ico         # 应用图标
+│
+├── tests/
+│   └── integration_ui_refresh.rs  # UI 刷新集成测试
+│
+├── build.rs             # 构建脚本（Windows 资源嵌入）
+├── rabbit-app.rc        # Windows 资源文件
+└── rabbit.manifest      # Windows 清单文件
+```
+
+### 核心类型
+
+#### App（app.rs）
 
 ```rust
-pub struct AppViewModel {
-    config: AppConfig,
+pub struct App {
+    view_model: Arc<RwLock<AppViewModel>>,
+    // 所有业务服务
+    ping_service: Arc<RwLock<PingService>>,
+    http_service: Arc<RwLock<HttpService>>,
+    tftp_server_service: Arc<RwLock<TftpdService>>,
+    tftp_client_service: Arc<RwLock<TftpcService>>,
+    plan_service: Arc<RwLock<PlanService>>,
+    chat_service: Arc<RwLock<ChatService>>,
+    scan_service: Arc<RwLock<ScanService>>,
+    // 生命周期控制
+    lifecycle: Lifecycle,
+    // UI 通道
+    ui_channels: UiChannels,
+    event_rx: UnboundedReceiver<UiEvent>,
 }
 
+impl App {
+    pub async fn new() -> anyhow::Result<Self>   // 初始化
+    pub async fn run(&mut self) -> anyhow::Result<()>  // 运行主循环
+}
+```
+
+#### AppViewModel（view_model.rs）
+
+配置的内存缓存代理。持有 `AppConfig` 并提供类型安全读写接口。
+
+```rust
+pub struct AppViewModel { config: AppConfig }
+
 impl AppViewModel {
-    // 基础
     pub fn new(config: AppConfig) -> Self
     pub fn get_config(&self) -> AppConfig
     pub fn set_config(&mut self, config: AppConfig)
-    pub fn save(&self) -> Result<()>
-    pub fn update_config(&mut self, config: AppConfig)
-    pub fn update_and_save(&mut self, config: AppConfig) -> Result<()>
-    
-    // 通用读写 (section + key)
+    pub fn save(&self) -> Result<()>              // 持久化到 config crate
+    pub fn update_and_save(&mut self, AppConfig) -> Result<()>
+
+    // 类型安全访问器
     pub fn get_string(&self, section: &str, key: &str) -> Option<String>
     pub fn get_integer(&self, section: &str, key: &str) -> Option<i64>
     pub fn get_bool(&self, section: &str, key: &str) -> Option<bool>
@@ -137,283 +163,293 @@ impl AppViewModel {
 }
 ```
 
-运行状态由各 Service 内部管理，通过通用接口读写。
+#### Lifecycle（lifecycle.rs）
 
-### App
+应用生命周期控制器。提供统一的应用退出管理，替代之前的多个 `AtomicBool` 分散管理。
 
 ```rust
-pub struct App {
-    view_model: Arc<RwLock<AppViewModel>>,
-    ping_service: Arc<RwLock<PingService>>,
-    http_service: Arc<RwLock<HttpService>>,
-    tftp_server_service: Arc<RwLock<TftpdService>>,
-    tftp_client_service: Arc<RwLock<TftpcService>>,
-    plan_service: Arc<RwLock<PlanService>>,
-    chat_service: Arc<RwLock<ChatService>>,
-    scan_service: Arc<RwLock<ScanService>>,
-    ping_task: Arc<RwLock<Option<JoinHandle<()>>>>,
-    scan_task: Arc<RwLock<Option<JoinHandle<()>>>>,
-    shutdown_flag: Arc<AtomicBool>,
-    // UI data receivers
-    http_rx: Option<mpsc::Receiver<UiData>>,
-    ping_rx: Option<mpsc::Receiver<UiData>>,
-    scan_rx: Option<mpsc::Receiver<UiData>>,
-    tftpd_rx: Option<mpsc::Receiver<UiData>>,
-    tftpc_rx: Option<mpsc::Receiver<UiData>>,
-    chat_rx: Option<mpsc::Receiver<UiData>>,
-    plan_rx: Option<mpsc::Receiver<UiData>>,
-}
+#[derive(Clone)]
+pub struct Lifecycle { /* Arc<Inner> */ }
 
-impl App {
-    pub async fn new() -> anyhow::Result<Self>
-    pub async fn run(&mut self) -> anyhow::Result<()>
+impl Lifecycle {
+    pub fn new() -> Self
+    pub fn request_shutdown(&self)                // 请求优雅退出（任意线程安全）
+    pub fn is_shutdown_requested(&self) -> bool    // 检查是否已请求退出
+    pub fn run_event_loop(&self)                  // 运行 FLTK 事件循环（阻塞直到 shutdown）
 }
 ```
 
-### 对外接口
+**信号流**：退出请求可来自 ESC 键、窗口关闭按钮、托盘 Quit 菜单、Ctrl+C
+→ `Lifecycle::request_shutdown()` → `run_event_loop()` 退出。
+
+#### UiEvent（ui_events.rs）
+
+FLTK UI 回调 → async 事件循环 的桥接。
 
 ```rust
-// App 初始化
-pub async fn new() -> anyhow::Result<Self>
-pub async fn run(&mut self) -> anyhow::Result<()>
+pub enum UiEvent {
+    ModuleToggle { module: String },   // 模块启动/停止
+    TftpClientPut { server, local, remote, options },
+    TftpClientGet { server, local, remote, options },
+    PlanAdd { date, time, cycle, unit, msg },
+    PlanRemove { msg },
+    ChatSend { message },
+    ChatRefresh,
+    ChatNotify,
+    SettingsSave,
+    VersionCheck,
+}
 
-// ViewModel 配置访问
-pub fn get_config(&self) -> AppConfig
-pub fn update_config(&mut self, config: AppConfig)
+pub fn init_event_system() -> UnboundedReceiver<UiEvent>
+pub fn send_event(event: UiEvent)
 ```
 
-### Upgrade Module
+#### UiState（ui_state.rs）
+
+全局 UI 状态，线程安全。使用 `parking_lot::Mutex`。
 
 ```rust
-// Upgrade 模块接口
-pub use models::{UpdateStatus, VersionsManifest, PlatformInfo};
-pub use downloader::{download_update, DownloadProgress};
-pub use installer::{install_update, get_current_exe_path};
-
-// 主要类型
-pub struct VersionsManifest { ... }
-pub struct PlatformInfo { ... }
-pub enum UpdateStatus { NoUpdate, Available, Downloading, Ready, Installing, Done }
-pub struct DownloadProgress { bytes_downloaded, total_bytes, ... }
+pub struct UiState {
+    pub ping_output: String,         // Ping 日志文本
+    pub ping_stats: String,          // Ping 统计文本
+    pub scan_output: String,         // Scan 日志
+    pub http_log: String,            // HTTP 日志
+    pub http_items: Vec<String>,     // HTTP 目录列表
+    pub tftpd_log: String,           // TFTP 服务器日志
+    pub tftpd_dirs: Vec<String>,     // TFTP 工作目录
+    pub tftpc_log: String,           // TFTP 客户端日志
+    pub plan_log: String,            // 计划日志
+    pub plan_tasks: Vec<PlanTask>,   // 计划任务列表
+    pub chat_log: String,            // 聊天日志
+    pub chat_users: Vec<String>,     // 在线用户列表
+    pub module_running: HashMap<String, bool>,  // 各模块运行状态
+}
 ```
 
-### UI Channel 接收
+#### TabComponent Trait（ui/mod.rs）
+
+所有标签页统一实现此 trait。
 
 ```rust
-// app.rs 中的 UI 数据处理
-async fn handle_ui_data(data: UiData, view_model: &Arc<RwLock<AppViewModel>>)
+pub trait TabComponent {
+    fn build(x: i32, y: i32, w: i32, h: i32, config: &AppConfig) -> Flex;
+}
+```
 
-// 处理类型：
-// - ServiceStatus(module, running)  -> 模块状态变化
-// - PingStats(stats)                -> Ping 统计
-// - Log(module, msg)                -> 通用日志
-// - ScanProgress(msg)               -> Scan 进度
-// - ChatMessage(username, msg)      -> Chat 消息
+### 数据流：UI 事件处理
+
+```
+FLTK UI 回调
+  │  send_event(UiEvent::ModuleToggle { module: "ping" })
+  ▼
+event_rx (tokio::mpsc::unbounded_channel)
+  │  App::handle_event(event)
+  ▼
+async handler
+  │  service.update() → ServiceUpdateResult
+  │  save_config()
+  ▼
+Service 推送 UiData 到 channel
+  │  tx.send(UiData::Log(Module::Ping, msg))
+  ▼
+App::handle_ui_data(data)
+  │  fltk::app::awake_callback(|| ui_refresh::update_xxx(...))
+  ▼
+FLTK 主线程更新 UI
 ```
 
 ---
 
-## rabbit-core (业务服务层)
+## service crate（业务层）
 
-### 统一接口
+**crate 名**: `service`
+**依赖**: `schema`, `config`, `tokio`, `axum`, `async-tftp`, `surge-ping` 等
 
-所有服务实现统一接口：
+**职责**：业务逻辑实现，所有服务的启动/停止/状态管理。**不依赖 `adapter` crate**，通过 `config` crate 读取配置，通过构造函数注入获取平台服务。
 
-```rust
-pub async fn update(&mut self) -> ServiceUpdateResult  // 切换状态 (启动/停止)
+### 文件结构
+
+```
+service/src/
+├── lib.rs           # 库入口，导出所有服务 + ServiceError + ServiceUpdateResult
+├── ping.rs          # PingService：ICMP Ping
+├── scan.rs          # ScanService：IP 扫描
+├── http.rs          # HttpService：HTTP 文件服务器
+├── tftpd.rs         # TftpdService：TFTP 服务器
+├── tftpc.rs         # TftpcService：TFTP 客户端
+├── chat.rs          # ChatService：UDP 广播聊天
+├── plan.rs          # PlanService：计划任务提醒
+└── ui_channel.rs    # UiChannels/UiReceivers + send_ui 工具函数
 ```
 
-> 注：init() 已在 0.2.0 中移除，各服务按需懒初始化
+### 统一接口模式
 
-### Channel 推送接口
-
-服务通过 Channel 向 UI 推送数据：
+所有服务遵循相同的接口约定：
 
 ```rust
-pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+// 构造
+pub fn new() -> Self                              // 占位初始化
+pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self  // 绑定 UI 通道
+
+// 生命周期
+pub async fn update(&mut self) -> ServiceUpdateResult  // 切换状态（启动/停止）
+pub async fn destroy(&mut self) -> Result<()>          // 销毁资源（退出时）
 ```
 
-### UiData/Module 来源
+> ⚠️ `destroy()` 是所有服务的必选方法。退出时 app 层遍历所有服务调用 `destroy()` 释放资源。
+> `send()` 是各服务内部向 UI 推送数据的工具方法，不属对外接口。
+> 不对外暴露 `is_running()` 等状态查询方法——运行状态通过 `UiData::ServiceStatus` 事件驱动同步。
 
-`UiData` 和 `Module` 枚举定义在 `rabbit-models`，`rabbit-core` 通过 `ui_channel.rs` re-export：
+业务状态通过 `ServiceUpdateResult` 返回：
 
 ```rust
-// rabbit-models/src/lib.rs - 权威定义
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum UiData {
-    // 通用日志（HTTP/TFTP/Chat/Ping/Scan）
-    Log(Module, String),
-    
-    // Ping 专用
-    PingStats(String),        // "Tx 10 Rx 9 Loss 10%"
-    PingState { address: String, progress: u32, total: u32, color: String },
-    
-    // Scan 专用
-    ScanProgress(String),       // "Progress: 50% - Found 5 hosts"
-    
-    // Plan 专用
-    PlanReminder(String),      // 计划到期提醒
-    
-    // Chat 专用
-    ChatMessage(String, String), // (用户名, 消息)
-    ChatUserList(String),        // 在线用户列表（逗号分隔）
-    
-    // 服务状态更新（核心：业务状态通知）
-    ServiceStatus(Module, bool), // (模块, 是否运行中)
-    
-    // 错误通知
-    Error(Module, String),
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Module {
-    Ping, Http, Tftpd, Tftpc, Scan, Chat, Plan,
+pub enum ServiceUpdateResult {
+    Started(String),    // 启动成功
+    Stopped(String),    // 停止成功
+    Error(String),      // 操作失败
+    NoChange,           // 状态未改变
 }
 ```
 
-> **注意**：`ServiceStatus` 是业务状态更新的核心接口，用于：
-> - Ping count 达到时 → `ServiceStatus(Ping, false)`
-> - Scan 完成时 → `ServiceStatus(Scan, false)`
-> - 手动停止服务 → `ServiceStatus(Module, false)`
+配置通过 `config` crate 的全局 API 读取（各服务在其 `update()` 方法中读取需要的配置值）。
 
-### PingService
+### 各服务详情
+
+#### PingService
 
 | 项目 | 说明 |
 |------|------|
-| 文件 | `src/ping.rs` |
-| 职责 | ICMP Ping 功能 + 任务栏状态 |
+| 文件 | `ping.rs` |
+| 职责 | ICMP Ping + 统计 + 任务栏状态回传 |
 | 依赖 | `surge-ping` |
-| Channel | `with_channel(tx)` |
+| 状态 | 通过 `PingState { address, progress, total, color }` 推送 UiData |
 
-**接口**：
 ```rust
-pub fn new() -> Self
-pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn update(&mut self) -> ServiceUpdateResult  // 切换状态 (启动/停止)
-pub async fn is_running(&self) -> bool  // 检查是否运行中
-pub fn send(&self, data: UiData)  // 发送 UI 数据
+impl PingService {
+    pub fn new() -> Self
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+    pub async fn update(&mut self) -> ServiceUpdateResult  // 切换运行/停止
+    pub async fn destroy(&mut self) -> Result<()>          // 释放资源
+}
 ```
 
-**状态更新**：
-- 启动时发送：`UiData::ServiceStatus(Module::Ping, true)`
-- 停止时发送：`UiData::ServiceStatus(Module::Ping, false)`
-- 任务栏标题：通过读取配置中的 `target` 设置窗口标题
-
-### HttpService
+#### HttpService
 
 | 项目 | 说明 |
 |------|------|
-| 文件 | `src/http.rs` |
-| 职责 | HTTP 文件服务器 |
-| 依赖 | `axum` |
+| 文件 | `http.rs` |
+| 职责 | HTTP 静态文件服务器，支持目录浏览、视频播放 |
+| 依赖 | `axum`, `tower`, `tower-http` |
 
-**接口**：
 ```rust
-pub fn new() -> Self
-pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn update(&mut self) -> ServiceUpdateResult
+impl HttpService {
+    pub fn new() -> Self
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+    pub async fn update(&mut self) -> ServiceUpdateResult
+    pub async fn destroy(&mut self) -> Result<()>
+}
 ```
 
-### TftpdService
+#### TftpdService
 
 | 项目 | 说明 |
 |------|------|
-| 文件 | `src/tftpd.rs` |
-| 职责 | TFTP 服务器 |
+| 文件 | `tftpd.rs` |
+| 职责 | TFTP 文件服务器 |
 | 依赖 | `async-tftp` |
 
-**接口**：
 ```rust
-pub fn new() -> Self
-pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn update(&mut self) -> ServiceUpdateResult
+impl TftpdService {
+    pub fn new() -> Self
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+    pub async fn update(&mut self) -> ServiceUpdateResult
+    pub async fn destroy(&mut self) -> Result<()>
+}
 ```
 
-### TftpcService
+#### TftpcService
 
 | 项目 | 说明 |
 |------|------|
-| 文件 | `src/tftpc.rs` |
-| 职责 | TFTP 客户端 |
+| 文件 | `tftpc.rs` |
+| 职责 | TFTP 客户端（文件上传/下载） |
 
-**接口**：
 ```rust
-pub fn new() -> Self
-pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn put(&self, local_path: &str, remote_filename: &str) -> Result<String>
-pub async fn get(&self, remote_filename: &str, local_path: &str) -> Result<String>
+impl TftpcService {
+    pub fn new() -> Self
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+    pub async fn update(&mut self) -> ServiceUpdateResult   // 启动/停止（当前无状态，统一接口占位）
+    pub async fn destroy(&mut self) -> Result<()>           // 释放资源
+    pub async fn put(&self, local_path: &str, remote_filename: &str) -> Result<String>
+    pub async fn get(&self, remote_filename: &str, local_path: &str) -> Result<String>
+}
 ```
 
-### ScanService
+> ⚠️ **代码缺口**：当前 `TftpcService` 的实际实现缺少 `update()` 和 `destroy()` 方法。如果 app 层统一调用所有服务的 `update()`/`destroy()`，需要为 TftpcService 补充这两个方法（即使内部为空实现）。
+
+#### ScanService
 
 | 项目 | 说明 |
 |------|------|
-| 文件 | `src/scan.rs` |
-| 职责 | IP 扫描 |
-| 依赖 | `tokio`, `dns-lookup` |
+| 文件 | `scan.rs` |
+| 职责 | IP 扫描（TCP 端口探测 + DNS 反向解析 + ARP MAC 查询） |
+| 网络依赖 | 通过 `NetworkProvider` trait 获取 MAC 地址 |
 
-**接口**：
 ```rust
-pub fn new() -> Self
-pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn update(&mut self) -> ServiceUpdateResult  // 切换状态 (启动/停止)
-pub async fn destroy(&mut self) -> Result<()>  // 销毁资源，不发状态通告
-pub fn send(&self, data: UiData)  // 发送 UI 数据
+impl ScanService {
+    pub fn new() -> Self
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+    pub async fn update(&mut self) -> ServiceUpdateResult
+    pub async fn destroy(&mut self) -> Result<()>
+    pub async fn cancel(&mut self) -> Result<()>       // 取消正在进行的扫描
+}
 ```
 
-**状态更新**：
-- 完成时发送：`UiData::ServiceStatus(Module::Scan, false)`（让按钮从 "Stop" → "Start"）
-- 发现主机时发送：`UiData::Log(Module::Scan, "Found online host: ...")`
-- 进度更新：通过 `ScannerState::Scanning { progress }` 内部跟踪
-
-### ChatService
+#### ChatService
 
 | 项目 | 说明 |
 |------|------|
-| 文件 | `src/chat.rs` |
-| 职责 | 局域网聊天 |
+| 文件 | `chat.rs` |
+| 职责 | UDP 广播局域网聊天 |
 
-**接口**：
 ```rust
-pub fn new() -> Self
-pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn update(&mut self) -> ServiceUpdateResult
-pub async fn send_text(&self, content: &str) -> Result<()>
-pub async fn refresh_users(&self) -> Result<()>
+impl ChatService {
+    pub fn new() -> Self
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+    pub async fn update(&mut self) -> ServiceUpdateResult
+    pub async fn destroy(&mut self) -> Result<()>
+    pub async fn send_text(&self, content: &str) -> Result<()>
+    pub async fn refresh_users(&self) -> Result<()>
+}
 ```
 
-### PlanService
+#### PlanService
 
 | 项目 | 说明 |
 |------|------|
-| 文件 | `src/plan.rs` |
-| 职责 | 定时提醒 |
+| 文件 | `plan.rs` |
+| 职责 | 计划任务定时提醒 |
 
-**接口**：
 ```rust
-pub fn new() -> Self
-pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
-pub async fn update(&mut self) -> ServiceUpdateResult
-pub async fn add_task(&self, date: &str, time: &str, cycle: i32, unit: &str, msg: &str) -> Result<()>
-pub async fn remove_task(&self, id: &str) -> Result<()>
+impl PlanService {
+    pub fn new() -> Self
+    pub fn with_channel(tx: mpsc::Sender<UiData>) -> Self
+    pub async fn update(&mut self) -> ServiceUpdateResult
+    pub async fn destroy(&mut self) -> Result<()>
+    pub async fn add_task(&self, date: &str, time: &str, cycle: i32, unit: &str, msg: &str, override_conflict: bool) -> Result<bool>
+    pub async fn remove_task(&self, msg: &str) -> Result<()>
+}
 ```
 
 ### UiChannel 模块
 
 | 项目 | 说明 |
 |------|------|
-| 文件 | `src/ui_channel.rs` |
-| 职责 | Channel 创建工具 + 统一导出 UiData/Module |
+| 文件 | `ui_channel.rs` |
+| 职责 | 统一管理所有业务的 UI 通道 + 工具函数 |
 
 ```rust
-// 发送辅助函数（消除重复实现）
-pub async fn send_ui(tx: &Option<mpsc::Sender<UiData>>, data: UiData) {
-    if let Some(sender) = tx {
-        let _ = sender.send(data).await;
-    }
-}
-
-// Channel 管理器（每个模块独立 channel）
+// 通道集合（发送端）
 pub struct UiChannels {
     pub ping_tx: mpsc::Sender<UiData>,
     pub http_tx: mpsc::Sender<UiData>,
@@ -424,173 +460,407 @@ pub struct UiChannels {
     pub plan_tx: mpsc::Sender<UiData>,
 }
 
-// 接收端集合
+// 通道集合（接收端）
 pub struct UiReceivers {
     pub ping: mpsc::Receiver<UiData>,
     pub http: mpsc::Receiver<UiData>,
-    // ... 其他模块
+    pub scan: mpsc::Receiver<UiData>,
+    // ...
 }
+
+// 发送辅助
+pub async fn send_ui(tx: &Option<mpsc::Sender<UiData>>, data: UiData)
+
+// 创建单通道（用于独立 service）
+pub fn create_channel() -> (mpsc::Sender<UiData>, mpsc::Receiver<UiData>)
+
+// re-export schema::UiData, schema::Module
+pub use schema::{Module, UiData};
 ```
 
 ---
 
-## rabbit-models (数据层)
+## schema crate（数据模型层）
 
-### UiData 枚举
+**crate 名**: `schema`
+**依赖**: `serde`, `chrono`
+
+**职责**：定义所有跨模块共享的数据结构和枚举。**无外部平台依赖**，可作为纯数据契约使用。
+
+### 文件结构
+
+```
+schema/src/
+├── lib.rs           # 入口 + UiData/Module 枚举定义
+├── config.rs        # AppConfig / ModuleConfigs / ConfigValue / PlanTask / WindowConfig
+└── scan.rs          # ScanRange / ScannerConfig / ScannerState
+```
+
+### 核心类型
+
+#### UiData 枚举 — 统一数据通道消息
+
+所有服务通过此枚举向后端推送数据。
 
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum UiData {
-    // 通用日志（HTTP/TFTP/Chat/Ping/Scan）
-    Log(Module, String),
-
-    // Ping 专用
-    PingStats(String),        // "Tx 10 Rx 9 Loss 10% Min 1ms Max 5ms Avg 2ms"
+    Log(Module, String),                                    // 通用日志
+    PingStats(String),                                      // Tx 10 Rx 9 Loss 10%
     PingState { address: String, progress: u32, total: u32, color: String },
-
-    // Scan 专用
-    ScanProgress(String),       // "Progress: 50% - Found 5 hosts"
-
-    // Plan 专用
-    PlanReminder(String),      // 计划到期提醒
-
-    // Chat 专用
-    ChatMessage(String, String), // (用户名, 消息)
-    ChatUserList(Vec<String>), // ⚠️ 待改：从逗号分隔改为数组
-
-    // 服务状态更新（核心：业务状态通知）
-    // ⚠️ 待扩展：增加可选原因字符串
-    ServiceStatus(Module, bool, Option<String>), // (模块, 是否运行中, 原因)
-
-    // 错误通知
+    ScanProgress(String),                                   // 扫描进度
+    PlanReminder(String),                                   // 计划到期提醒
+    ChatMessage(String, String),                            // (用户名, 消息)
+    ChatUserList(Vec<String>),                              // 在线用户列表
+    ServiceStatus(Module, bool, Option<String>),            // (模块, 是否运行, 原因)
     Error(Module, String),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Module {
+    Ping, Http, Tftpd, Tftpc, Scan, Chat, Plan,
 }
 ```
 
-> **源码位置**: `rabbit-models/src/lib.rs`（权威定义）
-> 
-> **⚠️ 待修订**（见 `data-flow-design.md` §5.2）：
-> - `ChatUserList` 从逗号分隔改为 `Vec<String>`
-> - `ServiceStatus` 增加可选原因字符串 `Option<String>`
+#### AppConfig — 配置模型
 
-### 配置模型
-
-| 结构 | 说明 |
-|------|------|
-| `AppConfig` | 应用配置（仅含 modules） |
-| `ModuleConfigs` | 所有模块配置（HashMap） |
-| `ConfigValue` | 配置值类型（String/Integer/Boolean/Array） |
-
-**接口**：
 ```rust
-// 读取
-modules.get_string(module, key)
-modules.get_integer(module, key)
-modules.get_bool(module, key)
-modules.get_array(module, key)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppConfig {
+    pub modules: ModuleConfigs,
+}
 
-// 写入
-modules.insert(module, key, value)
+impl AppConfig {
+    pub fn merge_defaults(&mut self)  // 补充缺失的默认值
+}
+
+pub struct ModuleConfigs {
+    pub global: HashMap<String, ConfigValue>,
+    pub ping: HashMap<String, ConfigValue>,
+    pub scan: HashMap<String, ConfigValue>,
+    pub http: HashMap<String, ConfigValue>,
+    pub tftpd: HashMap<String, ConfigValue>,
+    pub tftpc: HashMap<String, ConfigValue>,
+    pub plan: HashMap<String, ConfigValue>,
+    pub chat: HashMap<String, ConfigValue>,
+}
+```
+
+`ConfigValue` 支持四种变体：`String`, `Integer(i64)`, `Boolean`, `Array(Vec<ConfigValue>)`。
+
+#### 扫描数据模型
+
+```rust
+pub struct ScanRange {
+    pub start: Ipv4Addr,
+    pub end: Ipv4Addr,
+    pub port: u16,
+}
+
+pub struct ScannerConfig {
+    pub timeout_ms: u64,
+    pub concurrent: usize,
+    pub retry_count: u32,
+}
+
+pub enum ScannerState {
+    Idle, Scanning { progress: u8 }, Completed, Cancelled, Error,
+}
 ```
 
 ---
 
-## rabbit-platform (基础设施层)
+## adapter crate（平台适配层）
 
-### 主要文件
+**crate 名**: `adapter`
+**依赖**: `schema`, `fltk`, `dirs`, `xelevate`, `libc`(unix), `windows-sys`(windows)
 
-| 文件 | 职责 |
-|------|------|
-| `config.rs` | 配置加载/保存 |
-| `lib.rs` | 平台接口统一导出 |
-| `autostart.rs` | 开机自启 |
-| `elevation.rs` | 权限提升（Windows） |
-| `notification.rs` | 系统通知 |
-| `taskbar.rs` | 任务栏集成 |
-| `shell.rs` | Shell 操作 |
-| `dialog.rs` | 对话框 |
-| `network.rs` | 网络工具 |
-| `ping.rs` | 平台级 Ping（Windows） |
+**职责**: 封装所有平台相关功能，对外提供**平台无关的统一抽象接口**。
 
-**接口**：
+**原则**：
+- 零业务逻辑 — 只做平台适配
+- 不暴露平台类型（如 HWND）到接口中
+- 所有 `#[cfg(…)]` 隐藏在实现内部
+
+### 设计目标
+
+```
+其他业务模块（app / 将来可能的 service）
+  │
+  └──→ adapter::PlatformService    ← 统一的平台无关 API
+          ├── open_url(url)
+          ├── set_autostart(bool)
+          ├── set_window_on_top(bool)    // 无 hwnd
+          ├── show_notification(...)
+          ├── open_file_dialog(...)
+          ├── open_folder_dialog(...)
+          ├── open_file_manager(path)
+          ├── check_ping_permission()
+          ├── request_elevation()
+          ├── set_shell_integration(...)
+          ├── update_taskbar(...)
+          └── ...
+      
+      adapter::NetworkProvider      ← 网络查询（可被 service 通过 trait 使用）
+          ├── get_mac_from_arp(ip)
+          ├── get_interfaces()
+          └── get_local_ip()
+
+      adapter::TrayProvider        ← 系统托盘
+          ├── init(lifecycle)
+          ├── remove()
+          ├── is_active()
+          └── update(enabled)
+```
+
+### 文件结构（当前及目标）
+
+```
+adapter/src/
+├── lib.rs           # 统一导出：PlatformService, NetworkProvider, TrayProvider
+├── platform.rs      # [目标] PlatformService 统一入口
+├── dialog.rs        # 文件对话框、URL/文件管理器打开
+├── autostart.rs     # 开机自启（Win注册表/Linux .desktop/macOS plist）
+├── shell.rs         # Shell 右键菜单集成（Windows 注册表）
+├── taskbar.rs       # Windows 任务栏进度（ITaskbarList3 COM）
+├── window.rs        # 窗口置顶/显隐（Win32 SetWindowPos/ShowWindow）
+├── elevation.rs     # 提权（Linux sudo VAR=value / Windows UAC）
+├── notification.rs  # 系统通知（Linux notify-send / Win PowerShell / macOS osascript）
+├── ping.rs          # Ping 权限检查（Linux CAP_NET_RAW / Win 管理员）
+├── network.rs       # 网络接口枚举 + ARP MAC 查询（平台特定实现）
+├── diag.rs          # [待移出] 诊断日志（写入 /tmp/rabbit-startup-{pid}.log）
+│
+├── tray/            # [目标] 系统托盘（从 app 移入）
+│   ├── mod.rs       # 平台分派
+│   ├── linux.rs     # ksni StatusNotifierItem（D-Bus）
+│   └── non_linux.rs # tray-icon（Win/macOS 原生）
+│
+├── tray_helper.rs   # [目标] 提权后托盘助手（Linux Unix socket IPC，从 app 移入）
+└── x11_diag.rs      # [目标] X11 错误诊断（从 app 移入）
+```
+
+### 当前公共 API
+
 ```rust
+// 配置（将在 config 提取后移除）
 pub fn load_config() -> Result<AppConfig>
 pub fn save_config(config: &AppConfig) -> Result<()>
 pub fn update_config<F>(modifier: F) -> Result<()>
 pub fn get_config_dir() -> Result<PathBuf>
 pub fn get_data_dir() -> Result<PathBuf>
+pub fn get_string(module: &str, key: &str) -> Option<String>
+pub fn get_integer(module: &str, key: &str) -> Option<i64>
+pub fn get_bool(module: &str, key: &str) -> Option<bool>
+pub fn get_array(module: &str, key: &str) -> Option<Vec<String>>
+
+// 平台服务（函数式）
+pub fn open_file_dialog(...) -> Result<Option<PathBuf>>
+pub fn open_folder_dialog(...) -> Result<Option<PathBuf>>
+pub fn open_url(url: &str) -> Result<()>
+pub fn open_file_manager(path: &str) -> Result<()>
+pub fn set_autostart(enabled: bool) -> Result<()>
+pub fn set_shell_integration(enabled: bool, exe_path: &str) -> Result<(), String>
+pub fn set_window_on_top(hwnd: usize, on_top: bool)
+pub fn hide_window(hwnd: usize)
+pub fn show_window(hwnd: usize)
+pub fn show_notification(title: &str, message: &str) -> Result<()>
+pub fn show_task_reminder(title: &str, description: Option<&str>) -> Result<()>
+pub fn is_elevated() -> bool
+pub fn ensure_elevated() -> !
+pub fn check_ping_permission() -> bool
+pub fn request_elevation() -> Result<()>
+
+// 网络
+pub fn get_mac_from_arp(ip: Ipv4Addr) -> Option<String>
+pub async fn get_interfaces() -> Result<Vec<NetworkInterface>>
+pub fn get_local_ip() -> Option<Ipv4Addr>
+
+// 任务栏
+pub struct TaskbarProgress;
+impl TaskbarProgress {
+    pub fn clear()
+    pub fn update(progress: u32, total: u32, color: &str)
+    pub fn set_main_window_hwnd(hwnd: usize)
+}
+
+// 诊断
+pub mod diag {
+    pub fn log(msg: &str)
+}
+
+// 错误类型
+pub enum PlatformError {
+    Io(std::io::Error),
+    Config(String),
+    Network(String),
+    NotSupported,
+}
 ```
 
 ---
 
-## 数据流设计
+## config crate（配置管理层）[待建设]
 
-详见 [data-flow-design.md](../doc/data-flow-design.md)（v2.0 已重写）。
+**crate 名**: `config`
+**依赖**: `schema`, `serde`, `toml`, `dirs`, `thiserror`
 
-核心机制：
-- **推送代替轮询**：Service 通过 Channel 主动推送数据
-- **ServiceStatus 接口**：统一处理业务状态更新（启动/停止/完成）
-- **线程安全**：Channel 跨线程安全，ui_state 集中处理 UI 更新
+**职责**：配置文件的加载、保存、缓存、脏检查、默认值合并。使用 `dirs` crate 获取平台配置目录（纯路径，不涉及其他平台适配）。
 
-### 业务状态更新场景
+**说明**：当前配置管理在 `adapter::config` 中（包含缓存策略、脏检查、merge_defaults 等业务逻辑），计划提取为独立 crate。详见 `doc/platform-refactoring-plan.md`。
 
-| 场景 | 服务 | 发送的消息 | UI 更新 |
-|------|------|----------|----------|
-| Ping 启动 | PingService | `ServiceStatus(Ping, true)` | 按钮变 "Stop"，窗口标题设为目标地址 |
-| Ping count 达到 | PingService | `ServiceStatus(Ping, false)` | 按钮变 "Start"，窗口标题重置为 "Rabbit" |
-| Scan 完成 | ScanService | `ServiceStatus(Scan, false)` | 按钮从 "Stop" → "Start" |
-| 手动停止 | 任意 Service | `ServiceStatus(Module, false)` | 对应按钮状态更新 |
+---
 
-### 模块依赖关系
+## 数据流概览
+
+### 关键数据流
+
+#### 1. 用户操作 → 服务状态变更
 
 ```
-rabbit-app
-    ├── rabbit-models (UiData, AppConfig)
-    ├── rabbit-core  (服务 + ui_channel)
-    └── rabbit-platform (配置加载)
+用户点击 "Start" 按钮
+  │
+  ▼
+FLTK callback → send_event(UiEvent::ModuleToggle { module })
+  │
+  ▼
+Event handler (async) → service.update()
+  │                   ├── 从 config 读取参数
+  │                   ├── 启动/停止服务
+  │                   └── 返回 ServiceUpdateResult
+  ▼
+结果 → awake_callback 更新 UI
+     → push UiData 到对应 channel
+```
 
-rabbit-core
-    ├── rabbit-models (UiData, Module)
-    └── rabbit-platform (配置加载)
+#### 2. 服务运行中 → UI 推送
 
-rabbit-platform
-    └── rabbit-models (配置模型)
+```
+Service 检测到状态变化
+  │
+  ▼
+tx.send(UiData::Log(module, msg))
+tx.send(UiData::PingStats(...))
+tx.send(UiData::ServiceStatus(module, running, reason))
+  │
+  ▼
+App::handle_ui_data() 接收
+  │
+  ├─ 更新 UiState 缓冲
+  ├─ 通过 awake_callback 驱动 ui_refresh
+  └─ 特殊处理：ServiceStatus → 更新按钮状态 / 标题栏 / 任务栏
+```
+
+#### 3. 退出流程
+
+```
+ESC / 关闭按钮 / Ctrl+C / 托盘 Quit
+  │
+  ▼
+Lifecycle::request_shutdown()
+  │
+  ▼
+循环检测 → run_event_loop() 退出
+  │
+  ▼
+App::cleanup()
+  ├─ 调用各 service.destroy()
+  ├─ 移除托盘
+  ├─ 关闭 tray helper
+  └─ std::process::exit(0)
+```
+
+### 通道架构
+
+```
+                      服务层                       表现层
+              ┌────────────────┐          ┌──────────────────┐
+              │  PingService   │──UiData──│  app::handle_ui  │
+              │  HttpService   │──UiData──│       │          │
+              │  ScanService   │──UiData──│       │          │
+              │  TftpdService  │──UiData──│  ┌────▼──────┐   │
+              │  TftpcService  │──UiData──│  │  UiState   │   │
+              │  ChatService   │──UiData──│  │  (缓冲)    │   │
+              │  PlanService   │──UiData──│  └────┬──────┘   │
+              └────────────────┘          │       │          │
+                                          │  ┌────▼──────┐   │
+                                          │  │ui_refresh │   │
+                                          │  │(FLTK更新)  │   │
+                                          │  └───────────┘   │
+                                          └──────────────────┘
+
+  FLTK → UiEvent → tokio channel → async handler → service
 ```
 
 ---
 
-## 配置访问方式
+## 模块隔离原则
 
-### 通用模块配置
+| 层 | crate | 可依赖 | 不可依赖 |
+|----|-------|--------|---------|
+| 表现层 | `app` | service, config, adapter, schema | — |
+| 业务层 | `service` | schema, config | adapter |
+| 数据模型 | `schema` | —（仅 serde/chrono） | 任何平台依赖 |
+| 平台适配 | `adapter` | schema, fltk | service, config |
+| 配置管理 | `config` | schema, dirs | adapter, service |
 
-所有模块配置统一使用 HashMap 方式：
+---
 
-```rust
-// 读取
-config.modules.get_string("global", "language")
-config.modules.get_integer("http", "port")
-config.modules.get_bool("ping", "stoponloss")
+## 配置字段参考
 
-// 写入
-config.modules.insert("global", "systray", ConfigValue::Boolean(true))
-```
+### 模块配置键
 
-### TFTP 配置字段
-
-| 模块 | 字段 | 类型 | 默认值 | 说明 |
-|------|------|------|--------|------|
+| 模块 | 键 | 类型 | 默认值 | 说明 |
+|------|-----|------|--------|------|
+| global | language | String | "System" | 语言选择 |
+| global | theme | String | "System" | 主题选择 |
+| global | systray | Boolean | true | 系统托盘 |
+| global | top | Boolean | false | 窗口置顶 |
+| global | autostart | Boolean | false | 开机自启 |
+| global | last_active_tab | Integer | 0 | 上次标签页 |
+| global | window | String | JSON | 窗口位置大小 |
+| ping | target | String | "1.1.1.1" | Ping 目标 |
+| ping | interval | Integer | 1000 | 间隔(ms) |
+| ping | count | Integer | -1 | 次数(-1=无限) |
+| ping | stoponloss | Boolean | false | 丢包停止 |
+| scan | start_ip | String | "192.168.1.1" | 起始 IP |
+| scan | end_ip | String | "254" | 结束 IP |
+| http | port | Integer | 8000 | 端口 |
+| http | shell | Boolean | false | 右键菜单集成 |
+| http | autoindex | Boolean | true | 目录浏览 |
+| http | videoplay | Boolean | true | 视频播放 |
+| tftpd | port | Integer | 69 | 端口 |
 | tftpd | timeout | Integer | 200 | 超时秒数 |
-| tftpd | maxretry | Integer | 10 | 最大重试次数 |
+| tftpd | maxretry | Integer | 10 | 最大重试 |
 | tftpd | blksize | Integer | 512 | 块大小 |
-| tftpd | override_conflicts | Boolean | false | 覆盖冲突文件 |
 | tftpd | qsize | Integer | 2000 | 队列大小 |
-| tftpd | qtimeout | Integer | 1000 | 队列超时(ms) |
+| tftpd | qtout | Integer | 1000 | 队列超时(ms) |
+| tftpd | override | Boolean | false | 覆盖冲突 |
 | tftpd | fslog | Boolean | false | 文件服务日志 |
-| tftpc | server_addr | String | "" | 服务器地址 |
-| tftpc | port | Integer | 69 | 服务器端口 |
+| tftpc | server_addr | String | "127.0.0.1" | 服务器地址 |
+| tftpc | server_port | Integer | 69 | 端口 |
+| tftpc | timeout | Integer | 200 | 超时(ms) |
+| tftpc | maxretry | Integer | 10 | 最大重试 |
+| tftpc | blksize | Integer | 1024 | 块大小 |
+| plan | override | Boolean | false | 覆盖冲突 |
+| chat | username | String | "User@PC" | 用户名 |
+| chat | port | Integer | 1314 | 端口 |
+| chat | broadcast_addr | String | "255.255.255.255" | 广播地址 |
 
 ---
 
-文档版本：6.0
+## 相关文档
+
+| 文档 | 内容 |
+|------|------|
+| `doc/architecture.md` | 技术选型与架构设计 |
+| `doc/data-flow-design.md` | 数据流设计 v2.0（通道架构） |
+| `doc/config-structure.md` | 配置结构设计 |
+| `doc/platform-refactoring-plan.md` | 平台适配层重构方案 |
+| `doc/progress.md` | 开发进度跟踪 |
+| `doc/requirements.md` | 功能需求与 UI 规格 |
+
+---
+
+文档版本：7.1
 创建日期：2026-04-16
-更新日期：2026-04-30
+最后更新：2026-05-11
