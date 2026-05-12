@@ -171,8 +171,7 @@ pub async fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
 pub fn remove_systray() {
     if let Ok(mut guard) = TRAY_HANDLE.lock() {
         if let Some(handle) = guard.take() {
-            #[allow(clippy::let_underscore_future)]
-            let _ = handle.shutdown();
+            drop(handle.shutdown());
         }
     }
     SYSTRAY_ENABLED.store(false, Ordering::SeqCst);

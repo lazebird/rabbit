@@ -63,7 +63,6 @@ pub fn set_window_on_top(on_top: bool) {
 // X11 FFI declarations mirror the approach used in x11_diag.rs.
 #[cfg(target_os = "linux")]
 mod x11_ffi {
-    #![allow(non_camel_case_types, dead_code)]
 
     use std::ffi::c_void;
 

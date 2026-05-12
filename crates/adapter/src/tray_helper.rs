@@ -224,8 +224,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
                                         // Must not await — the ksni runtime runs on
                                         // a separate thread and we are in a command
                                         // reader thread that must not block.
-                                        #[allow(clippy::let_underscore_future)]
-                                        let _ = handle.shutdown();
+                                        drop(handle.shutdown());
                                     }
                                 }
                             }
@@ -246,8 +245,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
                         // Shut down the tray so the icon disappears immediately.
                         if let Ok(mut guard) = cmd_tray_handle.lock() {
                             if let Some(handle) = guard.take() {
-                                #[allow(clippy::let_underscore_future)]
-                                let _ = handle.shutdown();
+                                drop(handle.shutdown());
                             }
                         }
                         // Signal forward_events to exit — the tray thread may

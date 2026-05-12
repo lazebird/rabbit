@@ -727,7 +727,7 @@ impl EventHandler for AppHandle {
             UiEvent::TftpClientPut { server, local, remote, options } => {
                 info!("TFTP put {} -> {}@{} with options: {}", local, remote, server, options);
 
-                let _opts = parse_tftp_options(&options);
+                parse_tftp_options(&options);
 
                 let tftp_client_service = self.tftp_client_service.write().await;
                 match tftp_client_service.put(&local, &remote).await {
@@ -742,7 +742,7 @@ impl EventHandler for AppHandle {
             UiEvent::TftpClientGet { server, local, remote, options } => {
                 info!("TFTP get {}@{} -> {} with options: {}", remote, server, local, options);
 
-                let _opts = parse_tftp_options(&options);
+                parse_tftp_options(&options);
 
                 let tftp_client_service = self.tftp_client_service.write().await;
                 match tftp_client_service.get(&remote, &local).await {
@@ -991,19 +991,13 @@ async fn handle_tftp_data(data: UiData) {
     }
 }
 
-/// TFTP client options parsed from semicolon-separated key=value string.
-#[allow(dead_code)]
-struct TftpOptions {
-    timeout: i32,
-    max_retry: i32,
-    blk_size: i32,
-}
-
-/// Parse TFTP option string into structured options.
+/// Parse and log TFTP option string.
 ///
 /// Format: `"timeout=200;retry=10;blksize=1024"`
 /// Used by both TftpClientPut and TftpClientGet event handlers.
-fn parse_tftp_options(options: &str) -> TftpOptions {
+/// Currently only logs the parsed values; options are not yet passed
+/// to the TFTP service layer.
+fn parse_tftp_options(options: &str) {
     let mut timeout = 200;
     let mut max_retry = 10;
     let mut blk_size = 1024;
@@ -1033,5 +1027,4 @@ fn parse_tftp_options(options: &str) -> TftpOptions {
     }
 
     info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, max_retry, blk_size);
-    TftpOptions { timeout, max_retry, blk_size }
 }

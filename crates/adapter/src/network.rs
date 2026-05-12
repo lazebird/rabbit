@@ -23,11 +23,10 @@ impl NetworkProvider for DefaultNetworkProvider {
 /// - Windows: `SendARP`
 ///
 /// Returns `None` if the MAC could not be resolved.
-#[cfg_attr(target_os = "linux", allow(unreachable_code))]
 pub fn get_mac_from_arp(ip: Ipv4Addr) -> Option<String> {
     #[cfg(target_os = "linux")]
     {
-        return get_mac_via_ioctl(ip);
+        get_mac_via_ioctl(ip)
     }
     #[cfg(target_os = "windows")]
     {
@@ -46,6 +45,9 @@ pub fn get_mac_from_arp(ip: Ipv4Addr) -> Option<String> {
             ));
         }
     }
+    // On Linux the function always returns inside the cfg block above,
+    // so only keep None on non-Linux where it's reachable.
+    #[cfg(not(target_os = "linux"))]
     None
 }
 
