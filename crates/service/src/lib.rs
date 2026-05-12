@@ -28,8 +28,6 @@ pub use tftpd::TftpdService;
 
 pub use ui_channel::{send_ui, Module, UiData};
 
-pub type TftpService = TftpdService;
-
 use thiserror::Error;
 
 #[derive(Debug)]

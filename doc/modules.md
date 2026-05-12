@@ -21,16 +21,21 @@
 ### 依赖关系
 
 ```
-app ─→ service, config, adapter, schema
+app ─→ service, rabbit-config, rabbit-diag, adapter, schema
                 │
-service ───────→ schema, config     (不依赖 adapter)
+service ───────→ schema, rabbit-config     (不依赖 adapter)
                 │
-adapter ───────→ schema              (纯平台适配，零业务逻辑)
+adapter ───────→ schema, rabbit-diag        (纯平台适配，零业务逻辑)
                 │
-config ────────→ schema              (配置管理，使用 dirs 获取平台目录)
+rabbit-config ──→ schema, serde, toml       (配置管理)
+                │
+rabbit-diag ──── (无外部依赖)
                 │
 schema ──────── (无外部依赖)
 ```
+
+> `rabbit-config` 和 `rabbit-diag` 分别为配置管理和诊断日志的独立 crate。
+> `adapter` 层通过 `rabbit-diag` 记录平台相关的诊断日志。
 
 ---
 
@@ -42,8 +47,9 @@ rabbit/
 │   ├── app/              # 主入口 + FLTK UI（表现层）
 │   ├── service/          # 业务服务（业务层）
 │   ├── schema/           # 数据模型（数据层，无外部依赖）
-│   ├── adapter/          # 平台适配层（基础设施）
-│   └── config/           # 配置管理（基础设施）[待建设]
+│   ├── adapter/          # 平台适配层（基础设施，集中所有 #[cfg]）
+│   ├── rabbit-config/    # 配置持久化（基础设施）
+│   └── rabbit-diag/      # 诊断日志（基础设施）
 │
 ├── doc/                  # 文档
 ├── tests/                # 集成测试
@@ -56,7 +62,8 @@ rabbit/
 ## app crate（表现层）
 
 **crate 名**: `app`（二进制: `rabbit`）
-**依赖**: `service`, `config`, `adapter`, `schema`, `fltk`, `tokio`, `tracing`
+**依赖**: `service`, `adapter`, `schema`, `fltk`, `tokio`, `tracing`
+**平台条件依赖**: 无 — 全部委托至 `adapter`
 
 **职责**：程序入口、FLTK UI 构建、用户交互处理、UI 状态管理、事件分发、服务生命周期管理、升级管理。
 
@@ -72,10 +79,6 @@ app/src/
 ├── ui_events.rs         # UiEvent 事件系统（FLTK → async 桥接）
 ├── lifecycle.rs         # Lifecycle：生命周期控制（shutdown 信号）
 ├── icon.rs              # 应用图标加载（从嵌入 ico 解码）
-├── systray.rs           # 系统托盘平台分派（Linux ksni / 其他 tray-icon）
-├── systray_linux.rs     # Linux 托盘实现（ksni StatusNotifierItem）
-├── systray_non_linux.rs # 非 Linux 托盘实现（tray-icon）
-├── tray_helper.rs       # 提权后托盘助手进程（Unix socket IPC，仅 Linux）
 │
 ├── ui/                  # FLTK 界面组件
 │   ├── mod.rs           # UI 模块入口 + TabComponent trait
@@ -94,9 +97,8 @@ app/src/
 │
 ├── upgrade/             # 升级管理
 │   ├── mod.rs           # 模块入口，导出公共类型
-│   ├── models.rs        # 版本/平台数据模型 + 平台检测
-│   ├── downloader.rs    # 版本清单下载 + 更新包下载
-│   └── installer.rs     # 更新安装（平台特定路径/权限处理）
+│   ├── models.rs        # 版本/平台数据模型 + 平台检测（委托 adapter）
+│   └── downloader.rs    # 版本清单下载 + 更新包下载
 │
 ├── resources/
 │   └── icon.ico         # 应用图标
@@ -108,6 +110,8 @@ app/src/
 ├── rabbit-app.rc        # Windows 资源文件
 └── rabbit.manifest      # Windows 清单文件
 ```
+
+> **架构合规性**：`app/` 层已消除所有 `#[cfg(target_os)]` 条件编译和平台条件依赖。systray、tray_helper、installer、current_platform 等平台相关模块已全部移至 `adapter` 层。
 
 ### 核心类型
 
@@ -573,7 +577,7 @@ pub enum ScannerState {
 ## adapter crate（平台适配层）
 
 **crate 名**: `adapter`
-**依赖**: `schema`, `fltk`, `dirs`, `xelevate`, `libc`(unix), `windows-sys`(windows)
+**依赖**: `schema`, `fltk`, `dirs`, `xelevate`, `libc`, `ksni`(linux), `tray-icon`(non-linux), `windows-sys`(windows)
 
 **职责**: 封装所有平台相关功能，对外提供**平台无关的统一抽象接口**。
 
@@ -585,40 +589,40 @@ pub enum ScannerState {
 ### 设计目标
 
 ```
-其他业务模块（app / 将来可能的 service）
+其他业务模块（app）
   │
-  └──→ adapter::PlatformService    ← 统一的平台无关 API
-          ├── open_url(url)
+  └──→ adapter::*    ← 统一的平台无关 API
+          ├── systray::init/cleanup/update     // 系统托盘统一入口
+          ├── tray::init_systray/remove_systray // 平台分派实现
+          ├── tray_helper::maybe_run_as_helper  // Linux 提权助手
+          ├── tray_helper::pre_main_init        // 启动前初始化
+          ├── dialog::open_url/file_manager     // 文件对话框
+          ├── platform::current_platform        // 平台标识
+          ├── platform::getuid                  // 用户 ID（跨平台）
+          ├── installer::install_update         // 更新安装
+          ├── install_platform_handlers         // X11 诊断
+          ├── maybe_run_as_helper               // 统一入口
+          ├── pre_main_init                     // 统一入口
           ├── set_autostart(bool)
-          ├── set_window_on_top(bool)    // 无 hwnd
+          ├── set_window_on_top(bool)
           ├── show_notification(...)
-          ├── open_file_dialog(...)
-          ├── open_folder_dialog(...)
-          ├── open_file_manager(path)
           ├── check_ping_permission()
-          ├── request_elevation()
-          ├── set_shell_integration(...)
+          ├── ensure_elevated()
           ├── update_taskbar(...)
           └── ...
-      
-      adapter::NetworkProvider      ← 网络查询（可被 service 通过 trait 使用）
+
+      adapter::NetworkProvider      ← 网络查询
           ├── get_mac_from_arp(ip)
           ├── get_interfaces()
           └── get_local_ip()
-
-      adapter::TrayProvider        ← 系统托盘
-          ├── init(lifecycle)
-          ├── remove()
-          ├── is_active()
-          └── update(enabled)
 ```
 
-### 文件结构（当前及目标）
+### 文件结构（当前）
 
 ```
 adapter/src/
-├── lib.rs           # 统一导出：PlatformService, NetworkProvider, TrayProvider
-├── platform.rs      # [目标] PlatformService 统一入口
+├── lib.rs           # 统一导出 + 平台无关包裹函数（install_platform_handlers / maybe_run_as_helper / pre_main_init）
+├── platform.rs      # 平台标识（current_platform）+ 用户 ID（getuid）
 ├── dialog.rs        # 文件对话框、URL/文件管理器打开
 ├── autostart.rs     # 开机自启（Win注册表/Linux .desktop/macOS plist）
 ├── shell.rs         # Shell 右键菜单集成（Windows 注册表）
@@ -628,54 +632,99 @@ adapter/src/
 ├── notification.rs  # 系统通知（Linux notify-send / Win PowerShell / macOS osascript）
 ├── ping.rs          # Ping 权限检查（Linux CAP_NET_RAW / Win 管理员）
 ├── network.rs       # 网络接口枚举 + ARP MAC 查询（平台特定实现）
-├── diag.rs          # [待移出] 诊断日志（写入 /tmp/rabbit-startup-{pid}.log）
+├── lifecycle.rs     # 应用生命周期控制器
+├── icon.rs          # 图标数据
+├── installer.rs     # 更新安装器（从 app 移入）
+├── systray.rs       # [新增] 统一系统托盘生命周期（init/cleanup/update）
 │
-├── tray/            # [目标] 系统托盘（从 app 移入）
-│   ├── mod.rs       # 平台分派
+├── tray/            # 系统托盘平台实现
+│   ├── mod.rs       # 平台分派（#[cfg] 分发）
 │   ├── linux.rs     # ksni StatusNotifierItem（D-Bus）
 │   └── non_linux.rs # tray-icon（Win/macOS 原生）
 │
-├── tray_helper.rs   # [目标] 提权后托盘助手（Linux Unix socket IPC，从 app 移入）
-└── x11_diag.rs      # [目标] X11 错误诊断（从 app 移入）
+├── tray_helper.rs   # 提权后托盘助手（Linux Unix socket IPC）
+└── x11_diag.rs      # X11 错误诊断（#![cfg(target_os = "linux")]）
 ```
+
+### 关键架构变更（P0+P1+P2）
+
+| 变更 | 说明 |
+|------|------|
+| `systray.rs` (新增) | 从 app 层移入，统一封装 `init()`/`cleanup()`/`update()`，内部使用 `#[cfg]` 分平台 |
+| `installer.rs` (新增) | 从 `app/src/upgrade/` 整体移入，替换脚本逻辑不变 |
+| `platform::current_platform()` (新增) | 原 `upgrade/models.rs` 中的平台检测函数委托至此 |
+| `platform::getuid()` (新增) | 封装 `libc::getuid()`，非 Linux 返回 `None` |
+| `lib.rs::install_platform_handlers()` | 内部 `#[cfg(target_os = "linux")]` 保护 X11 诊断安装 |
+| `lib.rs::maybe_run_as_helper()` | 内部 `#[cfg]` 保护，非 Linux 空操作，供 main.rs 统一调用 |
+| `lib.rs::pre_main_init()` | 内部 `#[cfg]` 保护，非 Linux/debug 空操作 |
+| `app/Cargo.toml` | 删除 `ksni`/`libc`/`windows-sys` 三项平台条件依赖 |
 
 ### 当前公共 API
 
 ```rust
-// 配置（将在 config 提取后移除）
-pub fn load_config() -> Result<AppConfig>
-pub fn save_config(config: &AppConfig) -> Result<()>
-pub fn update_config<F>(modifier: F) -> Result<()>
-pub fn get_config_dir() -> Result<PathBuf>
-pub fn get_data_dir() -> Result<PathBuf>
-pub fn get_string(module: &str, key: &str) -> Option<String>
-pub fn get_integer(module: &str, key: &str) -> Option<i64>
-pub fn get_bool(module: &str, key: &str) -> Option<bool>
-pub fn get_array(module: &str, key: &str) -> Option<Vec<String>>
+// ─── 平台标识 ───────────────────────────────────
+pub fn current_platform() -> &'static str         // "linux-x64", "windows-arm64" ...
+pub fn getuid() -> Option<u32>                    // Linux: Some(uid), 其他: None
 
-// 平台服务（函数式）
+// ─── 统一入口（lib.rs 包裹函数） ─────────────────
+pub fn maybe_run_as_helper()                      // 内部 #[cfg] 保护
+pub fn pre_main_init()                            // 内部 #[cfg] 保护
+pub fn install_platform_handlers()                // 内部 #[cfg] 保护
+
+// ─── 系统托盘 ──────────────────────────────────
+pub mod systray {
+    pub async fn init(lifecycle, enabled, main_win) // 统一初始化
+    pub fn cleanup()                                 // 统一清理
+    pub async fn update(enabled)                     // 运行时开关
+}
+pub mod tray {
+    pub fn init_systray(lifecycle) -> Result<()>
+    pub fn remove_systray()
+    pub fn update_systray(enabled)
+    pub fn set_lifecycle(lifecycle)
+    pub fn set_main_window(win)
+    pub fn is_active() -> bool
+}
+
+// ─── 托盘助手（仅 Linux） ──────────────────────
+pub mod tray_helper {
+    pub fn maybe_run_as_helper()                   // --tray-helper 模式入口
+    pub fn pre_main_init()                         // 启动前 spawn helper
+    pub fn spawn() -> io::Result<()>
+    pub fn connect(lifecycle, show_win, hide_win) -> bool
+    pub fn hide_tray() / show_tray()
+    pub fn shutdown_helper()
+    pub fn is_connected() -> bool
+}
+
+// ─── 更新安装 ──────────────────────────────────
+pub mod installer {
+    pub fn install_update(path, sha256) -> Result<(), String> // 内部 #[cfg] 分平台
+}
+
+// ─── 文件对话框 / URL 打开 ─────────────────────
 pub fn open_file_dialog(...) -> Result<Option<PathBuf>>
 pub fn open_folder_dialog(...) -> Result<Option<PathBuf>>
 pub fn open_url(url: &str) -> Result<()>
 pub fn open_file_manager(path: &str) -> Result<()>
+
+// ─── 平台服务 ──────────────────────────────────
 pub fn set_autostart(enabled: bool) -> Result<()>
 pub fn set_shell_integration(enabled: bool, exe_path: &str) -> Result<(), String>
 pub fn set_window_on_top(hwnd: usize, on_top: bool)
-pub fn hide_window(hwnd: usize)
-pub fn show_window(hwnd: usize)
+pub fn hide_window(hwnd: usize) / show_window(hwnd: usize)
 pub fn show_notification(title: &str, message: &str) -> Result<()>
 pub fn show_task_reminder(title: &str, description: Option<&str>) -> Result<()>
 pub fn is_elevated() -> bool
-pub fn ensure_elevated() -> !
+pub fn ensure_elevated() -> Result<(), ElevationError>
 pub fn check_ping_permission() -> bool
-pub fn request_elevation() -> Result<()>
 
-// 网络
+// ─── 网络 ──────────────────────────────────────
 pub fn get_mac_from_arp(ip: Ipv4Addr) -> Option<String>
 pub async fn get_interfaces() -> Result<Vec<NetworkInterface>>
 pub fn get_local_ip() -> Option<Ipv4Addr>
 
-// 任务栏
+// ─── 任务栏 ────────────────────────────────────
 pub struct TaskbarProgress;
 impl TaskbarProgress {
     pub fn clear()
@@ -683,12 +732,10 @@ impl TaskbarProgress {
     pub fn set_main_window_hwnd(hwnd: usize)
 }
 
-// 诊断
-pub mod diag {
-    pub fn log(msg: &str)
-}
+// ─── 生命周期 ──────────────────────────────────
+pub use lifecycle::Lifecycle;
 
-// 错误类型
+// ─── 错误类型 ──────────────────────────────────
 pub enum PlatformError {
     Io(std::io::Error),
     Config(String),
@@ -699,14 +746,12 @@ pub enum PlatformError {
 
 ---
 
-## config crate（配置管理层）[待建设]
+## rabbit-config crate（配置管理层）
 
-**crate 名**: `config`
+**crate 名**: `rabbit-config`
 **依赖**: `schema`, `serde`, `toml`, `dirs`, `thiserror`
 
 **职责**：配置文件的加载、保存、缓存、脏检查、默认值合并。使用 `dirs` crate 获取平台配置目录（纯路径，不涉及其他平台适配）。
-
-**说明**：当前配置管理在 `adapter::config` 中（包含缓存策略、脏检查、merge_defaults 等业务逻辑），计划提取为独立 crate。详见 `doc/platform-refactoring-plan.md`。
 
 ---
 
@@ -795,13 +840,13 @@ App::cleanup()
 
 ## 模块隔离原则
 
-| 层 | crate | 可依赖 | 不可依赖 |
-|----|-------|--------|---------|
-| 表现层 | `app` | service, config, adapter, schema | — |
-| 业务层 | `service` | schema, config | adapter |
-| 数据模型 | `schema` | —（仅 serde/chrono） | 任何平台依赖 |
-| 平台适配 | `adapter` | schema, fltk | service, config |
-| 配置管理 | `config` | schema, dirs | adapter, service |
+| 层 | crate | 可依赖 | 不可依赖 | 平台条件编译 |
+|----|-------|--------|---------|-------------|
+| 表现层 | `app` | service, adapter, schema | — | 零 `#[cfg]` |
+| 业务层 | `service` | schema | adapter | 零 `#[cfg]` |
+| 数据模型 | `schema` | —（仅 serde/chrono） | 任何平台依赖 | 零 `#[cfg]` |
+| 平台适配 | `adapter` | schema, fltk | service | 全部 `#[cfg]` 集中于此 |
+| 配置管理 | `config` | schema, dirs | adapter, service | 零 `#[cfg]` |
 
 ---
 
@@ -856,11 +901,12 @@ App::cleanup()
 | `doc/data-flow-design.md` | 数据流设计 v2.0（通道架构） |
 | `doc/config-structure.md` | 配置结构设计 |
 | `doc/platform-refactoring-plan.md` | 平台适配层重构方案 |
+| `doc/code-structure-optimization-plan.md` | 代码结构优化计划（P0+P1+P2 执行记录） |
 | `doc/progress.md` | 开发进度跟踪 |
 | `doc/requirements.md` | 功能需求与 UI 规格 |
 
 ---
 
-文档版本：7.1
+文档版本：7.2
 创建日期：2026-04-16
-最后更新：2026-05-11
+最后更新：2026-05-12
