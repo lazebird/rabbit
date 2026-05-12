@@ -30,26 +30,15 @@ fn get_main_window_hwnd() -> Option<usize> {
     get_stored_hwnd()
 }
 
-/// 设置主窗口句柄（由 app 层调用）
-///
-/// 委托到 `crate::window::set_main_window` 统一存储。
-pub fn set_main_window_hwnd(hwnd: usize) {
-    crate::window::set_main_window(hwnd);
-}
-
-/// 获取已存储的主窗口句柄
+/// 获取已存储的主窗口句柄（通过 window.rs 的统一存储）
 fn get_stored_hwnd() -> Option<usize> {
     #[cfg(target_os = "windows")]
     {
-        let hwnd = MAIN_HWND.load(std::sync::atomic::Ordering::Relaxed);
-        if hwnd != 0 { Some(hwnd) } else { None }
+        crate::window::get_hwnd()
     }
     #[cfg(not(target_os = "windows"))]
     None
 }
-
-#[cfg(target_os = "windows")]
-static MAIN_HWND: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 
 /// 平台相关的任务栏操作
 mod platform {

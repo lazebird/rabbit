@@ -17,8 +17,8 @@ pub fn set_main_window(hwnd: usize) {
     let _ = MAIN_HWND.set(hwnd);
 }
 
-/// 获取已注册的窗口句柄（内部使用）
-fn get_hwnd() -> Option<usize> {
+/// 获取已注册的窗口句柄
+pub fn get_hwnd() -> Option<usize> {
     MAIN_HWND.get().copied()
 }
 
