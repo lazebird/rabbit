@@ -428,6 +428,36 @@
 | **涉及文件** | 全局 |
 | **状态** | ✅ 已解决 |
 
+### 8.7 IP Scanner 输出顺序混乱
+
+| 项目 | 内容 |
+|------|------|
+| **问题** | Scan 结果日志中"Scan finished"出现在部分"Found online host"之前，日志顺序混乱 |
+| **根因** | MAC/DNS 查找使用 `tokio::spawn` 以 fire-and-forget 方式运行，这些任务在 `join_set` 完成后仍可能未完成。`join_set.join_next()` 循环结束后立即发送"Scan finished"，而部分 MAC/DNS 后台任务仍在运行 |
+| **解决方案** | 收集所有 `tokio::spawn` 返回的 `JoinHandle`（通过 `Arc<Mutex<Vec<JoinHandle>>>` 跨闭包共享），在向 `join_set` 等待完成后、发送"Scan finished"之前，逐一 await 这些 handle |
+| **涉及文件** | `service/src/scan.rs` |
+| **状态** | ✅ 已修复 |
+
+### 8.8 DNS 反向查找返回 "bogon" 未过滤
+
+| 项目 | 内容 |
+|------|------|
+| **问题** | 所有在线主机均显示 "(bogon)" 作为主机名，因为许多消费级路由器 / ISP 的 DNS 服务器对没有 PTR 记录的 IP 返回默认名称 "bogon" |
+| **根因** | `resolve_hostname()` 只过滤空字符串，不检查实际返回的 DNS 名称内容 |
+| **解决方案** | 添加 `is_bogus_hostname()` 函数，过滤 `bogon`、`*.localdomain`、`localhost` 等已知无意义 PTR 记录 |
+| **涉及文件** | `service/src/scan.rs` |
+| **状态** | ✅ 已修复 |
+
+### 8.9 Windows MAC 地址全为 "not found"
+
+| 项目 | 内容 |
+|------|------|
+| **问题** | Windows 平台扫描结果中所有主机的 MAC 地址均显示"MAC not found (no ARP entry)" |
+| **根因** | 使用 `SendARP` API 发送原始 ARP 请求，但可能被防火墙、虚拟网卡（VMware/WSL/Hyper-V）拦截，或对跨子网 IP 调用时返回错误。`SendARP` 还要求发送原始网络流量，在某些 Windows 配置下权限不足 |
+| **解决方案** | V1: 改为解析 `arp -a` 命令输出读取系统内核 ARP 缓存。V2: 改用 [`GetIpNetTable`] (`iphlpapi.dll`) 内核 API 直接查询系统 ARP 缓存，无需子进程，无控制台窗口闪烁（`arp -a` 在并发扫描时产生 200+ 个控制台窗口）。输出格式为 `xx:xx:xx:xx:xx:xx` |
+| **涉及文件** | `adapter/src/network.rs` |
+| **状态** | ✅ 已修复 |
+
 ---
 
 ## 9. Rust 语言层面
@@ -472,7 +502,7 @@
 | 窗口管理 | 2 | 🟡 中 |
 | 跨平台兼容 | 5 | 🔴 高（影响程序启动） |
 | 构建与部署 | 3 | 🟢 低 |
-| 代码质量 | 6 | 🟢 低 |
+| 代码质量 | 9 | 🟢 低 |
 | Rust 语言层面 | 3 | 🟢 低 |
 
 ---
@@ -493,5 +523,5 @@
 
 ---
 
-文档版本：1.1
+文档版本：1.3
 创建日期：2026-05-12

@@ -200,6 +200,13 @@ impl ScanService {
             };
             let local_macs = Arc::new(local_macs);
 
+            // Collect JoinHandles from fire-and-forget MAC/DNS lookup tasks
+            // so we can await them all before printing "Scan finished".
+            // Use Arc<Mutex<>> because post_handles is captured by move
+            // inside join_set.spawn(async move { ... }) which runs in a loop.
+            let post_handles: Arc<std::sync::Mutex<Vec<tokio::task::JoinHandle<()>>>> =
+                Arc::new(std::sync::Mutex::new(Vec::new()));
+
             for (i, ip) in ips.into_iter().enumerate() {
                 let timeout_ms = config.timeout_ms;
                 let permit = semaphore.clone();
@@ -210,6 +217,7 @@ impl ScanService {
                 let provider = network_provider.clone();
                 let client = Arc::clone(&icmp_clients[i % POOL_SIZE]);
                 let local_macs = Arc::clone(&local_macs);
+                let ph = Arc::clone(&post_handles);
 
                 join_set.spawn(async move {
                     let _permit = permit.acquire().await.unwrap();
@@ -227,7 +235,7 @@ impl ScanService {
                         let bg_tx = tx_clone.clone();
                         let bg_provider = provider.clone();
                         let bg_local_macs = local_macs.clone();
-                        tokio::spawn(async move {
+                        let handle = tokio::spawn(async move {
                             let t0 = Instant::now();
 
                             // ── MAC (near-instant: local table or ioctl) ──
@@ -302,6 +310,11 @@ impl ScanService {
                                 entry.hostname = hostname;
                             }
                         });
+                        // ph is NOT captured by tokio::spawn above, so it's
+                        // still available here to push the handle.
+                        if let Ok(mut guard) = ph.lock() {
+                            guard.push(handle);
+                        }
                     }
                 });
             }
@@ -318,6 +331,13 @@ impl ScanService {
                 if let Err(e) = res {
                     error!("Scan task error: {}", e);
                 }
+            }
+
+            // Await all MAC/DNS tasks before declaring completion,
+            // ensuring "Scan finished" appears after ALL host output.
+            let handles = post_handles.lock().unwrap().drain(..).collect::<Vec<_>>();
+            for h in handles {
+                let _ = h.await;
             }
 
             *state.write().await = ScannerState::Completed;
@@ -410,18 +430,33 @@ async fn icmp_ping_host(client: &Client, ip: Ipv4Addr, timeout_ms: u64) -> bool 
     pinger.ping(PingSequence(0), &[]).await.is_ok()
 }
 
-/// Resolve hostname from IP
+/// Resolve hostname from IP, filtering out known-bogus results.
+///
+/// Many consumer routers / ISPs return default names such as "bogon"
+/// for IPs without a meaningful PTR record.  We filter those out so
+/// the scan output doesn't show a misleading "(bogon)" annotation.
 async fn resolve_hostname(ip: Ipv4Addr) -> Option<String> {
     let ip_addr = IpAddr::V4(ip);
 
     // Perform reverse DNS lookup (blocking operation)
     tokio::task::spawn_blocking(move || match dns_lookup::lookup_addr(&ip_addr) {
-        Ok(name) if !name.is_empty() => Some(name),
+        Ok(name) if !name.is_empty() && !is_bogus_hostname(&name) => Some(name),
         _ => None,
     })
     .await
     .ok()
     .flatten()
+}
+
+/// Returns `true` when `name` is a known-meaningless reverse-DNS default.
+fn is_bogus_hostname(name: &str) -> bool {
+    let lower = name.to_lowercase();
+    // "bogon" is returned by many consumer routers for IPs without a PTR
+    lower == "bogon"
+        || lower.starts_with("bogon.")
+        // Windows DHCP DNS default
+        || lower.ends_with(".localdomain")
+        || lower == "localhost"
 }
 
 /// Calculate IP range

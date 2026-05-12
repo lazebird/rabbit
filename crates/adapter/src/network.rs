@@ -20,10 +20,10 @@ impl NetworkProvider for DefaultNetworkProvider {
     }
 }
 
-/// Get MAC address from kernel ARP table.
+/// Get MAC address from kernel ARP cache.
 ///
 /// - Linux: `SIOCGARP` ioctl with correct interface name (from `getifaddrs`)
-/// - Windows: `SendARP`
+/// - Windows: `arp -a` cache lookup
 ///
 /// Returns `None` if the MAC could not be resolved.
 pub fn get_mac_from_arp(ip: Ipv4Addr) -> Option<String> {
@@ -33,24 +33,78 @@ pub fn get_mac_from_arp(ip: Ipv4Addr) -> Option<String> {
     }
     #[cfg(target_os = "windows")]
     {
-        use windows_sys::Win32::NetworkManagement::IpHelper::SendARP;
+        get_mac_from_arp_cache(ip)
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    None
+}
 
-        let dest_ip: u32 = u32::from_be_bytes(ip.octets());
-        let mut mac_addr = [0u8; 6];
-        let mut mac_len: u32 = 6;
+/// Windows ARP lookup via [`GetIpNetTable`] kernel API.
+///
+/// Reads the kernel ARP cache **after** the ICMP ping has resolved
+/// the target.  No subprocess, no extra ARP request — the ICMP
+/// echo-request trigger kernel ARP naturally.
+///
+/// Uses a retry loop to handle concurrent ARP table changes between
+/// the buffer-sizing query and the data-fetching query.
+#[cfg(target_os = "windows")]
+fn get_mac_from_arp_cache(ip: Ipv4Addr) -> Option<String> {
+    use windows_sys::Win32::NetworkManagement::IpHelper::{
+        GetIpNetTable, MIB_IPNETTABLE, MIB_IPNETROW_LH,
+    };
+    use windows_sys::Win32::Foundation::NO_ERROR;
+    use windows_sys::Win32::Foundation::ERROR_INSUFFICIENT_BUFFER;
 
-        let result = unsafe { SendARP(dest_ip, 0, mac_addr.as_mut_ptr().cast(), &mut mac_len) };
-        if result == 0 && mac_len as usize >= 6 && mac_addr != [0u8; 6] {
-            return Some(format!(
-                "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
-                mac_addr[0], mac_addr[1], mac_addr[2],
-                mac_addr[3], mac_addr[4], mac_addr[5]
-            ));
+    let mut buf_size: u32 = 0;
+    let ret = unsafe { GetIpNetTable(std::ptr::null_mut(), &mut buf_size, 0) };
+    if ret != ERROR_INSUFFICIENT_BUFFER {
+        return None;
+    }
+
+    let mut buf = vec![0u8; buf_size as usize];
+    loop {
+        let ret = unsafe {
+            GetIpNetTable(buf.as_mut_ptr() as *mut MIB_IPNETTABLE, &mut buf_size, 0)
+        };
+        if ret == NO_ERROR {
+            break;
+        }
+        if ret != ERROR_INSUFFICIENT_BUFFER {
+            return None;
+        }
+        buf.resize(buf_size as usize, 0);
+    }
+
+    let table_ref = unsafe { &*(buf.as_ptr() as *const MIB_IPNETTABLE) };
+    let num_entries = table_ref.dwNumEntries as usize;
+    if num_entries == 0 {
+        return None;
+    }
+
+    // SAFETY: buf was sized to hold all entries; the flexible
+    // array member `table` is declared as [MIB_IPNETROW_LH; 1]
+    // but the actual allocation is larger.
+    let entries = unsafe {
+        std::slice::from_raw_parts(
+            &table_ref.table as *const _ as *const MIB_IPNETROW_LH,
+            num_entries,
+        )
+    };
+
+    for entry in entries {
+        // dwAddr is in network byte order (big-endian), matching
+        // Ipv4Addr::from(u32) — no from_be on x86.
+        if entry.dwAddr == u32::from(ip) {
+            let mac_bytes = &entry.bPhysAddr;
+            if entry.dwPhysAddrLen >= 6 && mac_bytes[..6].iter().any(|&b| b != 0) {
+                return Some(format!(
+                    "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+                    mac_bytes[0], mac_bytes[1], mac_bytes[2],
+                    mac_bytes[3], mac_bytes[4], mac_bytes[5],
+                ));
+            }
         }
     }
-    // On Linux the function always returns inside the cfg block above,
-    // so only keep None on non-Linux where it's reachable.
-    #[cfg(not(target_os = "linux"))]
     None
 }
 
