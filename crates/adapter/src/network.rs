@@ -15,7 +15,9 @@ impl NetworkProvider for DefaultNetworkProvider {
     fn get_local_mac_table(&self) -> HashMap<Ipv4Addr, String> {
         #[cfg(target_os = "linux")]
         return get_local_ip_mac_table();
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        return get_local_ip_mac_table();
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         HashMap::new()
     }
 }
@@ -39,73 +41,167 @@ pub fn get_mac_from_arp(ip: Ipv4Addr) -> Option<String> {
     None
 }
 
-/// Windows ARP lookup via [`GetIpNetTable`] kernel API.
+/// Windows ARP lookup via [`GetIpNetTable2`] with UDP-triggered ARP.
 ///
-/// Reads the kernel ARP cache **after** the ICMP ping has resolved
-/// the target.  No subprocess, no extra ARP request — the ICMP
-/// echo-request trigger kernel ARP naturally.
-///
-/// Uses a retry loop to handle concurrent ARP table changes between
-/// the buffer-sizing query and the data-fetching query.
+/// `surge_ping` on Windows uses `IcmpSendEcho`, which does NOT update
+/// the kernel ARP cache.  We therefore send a 1-byte UDP packet to
+/// force the IP stack to resolve the target MAC via ARP before
+/// querying the cache via [`GetIpNetTable2`].
 #[cfg(target_os = "windows")]
 fn get_mac_from_arp_cache(ip: Ipv4Addr) -> Option<String> {
-    use windows_sys::Win32::NetworkManagement::IpHelper::{
-        GetIpNetTable, MIB_IPNETTABLE, MIB_IPNETROW_LH,
-    };
-    use windows_sys::Win32::Foundation::NO_ERROR;
-    use windows_sys::Win32::Foundation::ERROR_INSUFFICIENT_BUFFER;
+    if let Ok(socket) = std::net::UdpSocket::bind("0.0.0.0:0") {
+        let addr = std::net::SocketAddr::V4(std::net::SocketAddrV4::new(ip, 9));
+        if socket.connect(addr).is_ok() {
+            let _ = socket.send(&[0u8; 1]);
+        }
+    }
+    std::thread::sleep(std::time::Duration::from_millis(20));
 
-    let mut buf_size: u32 = 0;
-    let ret = unsafe { GetIpNetTable(std::ptr::null_mut(), &mut buf_size, 0) };
-    if ret != ERROR_INSUFFICIENT_BUFFER {
+    use windows_sys::Win32::NetworkManagement::IpHelper::{
+        GetIpNetTable2, FreeMibTable, MIB_IPNET_TABLE2,
+    };
+    use windows_sys::Win32::Networking::WinSock::AF_INET;
+    use windows_sys::Win32::Foundation::NO_ERROR;
+
+    let mut table_ptr: *mut MIB_IPNET_TABLE2 = std::ptr::null_mut();
+    let status = unsafe { GetIpNetTable2(AF_INET, &mut table_ptr) };
+
+    if status != NO_ERROR || table_ptr.is_null() {
         return None;
     }
 
-    let mut buf = vec![0u8; buf_size as usize];
-    loop {
-        let ret = unsafe {
-            GetIpNetTable(buf.as_mut_ptr() as *mut MIB_IPNETTABLE, &mut buf_size, 0)
-        };
-        if ret == NO_ERROR {
-            break;
+    struct FreeGuard(*mut MIB_IPNET_TABLE2);
+    impl Drop for FreeGuard {
+        fn drop(&mut self) {
+            unsafe { FreeMibTable(self.0 as *mut _) };
         }
-        if ret != ERROR_INSUFFICIENT_BUFFER {
-            return None;
-        }
-        buf.resize(buf_size as usize, 0);
     }
+    let _guard = FreeGuard(table_ptr);
 
-    let table_ref = unsafe { &*(buf.as_ptr() as *const MIB_IPNETTABLE) };
-    let num_entries = table_ref.dwNumEntries as usize;
+    let table = unsafe { &*table_ptr };
+    let num_entries = table.NumEntries as usize;
+
     if num_entries == 0 {
         return None;
     }
 
-    // SAFETY: buf was sized to hold all entries; the flexible
-    // array member `table` is declared as [MIB_IPNETROW_LH; 1]
-    // but the actual allocation is larger.
     let entries = unsafe {
         std::slice::from_raw_parts(
-            &table_ref.table as *const _ as *const MIB_IPNETROW_LH,
+            &table.Table as *const _ as *const windows_sys::Win32::NetworkManagement::IpHelper::MIB_IPNET_ROW2,
             num_entries,
         )
     };
 
-    for entry in entries {
-        // dwAddr is in network byte order (big-endian), matching
-        // Ipv4Addr::from(u32) — no from_be on x86.
-        if entry.dwAddr == u32::from(ip) {
-            let mac_bytes = &entry.bPhysAddr;
-            if entry.dwPhysAddrLen >= 6 && mac_bytes[..6].iter().any(|&b| b != 0) {
+    let target_u32 = u32::from(ip);
+
+    for entry in entries.iter() {
+        // S_addr in GetIpNetTable2 entries has inconsistent byte
+        // ordering; check both the raw value and its byte swap.
+        let s_addr = unsafe { entry.Address.Ipv4.sin_addr.S_un.S_addr };
+        if (s_addr == target_u32 || s_addr == target_u32.swap_bytes())
+            && entry.PhysicalAddressLength >= 6
+        {
+            let mac = &entry.PhysicalAddress;
+            if mac[..6].iter().any(|&b| b != 0) {
                 return Some(format!(
                     "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
-                    mac_bytes[0], mac_bytes[1], mac_bytes[2],
-                    mac_bytes[3], mac_bytes[4], mac_bytes[5],
+                    mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
                 ));
             }
         }
     }
+
     None
+}
+
+/// Windows: enumerate local interface IP→MAC mappings via
+/// [`GetAdaptersAddresses`].
+///
+/// This is used at scan start to resolve the scanner's own IP(s)
+/// without querying the kernel ARP cache (which has no self-entry).
+#[cfg(target_os = "windows")]
+fn get_local_ip_mac_table() -> HashMap<Ipv4Addr, String> {
+    use windows_sys::Win32::NetworkManagement::IpHelper::{
+        GetAdaptersAddresses, IP_ADAPTER_ADDRESSES_LH,
+        GAA_FLAG_SKIP_ANYCAST, GAA_FLAG_SKIP_MULTICAST, GAA_FLAG_SKIP_DNS_SERVER,
+    };
+    use windows_sys::Win32::Networking::WinSock::AF_INET;
+    use windows_sys::Win32::Foundation::NO_ERROR;
+
+    let mut table = HashMap::new();
+
+    let flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
+    let mut buf_len: u32 = 0;
+
+    // SAFETY: GetAdaptersAddresses writes the required buffer length
+    // into buf_len and returns ERROR_BUFFER_OVERFLOW (111).
+    let ret = unsafe {
+        GetAdaptersAddresses(
+            AF_INET as u32,
+            flags,
+            std::ptr::null(),
+            std::ptr::null_mut(),
+            &mut buf_len,
+        )
+    };
+    if ret == NO_ERROR || buf_len == 0 {
+        return table;
+    }
+
+    let mut buf = vec![0u8; buf_len as usize];
+    let adapters = buf.as_mut_ptr() as *mut IP_ADAPTER_ADDRESSES_LH;
+
+    if unsafe {
+        GetAdaptersAddresses(
+            AF_INET as u32,
+            flags,
+            std::ptr::null(),
+            adapters,
+            &mut buf_len,
+        )
+    } != NO_ERROR
+    {
+        return table;
+    }
+
+    let mut cur = adapters;
+    while !cur.is_null() {
+        let a = unsafe { &*cur };
+
+        if a.PhysicalAddressLength >= 6 {
+            let mac_bytes = &a.PhysicalAddress[..6];
+            if mac_bytes.iter().any(|&b| b != 0) {
+                let mac = format!(
+                    "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+                    mac_bytes[0], mac_bytes[1], mac_bytes[2],
+                    mac_bytes[3], mac_bytes[4], mac_bytes[5],
+                );
+
+                let mut uni = a.FirstUnicastAddress;
+                while !uni.is_null() {
+                    let u = unsafe { &*uni };
+                    if !u.Address.lpSockaddr.is_null() {
+                        let sin = unsafe {
+                            &*(u.Address.lpSockaddr as *const windows_sys::Win32::Networking::WinSock::SOCKADDR_IN)
+                        };
+                        if sin.sin_family == AF_INET {
+                            // S_addr from GetAdaptersAddresses stores IP
+                            // octets in host byte order (LE on x86), so
+                            // to_le_bytes() gives the octets in order.
+                            let s_addr = unsafe { sin.sin_addr.S_un.S_addr };
+                            let ip = Ipv4Addr::from(s_addr.to_le_bytes());
+                            table.insert(ip, mac.clone());
+                        }
+                    }
+                    uni = u.Next;
+                }
+            }
+        }
+
+        cur = a.Next;
+    }
+
+    table
 }
 
 // ─── Linux: SIOCGARP ioctl ─────────────────────────────────────────
@@ -295,6 +391,58 @@ fn get_local_ip_mac_table() -> HashMap<Ipv4Addr, String> {
 
     unsafe { libc::freeifaddrs(addrs) };
     table
+}
+
+#[cfg(test)]
+#[cfg(target_os = "windows")]
+mod windows_arp_tests {
+    use super::*;
+
+    /// Verify that known ARP table entries from the LAN are readable
+    /// via `get_mac_from_arp`.  These are the entries the scanner
+    /// needs to resolve — if this test fails, the UDP probe +
+    /// `GetIpNetTable2` path is broken.
+    ///
+    /// MACs are in `xx:xx:xx:xx:xx:xx` format (our code), while
+    /// `arp -a` uses `xx-xx-xx-xx-xx-xx`.
+    #[test]
+    fn test_arp_read_gateway() {
+        let mac = get_mac_from_arp(Ipv4Addr::new(192, 168, 31, 1));
+        assert_eq!(mac.as_deref(), Some("64:64:4a:28:c2:d0"));
+    }
+
+    /// Verify that the local interface MAC table returns at least one
+    /// entry for the host's own IP (which `get_mac_from_arp` cannot
+    /// resolve because the kernel ARP cache has no self-entry).
+    #[test]
+    fn test_local_mac_table_contains_self() {
+        let table = get_local_ip_mac_table();
+        assert!(
+            !table.is_empty(),
+            "get_local_ip_mac_table returned empty — no local IPv4 interfaces with valid MAC found"
+        );
+    }
+
+    #[test]
+    fn test_arp_read_multiple_hosts() {
+        let cases = [
+            (192, 168, 31, 1,   "64:64:4a:28:c2:d0"),
+            (192, 168, 31, 49,  "50:ec:50:41:99:51"),
+            (192, 168, 31, 136, "12:ce:7c:bd:fa:ac"),
+            (192, 168, 31, 179, "e4:24:6c:71:c2:cc"),
+            (192, 168, 31, 198, "04:cf:8c:69:52:7b"),
+        ];
+        for (a, b, c, d, expected) in cases {
+            let ip = Ipv4Addr::new(a, b, c, d);
+            let mac = get_mac_from_arp(ip);
+            assert_eq!(
+                mac.as_deref(),
+                Some(expected),
+                "Failed to resolve MAC for {}.{}.{}.{} (expected {})",
+                a, b, c, d, expected,
+            );
+        }
+    }
 }
 
 

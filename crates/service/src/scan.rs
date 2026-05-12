@@ -251,7 +251,20 @@ impl ScanService {
                                         .await
                                         .unwrap_or_default();
                                         let r = mac.as_ref().map(|_| None)
-                                            .unwrap_or_else(|| Some("MAC not found (no ARP entry)".into()));
+                                            .unwrap_or_else(|| {
+                                                let log_hint = || {
+                                                    let p = format!(
+                                                        "rabbit-startup-{}.log",
+                                                        std::process::id(),
+                                                    );
+                                                    let path = std::env::temp_dir().join(&p);
+                                                    format!(" (see diag log: {})", path.display())
+                                                };
+                                                Some(format!(
+                                                    "MAC not found (no ARP entry){}",
+                                                    log_hint(),
+                                                ))
+                                            });
                                         (mac, r)
                                     }
                                     None => (None, Some("no ARP provider available".into())),
