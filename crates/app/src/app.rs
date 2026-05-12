@@ -9,8 +9,9 @@ use crate::view_model::AppViewModel;
 use adapter::tray;
 use fltk::{
     app,
+    enums::ColorDepth,
     group::Tabs,
-    image::IcoImage,
+    image::RgbImage,
     prelude::*,
     window::{Window, WindowType},
 };
@@ -149,25 +150,21 @@ impl App {
         rabbit_diag::log("App::run(): entered");
         info!("Running Rabbit application with FLTK UI");
 
-        // Initialize UI state and event system
         let _ui_state = UiState::init();
 
         // Restore HTTP and TFTP directories from config
         {
             let config = self.view_model.read().await.get_config();
-            // Restore HTTP items
             if let Some(dirs) = config.modules.get_array("http", config::keys::http::DIRS) {
                 for dir in dirs {
                     crate::ui_state::add_http_item(&dir);
                 }
             }
-            // Restore TFTP directories
             if let Some(dirs) = config.modules.get_array("tftpd", config::keys::tftpd::WORK_DIRS) {
                 for dir in dirs {
                     crate::ui_state::add_tftpd_dir(&dir);
                 }
             }
-            // Restore TFTP working directory selection
             if let Some(idx) = config.modules.get_integer("tftpd", config::keys::tftpd::WORKING_DIR_INDEX) {
                 if let Some(dirs) = config.modules.get_array("tftpd", config::keys::tftpd::WORK_DIRS) {
                     if idx < dirs.len() as i64 {
@@ -179,7 +176,6 @@ impl App {
 
         let event_receiver = init_event_system();
 
-        // Spawn UI channel receivers
         if let Some(mut rx) = self.ping_rx.take() {
             let view_model = Arc::clone(&self.view_model);
             tokio::spawn(async move {
@@ -216,7 +212,6 @@ impl App {
             });
         }
 
-        // Load saved tasks into PlanService and start service
         {
             let saved_tasks = crate::ui_state::load_plan_tasks();
             let mut plan_service = self.plan_service.write().await;
@@ -225,7 +220,6 @@ impl App {
                     &task.date, &task.time, task.cycle, &task.unit, &task.msg, true
                 ).await;
             }
-            // Start the plan service (starts timer for all loaded tasks)
             let _ = plan_service.start().await;
         }
 
@@ -253,21 +247,18 @@ impl App {
             });
         }
 
-        // Create FLTK application
         let _fltk_app = app::App::default();
 
-        // Install platform-specific error handlers (X11 diag on Linux).
-        // Must be done AFTER app::App::default() (initialises X11 display),
-        // but BEFORE any window operations.
         adapter::install_platform_handlers();
 
-        // Set application-wide colors (lighter theme - similar to old version)
-        app::background(0xF0, 0xF0, 0xF0); // Light gray background
-        app::background2(0xFF, 0xFF, 0xFF); // White for inputs
-        app::foreground(0x00, 0x00, 0x00); // Black text
+        app::background(0xF0, 0xF0, 0xF0);
+        app::background2(0xFF, 0xFF, 0xFF);
+        app::foreground(0x00, 0x00, 0x00);
         app::set_visible_focus(true);
 
-        // Create main window - load config directly from disk to get window position
+        // Decode ICO via the `image` crate (handles multi-res ICO correctly) and
+        // pass raw RGBA to FLTK RgbImage — avoids a C-level abort in FLTK 1.5.10's
+        // Fl_ICO_Image_from_data when given a 219 KB icon.
         let disk_config = load_config().unwrap_or_else(|_| AppConfig::default());
         let modules = &disk_config.modules;
         let (win_x, win_y, win_w, win_h) = modules
@@ -283,18 +274,21 @@ impl App {
 
         info!("Creating window at ({}, {}) size {}x{}", win_x, win_y, win_w, win_h);
 
-        // Set window icon from embedded bytes (single source: adapter)
-        if let Ok(icon) = IcoImage::from_data(adapter::icon::ico_bytes()) {
+        let icon_data = adapter::icon::load_app_icon();
+        if let Ok(icon) = RgbImage::new(
+            &icon_data.rgba,
+            icon_data.width as i32,
+            icon_data.height as i32,
+            ColorDepth::Rgba8,
+        ) {
             main_win.set_icon(Some(icon));
             info!("Loaded window icon from embedded bytes");
         } else {
-            warn!("Failed to load window icon from embedded bytes");
+            warn!("Failed to load window icon");
         }
 
-        // Create Tabs widget - positioned to leave room for tab labels
         let mut tabs = Tabs::new(5, 5, win_w - 10, win_h - 10, "");
 
-        // Build each tab - y=25 leaves room for tab labels at top
         let ping_tab = PingTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
         let scan_tab = ScanTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
         let http_tab = HttpTab::build(5, 30, win_w - 18, win_h - 43, &disk_config);
@@ -507,9 +501,6 @@ impl App {
         // Store main window for title updates
         crate::ui_state::UiState::set_main_window(main_win.clone());
 
-        // Show window first (needed before getting raw_handle on some platforms)
-        rabbit_diag::log(&format!("app.run(): before main_win.show() pos=({},{}) size=({}x{})",
-            win_x, win_y, win_w, win_h));
         main_win.show();
         rabbit_diag::log(&format!("app.run(): after main_win.show() pos=({},{})",
             main_win.x(), main_win.y()));

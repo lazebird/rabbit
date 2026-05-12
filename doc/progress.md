@@ -693,3 +693,16 @@ timeout=200;retry=10;blksize=1468;port=69;
 4. 选项字符串格式：`timeout=200;retry=10;blksize=1468;` 已满足需求
 
 如果需要明确端口配置，可以在选项字符串说明文档中添加端口配置示例。
+
+---
+
+### 🐞 Windows Release 崩溃修复 (2026-05-12)
+
+| 任务 | 状态 | 涉及文件 |
+|------|------|----------|
+| 修复 rabbit-diag 硬编码 `/tmp/` 路径 → `std::env::temp_dir()` | ✅ | `rabbit-diag/src/lib.rs` |
+| 移除全局 `#[allow]` 宏，代以条件编译/显式消费 | ✅ | `systray.rs`, `non_linux.rs`, `lifecycle.rs` |
+| TrayIconBox Send 封装 + async 签名统一 | ✅ | `tray/non_linux.rs` |
+| 修复 Windows release 版 IcoImage 加载崩溃（改用 RgbImage + load_app_icon） | ✅ | `app/src/app.rs` |
+| 更新文档（known-issues.md 6.5 & 7.3） | ✅ | `doc/known-issues.md` |
+| clippy 零警告，测试通过 | ✅ | — |

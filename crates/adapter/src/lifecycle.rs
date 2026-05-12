@@ -27,6 +27,7 @@
 // Bypass fltk::app::wait_for() which treats any poll() return value
 // other than 0 or 1 as an error. poll() returns the number of ready
 // fds — when both X11 display + awake pipe are ready, the return is 2.
+#[cfg(target_os = "linux")]
 extern "C" {
     fn Fl_wait_for(dur: f64) -> f64;
 }

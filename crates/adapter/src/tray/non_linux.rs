@@ -5,8 +5,6 @@ use std::sync::Mutex;
 use tracing::warn;
 
 use crate::Lifecycle;
-#[cfg(target_os = "windows")]
-use fltk::prelude::WindowExt;
 #[cfg(not(target_os = "windows"))]
 use fltk::prelude::WidgetExt;
 use tray_icon::{
@@ -22,7 +20,16 @@ const MENU_ID_QUIT: &str = "quit";
 
 static SYSTRAY_ENABLED: AtomicBool = AtomicBool::new(false);
 
-static TRAY_PTR: Mutex<Option<Box<TrayIcon>>> = Mutex::new(None);
+/// Wrapper to make `TrayIcon` `Send` for use in a global `Mutex`.
+///
+/// `tray-icon` internally uses `Rc<RefCell<...>>` (not `Send`) on all platforms,
+/// but we only ever access the tray icon through a `Mutex` lock on the main thread,
+/// so sending the inner value between threads never actually occurs.
+struct TrayIconBox(Box<TrayIcon>);
+// SAFETY: `TrayIcon` is not `Send`, but we only access it via `Mutex` on one thread.
+unsafe impl Send for TrayIconBox {}
+
+static TRAY_PTR: Mutex<Option<TrayIconBox>> = Mutex::new(None);
 
 static MAIN_WIN: Mutex<Option<fltk::window::Window>> = Mutex::new(None);
 static LIFECYCLE: Mutex<Option<Lifecycle>> = Mutex::new(None);
@@ -46,7 +53,7 @@ pub fn is_active() -> bool {
     SYSTRAY_ENABLED.load(Ordering::SeqCst)
 }
 
-pub fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
+pub async fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
     remove_systray();
 
     if let Ok(mut guard) = LIFECYCLE.lock() {
@@ -75,7 +82,7 @@ pub fn init_systray(lifecycle: Lifecycle) -> Result<(), String> {
         .map_err(|e| format!("Failed to create tray icon: {}", e))?;
 
     if let Ok(mut guard) = TRAY_PTR.lock() {
-        *guard = Some(Box::new(tray));
+        *guard = Some(TrayIconBox(Box::new(tray)));
     }
     SYSTRAY_ENABLED.store(true, Ordering::SeqCst);
 
@@ -124,20 +131,21 @@ fn register_event_handlers_once() {
 
 pub fn remove_systray() {
     if let Ok(mut guard) = TRAY_PTR.lock() {
-        if guard.take().is_some() {
+        if let Some(boxed) = guard.take() {
+            let _ = boxed.0;
             SYSTRAY_ENABLED.store(false, Ordering::SeqCst);
         }
     }
 }
 
-pub fn update_systray(enabled: bool) {
+pub async fn update_systray(enabled: bool) {
     let currently_active = is_active();
 
     if enabled && !currently_active {
         let lifecycle = LIFECYCLE.lock().ok().and_then(|g| g.clone());
         match lifecycle {
             Some(lc) => {
-                if let Err(e) = init_systray(lc) {
+                if let Err(e) = init_systray(lc).await {
                     warn!("Failed to init system tray: {}", e);
                 }
             }
@@ -150,17 +158,16 @@ pub fn update_systray(enabled: bool) {
 
 fn show_main_window() {
     if let Ok(store) = MAIN_WIN.lock() {
-        if let Some(win) = &*store {
-            let win = win.clone();
+        if store.is_some() {
+            #[cfg(not(target_os = "windows"))]
+            let owned = store.as_ref().unwrap().clone();
             fltk::app::awake_callback(move || {
                 #[cfg(target_os = "windows")]
-                {
-                    crate::window::show_window();
-                }
+                crate::window::show_window();
                 #[cfg(not(target_os = "windows"))]
                 {
-                    let mut win = win;
-                    win.show();
+                    let mut owned = owned;
+                    owned.show();
                 }
             });
         }
@@ -169,17 +176,16 @@ fn show_main_window() {
 
 fn hide_main_window() {
     if let Ok(store) = MAIN_WIN.lock() {
-        if let Some(win) = &*store {
-            let win = win.clone();
+        if store.is_some() {
+            #[cfg(not(target_os = "windows"))]
+            let owned = store.as_ref().unwrap().clone();
             fltk::app::awake_callback(move || {
                 #[cfg(target_os = "windows")]
-                {
-                    crate::window::hide_window();
-                }
+                crate::window::hide_window();
                 #[cfg(not(target_os = "windows"))]
                 {
-                    let mut win = win;
-                    win.hide();
+                    let mut owned = owned;
+                    owned.hide();
                 }
             });
         }

@@ -6,7 +6,6 @@
 //! - Other platforms: native tray via tray-icon crate.
 
 use crate::Lifecycle;
-use fltk::prelude::WidgetExt;
 use tracing::warn;
 
 /// Initialize the system tray at startup.
@@ -17,6 +16,10 @@ use tracing::warn;
 /// Without a helper, or on non-Linux, the local systray is initialised
 /// directly.
 pub async fn init(lifecycle: &Lifecycle, enabled: bool, main_win: fltk::window::Window) {
+    // On non-Linux `main_win` is unused; consume it explicitly to suppress clippy.
+    #[cfg(not(target_os = "linux"))]
+    let _ = main_win;
+
     rabbit_diag::log(&format!("systray::init(enabled={enabled})"));
 
     #[cfg(target_os = "linux")]

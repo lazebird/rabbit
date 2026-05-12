@@ -318,6 +318,17 @@
 | **涉及文件** | `platform/notification.rs` |
 | **状态** | ✅ 已解决 |
 
+### 6.5 Windows Release 版因诊断日志路径崩溃导致窗口不出现
+
+| 项目 | 内容 |
+|------|------|
+| **问题** | release 版本在 Windows 上双击运行时没有任何窗口出现，进程静默退出，无错误提示 |
+| **根因** | `rabbit-diag` 使用硬编码 Unix 路径 `/tmp/rabbit-startup-{pid}.log`。Windows 上没有 `/tmp/` 目录（除非安装了 Git Bash/Cygwin），导致 `.expect("cannot open diagnostic log")` 触发 panic。Release 配置了 `panic = "abort"` + `windows_subsystem = "windows"`，所以 panic 直接静默终止进程——无终端输出、无窗口、无错误对话框 |
+| **解决方案** | 改用 `std::env::temp_dir()` 获取平台兼容的临时目录：Unix → `/tmp/`，Windows → `%TEMP%`（如 `C:\Users\<user>\AppData\Local\Temp\`）。此 API 是跨平台标准库函数，在所有平台行为正确 |
+| **涉及文件** | `rabbit-diag/src/lib.rs` |
+| **测试用例** | `test_log_path_uses_temp_dir` — 验证路径在 temp_dir 下；`test_log_does_not_panic_on_current_platform` — 验证日志创建不会 panic；`test_log_content_format` — 验证文件内容格式正确 |
+| **状态** | ✅ 已修复 |
+
 ---
 
 ## 7. 构建与部署
@@ -341,6 +352,16 @@
 | **解决方案** | 使用 `include_bytes!()` 在编译时嵌入 `.ico` 文件，tray helper 中从内存加载 |
 | **涉及文件** | `tray_helper.rs`, `icon.rs` |
 | **状态** | ✅ 已解决 (`471e887`) |
+
+### 7.3 Windows Release 版因 IcoImage 加载图标崩溃导致窗口不出现
+
+| 项目 | 内容 |
+|------|------|
+| **问题** | release 版本在 Windows 上双击运行时没有任何窗口出现，进程静默退出，无错误提示 |
+| **根因** | `main_win.set_icon(IcoImage::from_data(ico_bytes()))` 在 FLTK 1.5.10 中调用 C 函数 `Fl_ICO_Image_from_data` 时 crash/abort（SIGABRT）。219KB 的 `.ico` 文件（含 10 个分辨率）触发 FLTK 的 ICO 解析 bug，`panic = "abort"` + `windows_subsystem = "windows"` 导致静默终止 |
+| **解决方案** | 改用 `adapter::icon::load_app_icon()` 通过 `image` crate 解码 ICO 为原始 RGBA 像素，然后用 `RgbImage::new(rgba, w, h, Rgba8)` 加载。`image` crate 的 ICO 解析器更健壮，`RgbImage` 直接使用像素数组，绕过 FLTK 的 C 层 ICO 解析 |
+| **涉及文件** | `adapter/src/icon.rs`（已有 `load_app_icon()`）, `app/src/app.rs`（修改图标加载逻辑） |
+| **状态** | ✅ 已修复 |
 
 ---
 
@@ -449,8 +470,8 @@
 | 配置架构 | 5 | 🟡 中（影响维护性） |
 | UI 与框架 | 5 | 🟡 中 |
 | 窗口管理 | 2 | 🟡 中 |
-| 跨平台兼容 | 4 | 🟢 低 |
-| 构建与部署 | 2 | 🟢 低 |
+| 跨平台兼容 | 5 | 🔴 高（影响程序启动） |
+| 构建与部署 | 3 | 🟢 低 |
 | 代码质量 | 6 | 🟢 低 |
 | Rust 语言层面 | 3 | 🟢 低 |
 
@@ -472,5 +493,5 @@
 
 ---
 
-文档版本：1.0
-创建日期：2026-05-09
+文档版本：1.1
+创建日期：2026-05-12

@@ -212,9 +212,6 @@ fn elevate_with_sudo_inner(exe_path: &str) -> Result<(), ElevationError> {
 fn elevate_with_xelevate_inner(exe_path: &str) -> Result<(), ElevationError> {
     match xelevate::elevate(exe_path) {
         Ok(()) => std::process::exit(0),
-        Err(e) => {
-            rabbit_diag::log(&format!("elevate_with_xelevate_inner: failed: {e}"));
-            Err(ElevationError::SpawnFailed(e.to_string()))
-        }
+        Err(e) => Err(ElevationError::SpawnFailed(e.to_string())),
     }
 }

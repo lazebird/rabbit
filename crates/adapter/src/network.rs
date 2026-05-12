@@ -13,7 +13,10 @@ impl NetworkProvider for DefaultNetworkProvider {
     }
 
     fn get_local_mac_table(&self) -> HashMap<Ipv4Addr, String> {
-        get_local_ip_mac_table()
+        #[cfg(target_os = "linux")]
+        return get_local_ip_mac_table();
+        #[cfg(not(target_os = "linux"))]
+        HashMap::new()
     }
 }
 
