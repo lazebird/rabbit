@@ -2,6 +2,7 @@
 
 use crate::{ui_channel::UiData, Result, ServiceError, ServiceUpdateResult};
 use rabbit_config::{get_integer, get_string};
+use schema::config::keys;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -43,7 +44,7 @@ struct ChatConfig {
 impl ChatConfig {
     fn from_platform() -> Self {
         Self {
-            port: get_integer("chat", "port").unwrap_or(1314) as u16,
+            port: get_integer("chat", keys::chat::PORT).unwrap_or(1314) as u16,
         }
     }
 }
@@ -235,7 +236,7 @@ impl ChatService {
 
     /// Send a message
     async fn send_message(&self, content: &str, msg_type: MessageType) -> Result<()> {
-        let username = get_string("chat", "username").unwrap_or_else(|| "User@PC".to_string());
+        let username = get_string("chat", keys::chat::USERNAME).unwrap_or_else(|| "User@PC".to_string());
 
         let message = ChatMessage {
             id: format!("msg_{}", chrono::Local::now().timestamp_millis()),
@@ -259,6 +260,21 @@ impl ChatService {
         users.clear();
         info!("User list cleared for refresh");
         Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl crate::Service for ChatService {
+    async fn update(&mut self) -> crate::ServiceUpdateResult {
+        self.update().await
+    }
+
+    async fn destroy(&mut self) -> crate::Result<()> {
+        self.destroy().await
+    }
+
+    async fn send(&self, data: crate::UiData) {
+        self.send(data).await;
     }
 }
 

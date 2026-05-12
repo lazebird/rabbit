@@ -53,13 +53,13 @@ impl TabComponent for HttpTab {
         opt_input.set_value(&defaults::http_options());
 
         // Shell checkbox (fixed width) - load from config
-        let shell_checked = rabbit_config::load_config().map(|c| c.modules.get_bool("http", "shell").unwrap_or(false)).unwrap_or(false);
+        let shell_checked = rabbit_config::load_config().map(|c| c.modules.get_bool("http", schema::config::keys::http::SHELL).unwrap_or(false)).unwrap_or(false);
         let shell_check = CheckButton::default().with_label("shell");
         shell_check.set_checked(shell_checked);
         ctrl_row.fixed(&shell_check, 60);
 
         // Start/Stop button (fixed width, right aligned)
-        let is_running = config.modules.get_bool("http", "running").unwrap_or(false);
+        let is_running = config.modules.get_bool("http", schema::config::keys::http::RUNNING).unwrap_or(false);
         let mut toggle_btn = Button::default().with_label(if is_running { "Stop" } else { "Start" });
         toggle_btn.set_color(if is_running { fltk::enums::Color::from_hex(super::ui_refresh::HTTP_STOP_COLOR) } else { colors.accent });
         toggle_btn.set_label_color(fltk::enums::Color::White);

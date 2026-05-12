@@ -14,6 +14,7 @@ schema = { path = "../schema" }
 rabbit-config = { path = "../rabbit-config" }
 
 tokio = { workspace = true }
+async-trait = { workspace = true }
 tokio-util = { workspace = true }
 tracing = { workspace = true }
 thiserror = { workspace = true }

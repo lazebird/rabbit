@@ -1,6 +1,5 @@
 //! Network interface utilities
 
-use super::Result;
 use schema::NetworkProvider;
 use std::collections::HashMap;
 use std::net::Ipv4Addr;
@@ -16,61 +15,6 @@ impl NetworkProvider for DefaultNetworkProvider {
     fn get_local_mac_table(&self) -> HashMap<Ipv4Addr, String> {
         get_local_ip_mac_table()
     }
-}
-
-/// Network interface information
-#[derive(Debug, Clone)]
-pub struct NetworkInterface {
-    pub name: String,
-    pub ip_address: Ipv4Addr,
-    pub netmask: Ipv4Addr,
-    pub is_up: bool,
-    pub is_loopback: bool,
-}
-
-/// Get all network interfaces
-pub async fn get_interfaces() -> Result<Vec<NetworkInterface>> {
-    // Platform-specific implementation
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
-    {
-        get_interfaces_unix().await
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        get_interfaces_windows().await
-    }
-}
-
-#[cfg(any(target_os = "linux", target_os = "macos"))]
-async fn get_interfaces_unix() -> Result<Vec<NetworkInterface>> {
-    use std::process::Command;
-
-    // Use ip command on Linux, ifconfig on macOS
-    #[cfg(target_os = "linux")]
-    let _output = Command::new("ip").args(["-j", "addr", "show"]).output()?;
-
-    #[cfg(target_os = "macos")]
-    let output = Command::new("ifconfig").output()?;
-
-    // Parse output (simplified - in production use a proper parser)
-    let interfaces = vec![];
-    Ok(interfaces)
-}
-
-#[cfg(target_os = "windows")]
-async fn get_interfaces_windows() -> Result<Vec<NetworkInterface>> {
-    // Use GetAdaptersAddresses on Windows
-    // Simplified implementation
-    let interfaces = vec![];
-    Ok(interfaces)
-}
-
-/// Get the default local IP address
-pub fn get_local_ip() -> Option<Ipv4Addr> {
-    // Try to find a non-loopback interface
-    // This is a simplified implementation
-    None
 }
 
 /// Get MAC address from kernel ARP table.

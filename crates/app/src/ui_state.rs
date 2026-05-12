@@ -439,63 +439,63 @@ pub fn update_settings_line(line_index: i32, text: &str) {
 // These update the UI state and trigger config save via the SettingsSave event
 
 pub fn set_systray(value: bool) {
-    use schema::config::ConfigValue;
+    use schema::config::{self, ConfigValue};
     use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
-        config.modules.insert("global", "systray", ConfigValue::Boolean(value));
+        config.modules.insert("global", config::keys::global::SYSTRAY, ConfigValue::Boolean(value));
         save_config(&config).ok();
     }
 }
 
 pub fn set_top(value: bool) {
-    use schema::config::ConfigValue;
+    use schema::config::{self, ConfigValue};
     use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
-        config.modules.insert("global", "top", ConfigValue::Boolean(value));
+        config.modules.insert("global", config::keys::global::TOP, ConfigValue::Boolean(value));
         save_config(&config).ok();
     }
 }
 
 pub fn set_autostart(value: bool) {
-    use schema::config::ConfigValue;
+    use schema::config::{self, ConfigValue};
     use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
-        config.modules.insert("global", "autostart", ConfigValue::Boolean(value));
+        config.modules.insert("global", config::keys::global::AUTOSTART, ConfigValue::Boolean(value));
         save_config(&config).ok();
     }
 }
 
 pub fn set_autoupdate(value: bool) {
-    use schema::config::ConfigValue;
+    use schema::config::{self, ConfigValue};
     use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
-        config.modules.insert("global", "autoupdate", ConfigValue::Boolean(value));
+        config.modules.insert("global", config::keys::global::AUTOUPDATE, ConfigValue::Boolean(value));
         save_config(&config).ok();
     }
 }
 
 pub fn set_language(value: &str) {
-    use schema::config::ConfigValue;
+    use schema::config::{self, ConfigValue};
     use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
-        config.modules.insert("global", "language", ConfigValue::String(value.to_string()));
+        config.modules.insert("global", config::keys::global::LANGUAGE, ConfigValue::String(value.to_string()));
         save_config(&config).ok();
     }
 }
 
 /// Save plan tasks to config (structured storage)
 pub fn save_plan_tasks(tasks: &[schema::config::PlanTask]) {
-    use schema::config::ConfigValue;
+    use schema::config::{self, ConfigValue};
     use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
         let json = serde_json::to_string(tasks).unwrap_or_default();
-        config.modules.insert("plan", "tasks", ConfigValue::String(json));
+        config.modules.insert("plan", config::keys::plan::TASKS, ConfigValue::String(json));
         if let Err(e) = save_config(&config) {
             tracing::warn!("Failed to save plan tasks: {}", e);
         }
@@ -508,7 +508,7 @@ pub fn load_plan_tasks() -> Vec<schema::config::PlanTask> {
     use rabbit_config::load_config;
 
     if let Ok(config) = load_config() {
-        if let Some(json_str) = config.modules.get_string("plan", "tasks") {
+        if let Some(json_str) = config.modules.get_string("plan", schema::config::keys::plan::TASKS) {
             if let Ok(tasks) = serde_json::from_str::<Vec<PlanTask>>(&json_str) {
                 return tasks;
             }
@@ -519,17 +519,17 @@ pub fn load_plan_tasks() -> Vec<schema::config::PlanTask> {
 
 /// Sync scan configuration when starting a scan
 pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
-    use schema::config::ConfigValue;
+    use schema::config::{self, ConfigValue};
     use rabbit_config::{load_config, save_config};
 
     if let Ok(mut config) = load_config() {
-        config.modules.scan.insert("start_ip".into(), ConfigValue::String(start_ip));
+        config.modules.scan.insert(config::keys::scan::START_IP.into(), ConfigValue::String(start_ip));
 
         // Save only single number (last octet) for end_ip
         let end_suffix: u8 = end_ip.parse().unwrap_or(254);
-        config.modules.scan.insert("end_ip".into(), ConfigValue::String(end_suffix.to_string()));
+        config.modules.scan.insert(config::keys::scan::END_IP.into(), ConfigValue::String(end_suffix.to_string()));
 
-        config.modules.scan.insert("filter".into(), ConfigValue::Boolean(filter));
+        config.modules.scan.insert(config::keys::scan::FILTER.into(), ConfigValue::Boolean(filter));
         if let Err(e) = save_config(&config) {
             tracing::warn!("Failed to save scan config: {}", e);
         }
@@ -538,19 +538,19 @@ pub fn sync_scan_config(start_ip: String, end_ip: String, filter: bool) {
 
 /// Sync HTTP configuration when starting the server
 pub fn sync_http_start_config(port: u16, shell: bool, autoindex: bool, videoplay: bool) {
-    use schema::config::ConfigValue;
+    use schema::config::{self, ConfigValue};
     use rabbit_config::{load_config, save_config};
 
     tracing::info!("sync_http_start_config: port={}, shell={}, autoindex={}, videoplay={}", port, shell, autoindex, videoplay);
 
     if let Ok(mut config) = load_config() {
-        let old_port = config.modules.get_integer("http", "port");
+        let old_port = config.modules.get_integer("http", config::keys::http::PORT);
         tracing::info!("sync_http_start_config: old port from cache = {:?}", old_port);
 
-        config.modules.http.insert("port".into(), ConfigValue::Integer(port as i64));
-        config.modules.http.insert("shell".into(), ConfigValue::Boolean(shell));
-        config.modules.http.insert("autoindex".into(), ConfigValue::Boolean(autoindex));
-        config.modules.http.insert("videoplay".into(), ConfigValue::Boolean(videoplay));
+        config.modules.http.insert(config::keys::http::PORT.into(), ConfigValue::Integer(port as i64));
+        config.modules.http.insert(config::keys::http::SHELL.into(), ConfigValue::Boolean(shell));
+        config.modules.http.insert(config::keys::http::AUTO_INDEX.into(), ConfigValue::Boolean(autoindex));
+        config.modules.http.insert(config::keys::http::VIDEO_PLAY.into(), ConfigValue::Boolean(videoplay));
         match save_config(&config) {
             Ok(()) => tracing::info!("sync_http_start_config: config saved successfully"),
             Err(e) => tracing::warn!("sync_http_start_config: Failed to save HTTP config: {}", e),

@@ -327,6 +327,21 @@ async fn trigger_task(title: &str, logs: &Arc<RwLock<Vec<TaskLog>>>, tx: &Option
     }
 }
 
+#[async_trait::async_trait]
+impl crate::Service for PlanService {
+    async fn update(&mut self) -> crate::ServiceUpdateResult {
+        self.update().await
+    }
+
+    async fn destroy(&mut self) -> crate::Result<()> {
+        self.destroy().await
+    }
+
+    async fn send(&self, data: crate::UiData) {
+        self.send(data).await;
+    }
+}
+
 impl Default for PlanService {
     fn default() -> Self {
         Self::new()

@@ -1,10 +1,10 @@
 //! Application Controller - FLTK UI Implementation
 
-use crate::ui::check_version_update;
+
 use crate::ui::{ChatTab, HttpTab, PingTab, PlanTab, ScanTab, SettingsTab, TabComponent, TftpcTab, TftpdTab};
 use crate::ui_events::{init_event_system, send_event, EventHandler, UiEvent};
 use crate::ui_state::UiState;
-use crate::upgrade::{self, PlatformInfo, VersionsManifest};
+use crate::upgrade;
 use crate::view_model::AppViewModel;
 use adapter::tray;
 use fltk::{
@@ -18,7 +18,7 @@ use service::{
     ui_channel::{Module, UiData},
     ChatService, HttpService, PingService, PlanService, ScanService, ServiceUpdateResult, TftpcService, TftpdService,
 };
-use schema::{config::ConfigValue, AppConfig};
+use schema::{config::{self, ConfigValue}, AppConfig};
 
 use rabbit_config::{load_config, save_config};
 use adapter::Lifecycle;
@@ -54,7 +54,7 @@ fn save_window_position() {
                 height: win_h,
             };
             let json = serde_json::to_string(&window_config).unwrap_or_default();
-            config.modules.insert("global", "window", ConfigValue::String(json));
+            config.modules.insert("global", config::keys::global::WINDOW, ConfigValue::String(json));
             let _ = rabbit_config::save_config(&config);
             info!("Window position saved to config");
         }
@@ -156,20 +156,20 @@ impl App {
         {
             let config = self.view_model.read().await.get_config();
             // Restore HTTP items
-            if let Some(dirs) = config.modules.get_array("http", "dirs") {
+            if let Some(dirs) = config.modules.get_array("http", config::keys::http::DIRS) {
                 for dir in dirs {
                     crate::ui_state::add_http_item(&dir);
                 }
             }
             // Restore TFTP directories
-            if let Some(dirs) = config.modules.get_array("tftpd", "work_dirs") {
+            if let Some(dirs) = config.modules.get_array("tftpd", config::keys::tftpd::WORK_DIRS) {
                 for dir in dirs {
                     crate::ui_state::add_tftpd_dir(&dir);
                 }
             }
             // Restore TFTP working directory selection
-            if let Some(idx) = config.modules.get_integer("tftpd", "working_dir_index") {
-                if let Some(dirs) = config.modules.get_array("tftpd", "work_dirs") {
+            if let Some(idx) = config.modules.get_integer("tftpd", config::keys::tftpd::WORKING_DIR_INDEX) {
+                if let Some(dirs) = config.modules.get_array("tftpd", config::keys::tftpd::WORK_DIRS) {
                     if idx < dirs.len() as i64 {
                         crate::ui_state::set_tftpd_selected((idx + 1) as i32);
                     }
@@ -271,7 +271,7 @@ impl App {
         let disk_config = load_config().unwrap_or_else(|_| AppConfig::default());
         let modules = &disk_config.modules;
         let (win_x, win_y, win_w, win_h) = modules
-            .get_string("global", "window")
+            .get_string("global", config::keys::global::WINDOW)
             .and_then(|s| serde_json::from_str::<schema::config::WindowConfig>(&s).ok())
             .map(|w| (w.x, w.y, w.width, w.height))
             .unwrap_or((100, 100, 748, 518));
@@ -309,12 +309,12 @@ impl App {
         // Restore last active tab from config
         let config = self.view_model.read().await.get_config();
         let modules = &config.modules;
-        let last_tab = modules.get_integer("global", "last_active_tab").unwrap_or(0) as usize;
-        let autoupdate = modules.get_bool("global", "autoupdate").unwrap_or(true);
-        let top_requested = modules.get_bool("global", "top").unwrap_or(false);
-        let systray_requested = modules.get_bool("global", "systray").unwrap_or(true);
-        let autostart_requested = modules.get_bool("global", "autostart").unwrap_or(false);
-        let http_shell_requested = modules.get_bool("http", "shell").unwrap_or(false);
+        let last_tab = modules.get_integer("global", config::keys::global::LAST_ACTIVE_TAB).unwrap_or(0) as usize;
+        let autoupdate = modules.get_bool("global", config::keys::global::AUTOUPDATE).unwrap_or(true);
+        let top_requested = modules.get_bool("global", config::keys::global::TOP).unwrap_or(false);
+        let systray_requested = modules.get_bool("global", config::keys::global::SYSTRAY).unwrap_or(true);
+        let autostart_requested = modules.get_bool("global", config::keys::global::AUTOSTART).unwrap_or(false);
+        let http_shell_requested = modules.get_bool("http", config::keys::http::SHELL).unwrap_or(false);
         drop(config);
         let tab_ptrs: Vec<usize> = vec![
             ping_tab.as_widget_ptr() as usize,
@@ -342,7 +342,7 @@ impl App {
                 let idx = tab_ptrs_clone.iter().position(|&p| p == ptr).unwrap_or(0);
                 if view_model_for_tab.try_write().is_ok() {
                     rabbit_config::update_config(|cfg| {
-                        cfg.modules.insert("global", "last_active_tab", schema::config::ConfigValue::Integer(idx as i64));
+                        cfg.modules.insert("global", config::keys::global::LAST_ACTIVE_TAB, schema::config::ConfigValue::Integer(idx as i64));
                     })
                     .ok();
                 }
@@ -456,10 +456,10 @@ impl App {
         // Restore business running states from config
         rabbit_diag::log("app.run(): checking restore states");
         let config_for_restore = self.view_model.read().await.get_config();
-        let ping_restore = config_for_restore.modules.get_bool("ping", "running").unwrap_or(false);
-        let http_restore = config_for_restore.modules.get_bool("http", "running").unwrap_or(false);
-        let tftp_restore = config_for_restore.modules.get_bool("tftpd", "running").unwrap_or(false);
-        let chat_restore = config_for_restore.modules.get_bool("chat", "running").unwrap_or(false);
+        let ping_restore = config_for_restore.modules.get_bool("ping", config::keys::ping::RUNNING).unwrap_or(false);
+        let http_restore = config_for_restore.modules.get_bool("http", config::keys::http::RUNNING).unwrap_or(false);
+        let tftp_restore = config_for_restore.modules.get_bool("tftpd", config::keys::tftpd::RUNNING).unwrap_or(false);
+        let chat_restore = config_for_restore.modules.get_bool("chat", config::keys::chat::RUNNING).unwrap_or(false);
         drop(config_for_restore);
         rabbit_diag::log(&format!("app.run(): restore states ping={ping_restore} http={http_restore} tftp={tftp_restore} chat={chat_restore}"));
 
@@ -552,7 +552,7 @@ impl App {
             std::thread::spawn(move || {
                 std::thread::sleep(std::time::Duration::from_millis(1000));
                 if !lc_for_check.is_shutdown_requested() {
-                    handle_version_check_result(Some(&lc_for_check));
+                    upgrade::handle_version_check_result(Some(&lc_for_check));
                 }
             });
         }
@@ -617,143 +617,23 @@ impl App {
     /// Cleanup resources — destroys services without sending status updates.
     async fn cleanup(&self) -> anyhow::Result<()> {
         rabbit_diag::log("app.cleanup(): started");
-        self.ping_service.write().await.destroy().await.ok();
-        rabbit_diag::log("app.cleanup(): ping destroyed");
-        self.http_service.write().await.destroy().await.ok();
-        rabbit_diag::log("app.cleanup(): http destroyed");
-        self.tftp_server_service.write().await.destroy().await.ok();
-        rabbit_diag::log("app.cleanup(): tftpd destroyed");
-        self.plan_service.write().await.destroy().await.ok();
-        rabbit_diag::log("app.cleanup(): plan destroyed");
-        self.chat_service.write().await.destroy().await.ok();
-        rabbit_diag::log("app.cleanup(): chat destroyed");
+        macro_rules! destroy_svc {
+            ($field:expr, $label:expr) => {{
+                $field.write().await.destroy().await.ok();
+                rabbit_diag::log(concat!("app.cleanup(): ", $label, " destroyed"));
+            }};
+        }
+        destroy_svc!(self.ping_service, "ping");
+        destroy_svc!(self.http_service, "http");
+        destroy_svc!(self.tftp_server_service, "tftpd");
+        destroy_svc!(self.plan_service, "plan");
+        destroy_svc!(self.chat_service, "chat");
         info!("All services destroyed");
         Ok(())
     }
 }
 
-/// Perform upgrade during startup (used by auto-check)
-fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformInfo) {
-    use crate::upgrade::{self, DownloadProgress};
 
-    info!("Starting upgrade download for version: {}", remote.version);
-
-    // Create temporary download path
-    let temp_dir = std::env::temp_dir().join("rabbit_update");
-
-    let _ = std::fs::create_dir_all(&temp_dir);
-
-    let temp_exe = temp_dir.join(format!("rabbit-{}", remote.version));
-
-    crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Downloading: {:.1} MB", platform_info.size as f64 / 1024.0 / 1024.0)));
-
-    // Download with progress
-    let result = upgrade::download_update(
-        platform_info,
-        &temp_exe,
-        Some(&|progress: DownloadProgress| {
-            let pct = progress.percentage;
-            let downloaded_mb = progress.downloaded as f64 / 1024.0 / 1024.0;
-            let total_mb = progress.total as f64 / 1024.0 / 1024.0;
-            info!("Downloading: {:.1} MB / {:.1} MB ({:.0}%)", downloaded_mb, total_mb, pct);
-            // Update progress in place (last line) instead of appending
-            crate::ui_state::update_settings_line(-1, &format!("  {:.0}% - {:.1} MB / {:.1} MB", pct, downloaded_mb, total_mb));
-        }),
-    );
-
-    match result {
-        Ok(_) => {
-            info!("Download complete. Verifying and installing...");
-            crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Download complete. Verifying and installing..."));
-            // Install (includes verification)
-            match adapter::installer::install_update(&temp_exe, &platform_info.sha256) {
-                Ok(_) => {
-                    // install_update calls std::process::exit(), so we won't reach here
-                }
-                Err(e) => {
-                    error!("Installation failed: {}", e);
-                    crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Installation failed: {}", e)));
-                }
-            }
-        }
-        Err(e) => {
-            error!("Download failed: {}", e);
-            crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Download failed: {}", e)));
-        }
-    }
-}
-
-/// Handle version check result and show dialog (reused by both auto-check and manual check)
-pub fn handle_version_check_result(lifecycle: Option<&Lifecycle>) {
-    match check_version_update() {
-        upgrade::UpdateStatus::UpdateAvailable(remote, platform_info) => {
-            // Check shutdown flag before outputting
-                if let Some(lc) = lifecycle {
-                if lc.is_shutdown_requested() {
-                    info!("Shutdown requested, skipping version update output");
-                    return;
-                }
-            }
-
-            info!("Update available: {}", remote.version);
-            // Use format_prompt for consistent display
-            let msg = remote.format_prompt();
-            crate::ui_state::write_to("settings_output", &crate::ui_state::raw_log(&msg));
-            crate::ui_state::write_to("settings_output", &crate::ui_state::raw_log(""));
-
-            // Show dialog on main thread
-            fltk::app::awake_callback({
-                let remote = remote.clone();
-                let platform_info = platform_info.clone();
-                move || {
-                    show_upgrade_dialog(&remote, &platform_info);
-                }
-            });
-        }
-        upgrade::UpdateStatus::UpToDate => {
-            // Check shutdown flag before outputting
-                if let Some(lc) = lifecycle {
-                if lc.is_shutdown_requested() {
-                    return;
-                }
-            }
-
-            info!("Application is up to date");
-            crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Application is up to date"));
-        }
-        upgrade::UpdateStatus::CheckError(e) => {
-            // Check shutdown flag before outputting
-                if let Some(lc) = lifecycle {
-                if lc.is_shutdown_requested() {
-                    return;
-                }
-            }
-
-            warn!("Failed to check for updates: {}", e);
-            crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Update check failed: {}", e)));
-        }
-    }
-}
-
-/// Show upgrade dialog and handle user choice (reused by both auto-check and manual check)
-fn show_upgrade_dialog(remote: &VersionsManifest, platform_info: &PlatformInfo) {
-    let prompt = remote.format_prompt();
-    let choice = fltk::dialog::choice2_default(&prompt, "Update", "Later", "Skip This Version");
-
-    if choice == Some(0) {
-        crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Downloading and installing update..."));
-        // Spawn background thread for download/install to avoid blocking UI
-        let remote = remote.clone();
-        let platform_info = platform_info.clone();
-        std::thread::spawn(move || {
-            perform_startup_upgrade(&remote, &platform_info);
-        });
-    } else if choice == Some(1) {
-        crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Update deferred"));
-    } else if choice == Some(2) {
-        crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log(&format!("Version {} skipped", remote.version)));
-    }
-}
 
 /// AppHandle for event handling (separate from App to avoid borrow issues)
 struct AppHandle {
@@ -847,35 +727,7 @@ impl EventHandler for AppHandle {
             UiEvent::TftpClientPut { server, local, remote, options } => {
                 info!("TFTP put {} -> {}@{} with options: {}", local, remote, server, options);
 
-                // Parse options (for future use)
-                let mut timeout = 200;
-                let mut maxretry = 10;
-                let mut blksize = 1024;
-
-                for opt in options.split(';') {
-                    let parts: Vec<&str> = opt.splitn(2, '=').collect();
-                    if parts.len() == 2 {
-                        match parts[0].trim() {
-                            "timeout" => {
-                                if let Ok(val) = parts[1].parse::<i32>() {
-                                    timeout = val;
-                                }
-                            }
-                            "retry" => {
-                                if let Ok(val) = parts[1].parse::<i32>() {
-                                    maxretry = val;
-                                }
-                            }
-                            "blksize" => {
-                                if let Ok(val) = parts[1].parse::<i32>() {
-                                    blksize = val;
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-                info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, maxretry, blksize);
+                let _opts = parse_tftp_options(&options);
 
                 let tftp_client_service = self.tftp_client_service.write().await;
                 match tftp_client_service.put(&local, &remote).await {
@@ -890,35 +742,7 @@ impl EventHandler for AppHandle {
             UiEvent::TftpClientGet { server, local, remote, options } => {
                 info!("TFTP get {}@{} -> {} with options: {}", remote, server, local, options);
 
-                // Parse options (for future use)
-                let mut timeout = 200;
-                let mut maxretry = 10;
-                let mut blksize = 1024;
-
-                for opt in options.split(';') {
-                    let parts: Vec<&str> = opt.splitn(2, '=').collect();
-                    if parts.len() == 2 {
-                        match parts[0].trim() {
-                            "timeout" => {
-                                if let Ok(val) = parts[1].parse::<i32>() {
-                                    timeout = val;
-                                }
-                            }
-                            "retry" => {
-                                if let Ok(val) = parts[1].parse::<i32>() {
-                                    maxretry = val;
-                                }
-                            }
-                            "blksize" => {
-                                if let Ok(val) = parts[1].parse::<i32>() {
-                                    blksize = val;
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-                info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, maxretry, blksize);
+                let _opts = parse_tftp_options(&options);
 
                 let tftp_client_service = self.tftp_client_service.write().await;
                 match tftp_client_service.get(&remote, &local).await {
@@ -934,7 +758,7 @@ impl EventHandler for AppHandle {
             // Plan
             UiEvent::PlanAdd { date, time, cycle, unit, msg } => {
                 info!("Adding plan for {} {}: {} (cycle={}, unit={})", date, time, msg, cycle, unit);
-                let override_conflict = rabbit_config::get_bool("plan", "override").unwrap_or(false);
+                let override_conflict = rabbit_config::get_bool("plan", config::keys::plan::OVERRIDE).unwrap_or(false);
                 match self.plan_service.write().await.add_task(&date, &time, cycle, &unit, &msg, override_conflict).await {
                     Ok(true) => info!("Plan '{}' overridden", msg),
                     Ok(false) => info!("Plan '{}' added", msg),
@@ -998,10 +822,10 @@ impl EventHandler for AppHandle {
 
                 let config = disk_config;
                 let modules = &config.modules;
-                let autostart = modules.get_bool("global", "autostart").unwrap_or(false);
-                let systray = modules.get_bool("global", "systray").unwrap_or(true);
-                let top = modules.get_bool("global", "top").unwrap_or(false);
-                let http_shell = modules.get_bool("http", "shell").unwrap_or(false);
+                let autostart = modules.get_bool("global", config::keys::global::AUTOSTART).unwrap_or(false);
+                let systray = modules.get_bool("global", config::keys::global::SYSTRAY).unwrap_or(true);
+                let top = modules.get_bool("global", config::keys::global::TOP).unwrap_or(false);
+                let http_shell = modules.get_bool("http", config::keys::http::SHELL).unwrap_or(false);
 
                 // Apply autostart setting
                 if let Err(e) = adapter::autostart::set_autostart(autostart) {
@@ -1066,7 +890,7 @@ async fn handle_ui_data(data: UiData, _view_model: &Arc<RwLock<AppViewModel>>) {
                         if running {
                             let target = rabbit_config::load_config()
                                 .ok()
-                                .and_then(|cfg| cfg.modules.get_string("ping", "target"))
+                                .and_then(|cfg| cfg.modules.get_string("ping", config::keys::ping::TARGET))
                                 .unwrap_or_else(|| "Ping".to_string());
                             fltk::app::awake_callback(move || {
                                 win.set_label(&format!("Ping {}", target));
@@ -1165,4 +989,49 @@ async fn handle_tftp_data(data: UiData) {
             _ => {}
         }
     }
+}
+
+/// TFTP client options parsed from semicolon-separated key=value string.
+#[allow(dead_code)]
+struct TftpOptions {
+    timeout: i32,
+    max_retry: i32,
+    blk_size: i32,
+}
+
+/// Parse TFTP option string into structured options.
+///
+/// Format: `"timeout=200;retry=10;blksize=1024"`
+/// Used by both TftpClientPut and TftpClientGet event handlers.
+fn parse_tftp_options(options: &str) -> TftpOptions {
+    let mut timeout = 200;
+    let mut max_retry = 10;
+    let mut blk_size = 1024;
+
+    for opt in options.split(';') {
+        let parts: Vec<&str> = opt.splitn(2, '=').collect();
+        if parts.len() == 2 {
+            match parts[0].trim() {
+                "timeout" => {
+                    if let Ok(val) = parts[1].parse::<i32>() {
+                        timeout = val;
+                    }
+                }
+                "retry" => {
+                    if let Ok(val) = parts[1].parse::<i32>() {
+                        max_retry = val;
+                    }
+                }
+                "blksize" => {
+                    if let Ok(val) = parts[1].parse::<i32>() {
+                        blk_size = val;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    info!("TFTP client options parsed: timeout={}ms, retry={}, blksize={}", timeout, max_retry, blk_size);
+    TftpOptions { timeout, max_retry, blk_size }
 }

@@ -74,6 +74,86 @@ pub struct AppConfig {
     pub modules: ModuleConfigs,
 }
 
+/// 配置键常量定义
+///
+/// 所有模块配置键统一在此定义，避免魔术字符串在代码中散落。
+/// 使用方式：`config.modules.get_bool("ping", keys::ping::RUNNING)`
+pub mod keys {
+    pub mod global {
+        pub const LANGUAGE: &str = "language";
+        pub const THEME: &str = "theme";
+        pub const SYSTRAY: &str = "systray";
+        pub const TOP: &str = "top";
+        pub const AUTOSTART: &str = "autostart";
+        pub const AUTOUPDATE: &str = "autoupdate";
+        pub const LAST_ACTIVE_TAB: &str = "last_active_tab";
+        pub const WINDOW: &str = "window";
+    }
+
+    pub mod ping {
+        pub const TARGET: &str = "target";
+        pub const INTERVAL: &str = "interval";
+        pub const COUNT: &str = "count";
+        pub const STOP_ON_LOSS: &str = "stoponloss";
+        pub const TASKBAR: &str = "taskbar";
+        pub const LOG: &str = "log";
+        pub const RUNNING: &str = "running";
+    }
+
+    pub mod scan {
+        pub const START_IP: &str = "start_ip";
+        pub const END_IP: &str = "end_ip";
+        pub const FILTER: &str = "filter";
+        pub const RUNNING: &str = "running";
+    }
+
+    pub mod http {
+        pub const PORT: &str = "port";
+        pub const SHELL: &str = "shell";
+        pub const AUTO_INDEX: &str = "autoindex";
+        pub const VIDEO_PLAY: &str = "videoplay";
+        pub const DIRS: &str = "dirs";
+        pub const LOG: &str = "log";
+        pub const RUNNING: &str = "running";
+    }
+
+    pub mod tftpd {
+        pub const PORT: &str = "port";
+        pub const TIMEOUT: &str = "timeout";
+        pub const MAX_RETRY: &str = "maxretry";
+        pub const BLK_SIZE: &str = "blksize";
+        pub const QSIZE: &str = "qsize";
+        pub const QTOUT: &str = "qtout";
+        pub const OVERRIDE: &str = "override";
+        pub const FSLOG: &str = "fslog";
+        pub const WORK_DIRS: &str = "work_dirs";
+        pub const WORKING_DIR_INDEX: &str = "working_dir_index";
+        pub const RUNNING: &str = "running";
+    }
+
+    pub mod tftpc {
+        pub const SERVER_ADDR: &str = "server_addr";
+        pub const SERVER_PORT: &str = "server_port";
+        pub const LOCAL_PATH: &str = "local_path";
+        pub const REMOTE_FILE: &str = "remote_file";
+        pub const TIMEOUT: &str = "timeout";
+        pub const MAX_RETRY: &str = "maxretry";
+        pub const BLK_SIZE: &str = "blksize";
+    }
+
+    pub mod plan {
+        pub const TASKS: &str = "tasks";
+        pub const OVERRIDE: &str = "override";
+    }
+
+    pub mod chat {
+        pub const USERNAME: &str = "username";
+        pub const PORT: &str = "port";
+        pub const BROADCAST_ADDR: &str = "broadcast_addr";
+        pub const RUNNING: &str = "running";
+    }
+}
+
 impl AppConfig {
     pub fn merge_defaults(&mut self) {
         self.modules.merge_defaults();
@@ -296,12 +376,12 @@ mod tests {
     #[test]
     fn test_default_config() {
         let config = AppConfig::default();
-        assert_eq!(config.modules.get_string("global", "language"), Some("System".into()));
-        assert_eq!(config.modules.get_string("global", "theme"), Some("System".into()));
-        assert_eq!(config.modules.get_bool("global", "systray"), Some(true));
-        assert_eq!(config.modules.get_bool("global", "top"), Some(false));
-        assert_eq!(config.modules.get_bool("global", "autostart"), Some(false));
-        assert_eq!(config.modules.get_bool("global", "autoupdate"), Some(true));
+        assert_eq!(config.modules.get_string("global", keys::global::LANGUAGE), Some("System".into()));
+        assert_eq!(config.modules.get_string("global", keys::global::THEME), Some("System".into()));
+        assert_eq!(config.modules.get_bool("global", keys::global::SYSTRAY), Some(true));
+        assert_eq!(config.modules.get_bool("global", keys::global::TOP), Some(false));
+        assert_eq!(config.modules.get_bool("global", keys::global::AUTOSTART), Some(false));
+        assert_eq!(config.modules.get_bool("global", keys::global::AUTOUPDATE), Some(true));
     }
 
     #[test]
@@ -309,19 +389,19 @@ mod tests {
         let config = AppConfig::default();
         let json = serde_json::to_string(&config).unwrap();
         let parsed: AppConfig = serde_json::from_str(&json).unwrap();
-        assert_eq!(config.modules.get_string("global", "language"), parsed.modules.get_string("global", "language"));
-        assert_eq!(config.modules.get_string("global", "theme"), parsed.modules.get_string("global", "theme"));
+        assert_eq!(config.modules.get_string("global", keys::global::LANGUAGE), parsed.modules.get_string("global", keys::global::LANGUAGE));
+        assert_eq!(config.modules.get_string("global", keys::global::THEME), parsed.modules.get_string("global", keys::global::THEME));
     }
 
     #[test]
     fn test_module_configs_map() {
         let config = ModuleConfigs::default();
-        assert_eq!(config.get_string("ping", "target"), Some("1.1.1.1".into()));
-        assert_eq!(config.get_integer("ping", "interval"), Some(1000));
-        assert_eq!(config.get_string("scan", "start_ip"), Some("192.168.1.1".into()));
-        assert_eq!(config.get_integer("http", "port"), Some(8000));
-        assert_eq!(config.get_integer("tftpd", "port"), Some(69));
-        assert_eq!(config.get_string("chat", "username"), Some("User@PC".into()));
+        assert_eq!(config.get_string("ping", keys::ping::TARGET), Some("1.1.1.1".into()));
+        assert_eq!(config.get_integer("ping", keys::ping::INTERVAL), Some(1000));
+        assert_eq!(config.get_string("scan", keys::scan::START_IP), Some("192.168.1.1".into()));
+        assert_eq!(config.get_integer("http", keys::http::PORT), Some(8000));
+        assert_eq!(config.get_integer("tftpd", keys::tftpd::PORT), Some(69));
+        assert_eq!(config.get_string("chat", keys::chat::USERNAME), Some("User@PC".into()));
     }
 
     #[test]

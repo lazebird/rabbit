@@ -99,8 +99,8 @@ impl ScanService {
     fn load_range_from_config(&self) -> Option<ScanRange> {
         let config = rabbit_config::load_config().ok()?;
 
-        let start_ip = config.modules.get_string("scan", "start_ip")?;
-        let end_ip = config.modules.get_string("scan", "end_ip")?;
+        let start_ip = config.modules.get_string("scan", schema::config::keys::scan::START_IP)?;
+        let end_ip = config.modules.get_string("scan", schema::config::keys::scan::END_IP)?;
 
         if start_ip.is_empty() || end_ip.is_empty() {
             return None;
@@ -380,6 +380,21 @@ pub struct ScanProgress {
     pub percentage: u8,
     pub found_hosts: usize,
     pub is_scanning: bool,
+}
+
+#[async_trait::async_trait]
+impl crate::Service for ScanService {
+    async fn update(&mut self) -> crate::ServiceUpdateResult {
+        self.update().await
+    }
+
+    async fn destroy(&mut self) -> crate::Result<()> {
+        self.destroy().await
+    }
+
+    async fn send(&self, data: crate::UiData) {
+        self.send(data).await;
+    }
 }
 
 impl Default for ScanService {

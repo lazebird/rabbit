@@ -51,7 +51,7 @@ impl TabComponent for ChatTab {
         // Spacer
         Frame::default();
 
-        let is_running = config.modules.get_bool("chat", "running").unwrap_or(false);
+        let is_running = config.modules.get_bool("chat", schema::config::keys::chat::RUNNING).unwrap_or(false);
         let mut toggle_btn = Button::default().with_label(if is_running { "Stop" } else { "Start" });
         toggle_btn.set_color(if is_running { fltk::enums::Color::from_hex(super::ui_refresh::HTTP_STOP_COLOR) } else { colors.accent });
         toggle_btn.set_label_color(fltk::enums::Color::White);
@@ -155,9 +155,9 @@ impl TabComponent for ChatTab {
 
             // Always save config on button click
             if let Ok(mut config) = rabbit_config::load_config() {
-                use schema::config::ConfigValue;
-                config.modules.insert("chat", "username", ConfigValue::String(username.clone()));
-                config.modules.insert("chat", "port", ConfigValue::Integer(port as i64));
+                use schema::config::{self, ConfigValue};
+                config.modules.insert("chat", config::keys::chat::USERNAME, ConfigValue::String(username.clone()));
+                config.modules.insert("chat", config::keys::chat::PORT, ConfigValue::Integer(port as i64));
                 let _ = rabbit_config::save_config(&config);
             }
 

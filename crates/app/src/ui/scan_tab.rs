@@ -60,7 +60,7 @@ impl TabComponent for ScanTab {
         opt_input.set_value(&defaults::scan_options());
 
         // Start/Stop button (fixed width, right aligned)
-        let is_running = config.modules.get_bool("scan", "running").unwrap_or(false);
+        let is_running = config.modules.get_bool("scan", schema::config::keys::scan::RUNNING).unwrap_or(false);
         let mut start_btn = Button::default().with_label(if is_running { "Stop" } else { "Start" });
         start_btn.set_color(if is_running { fltk::enums::Color::from_hex(super::ui_refresh::HTTP_STOP_COLOR) } else { colors.accent });
         start_btn.set_label_color(fltk::enums::Color::White);

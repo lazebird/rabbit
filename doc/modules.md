@@ -77,9 +77,7 @@ app/src/
 ├── view_model.rs        # AppViewModel：配置的缓存/读写代理
 ├── ui_state.rs          # UiState：全局 UI 状态（文本缓冲、运行标记）
 ├── ui_events.rs         # UiEvent 事件系统（FLTK → async 桥接）
-├── lifecycle.rs         # Lifecycle：生命周期控制（shutdown 信号）
-├── icon.rs              # 应用图标加载（从嵌入 ico 解码）
-│
+│                       # lifecycle/icon → adapter crate（重构后已迁移）
 ├── ui/                  # FLTK 界面组件
 │   ├── mod.rs           # UI 模块入口 + TabComponent trait
 │   ├── ping_tab.rs      # Ping 功能标签页
@@ -102,9 +100,6 @@ app/src/
 │
 ├── resources/
 │   └── icon.ico         # 应用图标
-│
-├── tests/
-│   └── integration_ui_refresh.rs  # UI 刷新集成测试
 │
 ├── build.rs             # 构建脚本（Windows 资源嵌入）
 ├── rabbit-app.rc        # Windows 资源文件
@@ -496,7 +491,8 @@ pub use schema::{Module, UiData};
 ```
 schema/src/
 ├── lib.rs           # 入口 + UiData/Module 枚举定义
-├── config.rs        # AppConfig / ModuleConfigs / ConfigValue / PlanTask / WindowConfig
+├── config.rs        # AppConfig / ModuleConfigs / ConfigValue / PlanTask / WindowConfig + keys 常量
+├── network.rs       # NetworkProvider trait（依赖反转接口，service 不依赖 adapter）
 └── scan.rs          # ScanRange / ScannerConfig / ScannerState
 ```
 
@@ -551,6 +547,8 @@ pub struct ModuleConfigs {
 ```
 
 `ConfigValue` 支持四种变体：`String`, `Integer(i64)`, `Boolean`, `Array(Vec<ConfigValue>)`。
+
+> **配置键常量**（`schema::config::keys` 模块）：所有模块配置键现已定义为类型安全常量（如 `keys::ping::TARGET`、`keys::http::PORT`），替换了散落在代码中的魔术字符串。新增键需在对应子模块中补充常量定义。
 
 #### 扫描数据模型
 

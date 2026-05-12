@@ -63,6 +63,9 @@ bytes = "1.10"
 dns-lookup = "2.0"
 percent-encoding = "2.3"
 
+# Async trait support
+async-trait = "0.1"
+
 # Platform
 dirs = "6.0"
 libc = "0.2"

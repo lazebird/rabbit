@@ -17,7 +17,7 @@ use fltk::{
 use super::{defaults, Colors, TabComponent};
 use crate::ui_events::{send_event, UiEvent};
 use crate::ui_state::UiState;
-use schema::config::ConfigValue;
+use schema::config::{self, ConfigValue};
 use rabbit_config::{load_config, save_config};
 
 /// Ping Tab Component
@@ -55,7 +55,7 @@ impl TabComponent for PingTab {
         ctrl_row.add(&opt_input);
 
         // Start/Stop button (fixed width, right aligned)
-        let is_running = config.modules.get_bool("ping", "running").unwrap_or(false);
+        let is_running = config.modules.get_bool("ping", config::keys::ping::RUNNING).unwrap_or(false);
         let mut start_btn = Button::default().with_label(if is_running { "Stop" } else { "Start" });
         start_btn.set_color(if is_running { fltk::enums::Color::from_hex(super::ui_refresh::HTTP_STOP_COLOR) } else { colors.accent });
         start_btn.set_label_color(fltk::enums::Color::White);
@@ -142,10 +142,10 @@ impl TabComponent for PingTab {
 
             // Always save config on button click
             if let Ok(mut config) = load_config() {
-                config.modules.insert("ping", "interval", ConfigValue::Integer(interval));
-                config.modules.insert("ping", "count", ConfigValue::Integer(count));
-                config.modules.insert("ping", "stoponloss", ConfigValue::Boolean(stop_on_loss));
-                config.modules.insert("ping", "target", ConfigValue::String(target.clone()));
+                config.modules.insert("ping", config::keys::ping::INTERVAL, ConfigValue::Integer(interval));
+                config.modules.insert("ping", config::keys::ping::COUNT, ConfigValue::Integer(count));
+                config.modules.insert("ping", config::keys::ping::STOP_ON_LOSS, ConfigValue::Boolean(stop_on_loss));
+                config.modules.insert("ping", config::keys::ping::TARGET, ConfigValue::String(target.clone()));
                 let _ = save_config(&config);
             }
 

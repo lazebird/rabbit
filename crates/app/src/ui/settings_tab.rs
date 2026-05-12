@@ -80,13 +80,7 @@ const HELP_URL: &str = "https://github.com/lazebird/rabbit/blob/rewrite/doc/manu
 // Platform Helpers
 // ============================================================
 
-/// Get config folder path (matches rabbit-platform::config::get_config_dir)
-fn get_config_folder() -> String {
-    if let Some(config_dir) = dirs::config_dir() {
-        return config_dir.join("rabbit").to_string_lossy().to_string();
-    }
-    String::from(".")
-}
+
 
 // ============================================================
 // Settings Tab Component
@@ -115,16 +109,16 @@ impl TabComponent for SettingsTab {
         // Use the passed config reference
         let modules = &config.modules;
 
-        let lang_str = modules.get_string("global", "language").unwrap_or_else(|| "System".to_string());
+        let lang_str = modules.get_string("global", schema::config::keys::global::LANGUAGE).unwrap_or_else(|| "System".to_string());
         let lang_idx = match lang_str.as_str() {
             "English" => 0,
             "中文" => 1,
             _ => 2,
         };
-        let systray = modules.get_bool("global", "systray").unwrap_or(true);
-        let top = modules.get_bool("global", "top").unwrap_or(false);
-        let autostart = modules.get_bool("global", "autostart").unwrap_or(false);
-        let autoupdate = modules.get_bool("global", "autoupdate").unwrap_or(true);
+        let systray = modules.get_bool("global", schema::config::keys::global::SYSTRAY).unwrap_or(true);
+        let top = modules.get_bool("global", schema::config::keys::global::TOP).unwrap_or(false);
+        let autostart = modules.get_bool("global", schema::config::keys::global::AUTOSTART).unwrap_or(false);
+        let autoupdate = modules.get_bool("global", schema::config::keys::global::AUTOUPDATE).unwrap_or(true);
 
         let mut lang_choice = Choice::default();
         lang_choice.add_choice("English");
@@ -221,9 +215,10 @@ impl TabComponent for SettingsTab {
         home_btn.set_callback(|_| { let _ = adapter::dialog::open_url(HOME_URL); });
 
         profile_btn.set_callback(|_| {
-            let config_path = get_config_folder();
-            let _ = std::fs::create_dir_all(&config_path);
-            let _ = adapter::dialog::open_file_manager(&config_path);
+            if let Ok(config_dir) = rabbit_config::get_config_dir() {
+                let config_path = config_dir.to_string_lossy().to_string();
+                let _ = adapter::dialog::open_file_manager(&config_path);
+            }
         });
 
         help_btn.set_callback(|_| { let _ = adapter::dialog::open_url(HELP_URL); });
@@ -239,7 +234,7 @@ impl TabComponent for SettingsTab {
                 crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Checking for updates..."));
 
                 std::thread::spawn(|| {
-                    crate::app::handle_version_check_result(None);
+                    crate::upgrade::handle_version_check_result(None);
                 });
                 true
             } else {

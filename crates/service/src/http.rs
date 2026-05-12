@@ -13,6 +13,7 @@ use axum::{
     Router,
 };
 use rabbit_config::{get_bool, get_integer};
+use schema::config::keys;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -58,11 +59,11 @@ struct ServerConfig {
 impl ServerConfig {
     fn from_platform() -> Self {
         Self {
-            port: get_integer("http", "port").unwrap_or(8000) as u16,
-            dirs: rabbit_config::get_array("http", "dirs").unwrap_or_default(),
-            auto_index: get_bool("http", "autoindex").unwrap_or(true),
-            video_play: get_bool("http", "videoplay").unwrap_or(true),
-            log_path: rabbit_config::get_string("http", "log"),
+            port: get_integer("http", keys::http::PORT).unwrap_or(8000) as u16,
+            dirs: rabbit_config::get_array("http", keys::http::DIRS).unwrap_or_default(),
+            auto_index: get_bool("http", keys::http::AUTO_INDEX).unwrap_or(true),
+            video_play: get_bool("http", keys::http::VIDEO_PLAY).unwrap_or(true),
+            log_path: rabbit_config::get_string("http", keys::http::LOG),
         }
     }
 }
@@ -441,6 +442,21 @@ impl HttpService {
         *self.state.write().await = HttpServerState::Stopped;
         info!("HTTP server stopped");
         Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl crate::Service for HttpService {
+    async fn update(&mut self) -> crate::ServiceUpdateResult {
+        self.update().await
+    }
+
+    async fn destroy(&mut self) -> crate::Result<()> {
+        self.destroy().await
+    }
+
+    async fn send(&self, data: crate::UiData) {
+        self.send(data).await;
     }
 }
 

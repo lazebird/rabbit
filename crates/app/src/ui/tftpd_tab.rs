@@ -64,7 +64,7 @@ impl TabComponent for TftpdTab {
         opt_input.set_value(&defaults::tftpd_options());
 
         // Start/Stop button (fixed width, right aligned)
-        let is_running = config.modules.get_bool("tftpd", "running").unwrap_or(false);
+        let is_running = config.modules.get_bool("tftpd", schema::config::keys::tftpd::RUNNING).unwrap_or(false);
         let mut toggle_btn = Button::default().with_label(if is_running { "Stop" } else { "Start" });
         toggle_btn.set_color(if is_running { fltk::enums::Color::from_hex(super::ui_refresh::HTTP_STOP_COLOR) } else { colors.accent });
         toggle_btn.set_label_color(fltk::enums::Color::White);

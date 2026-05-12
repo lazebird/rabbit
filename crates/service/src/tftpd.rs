@@ -5,6 +5,7 @@ use crate::{
     Result, ServiceError, ServiceUpdateResult,
 };
 use rabbit_config::get_integer;
+use schema::config::keys;
 use std::path::PathBuf;
 use tokio::task::JoinHandle;
 use tracing::{error, info};
@@ -21,12 +22,12 @@ struct ServerConfig {
 
 impl ServerConfig {
     fn from_platform() -> Self {
-        let port = get_integer("tftpd", "port").unwrap_or(69);
+        let port = get_integer("tftpd", keys::tftpd::PORT).unwrap_or(69);
         Self {
             bind_addr: format!("0.0.0.0:{}", port),
-            root_path: get_array_first("tftpd", "work_dirs").unwrap_or_else(|| ".".to_string()),
-            block_size: get_integer("tftpd", "blksize").unwrap_or(512) as usize,
-            timeout_secs: get_integer("tftpd", "timeout").unwrap_or(200) as u64 / 1000,
+            root_path: get_array_first("tftpd", keys::tftpd::WORK_DIRS).unwrap_or_else(|| ".".to_string()),
+            block_size: get_integer("tftpd", keys::tftpd::BLK_SIZE).unwrap_or(512) as usize,
+            timeout_secs: get_integer("tftpd", keys::tftpd::TIMEOUT).unwrap_or(200) as u64 / 1000,
             window_size: 1,
         }
     }
@@ -198,6 +199,21 @@ impl TftpdService {
         }
         info!("TFTP server destroyed");
         Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl crate::Service for TftpdService {
+    async fn update(&mut self) -> crate::ServiceUpdateResult {
+        self.update().await
+    }
+
+    async fn destroy(&mut self) -> crate::Result<()> {
+        self.destroy().await
+    }
+
+    async fn send(&self, data: crate::UiData) {
+        self.send(data).await;
     }
 }
 

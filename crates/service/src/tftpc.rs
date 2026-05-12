@@ -5,6 +5,7 @@ use crate::{
     Result, ServiceError, ServiceUpdateResult,
 };
 use rabbit_config::{get_integer, get_string};
+use schema::config::keys;
 use std::path::PathBuf;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::UdpSocket;
@@ -27,10 +28,10 @@ struct ClientConfig {
 
 impl ClientConfig {
     fn from_platform() -> Self {
-        let server_addr = get_string("tftpc", "server_addr").unwrap_or_else(|| "127.0.0.1".into());
-        let server_port = get_integer("tftpc", "server_port").unwrap_or(69) as u16;
-        let blksize = get_integer("tftpc", "blksize").unwrap_or(512) as usize;
-        let timeout = get_integer("tftpc", "timeout").unwrap_or(3) as u64;
+        let server_addr = get_string("tftpc", keys::tftpc::SERVER_ADDR).unwrap_or_else(|| "127.0.0.1".into());
+        let server_port = get_integer("tftpc", keys::tftpc::SERVER_PORT).unwrap_or(69) as u16;
+        let blksize = get_integer("tftpc", keys::tftpc::BLK_SIZE).unwrap_or(512) as usize;
+        let timeout = get_integer("tftpc", keys::tftpc::TIMEOUT).unwrap_or(3) as u64;
         Self {
             server_addr: format!("{}:{}", server_addr, server_port),
             block_size: blksize,
@@ -281,6 +282,21 @@ impl TftpcService {
         file.write_all(&file_data).await?;
 
         Ok(file_data.len() as u64)
+    }
+}
+
+#[async_trait::async_trait]
+impl crate::Service for TftpcService {
+    async fn update(&mut self) -> crate::ServiceUpdateResult {
+        self.update().await
+    }
+
+    async fn destroy(&mut self) -> crate::Result<()> {
+        self.destroy().await
+    }
+
+    async fn send(&self, data: crate::UiData) {
+        self.send(data).await;
     }
 }
 

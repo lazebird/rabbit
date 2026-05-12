@@ -75,6 +75,21 @@ enum PingCommand {
     Stop,
 }
 
+#[async_trait::async_trait]
+impl crate::Service for PingService {
+    async fn update(&mut self) -> crate::ServiceUpdateResult {
+        self.update().await
+    }
+
+    async fn destroy(&mut self) -> crate::Result<()> {
+        self.destroy().await
+    }
+
+    async fn send(&self, data: crate::UiData) {
+        self.send(data).await;
+    }
+}
+
 impl Default for PingService {
     fn default() -> Self {
         Self {
@@ -218,14 +233,10 @@ impl PingService {
 
     fn load_target_from_config(&self) -> Option<PingTarget> {
         let config = rabbit_config::load_config().ok()?;
-        let target = config.modules.get_string("ping", "target")?;
-        if target.is_empty() {
-            return None;
-        }
-
-        let interval = config.modules.get_integer("ping", "interval").unwrap_or(1000) as u64;
-        let count: i32 = config.modules.get_integer("ping", "count").unwrap_or(-1) as i32;
-        let stop_on_loss = config.modules.get_bool("ping", "stoponloss").unwrap_or(false);
+let target = config.modules.get_string("ping", schema::config::keys::ping::TARGET)?;
+    let interval = config.modules.get_integer("ping", schema::config::keys::ping::INTERVAL).unwrap_or(1000) as u64;
+    let count: i32 = config.modules.get_integer("ping", schema::config::keys::ping::COUNT).unwrap_or(-1) as i32;
+    let stop_on_loss = config.modules.get_bool("ping", schema::config::keys::ping::STOP_ON_LOSS).unwrap_or(false);
 
         let mut target_obj = PingTarget::new(&target);
         target_obj.interval_ms = interval;
