@@ -8,8 +8,8 @@
 | 技术栈 | Rust + FLTK |
 | 目标平台 | Windows x64, Linux x64/arm64 |
 | 开始日期 | 2026-04-16 |
-| 当前阶段 | 核心功能完善，配置架构优化 |
-| 最后更新 | 2026-05-09 |
+| 当前阶段 | 代码结构优化完成，配置架构优化 |
+| 最后更新 | 2026-05-12 |
 
 ---
 
@@ -52,6 +52,7 @@
 | 网络接口 | 🔄 进行中 | 30% | 基础框架，待实现接口枚举 |
 | 通知系统 | ✅ 完成 | 80% | Windows/Linux/macOS 实现 |
 | Ping 平台适配 | 🔄 进行中 | 50% | 权限检查框架完成 |
+| 平台抽象层 | ✅ 完成 | 100% | 统一封装 systray/tray_helper/installer/current_platform/dialog/window 等 |
 
 ### 4. 业务层 (service — 旧名 rabbit-core)
 
@@ -77,6 +78,7 @@
 | HTTP 选项 | ✅ 完成 | 100% | shell/autoindex/videoplay 选项支持 |
 | Chat 功能 | ✅ 完成 | 100% | 广播地址、用户列表、刷新/通知按钮 |
 | Plan 功能 | ✅ 完成 | 100% | 日期/时间/周期/单位/消息/覆盖选项 |
+| 架构合规性 | ✅ 完成 | 100% | 零 `#[cfg(target_os)]`，所有平台差异封装至 adapter |
 
 ---
 
@@ -520,6 +522,11 @@
 | 2026-05-09 | **Tray Helper IPC 重构** - root 进程无法连接 D-Bus，helper 常驻通过 Unix socket HIDE/SHOW 命令控制 tray | Qoder |
 | 2026-05-09 | **启动时托盘未配置但图标存在 bug** - 无条件连接 helper 后发送 hide_tray() | Qoder |
 | 2026-05-09 | **提权后窗口概率性不出现** - XAUTHORITY 未设置时从 HOME/.Xauthority 推导转发，防止 sudo 改 HOME 导致 X 认证失败 | Qoder |
+| 2026-05-12 | **P0a: 删除 settings_tab 条件编译** - `open_url()`/`open_folder()` 替换为 `adapter::dialog` | Sisyphus |
+| 2026-05-12 | **P0b: 迁移 installer + current_platform** - installer 移至 adapter 层，`current_platform()` 改为委托调用 | Sisyphus |
+| 2026-05-12 | **P1: 统一 systray 生命周期** - 创建 `adapter::systray`，封装 ksni/helper/tray-icon，删除 app.rs 全部 `#[cfg(target_os)]` | Sisyphus |
+| 2026-05-12 | **P2: 简化 main.rs 入口** - 新增 `maybe_run_as_helper()` + `pre_main_init()`，main.rs 实现零条件编译 | Sisyphus |
+| 2026-05-12 | **清理 app 条件依赖** - 删除 app/Cargo.toml 中 `ksni`/`libc`/`windows-sys` 三项平台条件依赖（均已在 adapter 层） | Sisyphus |
 
 ---
 

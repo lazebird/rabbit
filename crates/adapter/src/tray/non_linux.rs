@@ -33,6 +33,15 @@ pub fn set_main_window(win: fltk::window::Window) {
     }
 }
 
+/// Store the Lifecycle handle for later use by systray init/update.
+pub fn set_lifecycle(lifecycle: &Lifecycle) {
+    if let Ok(mut guard) = LIFECYCLE.lock() {
+        if guard.is_none() {
+            *guard = Some(lifecycle.clone());
+        }
+    }
+}
+
 pub fn is_active() -> bool {
     SYSTRAY_ENABLED.load(Ordering::SeqCst)
 }

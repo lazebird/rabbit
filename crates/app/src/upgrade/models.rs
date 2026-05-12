@@ -89,31 +89,7 @@ pub struct DownloadProgress {
     pub percentage: f64,
 }
 
-/// Detect current platform identifier
+/// Detect current platform identifier — delegates to adapter layer
 fn current_platform() -> &'static str {
-    #[cfg(target_os = "windows")]
-    {
-        #[cfg(target_arch = "x86_64")]
-        return "windows-x64";
-        #[cfg(target_arch = "aarch64")]
-        return "windows-arm64";
-    }
-    #[cfg(target_os = "linux")]
-    {
-        #[cfg(target_arch = "x86_64")]
-        return "linux-x64";
-        #[cfg(target_arch = "aarch64")]
-        return "linux-arm64";
-    }
-    #[cfg(target_os = "macos")]
-    {
-        #[cfg(target_arch = "x86_64")]
-        return "macos-x64";
-        #[cfg(target_arch = "aarch64")]
-        return "macos-arm64";
-    }
-    #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
-    {
-        return "unsupported";
-    }
+    adapter::platform::current_platform()
 }

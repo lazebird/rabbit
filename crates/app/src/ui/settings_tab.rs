@@ -80,38 +80,6 @@ const HELP_URL: &str = "https://github.com/lazebird/rabbit/blob/rewrite/doc/manu
 // Platform Helpers
 // ============================================================
 
-/// Open a URL in the system default browser
-fn open_url(url: &str) {
-    #[cfg(target_os = "windows")]
-    {
-        let _ = std::process::Command::new("cmd").args(["/c", "start", url]).spawn();
-    }
-    #[cfg(target_os = "macos")]
-    {
-        let _ = std::process::Command::new("open").arg(url).spawn();
-    }
-    #[cfg(target_os = "linux")]
-    {
-        let _ = std::process::Command::new("xdg-open").arg(url).spawn();
-    }
-}
-
-/// Open a folder in the system file explorer
-fn open_folder(path: &str) {
-    #[cfg(target_os = "windows")]
-    {
-        let _ = std::process::Command::new("explorer").arg(path).spawn();
-    }
-    #[cfg(target_os = "macos")]
-    {
-        let _ = std::process::Command::new("open").arg(path).spawn();
-    }
-    #[cfg(target_os = "linux")]
-    {
-        let _ = std::process::Command::new("xdg-open").arg(path).spawn();
-    }
-}
-
 /// Get config folder path (matches rabbit-platform::config::get_config_dir)
 fn get_config_folder() -> String {
     if let Some(config_dir) = dirs::config_dir() {
@@ -250,15 +218,15 @@ impl TabComponent for SettingsTab {
         output_display.set_text_color(colors.text);
 
         // Link callbacks
-        home_btn.set_callback(|_| open_url(HOME_URL));
+        home_btn.set_callback(|_| { let _ = adapter::dialog::open_url(HOME_URL); });
 
         profile_btn.set_callback(|_| {
             let config_path = get_config_folder();
             let _ = std::fs::create_dir_all(&config_path);
-            open_folder(&config_path);
+            let _ = adapter::dialog::open_file_manager(&config_path);
         });
 
-        help_btn.set_callback(|_| open_url(HELP_URL));
+        help_btn.set_callback(|_| { let _ = adapter::dialog::open_url(HELP_URL); });
 
         // Version check callback
         let _output_clone = output_display.clone();

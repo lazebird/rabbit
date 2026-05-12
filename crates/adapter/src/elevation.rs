@@ -57,7 +57,7 @@ pub fn ensure_elevated() -> Result<(), ElevationError> {
     // Debug / Android / iOS: skip elevation
     #[cfg(any(debug_assertions, target_os = "android", target_os = "ios"))]
     {
-        return Ok(());
+        Ok(())
     }
 
     #[cfg(not(any(debug_assertions, target_os = "android", target_os = "ios")))]

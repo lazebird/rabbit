@@ -44,8 +44,6 @@ enum ScannerState {
 #[derive(Debug, Clone)]
 struct ScanResult {
     pub ip: Ipv4Addr,
-    #[allow(dead_code)]
-    pub online: bool,
     pub hostname: Option<String>,
     pub mac_address: Option<String>,
     /// Diagnostic reason when mac_address is None (shown in scan output)
@@ -217,7 +215,7 @@ impl ScanService {
                     let _permit = permit.acquire().await.unwrap();
 
                     let online = icmp_ping_host(&client, ip, timeout_ms).await;
-                    let result = ScanResult { ip, online, hostname: None, mac_address: None, mac_unavailable_reason: None };
+                    let result = ScanResult { ip, hostname: None, mac_address: None, mac_unavailable_reason: None };
 
                     results_clone.write().await.push(result);
                     let done = completed_count.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
@@ -394,7 +392,7 @@ impl Default for ScanService {
 async fn icmp_ping_host(client: &Client, ip: Ipv4Addr, timeout_ms: u64) -> bool {
     let mut pinger = client.pinger(IpAddr::V4(ip), PingIdentifier(random())).await;
     pinger.timeout(Duration::from_millis(timeout_ms));
-    matches!(pinger.ping(PingSequence(0), &[]).await, Ok(_))
+    pinger.ping(PingSequence(0), &[]).await.is_ok()
 }
 
 /// Resolve hostname from IP

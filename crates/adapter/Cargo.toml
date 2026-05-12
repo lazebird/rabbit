@@ -20,6 +20,7 @@ dirs = { workspace = true }
 chrono = { workspace = true }
 xelevate = { version = "0.1.2", registry = "crates-io" }
 image = "0.25"
+sha2 = "0.10"
 fltk = { workspace = true }
 rabbit-diag = { path = "../rabbit-diag" }
 

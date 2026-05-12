@@ -18,42 +18,17 @@ fn main() -> anyhow::Result<()> {
     rabbit_diag::log(&format!("DBUS_SESSION_BUS_ADDRESS={:?}", std::env::var("DBUS_SESSION_BUS_ADDRESS")));
     rabbit_diag::log(&format!("SUDO_UID={:?}", std::env::var("SUDO_UID")));
     rabbit_diag::log(&format!("PKEXEC_UID={:?}", std::env::var("PKEXEC_UID")));
-    rabbit_diag::log(&format!("getuid={}", unsafe { libc::getuid() }));
+    rabbit_diag::log(&format!("getuid={:?}", adapter::platform::getuid()));
 
-    // ── tray-helper mode (spawned from the non-elevated parent) ──
-    #[cfg(target_os = "linux")]
-    if std::env::args().any(|a| a == "--tray-helper") {
-        rabbit_diag::log("starting tray helper mode");
-        return adapter::tray_helper::run().map_err(|e| anyhow::anyhow!("{e}"));
-    }
+    adapter::maybe_run_as_helper();
+    adapter::pre_main_init();
 
-    // Ensure elevated privileges FIRST to avoid redundant initialization if restarting.
-    // On Linux, spawn the tray helper before elevation so it can own the D-Bus tray icon
-    // as the original (non-root) user.
-    //
-    // Skip spawn() when already elevated (root) — the helper was already spawned by the
-    // pre-elevation process and a root-level helper would be unable to access the user's
-    // D-Bus session bus for the tray icon.
-    #[cfg(not(debug_assertions))]
-    {
-        #[cfg(target_os = "linux")]
-        if !adapter::is_elevated() {
-            rabbit_diag::log("spawning tray helper");
-            if let Err(e) = adapter::tray_helper::spawn() {
-                eprintln!("Warning: failed to spawn tray helper: {e}");
-                // Continue without helper — tray icon won't be available after elevation.
-            }
-        }
-        rabbit_diag::log("calling ensure_elevated()");
-        // ensure_elevated 内部在提权成功时 exit(0)，此处只处理 Err
-        if let Err(e) = adapter::ensure_elevated() {
-            eprintln!("Elevation failed: {e}");
-            let msg = format!("Elevation failed: {e}");
-            fltk::dialog::alert_default(&msg);
-            std::process::exit(1);
-        }
-
-        // 如果已提权（直接以 root 运行），ensure_elevated 返回 Ok(()), 继续执行
+    rabbit_diag::log("calling ensure_elevated()");
+    if let Err(e) = adapter::ensure_elevated() {
+        eprintln!("Elevation failed: {e}");
+        let msg = format!("Elevation failed: {e}");
+        fltk::dialog::alert_default(&msg);
+        std::process::exit(1);
     }
 
     rabbit_diag::log("post-elevation: continuing in main");

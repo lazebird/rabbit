@@ -16,6 +16,7 @@ dependencies = [
  "rabbit-diag",
  "schema",
  "serde",
+ "sha2",
  "thiserror 2.0.18",
  "tokio",
  "tracing",
@@ -85,8 +86,6 @@ dependencies = [
  "embed-resource",
  "fltk",
  "image",
- "ksni",
- "libc",
  "parking_lot",
  "rabbit-config",
  "rabbit-diag",
@@ -101,7 +100,6 @@ dependencies = [
  "tracing-subscriber",
  "ureq",
  "uuid",
- "windows-sys 0.59.0",
 ]
 
 [[package]]

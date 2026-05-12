@@ -61,9 +61,6 @@ fn save_window_position() {
     }
 }
 
-// X11 error handler now lives in adapter::x11_diag.
-#[cfg(target_os = "linux")]
-use adapter::x11_diag;
 
 /// Main application struct
 pub struct App {
@@ -259,12 +256,10 @@ impl App {
         // Create FLTK application
         let _fltk_app = app::App::default();
 
-        // Install X11 error handler for diagnostic logging (Linux only).
-        // This must be done AFTER app::App::default() which initialises the
-        // X11 display connection, but BEFORE any window operations that
-        // might trigger asynchronous X11 protocol errors.
-        #[cfg(target_os = "linux")]
-        x11_diag::install();
+        // Install platform-specific error handlers (X11 diag on Linux).
+        // Must be done AFTER app::App::default() (initialises X11 display),
+        // but BEFORE any window operations.
+        adapter::install_platform_handlers();
 
         // Set application-wide colors (lighter theme - similar to old version)
         app::background(0xF0, 0xF0, 0xF0); // Light gray background
@@ -542,70 +537,13 @@ impl App {
             fltk::app::quit();
         });
 
-        // ── systray / tray helper initialization ──
+        // ── systray initialization ──
         //
-        // Always populate LIFECYCLE (needed by both helper IPC and local
-        // ksni re-enable paths).  Then, on Linux, ALWAYS connect to the
-        // helper if its socket exists — even when systray is disabled in
-        // config — so we have a command channel to hide the helper's
-        // unconditional startup tray icon.
+        // Populate LIFECYCLE (needed by both helper IPC and local ksni).
+        // Then initialise the tray via the unified adapter::systray::init()
+        // which handles Linux tray-helper IPC and local ksni fallback.
         adapter::tray::set_lifecycle(&self.lifecycle);
-
-        #[cfg(target_os = "linux")]
-        {
-            rabbit_diag::log(&format!("systray setup: systray_requested={systray_requested}"));
-
-            let has_sock = adapter::tray_helper::has_helper_socket();
-            rabbit_diag::log(&format!("systray setup: has_helper_socket={has_sock}"));
-
-            let helper_connected = if has_sock {
-                let win = main_win.clone();
-                let show = move || win.clone().show();
-                let hide = move || main_win.clone().hide();
-                let connected = adapter::tray_helper::connect(
-                    self.lifecycle.clone(),
-                    show,
-                    hide,
-                );
-                rabbit_diag::log(&format!("systray setup: connect returned {connected}"));
-                connected
-            } else {
-                false
-            };
-
-            if helper_connected {
-                if systray_requested {
-                    rabbit_diag::log("systray setup: helper connected + systray enabled → show_tray");
-                    // Config wants tray — tell helper to create it.
-                    // The helper no longer creates a tray at startup;
-                    // it waits for this explicit command so the tray
-                    // never appears during authorization or when
-                    // the user has disabled it in settings.
-                    info!("systray enabled at startup, showing helper tray");
-                    adapter::tray_helper::show_tray();
-                } else {
-                    rabbit_diag::log("systray setup: helper connected + systray disabled → no tray");
-                }
-            } else if systray_requested {
-                rabbit_diag::log("systray setup: no helper, falling back to local ksni");
-                // No helper (non-elevated or helper crashed) but config
-                // wants a tray → use local ksni directly.
-                if let Err(e) = tray::init_systray(self.lifecycle.clone()).await {
-                    warn!("Failed to initialize systray: {}", e);
-                    rabbit_diag::log(&format!("systray setup: init_systray failed: {e}"));
-                } else {
-                    rabbit_diag::log("systray setup: init_systray succeeded");
-                }
-            } else {
-                rabbit_diag::log("systray setup: no helper, systray disabled → nothing");
-            }
-        }
-        #[cfg(not(target_os = "linux"))]
-        if systray_requested {
-            if let Err(e) = tray::init_systray(self.lifecycle.clone()).await {
-                warn!("Failed to initialize systray: {}", e);
-            }
-        }
+        adapter::systray::init(&self.lifecycle, systray_requested, main_win.clone()).await;
 
         // Startup version check if autoupdate is enabled
         if autoupdate {
@@ -636,21 +574,7 @@ impl App {
 
         // Cleanup with timeout to prevent hanging on exit
         rabbit_diag::log("app.run(): starting cleanup");
-        // Remove systray icon before exit.
-        // Always try both: shutdown_helper handles any helper (connected or
-        // orphaned), remove_systray cleans up the local ksni tray.
-        #[cfg(target_os = "linux")]
-        {
-            rabbit_diag::log("app.run(): calling shutdown_helper");
-            adapter::tray_helper::shutdown_helper();
-            rabbit_diag::log("app.run(): calling remove_systray");
-            tray::remove_systray();
-        }
-        #[cfg(not(target_os = "linux"))]
-        {
-            rabbit_diag::log("app.run(): calling remove_systray");
-            tray::remove_systray();
-        }
+        adapter::systray::cleanup();
         rabbit_diag::log("app.run(): calling service cleanup");
         let cleanup_future = self.cleanup();
         match tokio::time::timeout(std::time::Duration::from_secs(3), cleanup_future).await {
@@ -715,11 +639,7 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
     info!("Starting upgrade download for version: {}", remote.version);
 
     // Create temporary download path
-    let temp_dir = if cfg!(target_os = "windows") {
-        std::env::temp_dir().join("rabbit_update")
-    } else {
-        std::path::PathBuf::from("/tmp/rabbit_update")
-    };
+    let temp_dir = std::env::temp_dir().join("rabbit_update");
 
     let _ = std::fs::create_dir_all(&temp_dir);
 
@@ -746,7 +666,7 @@ fn perform_startup_upgrade(remote: &VersionsManifest, platform_info: &PlatformIn
             info!("Download complete. Verifying and installing...");
             crate::ui_state::write_to("settings_output", &crate::ui_state::fmt_log("Download complete. Verifying and installing..."));
             // Install (includes verification)
-            match upgrade::install_update(&temp_exe, &platform_info.sha256) {
+            match adapter::installer::install_update(&temp_exe, &platform_info.sha256) {
                 Ok(_) => {
                     // install_update calls std::process::exit(), so we won't reach here
                 }
@@ -1088,27 +1008,9 @@ impl EventHandler for AppHandle {
                     warn!("Failed to set autostart: {}", e);
                 }
 
-                // Apply systray setting
                 let old_systray = adapter::tray::is_active();
                 if old_systray != systray {
-                    #[cfg(target_os = "linux")]
-                    {
-                        if adapter::tray_helper::is_connected() {
-                            // Helper manages the tray via IPC — tell it to
-                            // show or hide without killing the process.
-                            if systray {
-                                adapter::tray_helper::show_tray();
-                            } else {
-                                adapter::tray_helper::hide_tray();
-                            }
-                        } else {
-                            // No helper — use local ksni directly
-                            // (non-elevated run or helper already gone).
-                            adapter::tray::update_systray(systray).await;
-                        }
-                    }
-                    #[cfg(not(target_os = "linux"))]
-                    adapter::tray::update_systray(systray).await;
+                    adapter::systray::update(systray).await;
                 }
 
                 // Apply window topmost setting

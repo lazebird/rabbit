@@ -121,6 +121,44 @@ pub fn has_helper_socket() -> bool {
         .is_some_and(|p| p.exists())
 }
 
+/// Check if this process was spawned as `--tray-helper`.
+///
+/// If the `--tray-helper` argument is present, runs the helper loop
+/// and exits the process.  Only meaningful on Linux where tray ownership
+/// must live in the pre-elevation (non-root) user space.
+///
+/// Call this as early as possible in `main()`.  Returns immediately
+/// (no-op) when the argument is absent or on non-Linux platforms.
+pub fn maybe_run_as_helper() {
+    #[cfg(target_os = "linux")]
+    if std::env::args().any(|a| a == "--tray-helper") {
+        rabbit_diag::log("starting tray helper mode");
+        let result = run();
+        std::process::exit(match result {
+            Ok(()) => 0,
+            Err(e) => {
+                eprintln!("Tray helper failed: {e}");
+                1
+            }
+        });
+    }
+}
+
+/// Platform-specific pre-initialisation before privilege elevation.
+///
+/// On Linux (release build, non-elevated): spawns the tray helper
+/// subprocess so it can own the D-Bus tray icon as the original user.
+/// On other platforms or debug builds: no-op.
+pub fn pre_main_init() {
+    #[cfg(all(target_os = "linux", not(debug_assertions)))]
+    if !crate::is_elevated() {
+        rabbit_diag::log("spawning tray helper");
+        if let Err(e) = spawn() {
+            eprintln!("Warning: failed to spawn tray helper: {e}");
+        }
+    }
+}
+
 /// Spawn the tray helper subprocess (called **before** elevation).
 pub fn spawn() -> io::Result<()> {
     let socket_path = helper_socket_path();
