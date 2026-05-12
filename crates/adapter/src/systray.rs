@@ -8,6 +8,9 @@
 use crate::Lifecycle;
 use tracing::warn;
 
+#[cfg(target_os = "linux")]
+use fltk::prelude::WidgetExt;
+
 /// Initialize the system tray at startup.
 ///
 /// On Linux this first attempts to connect to an existing tray helper
