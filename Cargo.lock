@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "adapter"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -75,7 +75,7 @@ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
 name = "app"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "adapter",
  "anyhow",
@@ -2430,7 +2430,7 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
 name = "rabbit-config"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "dirs",
  "schema",
@@ -2441,7 +2441,7 @@ dependencies = [
 
 [[package]]
 name = "rabbit-diag"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "rand"
@@ -2682,7 +2682,7 @@ checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
 
 [[package]]
 name = "schema"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "serde",
@@ -2798,7 +2798,7 @@ dependencies = [
 
 [[package]]
 name = "service"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "async-tftp",
