@@ -14,331 +14,36 @@
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# ============================================================
-# Configuration
-# ============================================================
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RELEASE_DIR="${SCRIPT_DIR}/release"
 VERSIONS_FILE="${RELEASE_DIR}/versions.json"
 
-# ============================================================
-# Helper Functions
-# ============================================================
+# Source module scripts (order matters: dependencies first)
+source "${SCRIPT_DIR}/script/common.sh"
+source "${SCRIPT_DIR}/script/build.sh"
+source "${SCRIPT_DIR}/script/release-utils.sh"
+source "${SCRIPT_DIR}/script/generate-notes.sh"
 
-log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-die() {
-    log_error "$1"
-    exit 1
-}
+# Bootstrap: detect Python interpreter
+PYTHON=$(detect_python) || die "Python (python3 or python) not found or not usable"
 
 # ============================================================
-# Platform Detection
+# Git Tag
 # ============================================================
 
-detect_platform() {
-    local os=$(uname -s)
-    local arch=$(uname -m)
-
-    case "${os}_${arch}" in
-        Linux_x86_64)
-            echo "linux-x64"
-            ;;
-        Linux_aarch64)
-            echo "linux-arm64"
-            ;;
-        Darwin_x86_64)
-            echo "macos-x64"
-            ;;
-        Darwin_arm64)
-            echo "macos-arm64"
-            ;;
-        *)
-            # Windows detection (via MSYS/CYGWIN)
-            if [[ "${os}" == *"NT"* ]] || [[ "${OS}" == *"Windows"* ]]; then
-                echo "windows-x64"
-            else
-                die "Unsupported platform: ${os}_${arch}"
-            fi
-            ;;
-    esac
-}
-
-get_binary_name() {
-    local platform=$1
-    case "${platform}" in
-        windows-x64)
-            echo "rabbit.exe"
-            ;;
-        *)
-            echo "rabbit"
-            ;;
-    esac
-}
-
-get_output_filename() {
-    local platform=$1
-    local version=$2
-    case "${platform}" in
-        windows-x64)
-            echo "rabbit-${version}-windows-x64.exe"
-            ;;
-        linux-x64)
-            echo "rabbit-${version}-linux-x64"
-            ;;
-        linux-arm64)
-            echo "rabbit-${version}-linux-arm64"
-            ;;
-        macos-x64)
-            echo "rabbit-${version}-macos-x64"
-            ;;
-        macos-arm64)
-            echo "rabbit-${version}-macos-arm64"
-            ;;
-    esac
-}
-
-# ============================================================
-# Build Functions
-# ============================================================
-
-update_cargo_version() {
-    local version=$1
-    log_info "Updating Cargo.toml version to ${version}..." >&2
-
-    # Update version in root Cargo.toml (workspace)
-    sed -i "s/^version = \".*\"/version = \"${version}\"/" "${SCRIPT_DIR}/Cargo.toml"
-}
-
-build_release() {
-    local version=$1
-    log_info "Building release version ${version}..." >&2
-
-    # Update Cargo.toml version first
-    update_cargo_version "${version}"
-
-    # Build release binary
-    log_info "Running cargo build --release..." >&2
-    cd "${SCRIPT_DIR}"
-    cargo build --release || die "Build failed"
-
-    local binary_name=$(get_binary_name "${PLATFORM}")
-    local binary_path="${SCRIPT_DIR}/target/release/${binary_name}"
-
-    if [ ! -f "${binary_path}" ]; then
-        die "Binary not found at ${binary_path}"
-    fi
-
-    log_info "Build successful: ${binary_path}" >&2
-    echo "${binary_path}"
-}
-
-# ============================================================
-# Release Functions
-# ============================================================
-
-calculate_sha256() {
-    local file=$1
-
-    if command -v sha256sum &> /dev/null; then
-        sha256sum "$file" | awk '{print $1}'
-    elif command -v shasum &> /dev/null; then
-        shasum -a 256 "$file" | awk '{print $1}'
-    else
-        die "No SHA256 tool found (need sha256sum or shasum)"
-    fi
-}
-
-get_file_size() {
-    local file=$1
-    stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || die "Cannot get file size"
-}
-
-update_versions_json() {
-    local version=$1
-    local platform=$2
-    local filename=$3
-    local sha256=$4
-    local size=$5
-
-    local download_url="https://raw.githubusercontent.com/lazebird/rabbit/rewrite/release/${filename}"
-
-    # Generate concise release notes from git history
-    local release_notes
-    release_notes=$("${SCRIPT_DIR}/git-changelog.sh" --release-notes "$version" 2>/dev/null) || {
-        log_warn "Failed to generate release notes from git history"
-        release_notes="Release ${version}"
-    }
-
-    log_info "Updating ${VERSIONS_FILE}..."
-
-    if [ -f "${VERSIONS_FILE}" ]; then
-        # Update existing file
-        log_info "Adding ${platform} entry to existing versions.json"
-
-        # Use python for JSON manipulation (more reliable than jq)
-        python3 -c "
-import json
-import sys
-
-with open('${VERSIONS_FILE}', 'r') as f:
-    data = json.load(f)
-
-# Update version info
-data['version'] = '${version}'
-data['release_date'] = '$(date +%Y/%m/%d)'
-data['release_notes'] = '''${release_notes}'''
-
-# Update or add platform entry
-if 'platforms' not in data:
-    data['platforms'] = {}
-
-data['platforms']['${platform}'] = {
-    'sha256': '${sha256}',
-    'size': ${size},
-    'url': '${download_url}'
-}
-
-with open('${VERSIONS_FILE}', 'w') as f:
-    json.dump(data, f, indent=2)
-" || die "Failed to update versions.json"
-    else
-        # Create new file
-        log_info "Creating new versions.json"
-
-        cat > "${VERSIONS_FILE}" << EOF
-{
-  "version": "${version}",
-  "release_date": "$(date +%Y/%m/%d)",
-  "release_notes": "${release_notes}",
-  "platforms": {
-    "${platform}": {
-      "sha256": "${sha256}",
-      "size": ${size},
-      "url": "${download_url}"
-    }
-  }
-}
-EOF
-    fi
-
-    log_info "versions.json updated successfully"
-}
-
-generate_release_notes() {
-    local version=$1
-    local platform=$2
-    local notes_file="${RELEASE_DIR}/RELEASE_NOTES_${version}.md"
-
-    log_info "Generating release notes from git history..."
-
-    # Generate changelog using git-changelog.sh (only capture markdown, logs go to stderr)
-    local changelog
-    changelog=$("${SCRIPT_DIR}/git-changelog.sh" "$version" 2>/dev/null) || {
-        log_warn "Failed to generate changelog from git history"
-        changelog="No changelog available"
-    }
-
-    # Create release notes with header and changelog
-    cat > "${notes_file}" << EOF
-# Rabbit ${version} Release Notes
-
-## Release Date
-
-$(date +%Y-%m-%d)
-
-## Platform
-
-- ${platform}
-
-## Changes
-
-${changelog}
-
-## Download
-
-| Platform | URL |
-|----------|-----|
-| ${platform} | ${download_url} |
-
-## SHA256 Checksums
-
-\`\`\`
-${sha256}  rabbit-${version}-${platform}
-\`\`\`
-EOF
-
-    log_info "Release notes generated: ${notes_file}"
-}
-
-# Update only release_notes in versions.json without changing platform info
-update_release_notes_only() {
-    local version=$1
-
-    # Generate concise release notes from git history
-    local release_notes
-    release_notes=$("${SCRIPT_DIR}/git-changelog.sh" --release-notes "$version" 2>/dev/null) || {
-        log_warn "Failed to generate release notes from git history"
-        release_notes="Release ${version}"
-    }
-
-    log_info "Updating release_notes in ${VERSIONS_FILE}..."
-
-    if [ -f "${VERSIONS_FILE}" ]; then
-        python3 -c "
-import json
-
-with open('${VERSIONS_FILE}', 'r') as f:
-    data = json.load(f)
-
-data['release_notes'] = '''${release_notes}'''
-
-with open('${VERSIONS_FILE}', 'w') as f:
-    json.dump(data, f, indent=2)
-" || die "Failed to update versions.json"
-        log_info "release_notes updated in versions.json"
-    else
-        log_warn "versions.json not found, skipping release_notes update"
-    fi
-}
-
-# Create git tag for the release
 create_git_tag() {
     local version=$1
     local tag_name="v${version}"
 
-    # Check if tag already exists
     if git tag -l | grep -q "^${tag_name}$"; then
         log_warn "Tag ${tag_name} already exists, skipping"
         return 0
     fi
 
-    # Create annotated tag with release notes
     local message="Release version ${version}"
-    git tag -a "$tag_name" -m "$message"
-
-    if [ $? -eq 0 ]; then
-        log_info "Created git tag: ${tag_name}"
-    else
-        log_warn "Failed to create git tag"
-    fi
+    git tag -a "$tag_name" -m "$message" \
+        && log_info "Created git tag: ${tag_name}" \
+        || log_warn "Failed to create git tag"
 }
 
 # ============================================================
@@ -346,7 +51,6 @@ create_git_tag() {
 # ============================================================
 
 main() {
-    # Check arguments
     if [ $# -lt 1 ]; then
         echo "Usage: $0 <version> [--notes-only]"
         echo "Example: $0 1.2.0"
@@ -355,50 +59,34 @@ main() {
 
     VERSION="$1"
     NOTES_ONLY=false
-
-    if [ "$2" == "--notes-only" ]; then
-        NOTES_ONLY=true
-    fi
+    [ "$2" = "--notes-only" ] && NOTES_ONLY=true
 
     log_info "Rabbit Release Script"
     log_info "Version: ${VERSION}"
 
-    # Detect platform
     PLATFORM=$(detect_platform)
     log_info "Platform: ${PLATFORM}"
 
-    # Create release directory if needed
     mkdir -p "${RELEASE_DIR}"
 
     if [ "${NOTES_ONLY}" = false ]; then
-        # Build
         BINARY_PATH=$(build_release "${VERSION}")
-
-        # Get output filename
         OUTPUT_FILENAME=$(get_output_filename "${PLATFORM}" "${VERSION}")
 
-        # Copy binary to release directory
         cp "${BINARY_PATH}" "${RELEASE_DIR}/${OUTPUT_FILENAME}"
         log_info "Binary copied to ${RELEASE_DIR}/${OUTPUT_FILENAME}"
 
-        # Calculate SHA256 and size
         SHA256=$(calculate_sha256 "${RELEASE_DIR}/${OUTPUT_FILENAME}")
         SIZE=$(get_file_size "${RELEASE_DIR}/${OUTPUT_FILENAME}")
-
         log_info "SHA256: ${SHA256}"
-        log_info "Size: ${SIZE} bytes ($(echo "scale=1; ${SIZE}/1024/1024" | bc) MB)"
+        log_info "Size: ${SIZE} bytes ($(( (SIZE + 524288) / 1048576 )) MB)"
 
-        # Update versions.json
         update_versions_json "${VERSION}" "${PLATFORM}" "${OUTPUT_FILENAME}" "${SHA256}" "${SIZE}"
     else
-        # Notes-only mode: update release_notes in existing versions.json
         update_release_notes_only "${VERSION}"
     fi
 
-    # Generate release notes with changelog from git
     generate_release_notes "${VERSION}" "${PLATFORM}"
-
-    # Create git tag for this release
     create_git_tag "${VERSION}"
 
     log_info "Release process complete!"

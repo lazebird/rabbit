@@ -13,7 +13,6 @@
 Thumbs.db
 
 # Build artifacts
-*.exe
 *.dll
 *.so
 *.dylib
