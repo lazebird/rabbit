@@ -4,10 +4,12 @@
 //! background download / install with progress feedback.
 
 use super::{PlatformInfo, VersionsManifest};
+use crate::ui::Spacing;
 use adapter::Lifecycle;
 use fltk::{
     app,
     button::Button,
+    frame::Frame,
     group::Flex,
     prelude::*,
     text::{TextBuffer, TextDisplay, WrapMode},
@@ -112,19 +114,28 @@ fn show_version_dialog(prompt: &str) -> Option<i32> {
 
     let result = Rc::new(Cell::new(None));
 
+    // Spacers to center buttons
+    Frame::default();
+
     let r1 = result.clone();
     let mut update_btn = Button::default().with_label("&Update");
     update_btn.set_callback(move |_| r1.set(Some(0)));
+    btn_row.fixed(&update_btn, 100);
 
     let r2 = result.clone();
     let mut later_btn = Button::default().with_label("&Later");
     later_btn.set_callback(move |_| r2.set(Some(1)));
+    btn_row.fixed(&later_btn, 100);
 
     let r3 = result.clone();
     let mut skip_btn = Button::default().with_label("&Skip This Version");
     skip_btn.set_callback(move |_| r3.set(Some(2)));
+    btn_row.fixed(&skip_btn, 140);
+
+    Frame::default();
 
     btn_row.end();
+    col.fixed(&btn_row, Spacing::default().row_height + 4);
     col.end();
     win.end();
     win.make_modal(true);
