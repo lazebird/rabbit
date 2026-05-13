@@ -4,9 +4,10 @@
 
 2026-05-13
 
-## Platform
+## Platforms
 
 - linux-x64
+- windows-x64
 
 ## Changes
 
@@ -14,6 +15,7 @@
 
 ### Features
 
+- refactor release script and add common utilities for build process (`60db67e`)
 - enhance version dialog layout with spacers (`19ac182`)
 - implement custom version info dialog for upgrade prompts (`7c62ab0`)
 - add diagnostic logging and tray helper for elevated process (`e8f3a77`)
@@ -129,14 +131,18 @@
 - ``` feat: add Chinese localization and restructure project architecture (`686d405`)
 - Fix release script to update Cargo.toml version before build (`7c310e1`)
 
+[Compare changes](https://github.com/lazebird/rabbit/compare/1.0...v0.2.0)
+
 ## Download
 
 | Platform | URL |
 |----------|-----|
-| linux-x64 |  |
+| linux-x64 | https://raw.githubusercontent.com/lazebird/rabbit/rewrite/release/rabbit-0.2.0-linux-x64 |
+| windows-x64 | https://raw.githubusercontent.com/lazebird/rabbit/rewrite/release/rabbit-0.2.0-windows-x64.exe |
 
 ## SHA256 Checksums
 
 ```
-  rabbit-0.2.0-linux-x64
+0800958feabf3d5b851e5569bd4a6c78a1a1089de886cfb4bb1878788035d5bd  rabbit-0.2.0-linux-x64
+bb9159ca4eb4ddc4e1f06efe903df168651455609845c44c0f5d16ad474c673e  rabbit-0.2.0-windows-x64.exe
 ```
