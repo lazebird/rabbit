@@ -14,6 +14,8 @@
 
 ### Features
 
+- enhance version dialog layout with spacers (`19ac182`)
+- implement custom version info dialog for upgrade prompts (`7c62ab0`)
 - add diagnostic logging and tray helper for elevated process (`e8f3a77`)
 - add cross-platform MAC address resolution via ARP (`b562d70`)
 - add image processing and tray icon dependencies (`9aaff0b`)
