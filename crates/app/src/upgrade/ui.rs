@@ -5,6 +5,16 @@
 
 use super::{PlatformInfo, VersionsManifest};
 use adapter::Lifecycle;
+use fltk::{
+    app,
+    button::Button,
+    group::Flex,
+    prelude::*,
+    text::{TextBuffer, TextDisplay, WrapMode},
+    window::Window,
+};
+use std::cell::Cell;
+use std::rc::Rc;
 use tracing::{error, info, warn};
 
 // ---------------------------------------------------------------------------
@@ -71,11 +81,70 @@ pub fn handle_version_check_result(lifecycle: Option<&Lifecycle>) {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
+/// Show a custom version info dialog with fixed size and scrollable text area.
+///
+/// Replaces `fltk::dialog::choice2_default()` which would grow too large
+/// when release notes are long.
+fn show_version_dialog(prompt: &str) -> Option<i32> {
+    let ww = 520;
+    let wh = 420;
+    let screen = app::screen_xywh(0);
+    let x = screen.0 + (screen.2 - ww) / 2;
+    let y = screen.1 + (screen.3 - wh) / 2;
+
+    let mut win = Window::new(x, y, ww, wh, "Update Available");
+
+    let mut col = Flex::new(0, 0, ww, wh, "").column();
+    col.set_margin(10);
+    col.set_spacing(10);
+
+    let mut text_display = TextDisplay::default();
+    let mut buf = TextBuffer::default();
+    buf.set_text(prompt);
+    text_display.set_buffer(Some(buf));
+    text_display.wrap_mode(WrapMode::AtBounds, 0);
+    text_display.set_scrollbar_size(12);
+    text_display.set_text_size(14);
+    text_display.set_visible_focus();
+
+    let mut btn_row = Flex::default().row();
+    btn_row.set_spacing(10);
+
+    let result = Rc::new(Cell::new(None));
+
+    let r1 = result.clone();
+    let mut update_btn = Button::default().with_label("&Update");
+    update_btn.set_callback(move |_| r1.set(Some(0)));
+
+    let r2 = result.clone();
+    let mut later_btn = Button::default().with_label("&Later");
+    later_btn.set_callback(move |_| r2.set(Some(1)));
+
+    let r3 = result.clone();
+    let mut skip_btn = Button::default().with_label("&Skip This Version");
+    skip_btn.set_callback(move |_| r3.set(Some(2)));
+
+    btn_row.end();
+    col.end();
+    win.end();
+    win.make_modal(true);
+    win.show();
+
+    while win.shown() {
+        app::wait();
+        if let Some(choice) = result.get() {
+            win.hide();
+            return Some(choice);
+        }
+    }
+
+    None
+}
+
 /// Show upgrade dialog and handle user choice (reused by both auto-check
 /// and manual check).
 fn show_upgrade_dialog(remote: &VersionsManifest, platform_info: &PlatformInfo) {
-    let prompt = remote.format_prompt();
-    let choice = fltk::dialog::choice2_default(&prompt, "Update", "Later", "Skip This Version");
+    let choice = show_version_dialog(&remote.format_prompt());
 
     if choice == Some(0) {
         crate::ui_state::write_to(
